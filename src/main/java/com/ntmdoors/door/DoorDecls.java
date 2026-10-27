@@ -225,14 +225,17 @@ public final class DoorDecls {
             .modelYaw(90F)
             .modelOffset(0, 1, 0)
             // HBM's secure-door looks: default red warning paint plus recoloured yellow, green, blue,
-            // grey, black and HBM-yellow variants. The screwdriver cycles through them.
+            // grey and black variants. The black skin uses white lettering so the sign stays
+            // readable; white paint uses black lettering and orange paint uses white lettering.
             .skins("textures/models/doors/secure_access_door.png",
                     "textures/models/doors/secure_access_door_yellow.png",
                     "textures/models/doors/secure_access_door_green.png",
                     "textures/models/doors/secure_access_door_blue.png",
                     "textures/models/doors/secure_access_door_grey.png",
                     "textures/models/doors/secure_access_door_black.png",
-                    "textures/models/doors/secure_access_door_hbm_yellow.png")
+                    "textures/models/doors/secure_access_door_hbm_yellow.png",
+                    "textures/models/doors/secure_access_door_white.png",
+                    "textures/models/doors/secure_access_door_orange.png")
             // The frame reaches world y=5 after the model offset; clip the raised panel there.
             .clipY(Double.NEGATIVE_INFINITY, 5)
             .sounds(null, SND_GARAGE_MOVE, SND_GARAGE_STOP)

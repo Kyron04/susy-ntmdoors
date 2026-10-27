@@ -25,6 +25,9 @@ import java.util.List;
  * door core, and every keypad linked to the door must use the same code to open it. The binding
  * lives on the door, so destroying a keypad does not unlock the door. A screwdriver starts a reset
  * sequence that clears the code from the door and from every keypad linked to it.</p>
+ *
+ * <p>A keypad only links to a door when it is placed directly next to one of the door's cells.
+ * This keeps a keypad from binding or auto-syncing to a door elsewhere in the room.</p>
  */
 public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable {
 
@@ -96,9 +99,6 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
     private int feedbackTicks;
     private int blackScreenTicks;
     private final byte[] cooldowns = new byte[BUTTONS];
-
-    @Nullable
-    private BlockPos doorPos;
 
     // ------------------------------------------------------------ state queries
 
@@ -321,42 +321,45 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
 
     // ------------------------------------------------------------ door linking
 
+    /**
+     * The door this keypad is attached to, or null when no door cell touches the keypad. Only the
+     * 26 neighbouring cells are considered: a keypad must sit next to the door to bind, auto-sync
+     * or operate it.
+     */
     @Nullable
     public TileEntityDoorGeneric findDoor() {
         if (world == null) return null;
-        if (doorPos != null) {
-            TileEntity te = world.getTileEntity(doorPos);
-            if (te instanceof TileEntityDoorGeneric) {
-                return (TileEntityDoorGeneric) te;
-            }
-            doorPos = null;
-        }
 
         TileEntityDoorGeneric best = null;
         double bestDist = Double.MAX_VALUE;
-        for (BlockPos p : searchArea()) {
-            if (!world.isBlockLoaded(p)) continue;
-            TileEntity te = world.getTileEntity(p);
-            TileEntityDoorGeneric core;
-            if (te instanceof TileEntityDoorGeneric) {
-                core = (TileEntityDoorGeneric) te;
-            } else if (te instanceof TileEntityDoorPart) {
-                // Large doors put the core far from the keypad, so measure the distance to the
-                // nearest cell instead of the nearest core. Otherwise a smaller door nearby wins.
-                BlockPos corePos = ((TileEntityDoorPart) te).corePos;
-                TileEntity coreTe = corePos == null ? null : world.getTileEntity(corePos);
-                if (!(coreTe instanceof TileEntityDoorGeneric)) continue;
-                core = (TileEntityDoorGeneric) coreTe;
-            } else {
-                continue;
-            }
-            double d2 = p.distanceSq(pos);
-            if (d2 < bestDist) {
-                bestDist = d2;
-                best = core;
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = -1; dy <= 1; dy++) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    if (dx == 0 && dy == 0 && dz == 0) continue;
+                    BlockPos p = pos.add(dx, dy, dz);
+                    if (!world.isBlockLoaded(p)) continue;
+                    TileEntity te = world.getTileEntity(p);
+                    TileEntityDoorGeneric core;
+                    if (te instanceof TileEntityDoorGeneric) {
+                        core = (TileEntityDoorGeneric) te;
+                    } else if (te instanceof TileEntityDoorPart) {
+                        // Large doors put the core far from the keypad, so link through the
+                        // adjacent door cell instead of requiring the core itself to touch.
+                        BlockPos corePos = ((TileEntityDoorPart) te).corePos;
+                        TileEntity coreTe = corePos == null ? null : world.getTileEntity(corePos);
+                        if (!(coreTe instanceof TileEntityDoorGeneric)) continue;
+                        core = (TileEntityDoorGeneric) coreTe;
+                    } else {
+                        continue;
+                    }
+                    double d2 = p.distanceSq(pos);
+                    if (d2 < bestDist) {
+                        bestDist = d2;
+                        best = core;
+                    }
+                }
             }
         }
-        if (best != null) doorPos = best.getPos();
         return best;
     }
 
@@ -367,7 +370,7 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
     }
 
     /**
-     * Called when a keypad is placed. If the linked door is already bound to a code, the new
+     * Called when a keypad is placed. If the adjacent door is already bound to a code, the new
      * keypad adopts it so both sides of the door work without re-entering the code.
      */
     public void syncWithDoor() {
@@ -420,7 +423,6 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
         tag.setInteger("feedbackTicks", feedbackTicks);
         tag.setInteger("blackScreen", blackScreenTicks);
         tag.setByteArray("cooldowns", cooldowns.clone());
-        if (doorPos != null) tag.setLong("door", doorPos.toLong());
         return tag;
     }
 
@@ -457,7 +459,6 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
         } else {
             Arrays.fill(cooldowns, (byte) 0);
         }
-        doorPos = tag.hasKey("door") ? BlockPos.fromLong(tag.getLong("door")) : null;
     }
 
     @Override

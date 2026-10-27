@@ -17,7 +17,7 @@ buildscript {
 
 apply plugin: 'net.minecraftforge.gradle.forge'
 
-version = '1.0.11'
+version = '1.0.12'
 group = 'com.ntmdoors' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'ntmdoors'
 
