@@ -149,6 +149,10 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
                     line1 = "Code Set!";
                     color = 0xFFFFFF00;
                     break;
+                case CODE_SYNCED:
+                    line1 = "Code synced";
+                    color = 0xFFB04CFF;
+                    break;
                 case RESET_DONE:
                     line1 = "Code reset!";
                     color = 0xFF15FF00;

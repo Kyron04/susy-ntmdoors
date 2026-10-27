@@ -55,7 +55,7 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
 
     /** Transient message on the LCD. */
     public enum Feedback {
-        NONE, CODE_SET, RESET_DONE, SUCCESS, DENIED;
+        NONE, CODE_SET, RESET_DONE, SUCCESS, DENIED, CODE_SYNCED;
 
         static Feedback byId(int id) {
             Feedback[] v = values();
@@ -364,6 +364,21 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
         return BlockPos.getAllInBoxMutable(
                 pos.add(-SEARCH_RADIUS, -SEARCH_RADIUS, -SEARCH_RADIUS),
                 pos.add(SEARCH_RADIUS, SEARCH_RADIUS, SEARCH_RADIUS));
+    }
+
+    /**
+     * Called when a keypad is placed. If the linked door is already bound to a code, the new
+     * keypad adopts it so both sides of the door work without re-entering the code.
+     */
+    public void syncWithDoor() {
+        if (world == null || world.isRemote) return;
+        TileEntityDoorGeneric door = findDoor();
+        if (door == null || !door.isKeypadBound()) return;
+        storedCode = door.getKeypadCode();
+        mode = Mode.ENTER_CODE;
+        entry = "";
+        showFeedback(Feedback.CODE_SYNCED);
+        sync();
     }
 
     /** Other keypads in range that are linked to the same door. */
