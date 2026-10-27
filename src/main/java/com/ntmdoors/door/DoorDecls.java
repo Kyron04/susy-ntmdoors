@@ -298,14 +298,11 @@ public final class DoorDecls {
             .modelYaw(90F)
             .modelOffset(0, 0, 0.5)
             .clipZ(-1.999, 1.999)
-            // HBM's three airlock looks (worn, clean, green) plus the industrial-yellow, space and
-            // white-on-red repaints. The yellow and red skins keep the concrete frame grey.
+            // HBM's three airlock looks (worn, clean, green) plus the space repaint.
             .skins("textures/models/doors/round_airlock_door.png",
                     "textures/models/doors/round_airlock_door_clean.png",
                     "textures/models/doors/round_airlock_door_green.png",
-                    "textures/models/doors/round_airlock_door_decontamination.png",
-                    "textures/models/doors/round_airlock_door_space.png",
-                    "textures/models/doors/round_airlock_door_white_on_red.png")
+                    "textures/models/doors/round_airlock_door_space.png")
             .sounds(null, SND_GARAGE_MOVE, SND_GARAGE_STOP)
             .anim("Left", PartAnim.translate(0, 0, 1.5, 0F, 1F))
             .anim("Right", PartAnim.translate(0, 0, -1.5, 0F, 1F)));

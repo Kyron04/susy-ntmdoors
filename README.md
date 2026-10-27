@@ -63,7 +63,7 @@ and `textures/items/sliding_blast_door_keypad.png`).
 | `fire_door` | `Door` | roller/fire door |
 | `secure_access_door` | `Door` | vertical security door; skins: red, yellow, green, blue, grey, black (white writing), HBM yellow, white (black writing), orange (white writing) |
 | `sliding_seal_door` | `Door` | retracts into a wall pocket; skins: default, clean, nuclear trefoil, plain white, plain red, plain grey |
-| `round_airlock_door` | `Left`, `Right` | split iris airlock; skins: worn, clean, green, industrial yellow (plain yellow face, black DANGER plate, biohazard symbols and BIOHAZARD lettering), space (black/white), white on red (plain red face, white DANGER plates in the top and bottom segments) |
+| `round_airlock_door` | `Left`, `Right` | split iris airlock; skins: worn, clean, green, space (black/white) |
 | `silo_hatch` | `Hatch` | tilting horizontal hatch |
 | `silo_hatch_large` | `Hatch` | 7x7 large tilting horizontal hatch |
 | `cargo_door` | `DoorBot`, `DoorTop` | 3x3 lifting cargo door |
