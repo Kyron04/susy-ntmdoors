@@ -42,6 +42,9 @@ Needs JDK 8 (ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs). The Gradl
   HBM yellow, white (black writing) and orange (white writing). The colour variants are generated
   by recolouring only the red warning paint; all other pixels are unchanged. Base colours: green
   `#2b401a`, blue `#162138`, yellow `#4a3f1a` (dark muted industrial yellow)
+* The sliding blast door ships default, black and grey schemes. The sliding seal door ships
+  default, clean, nuclear trefoil, and plain white, red and grey; the plain skins have no letters,
+  numbers, trefoil or hazard stripes.
 
 ## Included door assets
 Models live under `src/main/resources/assets/ntmdoors/models/doors/`, textures under
@@ -54,12 +57,12 @@ and `textures/items/sliding_blast_door_keypad.png`).
 | door | animated OBJ groups | notes |
 |---|---|---|
 | `vault_door` | `Door`, `Label` | rolls sideways along its extended track |
-| `sliding_blast_door` | `LeftDoor`, `RightDoor`, `LeftLock`, `RightLock` | 7x4 two-panel blast door |
+| `sliding_blast_door` | `LeftDoor`, `RightDoor`, `LeftLock`, `RightLock` | 7x4 two-panel blast door; skins: default, black, grey |
 | `qe_sliding_door` | `Left`, `Right` | 2x2 QE sliding door |
 | `qe_sliding_panel` | `Right` | 1x2 single-column QE sliding door (frame clipped to one cell) |
 | `fire_door` | `Door` | roller/fire door |
-| `secure_access_door` | `Door` | vertical security door; skins: red, yellow, green, blue, grey, black, HBM yellow |
-| `sliding_seal_door` | `Door` | retracts into a wall pocket; skins: default, clean, nuclear trefoil |
+| `secure_access_door` | `Door` | vertical security door; skins: red, yellow, green, blue, grey, black (white writing), HBM yellow, white (black writing), orange (white writing) |
+| `sliding_seal_door` | `Door` | retracts into a wall pocket; skins: default, clean, nuclear trefoil, plain white, plain red, plain grey |
 | `round_airlock_door` | `Left`, `Right` | split iris airlock; skins: worn, clean, green, decontamination (yellow/black with a central biohazard), space (black/white) |
 | `silo_hatch` | `Hatch` | tilting horizontal hatch |
 | `silo_hatch_large` | `Hatch` | 7x7 large tilting horizontal hatch |

@@ -123,6 +123,11 @@ public final class DoorDecls {
             .modelPath("models/doors/sliding_blast_door.obj", "textures/models/doors/sliding_blast_door.png")
             .modelYaw(90F)
             .clipZ(-2.5, 2.5)
+            // Default light-grey paint plus black and dark-grey repaints. The hazard squares and
+            // small cyan indicator keep their colour in every scheme.
+            .skins("textures/models/doors/sliding_blast_door.png",
+                    "textures/models/doors/sliding_blast_door_black.png",
+                    "textures/models/doors/sliding_blast_door_grey.png")
             // HBM loops the opening sound for both directions and plays a different stop sound
             // once the panels have fully opened or shut. It also layers the opening recording a
             // second time (getSoundLoop2), which is why it is registered twice here.
@@ -257,10 +262,14 @@ public final class DoorDecls {
             .modelYaw(90F)
             .modelOffset(0.5, 0, 0)
             .clipZ(Double.NEGATIVE_INFINITY, 0.5001)
-            // HBM's three seal skins: default, clean, and nuclear trefoil.
+            // HBM's three seal skins (default, clean, nuclear trefoil) plus plain white, red and
+            // grey repaints. The repaints have no letters, numbers, trefoil or hazard stripes.
             .skins("textures/models/doors/sliding_seal_door.png",
                     "textures/models/doors/sliding_seal_door_clean.png",
-                    "textures/models/doors/sliding_seal_door_trefoil.png")
+                    "textures/models/doors/sliding_seal_door_trefoil.png",
+                    "textures/models/doors/sliding_seal_door_white.png",
+                    "textures/models/doors/sliding_seal_door_red.png",
+                    "textures/models/doors/sliding_seal_door_grey.png")
             // One-shot start and stop; the movement itself has no loop in HBM.
             .sounds(SND_SEAL_OPEN, null, SND_SEAL_STOP)
             .anim("Door", PartAnim.translate(0, 0, 0.9, 0F, 1F)));
