@@ -16,6 +16,7 @@ import net.minecraft.block.properties.PropertyEnum;
 import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayer;
@@ -140,13 +141,13 @@ public class BlockDoorGeneric extends Block {
     // ------------------------------------------------------------ shape / collision
 
     /**
-     * Collision boxes of the CURRENT state, clipped to this cell and expressed relative to this cell.
-     * When {@code forSelection} is true, the closed shape is used as a fallback for open doors that
-     * have no boxes at all (the transition seal is pass-through when open), so they can still be
-     * clicked shut.
+     * Collision boxes of the CURRENT animation state, clipped to this cell and expressed relative
+     * to this cell. When {@code forSelection} is true, the closed shape is used as a fallback for
+     * open doors that have no boxes at all (the transition seal is pass-through when open), so they
+     * can still be clicked shut.
      */
     private List<AxisAlignedBB> getLocalBoxes(IBlockState state, IBlockAccess world, BlockPos pos,
-                                              boolean forSelection) {
+                                              boolean forSelection, float partialTicks) {
         List<AxisAlignedBB> out = new ArrayList<>(4);
         BlockPos corePos = getCorePos(world, pos, state);
         TileEntity te = corePos == null ? null : world.getTileEntity(corePos);
@@ -154,13 +155,18 @@ public class BlockDoorGeneric extends Block {
             out.add(FULL_BLOCK_AABB);
             return out;
         }
-        // Collision follows the animation: each closed panel cell is removed as the panel passes it.
         TileEntityDoorGeneric core = (TileEntityDoorGeneric) te;
-        float open = core.getOpenFraction(1F);
-        AxisAlignedBB[] boxes = decl.getBoxes(state.getValue(FACING), open, !forSelection);
+        EnumFacing facing = state.getValue(FACING);
+        float open = core.getOpenFraction(partialTicks);
+        // Collision follows the animation: the boxes are generated from the same state and timer as
+        // the renderer, cached once per tick by the core. Selection uses partial ticks so the
+        // outline hugs the panel between ticks.
+        AxisAlignedBB[] boxes = forSelection
+                ? decl.getBoxes(facing, open, false)
+                : core.getCollisionBoxes(facing);
         if (forSelection && open >= 0.9999F && boxes.length == 0) {
             // Pass-through doors (for example the transition seal) still need a click target when open.
-            boxes = decl.getBoxes(state.getValue(FACING), 0F, false);
+            boxes = decl.getBoxes(facing, 0F, false);
         }
         double ox = corePos.getX() + 0.5 - pos.getX();
         double oy = corePos.getY() - pos.getY();
@@ -176,7 +182,9 @@ public class BlockDoorGeneric extends Block {
     @Override
     public void addCollisionBoxToList(IBlockState state, World world, BlockPos pos, AxisAlignedBB entityBox,
                                       List<AxisAlignedBB> collidingBoxes, @Nullable Entity entity, boolean isActualState) {
-        for (AxisAlignedBB b : getLocalBoxes(state, world, pos, false)) {
+        // A fully open pass-through cell has no collision at all, including its frame cells.
+        if (decl.passFallingWhenOpen && state.getValue(PASS)) return;
+        for (AxisAlignedBB b : getLocalBoxes(state, world, pos, false, 1F)) {
             addCollisionBoxToList(pos, entityBox, collidingBoxes, b);
         }
     }
@@ -189,7 +197,7 @@ public class BlockDoorGeneric extends Block {
         if (decl.passFallingWhenOpen && state.getValue(PASS)) return null;
         RayTraceResult best = null;
         double bestDist = Double.MAX_VALUE;
-        for (AxisAlignedBB b : getLocalBoxes(state, world, pos, true)) {
+        for (AxisAlignedBB b : getLocalBoxes(state, world, pos, true, 1F)) {
             RayTraceResult r = rayTrace(pos, start, end, b);
             if (r != null) {
                 double d = r.hitVec.squareDistanceTo(start);
@@ -205,7 +213,7 @@ public class BlockDoorGeneric extends Block {
     @SideOnly(Side.CLIENT)
     @Override
     public AxisAlignedBB getSelectedBoundingBox(IBlockState state, World world, BlockPos pos) {
-        List<AxisAlignedBB> boxes = getLocalBoxes(state, world, pos, true);
+        List<AxisAlignedBB> boxes = getLocalBoxes(state, world, pos, true, Minecraft.getMinecraft().getRenderPartialTicks());
         if (boxes.isEmpty()) return FULL_BLOCK_AABB.offset(pos);
         AxisAlignedBB u = boxes.get(0);
         for (int i = 1; i < boxes.size(); i++) u = u.union(boxes.get(i));
@@ -218,14 +226,17 @@ public class BlockDoorGeneric extends Block {
     }
 
     /**
-     * A fully open pass-through cell has no collision at all. This makes {@code World.rayTraceBlocks}
-     * and entity movement checks ignore it, which is what lets projectiles such as ICBM missiles fly
-     * through the open silo hatch instead of detonating on an invisible hitbox.
+     * The union of the current animation boxes, so other mods that ask for a single collision box
+     * see the moving panel instead of a full cube. A fully open pass-through cell reports no box.
      */
     @Override
     public AxisAlignedBB getCollisionBoundingBox(IBlockState state, IBlockAccess world, BlockPos pos) {
         if (decl.passFallingWhenOpen && state.getValue(PASS)) return NULL_AABB;
-        return super.getCollisionBoundingBox(state, world, pos);
+        List<AxisAlignedBB> boxes = getLocalBoxes(state, world, pos, false, 1F);
+        if (boxes.isEmpty()) return NULL_AABB;
+        AxisAlignedBB u = boxes.get(0);
+        for (int i = 1; i < boxes.size(); i++) u = u.union(boxes.get(i));
+        return u;
     }
 
     /** Skip open pass-through cells entirely when tracing blocks or collecting entity collision. */

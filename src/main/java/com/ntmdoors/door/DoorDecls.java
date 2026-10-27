@@ -57,9 +57,11 @@ public final class DoorDecls {
     /** 5x5 roll-up vault door. The frame track deliberately extends to one side, just like HBM. */
     public static final DoorDecl VAULT_DOOR = reg(new DoorDecl("vault_door")
             .footprint(-2, 2, 0, 4, 0, 0).times(120, 120).strength(30F, 5000F)
-            // Give the floor its own permanent collision, then sweep the rotating panel away
-            // towards the track so no hitbox rotates through the floor.
-            .slideCellsFromMinX(-2, 2, 1, 4, -0.5, 0.5, 5.0, 1F / 3F)
+            // Give the floor its own permanent collision, then follow the rotating panel with the
+            // same model transform the renderer uses. The slices keep the AABB of the rolled panel
+            // close to the real plate instead of one large box.
+            .collisionSplits(8)
+            .movingGroup("Door")
             .open(box(-2.5, 0, -0.5, 2.5, 1, 0.5))
             // HBM's extra dimensions add a service/track row behind the door. The open panel
             // rests further along that track, so both the row and its hitboxes extend west.
@@ -112,7 +114,9 @@ public final class DoorDecls {
     /** 7x4 double blast door; two panels slide apart into the side frames. */
     public static final DoorDecl SLIDING_BLAST_DOOR = reg(new DoorDecl("sliding_blast_door")
             .footprint(-3, 3, 0, 3, 0, 0).times(24, 24).strength(25F, 4000F)
-            .slideCellsFromCentre(-3, 3, 0, 3, -0.5, 0.5, 0, 2.125, 7F / 24F)
+            // Both panels follow their model translations; the frame boxes stay static.
+            .movingGroup("LeftDoor")
+            .movingGroup("RightDoor")
             .open(box(-3.5, 0, -0.5, -2.5, 4, 0.5), box(2.5, 0, -0.5, 3.5, 4, 0.5),
                     box(-2.5, 3, -0.5, 2.5, 4, 0.5))
             .openSelectionOnly(box(-3.5, 0, -0.5, 3.5, 0.08, 0.5))
@@ -141,12 +145,9 @@ public final class DoorDecls {
     /** 2x2 single-panel sliding door (HBM QE sliding door). */
     public static final DoorDecl QE_SLIDING_DOOR = reg(new DoorDecl("qe_sliding_door")
             .footprint(0, 1, 0, 1, 0, 0).times(10, 10).strength(25F, 4000F)
-            // Two symmetric panels meet in the middle. Both cells stay solid until the gap is wide
-            // enough to walk through, then the thin jambs above are all that remain.
-            .closedUntil(0.828F, box(-0.5, 0, -0.5, 0.5, 1, -0.25),
-                    box(-0.5, 1, -0.5, 0.5, 2, -0.25))
-            .closedUntil(0.828F, box(0.5, 0, -0.5, 1.5, 1, -0.25),
-                    box(0.5, 1, -0.5, 1.5, 2, -0.25))
+            // Both panels follow their model translations. The thin jambs stay as static collision.
+            .movingGroup("Left")
+            .movingGroup("Right")
             // Leave only thin jambs. A full-width header would sit at player height and block the
             // open doorway, while these strips keep the frame clickable and still leave a 1.75-wide gap.
             .open(box(-0.5, 0, -0.5, -0.375, 2, 0.5), box(1.375, 0, -0.5, 1.5, 2, 0.5))
@@ -168,9 +169,8 @@ public final class DoorDecls {
      */
     public static final DoorDecl QE_SLIDING_PANEL = reg(new DoorDecl("qe_sliding_panel")
             .footprint(0, 0, 0, 1, 0, 0).times(10, 10).strength(25F, 4000F)
-            // Same clearance timing and panel thickness as one cell of the two-wide QE door.
-            .closedUntil(0.828F, box(-0.5, 0, -0.5, 0.5, 1, -0.25),
-                    box(-0.5, 1, -0.5, 0.5, 2, -0.25))
+            // The right panel follows its model translation; the visible jamb stays static.
+            .movingGroup("Right")
             // The visible frame is the original's left jamb; the right edge is the open doorway.
             .open(box(-0.5, 0, -0.5, -0.375, 2, 0.5))
             .openSelectionOnly(box(-0.5, 0, -0.5, 0.5, 0.0625, -0.25))
@@ -190,9 +190,9 @@ public final class DoorDecls {
     /** 4x3 roller / fire door, lifts into the lintel. */
     public static final DoorDecl FIRE_DOOR = reg(new DoorDecl("fire_door")
             .footprint(-1, 2, 0, 2, 0, 0).times(160, 160).strength(10F, 600F)
-            // The panel clears the bottom rows first. When fully raised only the two side
-            // returns, the 0.25-high lintel lip and a thin clickable floor remain.
-            .liftCells(-1, 2, 0, 2, -0.5, 0.5, 2.75)
+            // The panel's collision follows its vertical model transform. When fully raised only
+            // the two side returns, the 0.25-high lintel lip and a thin clickable floor remain.
+            .movingGroup("Door")
             .open(box(-1.5, 0, -0.5, -1.0, 3, 0.5), box(2.0, 0, -0.5, 2.5, 3, 0.5),
                     box(-1.0, 2.75, -0.5, 2.0, 3, 0.5))
             .openSelectionOnly(box(-1.5, 0, -0.5, 2.5, 0.1, 0.5))
@@ -215,8 +215,9 @@ public final class DoorDecls {
     /** 5x5 vertical sliding security door. */
     public static final DoorDecl SECURE_ACCESS_DOOR = reg(new DoorDecl("secure_access_door")
             .footprint(-2, 2, 0, 4, 0, 0).times(120, 120).strength(20F, 3000F)
-            // HBM keeps the full bottom row and only a small header lip when the panel is raised.
-            .liftCells(-2, 2, 1, 4, -0.125, 0.125, 3.5)
+            // The panel's collision follows its vertical model transform. HBM keeps the full
+            // bottom row and only a small header lip when the panel is raised.
+            .movingGroup("Door")
             .open(box(-2.5, 0, -0.5, 2.5, 1, 0.5),
                     box(-2.5, 4.5, -0.35, 2.5, 5, 0.35))
             .openSelectionOnly(box(-2.5, 1, -0.5, 2.5, 1.0625, 0.5))
@@ -240,11 +241,15 @@ public final class DoorDecls {
     /** 1x2 sliding seal door. The panel retracts into the wall pocket, as in HBM. */
     public static final DoorDecl SLIDING_SEAL_DOOR = reg(new DoorDecl("sliding_seal_door")
             .footprint(0, 0, 0, 1, 0, 0).times(20, 20).strength(15F, 2000F)
-            .closedUntil(0.62F, box(-0.5, 0, -0.5, 0.5, 1, -0.25))
-            .closedUntil(0.62F, box(-0.5, 1, -0.5, 0.5, 2, -0.25))
+            // The seal follows its model translation. When open it has slid into the wall pocket,
+            // so the per-cell clipping removes its collision entirely.
+            .movingGroup("Door")
             // HBM removes the seal's collision entirely when open. BlockDoorGeneric falls back to
             // the closed shape for ray tracing, so the open panel can still be clicked shut.
             .open()
+            // The moving panel leaves only a sliver in the cell when it is fully open, so keep a
+            // static click target at the closed position.
+            .openSelectionOnly(box(-0.438, 0.063, -0.5, 0.438, 1.938, -0.25))
             .modelPath("models/doors/sliding_seal_door.obj", "textures/models/doors/sliding_seal_door.png")
             .modelYaw(90F)
             .modelOffset(0.5, 0, 0)
@@ -260,7 +265,9 @@ public final class DoorDecls {
     /** 4x4 split round airlock door. Panels slide apart into the frame. */
     public static final DoorDecl ROUND_AIRLOCK_DOOR = reg(new DoorDecl("round_airlock_door")
             .footprint(-1, 2, 0, 3, 0, 0).times(60, 60).strength(20F, 3000F)
-            .slideCellsFromCentre(-1, 2, 0, 3, -0.5, 0.5, 0.5, 1.5, 0)
+            // Both panels follow their model translations into the frame.
+            .movingGroup("Left")
+            .movingGroup("Right")
             .open(box(-1.5, 0, -0.5, -1.0, 4, 0.5), box(2.0, 0, -0.5, 2.5, 4, 0.5),
                     box(-1.0, 3, -0.5, 2.0, 4, 0.5))
             .openSelectionOnly(box(-1.5, 0, -0.5, 2.5, 0.0625, 0.5))
@@ -283,9 +290,10 @@ public final class DoorDecls {
     public static final DoorDecl SILO_HATCH = reg(new DoorDecl("silo_hatch")
             .footprint(-2, 2, 0, 0, -2, 2).times(60, 60).strength(30F, 5000F)
             .passFallingWhenOpen()
-            // The lid is a 5x5 plate over a 3x3 opening. Only that centre is passable; the
-            // surrounding frame stays solid. It clears as soon as the lid starts rotating.
-            .closedUntil(1F / 3F, box(-1.5, 0, -1.5, 1.5, 1, 1.5))
+            // The lid's collision follows the hinge rotation. Slices keep the AABB of the tilted
+            // plate close to the real lid; the surrounding frame stays solid.
+            .collisionSplits(8)
+            .movingGroup("Hatch")
             .open(box(-2.5, 0, -2.5, -1.5, 1, 2.5), box(1.5, 0, -2.5, 2.5, 1, 2.5),
                     box(-1.5, 0, -2.5, 1.5, 1, -1.5), box(-1.5, 0, 1.5, 1.5, 1, 2.5))
             .openSelectionOnly(box(-2.5, 0, -2.5, 2.5, 0.0625, 2.5))
@@ -306,7 +314,8 @@ public final class DoorDecls {
             .passFallingWhenOpen()
             // The lid covers a 5x5 opening inside a one-block frame.
             .passRadius(2)
-            .closedUntil(1F / 3F, box(-2.5, 0, -2.5, 2.5, 1, 2.5))
+            .collisionSplits(8)
+            .movingGroup("Hatch")
             .open(box(-3.5, 0, -3.5, -2.5, 1, 3.5), box(2.5, 0, -3.5, 3.5, 1, 3.5),
                     box(-2.5, 0, -3.5, 2.5, 1, -2.5), box(-2.5, 0, 2.5, 2.5, 1, 3.5))
             .openSelectionOnly(box(-3.5, 0, -3.5, 3.5, 0.0625, 3.5))
@@ -327,10 +336,10 @@ public final class DoorDecls {
      */
     public static final DoorDecl CARGO_DOOR = reg(new DoorDecl("cargo_door")
             .footprint(-1, 1, 0, 2, 0, 0).times(60, 60).strength(5F, 50F)
-            // The two bottom rows clear as the lower panel rises. The upper panel leaves a
-            // shallow lintel when open, and the floor keeps a click target for closing the door.
-            .liftCells(-1, 1, 0, 1, -0.125, 0.125, 2)
-            .closed(box(-1.5, 2, -0.125, 1.5, 3, 0.125))
+            // Both halves follow their own model transform. The upper panel leaves a shallow
+            // lintel when open, and the floor keeps a click target for closing the door.
+            .movingGroup("DoorBot")
+            .movingGroup("DoorTop")
             .open(box(-1.5, 2.25, -0.125, 1.5, 3, 0.125))
             .openSelectionOnly(box(-1.5, 0, -0.125, 1.5, 0.125, 0.125))
             .modelPath("models/doors/cargo_door.obj", "textures/models/doors/cargo_door.png")
@@ -344,7 +353,9 @@ public final class DoorDecls {
     /** 7x6 large vehicle door. The two halves slide into the side pillars. */
     public static final DoorDecl LARGE_VEHICLE_DOOR = reg(new DoorDecl("large_vehicle_door")
             .footprint(-3, 3, 0, 5, 0, 0).times(60, 60).strength(30F, 5000F)
-            .slideCellsFromCentre(-3, 3, 0, 5, -0.6, 0.6, 0, 3.0, 0)
+            // Both halves follow their model translations into the side pillars.
+            .movingGroup("Left")
+            .movingGroup("Right")
             // HBM leaves only the two side pillars standing when the door is open.
             .open(box(-3.5, 0, -0.6, -2.8, 6, 0.6), box(2.8, 0, -0.6, 3.5, 6, 0.6))
             .openSelectionOnly(box(-3.5, 0, -0.6, 3.5, 0.0625, 0.6))
@@ -358,7 +369,8 @@ public final class DoorDecls {
     /** 3x3 QE containment door. The shield rises into the frame. */
     public static final DoorDecl QE_CONTAINMENT = reg(new DoorDecl("qe_containment")
             .footprint(-1, 1, 0, 2, 0, 0).times(160, 160).strength(25F, 4000F)
-            .liftCells(-1, 1, 0, 2, -0.5, 0.0, 2.25)
+            // The shield follows its vertical model transform.
+            .movingGroup("Door")
             // HBM leaves the open doorway clear at floor level (only a thin click target) and
             // keeps the side jamb strips plus the lintel as collision.
             .open(box(-1.5, 0, -0.5, -1.25, 3, 0.0),
@@ -380,7 +392,8 @@ public final class DoorDecls {
     public static final DoorDecl BLAST_DOOR = reg(new DoorDecl("blast_door")
             .footprint(0, 0, 0, 6, 0, 0).times(100, 100).strength(30F, 5000F)
             .linkAdjacent()
-            .liftCells(0, 0, 1, 5, -0.5, 0.5, 5.0)
+            // The shutter is one rigid box that follows the Tooth group's vertical transform.
+            .movingBox("Tooth", box(-0.3, 0.75, -0.5, 0.3, 6.0, 0.5))
             // The base and the fixed header housing remain in place when the shutter is rolled up.
             .open(box(-0.5, 0, -0.5, 0.5, 1, 0.5), box(-0.5, 6, -0.5, 0.5, 7, 0.5))
             .modelPath("models/doors/blast_door.obj", "textures/models/doors/blast_door.png")
@@ -402,9 +415,10 @@ public final class DoorDecls {
     /** 3x3 swinging water-tight door (forgotten in the original port). */
     public static final DoorDecl WATER_DOOR = reg(new DoorDecl("water_door")
             .footprint(-1, 1, 0, 2, 0, 0).times(60, 60).strength(30F, 5000F)
-            // The panel is a full-depth slab between the jambs; it clears once the hinge has
-            // swung two thirds open. The jambs and header stay solid in every state.
-            .closedUntil(2F / 3F, box(-1.25, 0.0625, -0.5, 1.25, 2.9375, 0.5))
+            // The panel follows the hinge rotation. Slices keep the swinging plate's AABB tight;
+            // the jambs and header stay solid in every state.
+            .collisionSplits(8)
+            .movingBox("Door_Cube.003", box(-1.25, 0.0625, -0.5, 1.25, 2.9375, 0.5))
             .open(box(-1.5, 0, -0.5, -1.25, 3, 0.5), box(1.25, 0, -0.5, 1.5, 3, 0.5),
                     box(-1.25, 2.9375, -0.5, 1.25, 3, 0.5))
             .openSelectionOnly(box(-1.5, 0, -0.5, 1.5, 0.0625, 0.5))
@@ -443,8 +457,9 @@ public final class DoorDecls {
             // HBM's north-facing dimensions are 12 blocks west and 13 east of the core; the
             // converted DAE frame is centred 0.5 blocks east of the core for the same reason.
             .footprint(-12, 13, 0, 23, 0, 0).times(480, 480).strength(50F, 10000F)
-            // The huge seal is pass-through when open, but its collision is removed row by row
-            // while the mechanism lifts, rather than all at once.
+            // The huge seal is pass-through when open. Its motion is a client-side keyframe
+            // animation, so the collision keeps the row-by-row removal instead of following the
+            // model matrices; every row is still cleared continuously while the mechanism lifts.
             .liftRows(-12.5, 13.5, 0, 23, -0.5, 0.5, 18)
             .open()
             .modelPath("models/doors/transition_seal.obj", "textures/models/doors/transition_seal.png")

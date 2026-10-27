@@ -19,7 +19,8 @@ Needs JDK 8 (ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs). The Gradl
 * Core tile entity with state machine CLOSED / OPENING / OPEN / CLOSING, synced to clients
 * Redstone from any cell of the door (edge triggered), right click toggle
 * Every door is also registered as a locked, redstone-only copy named `<door>_locked`
-* State dependent collision and selection boxes (walk through when open, click-through gaps)
+* State dependent collision and selection boxes that follow the door animation continuously
+  (walk through when open, click-through gaps)
 * Padlock (sneak + right click to fit) and keys (padlock + iron ingot, keeps the padlock); sneak + key removes it
 * OBJ renderer (TESR) with per-group translate/rotate animations, X/Y/Z clipping and sounds
 * 3D door item rendering (inventory, hand, ground) from the same OBJ model, matching HBM's door item renderer
@@ -71,11 +72,13 @@ and `textures/items/sliding_blast_door_keypad.png`).
 `sounds.json` and `lang/en_us.lang` are included.
 
 ## Tuning to match the real models
-Everything per door lives in one entry of `door/DoorDecls.java`: footprint, open/closed collision boxes,
+Everything per door lives in one entry of `door/DoorDecls.java`: footprint, collision boxes,
 open/close time, hardness, animated group names and motion. Use `.modelOffset(x,y,z)` if a model's origin is
 not at the core cell's bottom centre, `.modelYaw(...)` for models authored in another direction, and
 `.modelPath(...)` to point at different file names. Clipping is configured with `.clipX(...)`, `.clipY(...)`
-and `.clipZ(...)` where the original HBM renderer used a clip plane.
+and `.clipZ(...)` where the original HBM renderer used a clip plane. Moving parts use
+`.movingGroup("Group")` (the box is read from the OBJ group bounds) or `.movingBox("Group", box(...))`
+for explicit model-space bounds; `.collisionSplits(n)` tightens rotating parts by slicing their AABB.
 
 ## Not included
 Crafting recipes for the doors (the originals need NTM materials), configs, NEI/JEI, the door key

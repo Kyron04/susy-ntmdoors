@@ -8,6 +8,7 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -128,24 +129,42 @@ public class DoorDecl {
     public boolean clipAllGroups;
 
     /**
-     * Collision/selection box with an active interval in door-open fraction. Closed panel cells use
-     * an end threshold so they disappear progressively as the panel moves past them.
+     * Collision/selection box with an active interval in door-open fraction. Static boxes are
+     * authored in door-local space; boxes with a {@code group} are authored in model space and
+     * follow that OBJ group's animation.
      */
     private static final class BoxDef {
         final AxisAlignedBB box;
         final float start, end;
         final boolean collision, selection;
+        /** Animated OBJ group to follow, or null for a static door-local box. */
+        final String group;
+        /** Slice count for rotating groups; 0 means use the door's default. */
+        final int splits;
 
         BoxDef(AxisAlignedBB box, float start, float end, boolean collision, boolean selection) {
+            this(box, start, end, collision, selection, null, 0);
+        }
+
+        BoxDef(AxisAlignedBB box, float start, float end, boolean collision, boolean selection,
+               String group, int splits) {
             this.box = box;
             this.start = start;
             this.end = end;
             this.collision = collision;
             this.selection = selection;
+            this.group = group;
+            this.splits = splits;
         }
     }
 
     private final List<BoxDef> boxDefs = new ArrayList<>();
+    /** Boxes that follow an animated OBJ group; evaluated with the same PartAnim steps as the renderer. */
+    private final List<BoxDef> movingDefs = new ArrayList<>();
+    /** Per-group model-space bounds, loaded on first use by {@link #prepareGeometry()}. */
+    private Map<String, AxisAlignedBB> modelBounds;
+    /** Default slice count for rotating moving boxes. */
+    public int collisionSplits = 1;
     /** Cells that exist only for a track or service platform (HBM's extra dimensions). */
     private final List<BlockPos> extraCells = new ArrayList<>();
     public final Map<String, List<PartAnim>> anims = new LinkedHashMap<>();
@@ -259,6 +278,59 @@ public class DoorDecl {
     public DoorDecl box(AxisAlignedBB box, float start, float end, boolean collision, boolean selection) {
         addBox(box, start, end, collision, selection);
         return this;
+    }
+
+    /**
+     * Number of slices used to approximate a rotating part's collision box. More slices follow a
+     * swinging panel more closely; 1 keeps the plain corner AABB.
+     */
+    public DoorDecl collisionSplits(int splits) {
+        this.collisionSplits = Math.max(1, splits);
+        return this;
+    }
+
+    /**
+     * Adds a collision/selection box that follows an animated OBJ group. The box is the group's
+     * model-space bounds, so it tracks the rendered mesh for the whole movement.
+     */
+    public DoorDecl movingGroup(String group) {
+        return movingGroup(group, 0);
+    }
+
+    public DoorDecl movingGroup(String group, int splits) {
+        addMovingBox(group, null, splits);
+        return this;
+    }
+
+    /**
+     * Adds a collision/selection box that follows an animated OBJ group, using explicit
+     * model-space bounds instead of the group's own extents.
+     */
+    public DoorDecl movingBox(String group, AxisAlignedBB box) {
+        return movingBox(group, box, 0);
+    }
+
+    public DoorDecl movingBox(String group, AxisAlignedBB box, int splits) {
+        addMovingBox(group, box, splits);
+        return this;
+    }
+
+    private void addMovingBox(String group, AxisAlignedBB box, int splits) {
+        movingDefs.add(new BoxDef(box, -0.0001F, 1.0001F, true, true, group, Math.max(0, splits)));
+    }
+
+    /**
+     * Loads the model-space group bounds used by {@code movingGroup(...)}. Called once during mod
+     * setup so the first collision query never has to read an OBJ file.
+     */
+    public synchronized void prepareGeometry() {
+        if (movingDefs.isEmpty()) return;
+        if (modelBounds == null) modelBounds = ObjBounds.get(model);
+        for (BoxDef b : movingDefs) {
+            if (b.box == null && !modelBounds.containsKey(b.group)) {
+                NTMDoors.LOGGER.warn("Door {} has no OBJ group '{}' for its moving collision", name, b.group);
+            }
+        }
     }
 
     private void addBox(AxisAlignedBB box, float start, float end, boolean collision, boolean selection) {
@@ -596,7 +668,8 @@ public class DoorDecl {
 
     /**
      * Collision or selection boxes active at the given open fraction, rotated for the facing and
-     * relative to the core cell bottom centre.
+     * relative to the core cell bottom centre. Static boxes keep their hand-authored door-local
+     * shape; boxes bound to an OBJ group are transformed by the group's animation first.
      */
     public synchronized AxisAlignedBB[] getBoxes(EnumFacing f, float openFraction, boolean collision) {
         int i = f.getHorizontalIndex();
@@ -609,12 +682,43 @@ public class DoorDecl {
         }
 
         float t = Math.max(0F, Math.min(1F, openFraction));
-        List<AxisAlignedBB> active = new ArrayList<>();
+        List<AxisAlignedBB> active = new ArrayList<>(rotBoxes[i].size() + movingDefs.size());
         for (BoxDef b : rotBoxes[i]) {
             if (collision ? !b.collision : !b.selection) continue;
             if (t + 0.00001F < b.start || t >= b.end) continue;
             active.add(b.box);
         }
+
+        if (!movingDefs.isEmpty()) {
+            if (modelBounds == null) modelBounds = ObjBounds.get(model);
+            float yaw = Facings.yaw(f) + modelYaw;
+            for (BoxDef b : movingDefs) {
+                if (collision ? !b.collision : !b.selection) continue;
+                if (t + 0.00001F < b.start || t >= b.end) continue;
+                AxisAlignedBB src = b.box != null ? b.box : modelBounds.get(b.group);
+                if (src == null) continue;
+                int splits = b.splits > 0 ? b.splits : collisionSplits;
+                AxisAlignedBB[] boxes = DoorGeometry.transform(anims.get(b.group), t, src, splits,
+                        yaw, modelX, modelY, modelZ);
+                for (AxisAlignedBB box : boxes) {
+                    AxisAlignedBB clipped = clip(box);
+                    if (clipped != null) active.add(clipped);
+                }
+            }
+        }
         return active.toArray(new AxisAlignedBB[0]);
+    }
+
+    /** Intersects a transformed box with the door's clip volume; null when nothing is left. */
+    @Nullable
+    private AxisAlignedBB clip(AxisAlignedBB box) {
+        double x1 = Math.max(box.minX, clipMinX);
+        double y1 = Math.max(box.minY, clipMinY);
+        double z1 = Math.max(box.minZ, clipMinZ);
+        double x2 = Math.min(box.maxX, clipMaxX);
+        double y2 = Math.min(box.maxY, clipMaxY);
+        double z2 = Math.min(box.maxZ, clipMaxZ);
+        if (x2 <= x1 || y2 <= y1 || z2 <= z1) return null;
+        return new AxisAlignedBB(x1, y1, z1, x2, y2, z2);
     }
 }

@@ -39,6 +39,8 @@ import java.util.Set;
 /** Core cell of a door. Owns the state machine, redstone handling, lock and animation timing. */
 public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable {
 
+    private static final AxisAlignedBB[] EMPTY_BOXES = new AxisAlignedBB[0];
+
     private DoorState state = DoorState.CLOSED;
     private int timer;
     private boolean powered;
@@ -54,6 +56,12 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
 
     /** Reconciles the silo hatch's pass-through cells on the first server tick after loading. */
     private boolean passUpdatePending;
+
+    /** Cached collision geometry for the current tick, in door-local space. */
+    private int boxCacheTimer = Integer.MIN_VALUE;
+    private DoorState boxCacheState;
+    private EnumFacing boxCacheFacing;
+    private AxisAlignedBB[] boxCache = EMPTY_BOXES;
 
     /*
      * Client-side movement loops. The server plays the one-shot start/end sounds and timed cues,
@@ -103,6 +111,24 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
             case CLOSING: return 1F - Math.min(1F, (timer + partialTicks) / Math.max(1, d.closeTicks));
             default: return 0F;
         }
+    }
+
+    /**
+     * Collision boxes for the current tick, relative to the core cell's bottom centre. The boxes
+     * are rebuilt once per tick (and per facing) and reused for every cell and entity query, so
+     * following the animation does not put the model transform on the collision hot path.
+     */
+    public AxisAlignedBB[] getCollisionBoxes(EnumFacing facing) {
+        if (boxCacheTimer == timer && boxCacheState == state && boxCacheFacing == facing) {
+            return boxCache;
+        }
+        DoorDecl d = getDecl();
+        if (d == null) return EMPTY_BOXES;
+        boxCache = d.getBoxes(facing, getOpenFraction(1F), true);
+        boxCacheTimer = timer;
+        boxCacheState = state;
+        boxCacheFacing = facing;
+        return boxCache;
     }
 
     // ------------------------------------------------------------ ticking / state machine
