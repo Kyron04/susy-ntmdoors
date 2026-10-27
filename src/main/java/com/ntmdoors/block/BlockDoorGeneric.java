@@ -327,15 +327,13 @@ public class BlockDoorGeneric extends Block {
     @Override
     public void breakBlock(World world, BlockPos pos, IBlockState state) {
         if (!world.isRemote) {
-            BlockPos corePos = getCorePos(world, pos, state);
-            if (corePos != null) {
-                TileEntity te = world.getTileEntity(corePos);
-                if (te instanceof TileEntityDoorGeneric && ((TileEntityDoorGeneric) te).beginDismantle()) {
-                    for (BlockPos off : decl.getCells(state.getValue(FACING))) {
-                        BlockPos p = corePos.add(off);
-                        if (!p.equals(pos) && world.getBlockState(p).getBlock() == this) {
-                            world.setBlockState(p, Blocks.AIR.getDefaultState(), 2);
-                        }
+            TileEntityDoorGeneric core = getCore(world, pos, state);
+            if (core != null && core.beginDismantle()) {
+                BlockPos corePos = core.getPos();
+                for (BlockPos off : decl.getCells(state.getValue(FACING))) {
+                    BlockPos p = corePos.add(off);
+                    if (!p.equals(pos) && world.getBlockState(p).getBlock() == this) {
+                        world.setBlockState(p, Blocks.AIR.getDefaultState(), 2);
                     }
                 }
             }

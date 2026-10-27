@@ -2,6 +2,7 @@ package com.ntmdoors.tile;
 
 import com.ntmdoors.block.BlockDoorKeypad;
 import com.ntmdoors.door.DoorState;
+import com.ntmdoors.util.Facings;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -13,7 +14,9 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Server-authoritative keypad. The linked sliding blast door can be opened with the stored code
@@ -28,6 +31,30 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
     public static final int BUTTON_RESET = 9;
     public static final int BUTTON_ZERO = 10;
     public static final int BUTTON_ENTER = 11;
+
+    /** A key cap's centre in keypad model space. */
+    public static final class Button {
+        public final float x, y;
+
+        private Button(float x, float y) {
+            this.x = x;
+            this.y = y;
+        }
+    }
+
+    /**
+     * Centre of every button quad, in id order (0..8 are 9..1, 9..11 are R, 0, E). The renderer
+     * draws its labels on the same grid, so the clickable area and the visible keys cannot drift
+     * apart.
+     */
+    public static final Button[] BUTTON_LAYOUT = {
+            new Button(0.234375F, 0.62890625F), new Button(0F, 0.62890625F), new Button(-0.234375F, 0.62890625F),
+            new Button(0.234375F, 0.453125F), new Button(0F, 0.453125F), new Button(-0.234375F, 0.453125F),
+            new Button(0.234375F, 0.27734375F), new Button(0F, 0.27734375F), new Button(-0.234375F, 0.27734375F),
+            new Button(0.234375F, 0.1015625F), new Button(0F, 0.1015625F), new Button(-0.234375F, 0.1015625F)
+    };
+    public static final float BUTTON_HALF_WIDTH = 0.078125F;
+    public static final float BUTTON_HALF_HEIGHT = 0.05859375F;
 
     private final byte[] code = new byte[CODE_LENGTH];
     private int storedCode = -1;
@@ -105,39 +132,18 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
         if (!(state.getBlock() instanceof BlockDoorKeypad)) return -1;
         EnumFacing f = state.getValue(BlockDoorKeypad.FACING);
 
+        // World hit -> keypad model space. The model is centred on the block and scaled by the
+        // same transform the renderer uses, so both stay in sync.
         double cx = hitX - 0.5;
         double cz = hitZ - 0.5;
-        double mx, mz;
-        switch (f) {
-            case EAST:
-                mx = cz;
-                mz = -cx;
-                break;
-            case SOUTH:
-                mx = -cx;
-                mz = -cz;
-                break;
-            case WEST:
-                mx = -cz;
-                mz = cx;
-                break;
-            default:
-                mx = cx;
-                mz = cz;
-        }
-        double xModel = mx / 0.35;
-        double yModel = (hitY - 0.29375) / 0.4125;
+        double xModel = Facings.localX(cx, cz, f) / BlockDoorKeypad.MODEL_SCALE_X;
+        double yModel = (hitY - BlockDoorKeypad.MODEL_OFFSET_Y) / BlockDoorKeypad.MODEL_SCALE_Y;
 
-        for (int x = 0; x < 3; x++) {
-            double x1 = 0.15625 - 0.234375 * x;
-            double x2 = 0.3125 - 0.234375 * x;
-            if (xModel < x1 || xModel > x2) continue;
-            for (int y = 0; y < 4; y++) {
-                double y1 = 0.042969 + 0.175781 * y;
-                double y2 = 0.160156 + 0.175781 * y;
-                if (yModel >= y1 && yModel <= y2) {
-                    return (3 - y) * 3 + x;
-                }
+        for (int id = 0; id < BUTTONS; id++) {
+            Button button = BUTTON_LAYOUT[id];
+            if (Math.abs(xModel - button.x) <= BUTTON_HALF_WIDTH
+                    && Math.abs(yModel - button.y) <= BUTTON_HALF_HEIGHT) {
+                return id;
             }
         }
         return -1;
@@ -221,20 +227,17 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
         if (code[code.length - 1] >= 0) return; // full
         successTicks = 0;
         failTicks = 0;
-        for (int i = code.length - 1; i > 0; i--) {
-            code[i] = code[i - 1];
-            code[i - 1] = -1;
-        }
+        System.arraycopy(code, 0, code, 1, code.length - 1);
         code[0] = (byte) digit;
     }
 
+    /** The typed digits as a number, or -1 when nothing has been entered. */
     public int buildIntCode() {
-        if (code[0] < 0) return -1;
+        int length = 0;
+        while (length < code.length && code[length] >= 0) length++;
+        if (length == 0) return -1;
         int num = 0;
-        for (int i = code.length - 1; i >= 0; i--) {
-            if (code[i] < 0) continue;
-            num = num * 10 + code[i];
-        }
+        for (int i = length - 1; i >= 0; i--) num = num * 10 + code[i];
         return num;
     }
 
@@ -289,19 +292,24 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
                 pos.add(SEARCH_RADIUS, SEARCH_RADIUS, SEARCH_RADIUS));
     }
 
-    /** Copies the newly set code to every other keypad linked to the same door. */
-    private void propagateCode(TileEntityDoorGeneric door) {
-        if (world == null) return;
+    /** Other keypads in range that are linked to the same door. */
+    private List<TileEntityDoorKeypad> keypadsSharing(TileEntityDoorGeneric door) {
+        List<TileEntityDoorKeypad> keypads = new ArrayList<>();
+        if (world == null) return keypads;
         for (BlockPos p : searchArea()) {
             if (p.equals(pos) || !world.isBlockLoaded(p)) continue;
             TileEntity te = world.getTileEntity(p);
             if (!(te instanceof TileEntityDoorKeypad)) continue;
             TileEntityDoorKeypad other = (TileEntityDoorKeypad) te;
             TileEntityDoorGeneric linked = other.findDoor();
-            if (linked != null && linked.getPos().equals(door.getPos())) {
-                other.adoptCode(storedCode);
-            }
+            if (linked != null && linked.getPos().equals(door.getPos())) keypads.add(other);
         }
+        return keypads;
+    }
+
+    /** Copies the newly set code to every other keypad linked to the same door. */
+    private void propagateCode(TileEntityDoorGeneric door) {
+        for (TileEntityDoorKeypad other : keypadsSharing(door)) other.adoptCode(storedCode);
     }
 
     private void adoptCode(int code) {
@@ -324,14 +332,8 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
         if (!hasStoredCode()) return;
         TileEntityDoorGeneric door = findDoor();
         if (door == null) return;
-        for (BlockPos p : searchArea()) {
-            if (p.equals(pos) || !world.isBlockLoaded(p)) continue;
-            TileEntity te = world.getTileEntity(p);
-            if (!(te instanceof TileEntityDoorKeypad)) continue;
-            TileEntityDoorKeypad other = (TileEntityDoorKeypad) te;
-            if (!other.hasStoredCode()) continue;
-            TileEntityDoorGeneric linked = other.findDoor();
-            if (linked != null && linked.getPos().equals(door.getPos())) return;
+        for (TileEntityDoorKeypad other : keypadsSharing(door)) {
+            if (other.hasStoredCode()) return;
         }
         door.setKeypadLocked(false);
     }

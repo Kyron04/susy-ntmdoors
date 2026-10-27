@@ -60,7 +60,7 @@ public class ItemDoorBlock extends ItemBlock {
                     .withProperty(BlockDoorGeneric.PART, BlockDoorGeneric.Part.CORE);
 
             for (BlockPos off : cells) {
-                if (off.getX() == 0 && off.getY() == 0 && off.getZ() == 0) continue;
+                if (BlockPos.ORIGIN.equals(off)) continue;
                 BlockPos p = origin.add(off);
                 world.setBlockState(p, dummy, 2);
                 TileEntity te = world.getTileEntity(p);
@@ -74,7 +74,7 @@ public class ItemDoorBlock extends ItemBlock {
             if (te instanceof TileEntityDoorGeneric) ((TileEntityDoorGeneric) te).checkRedstone();
         }
 
-        SoundType st = SoundType.METAL;
+        SoundType st = door.getSoundType(door.getDefaultState(), world, origin, player);
         world.playSound(player, origin, st.getPlaceSound(), SoundCategory.BLOCKS, (st.getVolume() + 1F) / 2F, st.getPitch() * 0.8F);
         if (!player.capabilities.isCreativeMode) stack.shrink(1);
         return EnumActionResult.SUCCESS;

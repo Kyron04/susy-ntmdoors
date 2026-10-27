@@ -10,6 +10,11 @@ public final class Names {
         return I18n.canTranslate(key) ? I18n.translateToLocal(key) : fallback;
     }
 
+    /** True when a language file defines {@code key}. */
+    public static boolean canTranslate(String key) {
+        return I18n.canTranslate(key);
+    }
+
     private Names() {
     }
 }

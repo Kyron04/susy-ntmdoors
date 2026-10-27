@@ -1,6 +1,7 @@
 package com.ntmdoors.door;
 
 import com.ntmdoors.NTMDoors;
+import com.ntmdoors.util.Facings;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
@@ -8,10 +9,14 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Describes one door type: footprint, collision for each state, timings, sounds and render animation.
@@ -40,14 +45,30 @@ public class DoorDecl {
      *   loop   - repeating sound played for as long as the door moves
      *   loop2  - optional second repeating layer (the fire door's alarm)
      *   end    - one-shot played when the movement finishes
-     * A null entry simply means that role is not used. If no close-specific sounds are set,
-     * closing reuses the opening set, matching HBM's getCloseSound... defaults.
+     * A null entry simply means that role is not used. Closing reuses the opening set unless a
+     * separate closing set was configured.
      */
-    public SoundEvent openStart, openLoop, openLoop2, openEnd;
-    public SoundEvent closeStart, closeLoop, closeLoop2, closeEnd;
-    private boolean closeSoundsSet;
+    private Sounds openSounds = Sounds.NONE;
+    private Sounds closeSounds;
     /** Extra one-shot sounds fired at a fixed tick of the movement (the vault door's thuds). */
     public final List<SoundCue> soundCues = new ArrayList<>();
+
+    /** The four sound roles for one movement direction. */
+    public static final class Sounds {
+        public static final Sounds NONE = new Sounds(null, null, null, null);
+        public final SoundEvent start, loop, loop2, end;
+
+        private Sounds(SoundEvent start, SoundEvent loop, SoundEvent loop2, SoundEvent end) {
+            this.start = start;
+            this.loop = loop;
+            this.loop2 = loop2;
+            this.end = end;
+        }
+
+        private Sounds withLoop2(SoundEvent loop2) {
+            return new Sounds(start, loop, loop2, end);
+        }
+    }
 
     /** HBM's large doors all use a volume of two so they carry across a base. */
     public float soundVolume = 2F;
@@ -148,7 +169,7 @@ public class DoorDecl {
         for (String part : name.split("_")) {
             if (part.isEmpty()) continue;
             if (sb.length() > 0) sb.append(' ');
-            if (part.length() <= 2) sb.append(part.toUpperCase(java.util.Locale.ROOT));
+            if (part.length() <= 2) sb.append(part.toUpperCase(Locale.ROOT));
             else sb.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1));
         }
         return sb.length() == 0 ? name : sb.toString();
@@ -177,6 +198,7 @@ public class DoorDecl {
         this.minX = minX; this.maxX = maxX;
         this.minY = minY; this.maxY = maxY;
         this.minZ = minZ; this.maxZ = maxZ;
+        invalidateCells();
         return this;
     }
 
@@ -241,7 +263,7 @@ public class DoorDecl {
 
     private void addBox(AxisAlignedBB box, float start, float end, boolean collision, boolean selection) {
         boxDefs.add(new BoxDef(box, start, end, collision, selection));
-        for (int i = 0; i < rotBoxes.length; i++) rotBoxes[i] = null;
+        Arrays.fill(rotBoxes, null);
     }
 
     /**
@@ -357,14 +379,18 @@ public class DoorDecl {
     /** Extra dummy cells outside the rectangular footprint, such as the vault door's rear track. */
     public DoorDecl extraCell(int x, int y, int z) {
         extraCells.add(new BlockPos(x, y, z));
-        for (int i = 0; i < cells.length; i++) cells[i] = null;
+        invalidateCells();
         return this;
     }
 
     public DoorDecl extraCellsRow(int minX, int maxX, int y, int z) {
         for (int x = minX; x <= maxX; x++) extraCells.add(new BlockPos(x, y, z));
-        for (int i = 0; i < cells.length; i++) cells[i] = null;
+        invalidateCells();
         return this;
+    }
+
+    private void invalidateCells() {
+        Arrays.fill(cells, null);
     }
 
     public DoorDecl anim(String part, PartAnim... steps) {
@@ -397,34 +423,27 @@ public class DoorDecl {
 
     /** Same start/loop/end set for opening and closing. */
     public DoorDecl sounds(SoundEvent start, SoundEvent loop, SoundEvent end) {
-        this.openStart = start;
-        this.openLoop = loop;
-        this.openEnd = end;
-        this.closeSoundsSet = false;
+        this.openSounds = new Sounds(start, loop, null, end);
+        this.closeSounds = null;
         return this;
     }
 
     /** Opening-specific sounds. Closing keeps mirroring these until soundsClose is called. */
     public DoorDecl soundsOpen(SoundEvent start, SoundEvent loop, SoundEvent end) {
-        this.openStart = start;
-        this.openLoop = loop;
-        this.openEnd = end;
+        this.openSounds = new Sounds(start, loop, null, end);
         return this;
     }
 
     /** Closing-specific sounds. */
     public DoorDecl soundsClose(SoundEvent start, SoundEvent loop, SoundEvent end) {
-        this.closeStart = start;
-        this.closeLoop = loop;
-        this.closeEnd = end;
-        this.closeSoundsSet = true;
+        this.closeSounds = new Sounds(start, loop, null, end);
         return this;
     }
 
     /** A second repeating layer used in both directions (HBM's fire door alarm). */
     public DoorDecl secondaryLoop(SoundEvent loop2) {
-        this.openLoop2 = loop2;
-        this.closeLoop2 = loop2;
+        this.openSounds = openSounds.withLoop2(loop2);
+        if (closeSounds != null) this.closeSounds = closeSounds.withLoop2(loop2);
         return this;
     }
 
@@ -434,20 +453,9 @@ public class DoorDecl {
         return this;
     }
 
-    public SoundEvent startSound(boolean opening) {
-        return opening || !closeSoundsSet ? openStart : closeStart;
-    }
-
-    public SoundEvent loopSound(boolean opening) {
-        return opening || !closeSoundsSet ? openLoop : closeLoop;
-    }
-
-    public SoundEvent loop2Sound(boolean opening) {
-        return opening || !closeSoundsSet ? openLoop2 : closeLoop2;
-    }
-
-    public SoundEvent endSound(boolean opening) {
-        return opening || !closeSoundsSet ? openEnd : closeEnd;
+    /** The sound roles for a movement direction. */
+    public Sounds soundSet(boolean opening) {
+        return opening || closeSounds == null ? openSounds : closeSounds;
     }
 
     public DoorDecl renderRadius(double radius) {
@@ -486,20 +494,20 @@ public class DoorDecl {
     /** Replaces the whole-door skin list. Index 0 is the default texture. */
     public DoorDecl skins(String... texturePaths) {
         this.skins.clear();
-        for (String path : texturePaths) {
-            this.skins.add(new ResourceLocation(NTMDoors.MODID, path));
-        }
+        this.skins.addAll(locations(texturePaths));
         return this;
     }
 
     /** Replaces one group's skin list, independent of the whole-door skins. */
     public DoorDecl partSkin(String part, String... texturePaths) {
-        List<ResourceLocation> list = new ArrayList<>(texturePaths.length);
-        for (String path : texturePaths) {
-            list.add(new ResourceLocation(NTMDoors.MODID, path));
-        }
-        this.partSkins.put(part, list);
+        this.partSkins.put(part, locations(texturePaths));
         return this;
+    }
+
+    private static List<ResourceLocation> locations(String... paths) {
+        List<ResourceLocation> list = new ArrayList<>(paths.length);
+        for (String path : paths) list.add(new ResourceLocation(NTMDoors.MODID, path));
+        return list;
     }
 
     public DoorDecl partTexture(String part, String texturePath) {
@@ -566,38 +574,20 @@ public class DoorDecl {
 
     // ------------------------------------------------------------ geometry
 
-    public static double rotX(double x, double z, EnumFacing f) {
-        switch (f) {
-            case EAST: return -z;
-            case SOUTH: return -x;
-            case WEST: return z;
-            default: return x;
-        }
-    }
-
-    public static double rotZ(double x, double z, EnumFacing f) {
-        switch (f) {
-            case EAST: return x;
-            case SOUTH: return -z;
-            case WEST: return -x;
-            default: return z;
-        }
-    }
-
     /** Every cell of the door (including the core at 0,0,0 and any extra track cells), rotated for the facing. */
     public synchronized BlockPos[] getCells(EnumFacing f) {
         int i = f.getHorizontalIndex();
         if (cells[i] == null) {
-            List<BlockPos> l = new ArrayList<>();
+            Set<BlockPos> l = new LinkedHashSet<>();
             for (int x = minX; x <= maxX; x++)
                 for (int y = minY; y <= maxY; y++)
                     for (int z = minZ; z <= maxZ; z++)
-                        l.add(new BlockPos((int) Math.round(rotX(x, z, f)), y, (int) Math.round(rotZ(x, z, f))));
+                        l.add(new BlockPos((int) Math.round(Facings.worldX(x, z, f)), y,
+                                (int) Math.round(Facings.worldZ(x, z, f))));
             for (BlockPos p : extraCells) {
-                BlockPos rotated = new BlockPos(
-                        (int) Math.round(rotX(p.getX(), p.getZ(), f)), p.getY(),
-                        (int) Math.round(rotZ(p.getX(), p.getZ(), f)));
-                if (!l.contains(rotated)) l.add(rotated);
+                l.add(new BlockPos(
+                        (int) Math.round(Facings.worldX(p.getX(), p.getZ(), f)), p.getY(),
+                        (int) Math.round(Facings.worldZ(p.getX(), p.getZ(), f))));
             }
             cells[i] = l.toArray(new BlockPos[0]);
         }
@@ -613,15 +603,7 @@ public class DoorDecl {
         if (rotBoxes[i] == null) {
             List<BoxDef> out = new ArrayList<>(boxDefs.size());
             for (BoxDef src : boxDefs) {
-                AxisAlignedBB b = src.box;
-                // Rotate the two opposite corners and normalise them: a 90 degree turn swaps/negates
-                // coordinates, so min/max can end up the wrong way round.
-                double x1 = rotX(b.minX, b.minZ, f), z1 = rotZ(b.minX, b.minZ, f);
-                double x2 = rotX(b.maxX, b.maxZ, f), z2 = rotZ(b.maxX, b.maxZ, f);
-                AxisAlignedBB rotated = new AxisAlignedBB(
-                        Math.min(x1, x2), b.minY, Math.min(z1, z2),
-                        Math.max(x1, x2), b.maxY, Math.max(z1, z2));
-                out.add(new BoxDef(rotated, src.start, src.end, src.collision, src.selection));
+                out.add(new BoxDef(Facings.rotate(src.box, f), src.start, src.end, src.collision, src.selection));
             }
             rotBoxes[i] = out;
         }

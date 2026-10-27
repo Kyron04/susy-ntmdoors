@@ -1,8 +1,8 @@
 package com.ntmdoors.block;
 
 import com.ntmdoors.NTMDoors;
-import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.tile.TileEntityDoorKeypad;
+import com.ntmdoors.util.Facings;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.EnumPushReaction;
@@ -11,6 +11,7 @@ import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
@@ -34,12 +35,19 @@ public class BlockDoorKeypad extends Block {
 
     public static final PropertyDirection FACING = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
 
-    private static final double HALF_W = 0.13125;
-    private static final double Y1 = 0.29375;
-    private static final double Y2 = 0.70625;
-    // Match the renderer offset (-0.47) and model thickness (±0.0625 scaled by 0.25).
-    private static final double FRONT = -0.485625;
-    private static final double BACK = -0.454375;
+    /**
+     * Model-to-block transform of the keypad plate. The renderer applies the same offset and
+     * scale, and the hit test maps clicks back through it, so these are the single source of truth
+     * for where the keypad sits on the block.
+     */
+    public static final double MODEL_OFFSET_Y = 0.29375;
+    public static final double MODEL_OFFSET_Z = -0.47;
+    public static final double MODEL_SCALE_X = 0.35;
+    public static final double MODEL_SCALE_Y = 0.4125;
+    public static final double MODEL_SCALE_Z = 0.25;
+    /** The keypad OBJ spans x -0.375..0.375 and z -0.0625..0.0625 around its front face. */
+    private static final double MODEL_HALF_WIDTH = 0.375;
+    private static final double MODEL_HALF_DEPTH = 0.0625;
 
     public BlockDoorKeypad() {
         super(Material.IRON);
@@ -71,7 +79,7 @@ public class BlockDoorKeypad extends Block {
     @Override
     public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing,
                                             float hitX, float hitY, float hitZ, int meta,
-                                            net.minecraft.entity.EntityLivingBase placer,
+                                            EntityLivingBase placer,
                                             EnumHand hand) {
         EnumFacing face = facing;
         if (face.getAxis().isHorizontal()) {
@@ -101,14 +109,12 @@ public class BlockDoorKeypad extends Block {
      * the low-Z (north) side of the block.
      */
     public static AxisAlignedBB plate(EnumFacing f) {
-        double x1 = -HALF_W, x2 = HALF_W, z1 = FRONT, z2 = BACK;
-        double rx1 = DoorDecl.rotX(x1, z1, f);
-        double rz1 = DoorDecl.rotZ(x1, z1, f);
-        double rx2 = DoorDecl.rotX(x2, z2, f);
-        double rz2 = DoorDecl.rotZ(x2, z2, f);
-        return new AxisAlignedBB(
-                0.5 + Math.min(rx1, rx2), Y1, 0.5 + Math.min(rz1, rz2),
-                0.5 + Math.max(rx1, rx2), Y2, 0.5 + Math.max(rz1, rz2));
+        double halfWidth = MODEL_HALF_WIDTH * MODEL_SCALE_X;
+        double halfDepth = MODEL_HALF_DEPTH * MODEL_SCALE_Z;
+        AxisAlignedBB local = new AxisAlignedBB(
+                -halfWidth, MODEL_OFFSET_Y, MODEL_OFFSET_Z - halfDepth,
+                halfWidth, MODEL_OFFSET_Y + MODEL_SCALE_Y, MODEL_OFFSET_Z + halfDepth);
+        return Facings.rotate(local, f).offset(0.5, 0, 0.5);
     }
 
     @Override

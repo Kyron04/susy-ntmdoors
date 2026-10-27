@@ -2,6 +2,7 @@ package com.ntmdoors;
 
 import com.ntmdoors.proxy.CommonProxy;
 import com.ntmdoors.registry.ModContent;
+import com.ntmdoors.util.Names;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
@@ -31,10 +32,9 @@ public class NTMDoors {
 
         @Override
         public String getTranslationKey() {
-            String key = "itemGroup." + getTabLabel();
-            String translated = net.minecraft.util.text.translation.I18n.translateToLocal(key);
             // Fallback so the tab name never shows a raw translation key.
-            return translated.equals(key) ? "NTM Doors" : key;
+            String key = "itemGroup." + getTabLabel();
+            return Names.canTranslate(key) ? key : "NTM Doors";
         }
     };
 

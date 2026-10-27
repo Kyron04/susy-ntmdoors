@@ -6,7 +6,6 @@ import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.DoorState;
 import com.ntmdoors.item.ItemDoorKey;
 import com.ntmdoors.item.ItemPadlock;
-import com.ntmdoors.item.ItemScrewdriver;
 import com.ntmdoors.item.LockUtil;
 import com.ntmdoors.registry.ModContent;
 import net.minecraft.block.Block;
@@ -139,7 +138,7 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         // The hatch only becomes passable once it is fully open, so ordinary falling blocks
         // still land on the closed lid while it is moving.
         updatePassState(opening);
-        SoundEvent end = d.endSound(opening);
+        SoundEvent end = d.soundSet(opening).end;
         if (end != null) world.playSound(null, pos, end, SoundCategory.BLOCKS, d.soundVolume, 1F);
         sync();
         Boolean queued = queuedOpen;
@@ -154,7 +153,7 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         timer = 0;
         if (!world.isRemote) updatePassState(false);
         if (d != null) {
-            SoundEvent start = d.startSound(opening);
+            SoundEvent start = d.soundSet(opening).start;
             if (start != null) world.playSound(null, pos, start, SoundCategory.BLOCKS, d.soundVolume, 1F);
             // HBM's vault door fires a cue on the very first tick of the movement.
             playCues(d, opening, 0);
@@ -186,14 +185,13 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
 
         boolean opening = now == DoorState.OPENING;
         SoundHandler handler = Minecraft.getMinecraft().getSoundHandler();
-        SoundEvent loop = d.loopSound(opening);
-        if (loop != null) {
-            loopSound = new DoorLoopSound(this, loop, d.soundVolume);
+        DoorDecl.Sounds sounds = d.soundSet(opening);
+        if (sounds.loop != null) {
+            loopSound = new DoorLoopSound(this, sounds.loop, d.soundVolume);
             handler.playSound(loopSound);
         }
-        SoundEvent loop2 = d.loop2Sound(opening);
-        if (loop2 != null) {
-            loopSound2 = new DoorLoopSound(this, loop2, d.soundVolume);
+        if (sounds.loop2 != null) {
+            loopSound2 = new DoorLoopSound(this, sounds.loop2, d.soundVolume);
             handler.playSound(loopSound2);
         }
     }
@@ -351,8 +349,7 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
     // ------------------------------------------------------------ player interaction
 
     public void onPlayerUse(EntityPlayer player, EnumHand hand) {
-        DoorDecl decl = getDecl();
-        if (decl == null) return;
+        if (getDecl() == null) return;
         if (isRedstoneOnly()) {
             reject(player);
             return;
@@ -360,14 +357,8 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
 
         ItemStack held = player.getHeldItem(hand);
 
-        // Screwdriver skins stay usable while the door is locked.
-        if (player.isSneaking() && held.getItem() instanceof ItemScrewdriver && decl.hasSkinVariants()) {
-            if (cycleSkin()) {
-                world.playSound(null, pos, SoundEvents.ENTITY_ITEM_BREAK, SoundCategory.BLOCKS, 0.5F, 1.5F);
-            }
-            return;
-        }
-
+        // Skin changes never reach here: vanilla skips block activation for a sneaking player,
+        // so ItemScrewdriver.onItemUseFirst owns that interaction (and keeps working while locked).
         if (keypadLocked) {
             reject(player);
             return;

@@ -3,6 +3,7 @@ package com.ntmdoors.client;
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.block.BlockDoorKeypad;
 import com.ntmdoors.tile.TileEntityDoorKeypad;
+import com.ntmdoors.util.Facings;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -35,7 +36,6 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
 
     @Override
     public void render(TileEntityDoorKeypad te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
-        if (te == null) return;
         IBlockState state = te.getWorld().getBlockState(te.getPos());
         if (!(state.getBlock() instanceof BlockDoorKeypad)) return;
         EnumFacing facing = state.getValue(BlockDoorKeypad.FACING);
@@ -45,11 +45,10 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
 
         GlStateManager.pushMatrix();
         GlStateManager.translate(x + 0.5, y, z + 0.5);
-        GlStateManager.rotate(RenderDoor.yaw(facing), 0F, 1F, 0F);
-        // Center the plate vertically on the block face and pull it a hair off the wall
-        // so the back face does not z-fight with the block it is mounted on.
-        GlStateManager.translate(0, 0.29375F, -0.47F);
-        GlStateManager.scale(0.35F, 0.4125F, 0.25F);
+        GlStateManager.rotate(Facings.yaw(facing), 0F, 1F, 0F);
+        // Same offset/scale the block uses for its plate box and hit test.
+        GlStateManager.translate(0, BlockDoorKeypad.MODEL_OFFSET_Y, BlockDoorKeypad.MODEL_OFFSET_Z);
+        GlStateManager.scale(BlockDoorKeypad.MODEL_SCALE_X, BlockDoorKeypad.MODEL_SCALE_Y, BlockDoorKeypad.MODEL_SCALE_Z);
 
         GlStateManager.color(1F, 1F, 1F, 1F);
         GlStateManager.enableRescaleNormal();
@@ -94,17 +93,10 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
         return "KReturn";
     }
 
-    /**
-     * Centres of each button and the display in model space (model spans x=-0.375..0.375,
-     * y=0..1, z=0 at the front face). Text is drawn slightly in front of the face with the
-     * font's Y axis flipped so it reads upright.
-     */
-    private static final float[][] BUTTON_CENTRES = {
-            {0.234375F, 0.615234F}, {0F, 0.615234F}, {-0.234375F, 0.615234F},
-            {0.234375F, 0.439453F}, {0F, 0.439453F}, {-0.234375F, 0.439453F},
-            {0.234375F, 0.263672F}, {0F, 0.263672F}, {-0.234375F, 0.263672F},
-            {0.234375F, 0.087891F}, {0F, 0.087891F}, {-0.234375F, 0.087891F}
-    };
+    /** Labels sit a hair below the button quad centre so they look centred on the key cap. */
+    private static final float LABEL_Y_OFFSET = -0.013671875F;
+    private static final float LABEL_SCALE = 0.01F;
+    private static final float DISPLAY_SCALE = 0.0065F;
 
     private void drawLabelsAndDisplay(TileEntityDoorKeypad te) {
         FontRenderer font = Minecraft.getMinecraft().fontRenderer;
@@ -113,43 +105,40 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
         // so they are occluded by world geometry (no X-ray) but still sit on top of the keypad.
         GlStateManager.enablePolygonOffset();
         GlStateManager.doPolygonOffset(-1.0F, -1.0F);
+        drawButtonLabels(font);
+        drawDisplay(font, te);
+        GlStateManager.disablePolygonOffset();
+    }
 
-        // Button labels. The font is flipped vertically (Y scale -1) so it reads upright on the
-        // vertical keypad face while still facing outward (+Z) instead of being mirrored.
-        float labelScale = 0.01F;
+    /** Button labels. The font is flipped vertically so it reads upright on the keypad face. */
+    private static void drawButtonLabels(FontRenderer font) {
         for (int i = 0; i < TileEntityDoorKeypad.BUTTONS; i++) {
-            float cx = BUTTON_CENTRES[i][0];
-            float cy = BUTTON_CENTRES[i][1];
+            TileEntityDoorKeypad.Button button = TileEntityDoorKeypad.BUTTON_LAYOUT[i];
             String text = BUTTON_LABELS[i];
             int w = font.getStringWidth(text);
 
             GlStateManager.pushMatrix();
-            GlStateManager.translate(cx, cy, 0.02F);
-            GlStateManager.scale(labelScale, -labelScale, labelScale);
+            GlStateManager.translate(button.x, button.y + LABEL_Y_OFFSET, 0.02F);
+            GlStateManager.scale(LABEL_SCALE, -LABEL_SCALE, LABEL_SCALE);
             GlStateManager.color(1F, 1F, 1F, 1F);
             font.drawString(text, -w / 2, -font.FONT_HEIGHT / 2, 0xFF202020);
             GlStateManager.popMatrix();
         }
+    }
 
-        // Display area: centred on the screen at y ~0.84375, slightly further forward than
-        // the buttons so it clears the raised black screen bezel.
+    /** The LCD prompt: the typed code, a status line, or the idle prompt. */
+    private static void drawDisplay(FontRenderer font, TileEntityDoorKeypad te) {
         int code = te.buildIntCode();
-        float displayScale = 0.0065F;
-        GlStateManager.pushMatrix();
-        GlStateManager.translate(0, 0.84375, 0.04F);
-        GlStateManager.scale(displayScale, -displayScale, displayScale);
-        GlStateManager.color(1F, 1F, 1F, 1F);
-
-        String line1, line2;
-        int color;
         boolean showInput = !te.hasStoredCode() || te.isSettingCode();
+        String line1;
+        String line2 = "";
+        int color;
+        boolean singleLine = false;
         if (te.getCodeSetTicks() > 0) {
             line1 = "Code Set!";
-            line2 = "";
             color = 0xFFFFFF00;
         } else if (te.getBlackScreenTicks() > 0) {
             line1 = "";
-            line2 = "";
             color = 0;
         } else if (te.getSuccessTicks() > 0) {
             line1 = "Access";
@@ -161,23 +150,26 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
             color = 0xFFFF0800;
         } else if (code < 0) {
             line1 = showInput ? "Input code" : "Enter code";
-            line2 = "";
             color = 0xFFFFFFFF;
         } else {
-            String text = String.valueOf(code);
+            line1 = String.valueOf(code);
             color = showInput ? 0xFFFFEE00 : 0xFFFFFFFF;
-            int w = font.getStringWidth(text);
-            font.drawString(text, -w / 2, -font.FONT_HEIGHT / 2, color);
-            GlStateManager.popMatrix();
-            GlStateManager.disablePolygonOffset();
-            return;
+            singleLine = true;
         }
-        int w1 = font.getStringWidth(line1);
-        int w2 = font.getStringWidth(line2);
-        font.drawString(line1, -w1 / 2, -font.FONT_HEIGHT, color);
-        font.drawString(line2, -w2 / 2, 2, color);
 
+        // The display sits centred at y ~0.84375, slightly further forward than the buttons so it
+        // clears the raised black screen bezel.
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(0, 0.84375, 0.04F);
+        GlStateManager.scale(DISPLAY_SCALE, -DISPLAY_SCALE, DISPLAY_SCALE);
+        GlStateManager.color(1F, 1F, 1F, 1F);
+        if (!line1.isEmpty()) {
+            int y = singleLine ? -font.FONT_HEIGHT / 2 : -font.FONT_HEIGHT;
+            font.drawString(line1, -font.getStringWidth(line1) / 2, y, color);
+        }
+        if (!line2.isEmpty()) {
+            font.drawString(line2, -font.getStringWidth(line2) / 2, 2, color);
+        }
         GlStateManager.popMatrix();
-        GlStateManager.disablePolygonOffset();
     }
 }

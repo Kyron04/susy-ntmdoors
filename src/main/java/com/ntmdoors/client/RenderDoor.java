@@ -4,6 +4,7 @@ import com.ntmdoors.block.BlockDoorGeneric;
 import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.PartAnim;
 import com.ntmdoors.tile.TileEntityDoorGeneric;
+import com.ntmdoors.util.Facings;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -58,7 +59,7 @@ public class RenderDoor extends TileEntitySpecialRenderer<TileEntityDoorGeneric>
 
         GlStateManager.pushMatrix();
         GlStateManager.translate(x + 0.5, y, z + 0.5);          // bottom centre of the core cell
-        GlStateManager.rotate(yaw(facing) + d.modelYaw, 0F, 1F, 0F);
+        GlStateManager.rotate(Facings.yaw(facing) + d.modelYaw, 0F, 1F, 0F);
         GlStateManager.translate(d.modelX, d.modelY, d.modelZ);
 
         GlStateManager.color(1F, 1F, 1F, 1F);
@@ -171,15 +172,5 @@ public class RenderDoor extends TileEntitySpecialRenderer<TileEntityDoorGeneric>
         CLIP_BUFFER.put(a).put(b).put(c).put(d);
         CLIP_BUFFER.flip();
         GL11.glClipPlane(plane, CLIP_BUFFER);
-    }
-
-    /** Yaw that turns the local NORTH-facing door into the given facing. GL yaw is counter-clockwise from above. */
-    static float yaw(EnumFacing f) {
-        switch (f) {
-            case EAST: return -90F;
-            case SOUTH: return 180F;
-            case WEST: return 90F;
-            default: return 0F;
-        }
     }
 }

@@ -46,7 +46,7 @@ public class ClientModels {
     }
 
     /** Sets up the standard item model location for an item. */
-    public static void inventory(Item item) {
+    private static void inventory(Item item) {
         if (item == null || item.getRegistryName() == null) return;
         ModelLoader.setCustomModelResourceLocation(item, 0,
                 new ModelResourceLocation(item.getRegistryName(), "inventory"));
