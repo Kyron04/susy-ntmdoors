@@ -146,7 +146,7 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
 
     // ------------------------------------------------------------ button input
 
-    /** Server side: resolves the local hit to a button id, or -1 if the click missed the keys. */
+    /** Resolves a local hit to a button id, or -1 if the click missed the keys. Read-only. */
     public int buttonAt(float hitX, float hitY, float hitZ) {
         if (world == null) return -1;
         IBlockState state = world.getBlockState(pos);

@@ -44,6 +44,14 @@ public class ItemScrewdriver extends Item {
         TileEntity te = world.getTileEntity(pos);
         if (te instanceof TileEntityDoorKeypad) {
             TileEntityDoorKeypad keypad = (TileEntityDoorKeypad) te;
+            int button = keypad.buttonAt(hitX, hitY, hitZ);
+            // R is the close/clear key and must always reach the keypad, even with the tool in
+            // hand. While the reset is waiting for the current code, every key must type, so the
+            // entry can never be swallowed by the tool.
+            boolean typingReset = keypad.getMode() == TileEntityDoorKeypad.Mode.RESET_ENTER;
+            if (button == TileEntityDoorKeypad.BUTTON_RESET || (typingReset && button >= 0)) {
+                return EnumActionResult.PASS;
+            }
             if (!keypad.hasStoredCode()) return EnumActionResult.PASS;
             if (!world.isRemote) keypad.onScrewdriverUse();
             return EnumActionResult.SUCCESS;

@@ -150,7 +150,7 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
                     color = 0xFFFFFF00;
                     break;
                 case RESET_DONE:
-                    line1 = "Code reset";
+                    line1 = "Code reset!";
                     color = 0xFF15FF00;
                     break;
                 case SUCCESS:
@@ -177,7 +177,7 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
                 case RESET_ENTER:
                     line1 = "Input current";
                     line2 = te.getEntry().isEmpty() ? "code" : te.getEntry();
-                    color = 0xFFFFFFFF;
+                    color = 0xFFFFEE00;
                     line2Color = 0xFFFFEE00;
                     twoLines = true;
                     break;
