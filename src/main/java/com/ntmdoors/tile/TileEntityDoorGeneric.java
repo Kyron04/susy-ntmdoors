@@ -46,7 +46,8 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
     private Boolean queuedOpen;
     private int lockCode;        // 0 = unlocked
     private int skinIndex;
-    private boolean keypadLocked;
+    /** Code a keypad has bound to this door; empty when no keypad controls it. Server-only. */
+    private String keypadCode = "";
 
     /** Set while the structure is being torn down so parts don't recurse. */
     private boolean dismantling;
@@ -253,10 +254,26 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         return true;
     }
 
-    /** Sets/removes the keypad-driven lock. A keypad-unlocked door still needs the code to open. */
-    public void setKeypadLocked(boolean locked) {
-        if (keypadLocked == locked) return;
-        keypadLocked = locked;
+    /** True while a keypad code controls this door. The door stays bound after a keypad is broken. */
+    public boolean isKeypadBound() {
+        return !keypadCode.isEmpty();
+    }
+
+    public String getKeypadCode() {
+        return keypadCode;
+    }
+
+    /** Binds the first keypad code to this door. Later codes never replace it. */
+    public void bindKeypadCode(String code) {
+        if (code.isEmpty() || isKeypadBound()) return;
+        keypadCode = code;
+        sync();
+    }
+
+    /** Called by a confirmed keypad reset; the door can then be bound again. */
+    public void clearKeypadCode() {
+        if (keypadCode.isEmpty()) return;
+        keypadCode = "";
         sync();
     }
 
@@ -337,7 +354,7 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
     /** Called when any part of the door gets a neighbour update. Reacts to redstone edges only. */
     public void checkRedstone() {
         if (world == null || world.isRemote) return;
-        if (keypadLocked) return;
+        if (isKeypadBound()) return;
         boolean p = isGroupReceivingPower();
         if (p == powered) return;
         powered = p;
@@ -359,7 +376,7 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
 
         // Skin changes never reach here: vanilla skips block activation for a sneaking player,
         // so ItemScrewdriver.onItemUseFirst owns that interaction (and keeps working while locked).
-        if (keypadLocked) {
+        if (isKeypadBound()) {
             reject(player);
             return;
         }
@@ -434,7 +451,16 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         tag.setInteger("queued", queuedOpen == null ? -1 : queuedOpen ? 1 : 0);
         tag.setInteger("lock", lockCode);
         tag.setInteger("skin", skinIndex);
-        tag.setBoolean("keypadLocked", keypadLocked);
+        tag.setString("keypadCode", keypadCode);
+        return tag;
+    }
+
+    /** Lock codes stay on the server; clients only need the visual state. */
+    @Override
+    protected NBTTagCompound writeSyncTag(NBTTagCompound tag) {
+        writeToNBT(tag);
+        tag.removeTag("lock");
+        tag.removeTag("keypadCode");
         return tag;
     }
 
@@ -448,7 +474,7 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         queuedOpen = queued < 0 ? null : queued == 1;
         lockCode = tag.getInteger("lock");
         skinIndex = tag.hasKey("skin") ? tag.getInteger("skin") : 0;
-        keypadLocked = tag.getBoolean("keypadLocked");
+        keypadCode = tag.getString("keypadCode");
     }
 
     /**

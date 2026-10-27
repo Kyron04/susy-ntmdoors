@@ -173,15 +173,4 @@ public class BlockDoorKeypad extends Block {
         }
         return true;
     }
-
-    @Override
-    public void breakBlock(World world, BlockPos pos, IBlockState state) {
-        if (!world.isRemote) {
-            TileEntity te = world.getTileEntity(pos);
-            if (te instanceof TileEntityDoorKeypad) {
-                ((TileEntityDoorKeypad) te).onKeypadBroken();
-            }
-        }
-        super.breakBlock(world, pos, state);
-    }
 }

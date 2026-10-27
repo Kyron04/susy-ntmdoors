@@ -3,6 +3,7 @@ package com.ntmdoors.client;
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.block.BlockDoorKeypad;
 import com.ntmdoors.tile.TileEntityDoorKeypad;
+import com.ntmdoors.tile.TileEntityDoorKeypad.Feedback;
 import com.ntmdoors.util.Facings;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -56,9 +57,13 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
         GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
         GlStateManager.disableCull();
 
+        Feedback feedback = te.getFeedback();
         ResourceLocation activeTex = TEX_KEYPAD;
-        if (te.getSuccessTicks() > 0) activeTex = TEX_SUCCESS;
-        else if (te.getFailTicks() > 0) activeTex = TEX_ERROR;
+        if (feedback == Feedback.SUCCESS || feedback == Feedback.RESET_DONE) {
+            activeTex = TEX_SUCCESS;
+        } else if (feedback == Feedback.DENIED) {
+            activeTex = TEX_ERROR;
+        }
 
         bindTexture(activeTex);
         model.draw("Keypad");
@@ -126,35 +131,69 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
         }
     }
 
-    /** The LCD prompt: the typed code, a status line, or the idle prompt. */
+    /**
+     * The LCD: feedback first, then the prompt for the keypad's current mode. Prompts are kept to
+     * two short lines because the display is only 0.625 model units wide.
+     */
     private static void drawDisplay(FontRenderer font, TileEntityDoorKeypad te) {
-        int code = te.buildIntCode();
-        boolean showInput = !te.hasStoredCode() || te.isSettingCode();
         String line1;
         String line2 = "";
         int color;
-        boolean singleLine = false;
-        if (te.getCodeSetTicks() > 0) {
-            line1 = "Code Set!";
-            color = 0xFFFFFF00;
+        int line2Color = 0xFFFFFFFF;
+        boolean twoLines = false;
+
+        Feedback feedback = te.getFeedback();
+        if (feedback != Feedback.NONE) {
+            switch (feedback) {
+                case CODE_SET:
+                    line1 = "Code Set!";
+                    color = 0xFFFFFF00;
+                    break;
+                case RESET_DONE:
+                    line1 = "Code reset";
+                    color = 0xFF15FF00;
+                    break;
+                case SUCCESS:
+                    line1 = "Access";
+                    line2 = "Granted";
+                    color = 0xFF15FF00;
+                    twoLines = true;
+                    break;
+                default: // DENIED
+                    line1 = "Access";
+                    line2 = "Denied";
+                    color = 0xFFFF0800;
+                    twoLines = true;
+            }
         } else if (te.getBlackScreenTicks() > 0) {
             line1 = "";
             color = 0;
-        } else if (te.getSuccessTicks() > 0) {
-            line1 = "Access";
-            line2 = "Granted";
-            color = 0xFF15FF00;
-        } else if (te.getFailTicks() > 0) {
-            line1 = "Access";
-            line2 = "Denied";
-            color = 0xFFFF0800;
-        } else if (code < 0) {
-            line1 = showInput ? "Input code" : "Enter code";
-            color = 0xFFFFFFFF;
         } else {
-            line1 = String.valueOf(code);
-            color = showInput ? 0xFFFFEE00 : 0xFFFFFFFF;
-            singleLine = true;
+            switch (te.getMode()) {
+                case RESET_CONFIRM:
+                    line1 = "Reset code?";
+                    color = 0xFF3FA9F5;
+                    break;
+                case RESET_ENTER:
+                    line1 = "Input current";
+                    line2 = te.getEntry().isEmpty() ? "code" : te.getEntry();
+                    color = 0xFFFFFFFF;
+                    line2Color = 0xFFFFEE00;
+                    twoLines = true;
+                    break;
+                case SET_CODE:
+                    line1 = te.getEntry().isEmpty() ? "Input code" : "New code";
+                    line2 = te.getEntry();
+                    color = 0xFFFFFFFF;
+                    line2Color = 0xFFFFEE00;
+                    twoLines = !line2.isEmpty();
+                    break;
+                default: // ENTER_CODE
+                    line1 = "Enter code";
+                    line2 = te.getEntry();
+                    color = 0xFFFFFFFF;
+                    twoLines = !line2.isEmpty();
+            }
         }
 
         // The display sits centred at y ~0.84375, slightly further forward than the buttons so it
@@ -164,11 +203,11 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
         GlStateManager.scale(DISPLAY_SCALE, -DISPLAY_SCALE, DISPLAY_SCALE);
         GlStateManager.color(1F, 1F, 1F, 1F);
         if (!line1.isEmpty()) {
-            int y = singleLine ? -font.FONT_HEIGHT / 2 : -font.FONT_HEIGHT;
+            int y = twoLines ? -font.FONT_HEIGHT : -font.FONT_HEIGHT / 2;
             font.drawString(line1, -font.getStringWidth(line1) / 2, y, color);
         }
         if (!line2.isEmpty()) {
-            font.drawString(line2, -font.getStringWidth(line2) / 2, 2, color);
+            font.drawString(line2, -font.getStringWidth(line2) / 2, 2, line2Color);
         }
         GlStateManager.popMatrix();
     }
