@@ -63,6 +63,11 @@ public final class DoorDecls {
             .collisionSplits(8)
             .movingGroup("Door")
             .open(box(-2.5, 0, -0.5, 2.5, 1, 0.5))
+            // The two vertical frame rails stay solid while the panel rolls away. Their inner
+            // edges match the door model's width (z -2.158..2.158 before the 90-degree yaw) and
+            // they run the full frame height.
+            .open(box(-2.5, 1, -0.5, -2.158, 5, 0.5),
+                    box(2.158, 1, -0.5, 2.5, 5, 0.5))
             // HBM's extra dimensions add a service/track row behind the door. The open panel
             // rests further along that track, so both the row and its hitboxes extend west.
             .extraCellsRow(-6, 2, 0, 1)
@@ -160,6 +165,9 @@ public final class DoorDecls {
             .modelPath("models/doors/qe_sliding_door.obj", "textures/models/doors/qe_sliding_door.png")
             .modelYaw(90F)
             .modelOffset(0.53125, 0.001, 0.5)
+            // Default grey-green paint plus a white repaint.
+            .skins("textures/models/doors/qe_sliding_door.png",
+                    "textures/models/doors/qe_sliding_door_white.png")
             // HBM's separate qe_sliding_* assets are byte-identical to the sliding_door_* files,
             // so the QE door shares those events instead of shipping duplicate audio.
             .soundsOpen(null, SND_SLIDING_OPENING, SND_SLIDING_OPENED)
@@ -182,6 +190,9 @@ public final class DoorDecls {
             .modelPath("models/doors/qe_sliding_door.obj", "textures/models/doors/qe_sliding_door.png")
             .modelYaw(90F)
             .modelOffset(0.53125, 0.001, 0.5)
+            // Same two skins as the full QE door.
+            .skins("textures/models/doors/qe_sliding_door.png",
+                    "textures/models/doors/qe_sliding_door_white.png")
             // The normal model is two cells wide; model Z -1..0 is exactly the core cell column.
             .clipZ(-1.0, 0.0)
             // The frame is static, so it needs clipping too or it would span both cells.
@@ -287,13 +298,14 @@ public final class DoorDecls {
             .modelYaw(90F)
             .modelOffset(0, 0, 0.5)
             .clipZ(-1.999, 1.999)
-            // HBM's three airlock looks (worn, clean, green) plus the decontamination and space
-            // repaints. The screwdriver cycles through them.
+            // HBM's three airlock looks (worn, clean, green) plus the industrial-yellow, space and
+            // white-on-red repaints. The yellow and red skins keep the concrete frame grey.
             .skins("textures/models/doors/round_airlock_door.png",
                     "textures/models/doors/round_airlock_door_clean.png",
                     "textures/models/doors/round_airlock_door_green.png",
                     "textures/models/doors/round_airlock_door_decontamination.png",
-                    "textures/models/doors/round_airlock_door_space.png")
+                    "textures/models/doors/round_airlock_door_space.png",
+                    "textures/models/doors/round_airlock_door_white_on_red.png")
             .sounds(null, SND_GARAGE_MOVE, SND_GARAGE_STOP)
             .anim("Left", PartAnim.translate(0, 0, 1.5, 0F, 1F))
             .anim("Right", PartAnim.translate(0, 0, -1.5, 0F, 1F)));

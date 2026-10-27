@@ -58,12 +58,12 @@ and `textures/items/sliding_blast_door_keypad.png`).
 |---|---|---|
 | `vault_door` | `Door`, `Label` | rolls sideways along its extended track |
 | `sliding_blast_door` | `LeftDoor`, `RightDoor`, `LeftLock`, `RightLock` | 7x4 two-panel blast door; skins: default, black, grey |
-| `qe_sliding_door` | `Left`, `Right` | 2x2 QE sliding door |
-| `qe_sliding_panel` | `Right` | 1x2 single-column QE sliding door (frame clipped to one cell) |
+| `qe_sliding_door` | `Left`, `Right` | 2x2 QE sliding door; skins: default, white |
+| `qe_sliding_panel` | `Right` | 1x2 single-column QE sliding door (frame clipped to one cell); skins: default, white |
 | `fire_door` | `Door` | roller/fire door |
 | `secure_access_door` | `Door` | vertical security door; skins: red, yellow, green, blue, grey, black (white writing), HBM yellow, white (black writing), orange (white writing) |
 | `sliding_seal_door` | `Door` | retracts into a wall pocket; skins: default, clean, nuclear trefoil, plain white, plain red, plain grey |
-| `round_airlock_door` | `Left`, `Right` | split iris airlock; skins: worn, clean, green, decontamination (yellow/black with a central biohazard), space (black/white) |
+| `round_airlock_door` | `Left`, `Right` | split iris airlock; skins: worn, clean, green, industrial yellow (grey frame, black biohazard symbols and bars), space (black/white), white on red (grey frame, white biohazard symbols and bars) |
 | `silo_hatch` | `Hatch` | tilting horizontal hatch |
 | `silo_hatch_large` | `Hatch` | 7x7 large tilting horizontal hatch |
 | `cargo_door` | `DoorBot`, `DoorTop` | 3x3 lifting cargo door |
