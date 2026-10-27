@@ -1,0 +1,9 @@
+NTM Doors includes assets copied from HBM's Nuclear Tech Mod.
+
+Source: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
+Assets copied: multiblock door OBJ models, door textures, the vault label, the door key and
+padlock item icons, and door sound effects.
+License: GNU Lesser General Public License v3.0 (see LICENSE.LESSER in this JAR).
+
+The Java implementation in com.ntmdoors is a standalone 1.12.2 port and keeps the original
+door behaviour and asset layout where practical.

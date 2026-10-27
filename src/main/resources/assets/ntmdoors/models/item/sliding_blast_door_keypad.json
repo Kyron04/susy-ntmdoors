@@ -1,0 +1,6 @@
+{
+  "parent": "builtin/generated",
+  "textures": {
+    "layer0": "ntmdoors:items/sliding_blast_door_keypad"
+  }
+}

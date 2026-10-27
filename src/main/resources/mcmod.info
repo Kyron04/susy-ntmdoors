@@ -1,0 +1,8 @@
+[{
+  "modid": "ntmdoors",
+  "name": "NTM Doors",
+  "description": "Standalone port of the multiblock door system from HBM's Nuclear Tech Mod.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "credits": "Based on the door system of HBM's Nuclear Tech Mod (LGPL-3.0)."
+}]

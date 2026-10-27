@@ -1,0 +1,98 @@
+{
+  "door_vault_scrape": {
+    "category": "block",
+    "sounds": [
+      "ntmdoors:doors/door_vault_scrape"
+    ]
+  },
+  "door_vault_thud": {
+    "category": "block",
+    "sounds": [
+      "ntmdoors:doors/door_vault_thud"
+    ]
+  },
+  "door_sliding_opening": {
+    "category": "block",
+    "sounds": [
+      "ntmdoors:doors/door_sliding_opening"
+    ]
+  },
+  "door_sliding_opened": {
+    "category": "block",
+    "sounds": [
+      "ntmdoors:doors/door_sliding_opened"
+    ]
+  },
+  "door_sliding_shut": {
+    "category": "block",
+    "sounds": [
+      "ntmdoors:doors/door_sliding_shut"
+    ]
+  },
+  "door_wgh_start": {
+    "category": "block",
+    "sounds": [
+      "ntmdoors:doors/door_wgh_start"
+    ]
+  },
+  "door_wgh_stop": {
+    "category": "block",
+    "sounds": [
+      "ntmdoors:doors/door_wgh_stop"
+    ]
+  },
+  "door_wgh_big_start": {
+    "category": "block",
+    "sounds": [
+      "ntmdoors:doors/door_wgh_big_start"
+    ]
+  },
+  "door_wgh_big_stop": {
+    "category": "block",
+    "sounds": [
+      "ntmdoors:doors/door_wgh_big_stop"
+    ]
+  },
+  "door_garage_move": {
+    "category": "block",
+    "sounds": [
+      "ntmdoors:doors/door_garage_move"
+    ]
+  },
+  "door_garage_stop": {
+    "category": "block",
+    "sounds": [
+      "ntmdoors:doors/door_garage_stop"
+    ]
+  },
+  "door_seal_open": {
+    "category": "block",
+    "sounds": [
+      "ntmdoors:doors/door_seal_open"
+    ]
+  },
+  "door_seal_stop": {
+    "category": "block",
+    "sounds": [
+      "ntmdoors:doors/door_seal_stop"
+    ]
+  },
+  "door_transition_seal": {
+    "category": "block",
+    "sounds": [
+      "ntmdoors:doors/door_transition_seal"
+    ]
+  },
+  "door_alarm": {
+    "category": "block",
+    "sounds": [
+      "ntmdoors:doors/door_alarm"
+    ]
+  },
+  "door_lever": {
+    "category": "block",
+    "sounds": [
+      "ntmdoors:doors/door_lever"
+    ]
+  }
+}

@@ -1,0 +1,31 @@
+NTM Doors
+=========
+
+This project is a standalone Minecraft 1.12.2 port of the door system from
+HBM's Nuclear Tech Mod (NTM).
+
+Original project and source:
+  https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
+
+The following material is derived from HBM's Nuclear Tech Mod and is used
+under the GNU Lesser General Public License, version 3 (LGPL-3.0):
+
+  * Door OBJ models under assets/ntmdoors/models/doors/
+  * Door model textures under assets/ntmdoors/textures/models/doors/
+  * Door sounds under assets/ntmdoors/sounds/doors/
+  * Key and padlock item textures under assets/ntmdoors/textures/items/
+  * Door geometry, animation dimensions and behaviour used by
+    src/main/java/com/ntmdoors/door/DoorDecls.java
+
+The transition seal model was converted from HBM's Collada source
+(seal.dae) into a grouped OBJ so the 1.12.2 renderer can display it without
+a runtime DAE loader. Its per-group rigid keyframes in
+assets/ntmdoors/models/doors/transition_seal.anim were generated from the
+same Collada action.
+
+The Java implementation in this repository is a fresh 1.12.2 implementation
+and is also released under the LGPL-3.0. See LICENSE.LESSER for the full
+license text.
+
+HBM's Nuclear Tech Mod is Copyright its respective authors and contributors.
+No endorsement by the original authors is implied.
