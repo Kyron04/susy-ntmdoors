@@ -102,6 +102,12 @@ public class DoorDecl {
     /** Extra render-culling margin for doors whose moving parts leave their nominal footprint. */
     public double renderRadius;
 
+    /**
+     * False for glass doors: their cells never become light-opaque, so light passes through the
+     * panel as it does through glass. Normal doors seal while their hitboxes fill a cell.
+     */
+    public boolean sealsLight = true;
+
     /** When open, the central cells report air so falling blocks and entities can pass through. */
     public boolean passFallingWhenOpen;
     /** Radius (in cells) of the pass-through square. One gives the original 3x3 silo centre. */
@@ -244,6 +250,12 @@ public class DoorDecl {
     /** Open central cells become passable for falling sand and other entities. */
     public DoorDecl passFallingWhenOpen() {
         this.passFallingWhenOpen = true;
+        return this;
+    }
+
+    /** Marks a glass door: it never blocks light, even while its panel fills the doorway. */
+    public DoorDecl lightPasses() {
+        this.sealsLight = false;
         return this;
     }
 

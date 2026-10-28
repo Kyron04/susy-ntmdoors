@@ -191,6 +191,8 @@ public class BlockDoorGeneric extends Block {
      */
     @Override
     public int getLightOpacity(IBlockState state, IBlockAccess world, BlockPos pos) {
+        // Glass doors never seal, whether their hitboxes are present or not.
+        if (!decl.sealsLight) return 0;
         if (decl.passFallingWhenOpen && state.getValue(PASS)) return 0;
         TileEntityDoorGeneric core = getCore(world, pos, state);
         // No tile entity yet (worldgen, or a chunk that is still loading): keep the door solid.

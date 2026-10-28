@@ -185,6 +185,8 @@ public final class DoorDecls {
     /** 2x2 single-panel sliding door (HBM QE sliding door). */
     public static final DoorDecl QE_SLIDING_DOOR = reg(new DoorDecl("qe_sliding_door")
             .footprint(0, 1, 0, 1, 0, 0).times(10, 10).strength(25F, 4000F)
+            // Glass panels: the doorway lets light through even while the door is shut.
+            .lightPasses()
             // Both panels follow their model translations. The thin jambs stay as static collision.
             .movingGroup("Left")
             .movingGroup("Right")
@@ -212,6 +214,8 @@ public final class DoorDecls {
      */
     public static final DoorDecl QE_SLIDING_PANEL = reg(new DoorDecl("qe_sliding_panel")
             .footprint(0, 0, 0, 1, 0, 0).times(10, 10).strength(25F, 4000F)
+            // Same glass panel as the full QE door; keep the one-block variant transparent to light.
+            .lightPasses()
             // The right panel follows its model translation; the visible jamb stays static.
             .movingGroup("Right")
             // The visible frame is the original's left jamb; the right edge is the open doorway.

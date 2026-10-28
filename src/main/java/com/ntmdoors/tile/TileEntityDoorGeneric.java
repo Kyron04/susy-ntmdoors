@@ -131,6 +131,8 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
 
     /** True when this door cell currently holds collision geometry and therefore blocks light. */
     public boolean blocksLightAt(BlockPos cell) {
+        DoorDecl d = getDecl();
+        if (d != null && !d.sealsLight) return false;
         Map<Long, Boolean> cells = lightCells;
         if (cells == null) return true;
         Boolean solid = cells.get(cell.toLong());
@@ -153,10 +155,11 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
 
         Map<Long, Boolean> previous = lightCells;
         Map<Long, Boolean> current = new HashMap<>();
+        boolean seals = d.sealsLight;
         for (BlockPos offset : d.getCells(facing)) {
             BlockPos cell = pos.add(offset);
             IBlockState state = world.getBlockState(cell);
-            boolean solid = state.getBlock() == block
+            boolean solid = seals && state.getBlock() == block
                     && ((BlockDoorGeneric) block).hasCollisionInCell(state, world, cell);
             current.put(cell.toLong(), solid);
         }
