@@ -24,8 +24,8 @@ import javax.annotation.Nullable;
 
 /**
  * Screwdriver. Right click a keypad to start its code-reset sequence; sneak + right click a keypad
- * to enter distance-binding mode, then sneak + right click closed doors to link them. Sneak +
- * right click a door with alternate skins cycles through them.
+ * to enter a binding mode, then sneak + right click closed doors to link them. Sneak + right click
+ * a door with alternate skins cycles through them.
  */
 public class ItemScrewdriver extends Item {
 
@@ -37,7 +37,6 @@ public class ItemScrewdriver extends Item {
         setTranslationKey(NTMDoors.MODID + ".screwdriver");
         setCreativeTab(NTMDoors.TAB);
         setMaxStackSize(1);
-        setMaxDamage(0);
     }
 
     /**

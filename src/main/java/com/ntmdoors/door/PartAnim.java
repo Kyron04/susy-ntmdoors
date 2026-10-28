@@ -48,7 +48,9 @@ public final class PartAnim {
     /** Eased 0..1 progress of this step for the given open fraction. */
     public float progress(float t) {
         if (constant) return 1F;
-        float p = (t - start) / (end - start);
+        float span = end - start;
+        if (span <= 0F) return t >= end ? 1F : 0F;
+        float p = (t - start) / span;
         p = p < 0F ? 0F : (p > 1F ? 1F : p);
         return p * p * (3F - 2F * p);
     }

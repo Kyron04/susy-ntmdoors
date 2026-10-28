@@ -13,7 +13,6 @@ import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
@@ -241,6 +240,11 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
     /** Server side: ask the door to open (true) or close (false). Safe to call in any state. */
     public void request(boolean wantOpen) {
         if (world == null || world.isRemote) return;
+        DoorDecl d = getDecl();
+        if (d == null || !d.linkAdjacent) {
+            requestSelf(wantOpen);
+            return;
+        }
         for (TileEntityDoorGeneric door : linkedGroup()) door.requestSelf(wantOpen);
     }
 
@@ -308,6 +312,7 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         Block block = getBlockType();
         EnumFacing facing = world.getBlockState(pos).getValue(BlockDoorGeneric.FACING);
         EnumFacing width = facing.rotateY();
+        EnumFacing[] sides = {width, width.getOpposite()};
         Set<BlockPos> seen = new HashSet<>();
         Deque<BlockPos> pending = new ArrayDeque<>();
         seen.add(pos);
@@ -319,7 +324,7 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
             IBlockState s = world.getBlockState(p);
             if (s.getBlock() != block || s.getValue(BlockDoorGeneric.FACING) != facing) continue;
             group.add((TileEntityDoorGeneric) te);
-            for (EnumFacing side : new EnumFacing[]{width, width.getOpposite()}) {
+            for (EnumFacing side : sides) {
                 BlockPos next = p.offset(side);
                 if (seen.add(next)) pending.add(next);
             }
@@ -361,6 +366,8 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
 
     /** True if any segment of the linked group is powered, so a row of shutters reacts as one. */
     private boolean isGroupReceivingPower() {
+        DoorDecl d = getDecl();
+        if (d == null || !d.linkAdjacent) return isReceivingPower();
         for (TileEntityDoorGeneric door : linkedGroup()) {
             if (door.isReceivingPower()) return true;
         }
@@ -380,7 +387,7 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
 
     // ------------------------------------------------------------ player interaction
 
-    public void onPlayerUse(EntityPlayer player, EnumHand hand) {
+    public void onPlayerUse(EntityPlayer player) {
         if (getDecl() == null) return;
         if (isRedstoneOnly()) {
             reject(player);

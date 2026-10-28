@@ -62,14 +62,14 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
         /** Up to nine doors anywhere within range, one shared code. */
         MULTI;
 
+        private static final BindMode[] VALUES = values();
+
         static BindMode byId(int id) {
-            BindMode[] v = values();
-            return v[Math.floorMod(id, v.length)];
+            return VALUES[Math.floorMod(id, VALUES.length)];
         }
 
         BindMode next() {
-            BindMode[] v = values();
-            return v[(ordinal() + 1) % v.length];
+            return VALUES[(ordinal() + 1) % VALUES.length];
         }
     }
 
@@ -84,9 +84,10 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
         /** Waiting for the current code before clearing the door and all linked keypads. */
         RESET_ENTER;
 
+        private static final Mode[] VALUES = values();
+
         static Mode byId(int id) {
-            Mode[] v = values();
-            return v[Math.floorMod(id, v.length)];
+            return VALUES[Math.floorMod(id, VALUES.length)];
         }
     }
 
@@ -94,9 +95,10 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
     public enum Feedback {
         NONE, CODE_SET, RESET_DONE, SUCCESS, DENIED, CODE_SYNCED;
 
+        private static final Feedback[] VALUES = values();
+
         static Feedback byId(int id) {
-            Feedback[] v = values();
-            return v[Math.floorMod(id, v.length)];
+            return VALUES[Math.floorMod(id, VALUES.length)];
         }
     }
 
@@ -338,8 +340,9 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
 
     /** Clears the door and every linked keypad once the current code has been confirmed. */
     private void resetCode(String entered) {
-        if (isResetCode(entered)) {
-            resetCodes(controlDoors());
+        List<TileEntityDoorGeneric> doors = controlDoors();
+        if (isResetCode(entered, doors)) {
+            resetCodes(doors);
             showFeedback(Feedback.RESET_DONE);
         } else {
             showFeedback(Feedback.DENIED);
@@ -347,9 +350,9 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
     }
 
     /** The reset accepts the pad's code or any code one of its doors still carries. */
-    private boolean isResetCode(String entered) {
+    private boolean isResetCode(String entered, List<TileEntityDoorGeneric> doors) {
         if (!storedCode.isEmpty() && storedCode.equals(entered)) return true;
-        for (TileEntityDoorGeneric door : controlDoors()) {
+        for (TileEntityDoorGeneric door : doors) {
             if (door.isKeypadBound() && door.getKeypadCode().equals(entered)) return true;
         }
         return false;
@@ -500,9 +503,7 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
         storedCode = "";
         entry = "";
         mode = Mode.SET_CODE;
-        feedback = Feedback.NONE;
-        feedbackTicks = 0;
-        blackScreenTicks = 0;
+        showFeedback(Feedback.NONE);
         linking = false;
         pendingConfirm = false;
         bindMode = BindMode.NONE;
@@ -738,9 +739,10 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
         feedbackTicks = tag.getInteger("feedbackTicks");
         blackScreenTicks = tag.getInteger("blackScreen");
 
+        NBTTagList links = tag.getTagList("boundDoors", 10);
         if (tag.hasKey("bindMode")) {
             bindMode = BindMode.byId(tag.getInteger("bindMode"));
-        } else if (tag.getBoolean("distance") || tag.getTagList("boundDoors", 10).tagCount() > 0) {
+        } else if (tag.getBoolean("distance") || links.tagCount() > 0) {
             // 1.0.20 saves only had the distance toggle.
             bindMode = BindMode.DISTANCE;
         } else {
@@ -750,7 +752,6 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
         pendingConfirm = tag.getBoolean("pendingConfirm");
 
         boundDoors.clear();
-        NBTTagList links = tag.getTagList("boundDoors", 10);
         for (int i = 0; i < links.tagCount(); i++) {
             NBTTagCompound link = links.getCompoundTagAt(i);
             boundDoors.add(new BlockPos(link.getInteger("x"), link.getInteger("y"), link.getInteger("z")));

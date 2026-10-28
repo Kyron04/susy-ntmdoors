@@ -91,11 +91,13 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
         GlStateManager.popMatrix();
     }
 
+    private static final String[] BUTTON_GROUPS = {
+            "K1", "K2", "K3", "K4", "K5", "K6", "K7", "K8", "K9",
+            "KReset", "K0", "KReturn"
+    };
+
     private static String buttonGroup(int id) {
-        if (id < 9) return "K" + (id + 1);
-        if (id == 9) return "KReset";
-        if (id == 10) return "K0";
-        return "KReturn";
+        return BUTTON_GROUPS[id];
     }
 
     /** Labels sit a hair below the button quad centre so they look centred on the key cap. */
@@ -222,17 +224,6 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
             }
         } else {
             switch (te.getMode()) {
-                case RESET_CONFIRM:
-                    line1 = "Reset code?";
-                    color = 0xFF3FA9F5;
-                    break;
-                case RESET_ENTER:
-                    line1 = "Input current";
-                    line2 = te.getEntry().isEmpty() ? "code" : te.getEntry();
-                    color = 0xFFFFEE00;
-                    line2Color = 0xFFFFEE00;
-                    twoLines = true;
-                    break;
                 case SET_CODE:
                     line1 = te.getEntry().isEmpty() ? "Input code" : "New code";
                     line2 = te.getEntry();

@@ -30,7 +30,7 @@ Needs JDK 8 (ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs). The Gradl
 * Screwdriver: sneak + right click on a door with alternate skins cycles through them; right click
   a keypad to start its code-reset sequence; sneak + right click an unused keypad cycles its
   binding mode
-* Sliding Blast Door Keypad: wall-mounted code panel that locks/unlocks the door it is placed
+* Keypad: wall-mounted code panel that locks/unlocks the door it is placed
   next to. Set a 1-6 digit code and enter it to toggle the door; `R` closes an open door. The first
   code set is bound to the door, and every keypad on that door must use the same code to open it.
   A keypad only binds or auto-syncs when it touches one of the door's cells; placing it next to an

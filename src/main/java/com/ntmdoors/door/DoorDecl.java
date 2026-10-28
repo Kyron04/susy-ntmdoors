@@ -169,7 +169,7 @@ public class DoorDecl {
     private final List<BlockPos> extraCells = new ArrayList<>();
     public final Map<String, List<PartAnim>> anims = new LinkedHashMap<>();
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private final List<BoxDef>[] rotBoxes = new List[4];
     private final BlockPos[][] cells = new BlockPos[4][];
 
@@ -251,12 +251,6 @@ public class DoorDecl {
         return this;
     }
 
-    /** A box that is part of the moving closed door. It vanishes just before the door is fully open. */
-    public DoorDecl closed(AxisAlignedBB... boxes) {
-        for (AxisAlignedBB b : boxes) addBox(b, -0.0001F, 0.9999F, true, true);
-        return this;
-    }
-
     /** A closed-door box that is removed once the opening animation reaches {@code end}. */
     public DoorDecl closedUntil(float end, AxisAlignedBB... boxes) {
         for (AxisAlignedBB b : boxes) addBox(b, -0.0001F, Math.min(end, 0.9999F), true, true);
@@ -272,11 +266,6 @@ public class DoorDecl {
     /** A residual frame box that can be clicked but does not push entities around. */
     public DoorDecl openSelectionOnly(AxisAlignedBB... boxes) {
         for (AxisAlignedBB b : boxes) addBox(b, 0F, 1.0001F, false, true);
-        return this;
-    }
-
-    public DoorDecl box(AxisAlignedBB box, float start, float end, boolean collision, boolean selection) {
-        addBox(box, start, end, collision, selection);
         return this;
     }
 
@@ -355,22 +344,6 @@ public class DoorDecl {
     }
 
     /**
-     * Adds one closed box per cell, removed bottom-to-top according to the panel travel. This is the
-     * collision equivalent of a lift/roll-up door: the doorway opens at floor level first.
-     */
-    public DoorDecl liftCells(int minX, int maxX, int minY, int maxY,
-                              double zMin, double zMax, double travel) {
-        double dist = Math.max(0.001, travel);
-        for (int x = minX; x <= maxX; x++) {
-            for (int y = minY; y <= maxY; y++) {
-                float end = thresholdForDistance((y + 1) / dist);
-                closedUntil(end, new AxisAlignedBB(x - 0.5, y, zMin, x + 0.5, y + 1, zMax));
-            }
-        }
-        return this;
-    }
-
-    /**
      * Converts the fraction of the travel distance at which a cell is cleared into the eased open
      * fraction. PartAnim and HBM both use smoothstep, so a linear threshold would drop collision
      * noticeably before the panel has actually left the cell.
@@ -388,71 +361,6 @@ public class DoorDecl {
         return (float) Math.min(0.9999, hi);
     }
 
-    /**
-     * Adds one closed box per cell, removed from the centre outwards. Used by double doors whose
-     * panels retreat into the side pockets.
-     */
-    public DoorDecl slideCellsFromCentre(int minX, int maxX, int minY, int maxY,
-                                         double zMin, double zMax, double centre, double travel,
-                                         double start) {
-        double dist = Math.max(0.001, travel);
-        double begin = Math.max(0.0, Math.min(1.0, start));
-        for (int x = minX; x <= maxX; x++) {
-            // The gap grows from the centre. A cell is clear once the panel edge has travelled
-            // past its far side. Any lock/hold phase before {@code start} keeps collision solid.
-            double clear = Math.abs(x - centre) + 0.5;
-            double progress = thresholdForDistance(clear / dist);
-            float end = (float) Math.min(0.9999, begin + (1.0 - begin) * progress);
-            for (int y = minY; y <= maxY; y++) {
-                closedUntil(end, new AxisAlignedBB(x - 0.5, y, zMin, x + 0.5, y + 1, zMax));
-            }
-        }
-        return this;
-    }
-
-    /**
-     * Adds one closed box per cell, removed from the {@code minX} edge towards {@code maxX}.
-     * {@code start} is the open fraction at which the panel begins sliding sideways; collision
-     * must stay complete during any earlier pull-out phase.
-     */
-    public DoorDecl slideCellsFromMinX(int minX, int maxX, int minY, int maxY,
-                                       double zMin, double zMax, double travel, double start) {
-        double dist = Math.max(0.001, travel);
-        double begin = Math.max(0.0, Math.min(1.0, start));
-        for (int x = minX; x <= maxX; x++) {
-            // The panel starts fully over the opening and slides towards +X. A cell is clear once
-            // the panel's trailing edge has passed that cell's far side; using the centre would
-            // remove collision half a block before the panel stops covering the cell.
-            double clear = (x - minX) + 1.0;
-            double progress = thresholdForDistance(clear / dist);
-            float end = (float) Math.min(0.9999, begin + (1.0 - begin) * progress);
-            for (int y = minY; y <= maxY; y++) {
-                closedUntil(end, new AxisAlignedBB(x - 0.5, y, zMin, x + 0.5, y + 1, zMax));
-            }
-        }
-        return this;
-    }
-
-    /**
-     * Adds one closed box per cell, removed from the {@code maxZ} edge towards {@code minZ}.
-     * The silo lid starts rotating at one third of the cycle, so the collision delay is mapped
-     * into that rotation window instead of using the raw open fraction.
-     */
-    public DoorDecl slideCellsFromMaxZ(int minX, int maxX, int minZ, int maxZ,
-                                       double yMin, double yMax) {
-        double span = Math.max(1, maxZ - minZ);
-        for (int x = minX; x <= maxX; x++) {
-            for (int z = minZ; z <= maxZ; z++) {
-                double f = (maxZ - z) / span;
-                float rotationProgress = thresholdForDistance(0.12 + 0.82 * f);
-                float end = (1F / 3F) + (2F / 3F) * rotationProgress;
-                end = Math.min(end, 0.9999F);
-                closedUntil(end, new AxisAlignedBB(x - 0.5, yMin, z - 0.5, x + 0.5, yMax, z + 0.5));
-            }
-        }
-        return this;
-    }
-
     /** Full-width row boxes removed bottom-to-top. Keeps huge doors cheap to collide with. */
     public DoorDecl liftRows(double xMin, double xMax, int minY, int maxY,
                              double zMin, double zMax, double travel) {
@@ -461,13 +369,6 @@ public class DoorDecl {
             float end = thresholdForDistance((y + 1) / dist);
             closedUntil(end, new AxisAlignedBB(xMin, y, zMin, xMax, y + 1, zMax));
         }
-        return this;
-    }
-
-    /** Extra dummy cells outside the rectangular footprint, such as the vault door's rear track. */
-    public DoorDecl extraCell(int x, int y, int z) {
-        extraCells.add(new BlockPos(x, y, z));
-        invalidateCells();
         return this;
     }
 
@@ -489,12 +390,6 @@ public class DoorDecl {
 
     public DoorDecl modelPath(String modelPath, String texturePath) {
         this.model = new ResourceLocation(NTMDoors.MODID, modelPath);
-        this.texture = new ResourceLocation(NTMDoors.MODID, texturePath);
-        return this;
-    }
-
-    /** Replaces only the texture, keeping the model path. Used by recoloured door variants. */
-    public DoorDecl texture(String texturePath) {
         this.texture = new ResourceLocation(NTMDoors.MODID, texturePath);
         return this;
     }

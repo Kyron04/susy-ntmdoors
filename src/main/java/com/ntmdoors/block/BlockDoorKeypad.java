@@ -29,8 +29,8 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import javax.annotation.Nullable;
 
 /**
- * Wall-mounted keypad for the sliding blast door. Clicking a button sends no custom packet; the
- * server derives the pressed key from the exact local hit coordinates.
+ * Wall-mounted code panel for a door. Clicking a button sends no custom packet; the server derives
+ * the pressed key from the exact local hit coordinates.
  */
 public class BlockDoorKeypad extends Block {
 

@@ -322,7 +322,7 @@ public class BlockDoorGeneric extends Block {
                                     EnumFacing side, float hitX, float hitY, float hitZ) {
         if (!world.isRemote) {
             TileEntityDoorGeneric core = getCore(world, pos, state);
-            if (core != null) core.onPlayerUse(player, hand);
+            if (core != null) core.onPlayerUse(player);
         }
         return true;
     }

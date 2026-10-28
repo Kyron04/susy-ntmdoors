@@ -429,7 +429,7 @@ public final class DoorDecls {
             .sounds(null, SND_WGH_START, SND_WGH_STOP)
             .anim("Door", PartAnim.translate(0, 2.25, 0, 0F, 1F)));
 
-    /** 1x7 roller shutter (HBM's standalone Sliding Blast Door). */
+    /** 1x7 roller shutter (HBM's standalone roller blast door). */
     public static final DoorDecl BLAST_DOOR = reg(new DoorDecl("blast_door")
             .footprint(0, 0, 0, 6, 0, 0).times(100, 100).strength(30F, 5000F)
             .linkAdjacent()
