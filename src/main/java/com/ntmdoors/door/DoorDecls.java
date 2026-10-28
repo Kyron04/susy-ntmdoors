@@ -73,10 +73,11 @@ public final class DoorDecls {
                     4.05, 1.41,
                     4.35, 1.20,
                     4.64728, 0.26)
-            // The frame is a 5x5 slab with a gear-shaped opening, and its track is a low rail that
-            // runs 4.5 blocks to the right (door-local +X). The track is the floor: it is 0.728
-            // high and two cells deep, so it covers the doorway and the service row behind it.
-            .open(box(-2.5, 0, -0.5, 6.5, 0.728, 1.5))
+            // The frame is a 5x5 slab with a gear-shaped opening. Its track is a low rail: two
+            // cells deep under the frame, then one cell deep as it runs 4.5 blocks to the right
+            // (door-local +X). The front row past the frame is open air, so it gets no collision.
+            .open(box(-2.5, 0, -0.5, 2.5, 0.728, 1.5))
+            .open(box(2.5, 0, 0.5, 6.5, 0.728, 1.5))
             // The frame stays solid while the panel rolls away. Each band follows the opening's
             // silhouette (measured from the OBJ), so the thick upper corners are not left hollow.
             .open(box(-2.5, 0.728, -0.5, -0.91, 1.20, 0.5), box(0.91, 0.728, -0.5, 2.5, 1.20, 0.5))
@@ -88,10 +89,10 @@ public final class DoorDecls {
             .open(box(-2.5, 4.35, -0.5, -0.26, 4.65, 0.5), box(0.26, 4.35, -0.5, 2.5, 4.65, 0.5))
             // The lintel closes the top of the frame above the opening.
             .open(box(-2.5, 4.65, -0.5, 2.5, 5, 0.5))
-            // The track needs its own cells so blocks cannot be placed inside it and the whole
-            // structure is removed together. It runs east, matching the rendered track.
+            // The rear rail needs its own cells so blocks cannot be placed inside it and the whole
+            // structure is removed together. The front row only exists under the frame, so it stays
+            // part of the normal footprint.
             .extraCellsRow(-2, 6, 0, 1)
-            .extraCellsRow(3, 6, 0, 0)
             .modelPath("models/doors/vault_door.obj", "textures/models/doors/vault_door.png")
             .modelYaw(90F)
             // HBM's seven Vault-Tec skins: three door plates and four label variants. The label
