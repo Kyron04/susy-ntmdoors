@@ -139,21 +139,29 @@ public class DoorDecl {
         final boolean collision, selection;
         /** Animated OBJ group to follow, or null for a static door-local box. */
         final String group;
+        /** Animation key to apply; null means the same name as {@link #group}. */
+        final String anim;
         /** Slice count for rotating groups; 0 means use the door's default. */
         final int splits;
 
         BoxDef(AxisAlignedBB box, float start, float end, boolean collision, boolean selection) {
-            this(box, start, end, collision, selection, null, 0);
+            this(box, start, end, collision, selection, null, null, 0);
         }
 
         BoxDef(AxisAlignedBB box, float start, float end, boolean collision, boolean selection,
                String group, int splits) {
+            this(box, start, end, collision, selection, group, null, splits);
+        }
+
+        BoxDef(AxisAlignedBB box, float start, float end, boolean collision, boolean selection,
+               String group, String anim, int splits) {
             this.box = box;
             this.start = start;
             this.end = end;
             this.collision = collision;
             this.selection = selection;
             this.group = group;
+            this.anim = anim;
             this.splits = splits;
         }
     }
@@ -287,7 +295,7 @@ public class DoorDecl {
     }
 
     public DoorDecl movingGroup(String group, int splits) {
-        addMovingBox(group, null, splits);
+        addMovingBox(group, null, null, splits);
         return this;
     }
 
@@ -300,12 +308,27 @@ public class DoorDecl {
     }
 
     public DoorDecl movingBox(String group, AxisAlignedBB box, int splits) {
-        addMovingBox(group, box, splits);
+        addMovingBox(group, null, box, splits);
         return this;
     }
 
-    private void addMovingBox(String group, AxisAlignedBB box, int splits) {
-        movingDefs.add(new BoxDef(box, -0.0001F, 1.0001F, true, true, group, Math.max(0, splits)));
+    /**
+     * A moving box whose bounds come from {@code boundsGroup} but whose motion is the animation
+     * registered under {@code animGroup}. The two are normally the same name; they differ when a
+     * part must follow only part of its own animation (the vault door's plate spins in place, which
+     * does not change its silhouette and must not be applied to the banded collision).
+     */
+    public DoorDecl movingBox(String group, String animGroup, AxisAlignedBB box) {
+        return movingBox(group, animGroup, box, 0);
+    }
+
+    public DoorDecl movingBox(String group, String animGroup, AxisAlignedBB box, int splits) {
+        addMovingBox(group, animGroup, box, splits);
+        return this;
+    }
+
+    private void addMovingBox(String group, String animGroup, AxisAlignedBB box, int splits) {
+        movingDefs.add(new BoxDef(box, -0.0001F, 1.0001F, true, true, group, animGroup, Math.max(0, splits)));
     }
 
     /**
@@ -314,11 +337,20 @@ public class DoorDecl {
      * full grid of boxes. Every band follows the same animated group.
      */
     public DoorDecl movingDisc(String group, double xMin, double xMax, double yBottom, double... profile) {
+        return movingDisc(group, group, xMin, xMax, yBottom, profile);
+    }
+
+    /**
+     * Banded disc collision for a part whose bounds and motion use different keys. The bands are
+     * read from {@code boundsGroup}'s model extents and animated with the steps of {@code animGroup}.
+     */
+    public DoorDecl movingDisc(String boundsGroup, String animGroup, double xMin, double xMax,
+                               double yBottom, double... profile) {
         double y = yBottom;
         for (int i = 0; i + 1 < profile.length; i += 2) {
             double top = profile[i];
             double halfWidth = Math.abs(profile[i + 1]);
-            movingBox(group, new AxisAlignedBB(xMin, y, -halfWidth, xMax, top, halfWidth));
+            movingBox(boundsGroup, animGroup, new AxisAlignedBB(xMin, y, -halfWidth, xMax, top, halfWidth));
             y = top;
         }
         return this;
@@ -609,7 +641,8 @@ public class DoorDecl {
                 AxisAlignedBB src = b.box != null ? b.box : modelBounds.get(b.group);
                 if (src == null) continue;
                 int splits = b.splits > 0 ? b.splits : collisionSplits;
-                AxisAlignedBB[] boxes = DoorGeometry.transform(anims.get(b.group), t, src, splits,
+                AxisAlignedBB[] boxes = DoorGeometry.transform(
+                        anims.get(b.anim != null ? b.anim : b.group), t, src, splits,
                         yaw, modelX, modelY, modelZ);
                 for (AxisAlignedBB box : boxes) {
                     AxisAlignedBB clipped = clip(box);

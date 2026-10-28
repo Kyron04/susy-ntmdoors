@@ -21,6 +21,9 @@ Needs JDK 8 (ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs). The Gradl
 * Every door is also registered as a locked, redstone-only copy named `<door>_locked`
 * State dependent collision and selection boxes that follow the door animation continuously
   (walk through when open, click-through gaps)
+* Light sealing: while a door's hitboxes occupy a cell it blocks block and sky light, and the
+  doorway lets light through as the panel clears it. The door itself is lit from the rooms beside
+  it, so it never goes black just because it seals light
 * OBJ renderer (TESR) with per-group translate/rotate animations, X/Y/Z clipping and sounds
 * 3D door item rendering (inventory, hand, ground) from the same OBJ model, matching HBM's door item renderer
 * 16 multiblock OBJ doors: `vault_door`, `sliding_blast_door`, `qe_sliding_door`, `qe_sliding_panel`,

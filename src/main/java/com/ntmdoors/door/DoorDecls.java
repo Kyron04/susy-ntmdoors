@@ -60,11 +60,12 @@ public final class DoorDecls {
             // The panel is a round gear plate. A single rotated AABB balloons into a diamond, so the
             // collision follows the disc's silhouette as horizontal bands. The rotation is about the
             // disc's centre, which does not change that silhouette, so the collision only needs the
-            // pull-out and the sideways roll.
+            // pull-out and the sideways roll. "VaultPanel" is an animation key only; the box bounds
+            // are read from the model's Door group.
             .anim("VaultPanel",
                     PartAnim.translate(-1.0, 0, 0, 0F, 1F / 3F),
                     PartAnim.translate(0, 0, 5.0, 1F / 3F, 1F))
-            .movingDisc("VaultPanel", -0.5, 0.4375, 0.396711,
+            .movingDisc("Door", "VaultPanel", -0.5, 0.4375, 0.396711,
                     0.728, 0.50,
                     1.20, 0.91,
                     1.40, 1.21,

@@ -179,6 +179,25 @@ public class BlockDoorGeneric extends Block {
         return out;
     }
 
+    /** True when this cell currently holds collision geometry. */
+    public boolean hasCollisionInCell(IBlockState state, IBlockAccess world, BlockPos pos) {
+        return !getLocalBoxes(state, world, pos, false, 1F).isEmpty();
+    }
+
+    /**
+     * Doors are light-tight while their panel or frame occupies the cell. The opacity cannot live
+     * in the block state because it follows the animation, so it is read from the core tile
+     * entity, which keeps a per-tick map of the solid cells.
+     */
+    @Override
+    public int getLightOpacity(IBlockState state, IBlockAccess world, BlockPos pos) {
+        if (decl.passFallingWhenOpen && state.getValue(PASS)) return 0;
+        TileEntityDoorGeneric core = getCore(world, pos, state);
+        // No tile entity yet (worldgen, or a chunk that is still loading): keep the door solid.
+        if (core == null) return 255;
+        return core.blocksLightAt(pos) ? 255 : 0;
+    }
+
     @Override
     public void addCollisionBoxToList(IBlockState state, World world, BlockPos pos, AxisAlignedBB entityBox,
                                       List<AxisAlignedBB> collidingBoxes, @Nullable Entity entity, boolean isActualState) {

@@ -28,14 +28,18 @@ import java.util.List;
 @Mod.EventBusSubscriber(modid = NTMDoors.MODID)
 public class ModContent {
 
+    public static final List<BlockDoorGeneric> NORMAL_DOORS = new ArrayList<>();
+    public static final List<BlockDoorGeneric> LOCKED_DOORS = new ArrayList<>();
+    /** Normal doors first, then their locked twins; used for registration and rendering setup. */
     public static final List<BlockDoorGeneric> DOORS = new ArrayList<>();
     public static final BlockDoorKeypad KEYPAD = new BlockDoorKeypad();
     public static final ItemScrewdriver SCREWDRIVER = new ItemScrewdriver();
 
     static {
-        for (DoorDecl d : DoorDecls.ALL) DOORS.add(new BlockDoorGeneric(d, false));
-        // The locked twins are appended after the normal doors so the creative tab stays grouped.
-        for (DoorDecl d : DoorDecls.ALL) DOORS.add(new BlockDoorGeneric(d, true));
+        for (DoorDecl d : DoorDecls.ALL) NORMAL_DOORS.add(new BlockDoorGeneric(d, false));
+        for (DoorDecl d : DoorDecls.ALL) LOCKED_DOORS.add(new BlockDoorGeneric(d, true));
+        DOORS.addAll(NORMAL_DOORS);
+        DOORS.addAll(LOCKED_DOORS);
     }
 
     @SubscribeEvent

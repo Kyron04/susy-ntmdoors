@@ -1,5 +1,6 @@
 package com.ntmdoors;
 
+import com.ntmdoors.block.BlockDoorGeneric;
 import com.ntmdoors.proxy.CommonProxy;
 import com.ntmdoors.registry.ModContent;
 import com.ntmdoors.util.Names;
@@ -7,6 +8,7 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.NonNullList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -14,7 +16,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-@Mod(modid = NTMDoors.MODID, name = "NTM Doors", version = "1.0.26", acceptedMinecraftVersions = "[1.12.2]")
+@Mod(modid = NTMDoors.MODID, name = "NTM Doors", version = "1.0.27", acceptedMinecraftVersions = "[1.12.2]")
 public class NTMDoors {
 
     public static final String MODID = "ntmdoors";
@@ -28,6 +30,18 @@ public class NTMDoors {
         public ItemStack createIcon() {
             return ModContent.DOORS.isEmpty() ? new ItemStack(Items.IRON_DOOR)
                     : new ItemStack(Item.getItemFromBlock(ModContent.DOORS.get(0)));
+        }
+
+        /**
+         * Fixed order instead of registry order: normal doors, their locked twins, then the two
+         * tools. Keeping the lists separate means the order does not depend on registration.
+         */
+        @Override
+        public void displayAllRelevantItems(NonNullList<ItemStack> items) {
+            for (BlockDoorGeneric door : ModContent.NORMAL_DOORS) items.add(new ItemStack(door));
+            for (BlockDoorGeneric door : ModContent.LOCKED_DOORS) items.add(new ItemStack(door));
+            items.add(new ItemStack(ModContent.SCREWDRIVER));
+            items.add(new ItemStack(ModContent.KEYPAD));
         }
 
         @Override

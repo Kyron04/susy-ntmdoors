@@ -8,8 +8,11 @@ import com.ntmdoors.util.Facings;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.BufferUtils;
@@ -30,6 +33,7 @@ public class RenderDoor extends TileEntitySpecialRenderer<TileEntityDoorGeneric>
     private static final DoubleBuffer CLIP_BUFFER = BufferUtils.createDoubleBuffer(4);
     private static final ClipPlane[] NO_PLANES = new ClipPlane[0];
     private static final Map<DoorDecl, ClipPlane[]> CLIP_PLANES = new IdentityHashMap<>();
+    private static final EnumFacing[] NEIGHBOURS = EnumFacing.values();
 
     /**
      * Doors are multiblocks, and large ones (the transition seal is 27x24) extend far beyond the
@@ -56,6 +60,7 @@ public class RenderDoor extends TileEntitySpecialRenderer<TileEntityDoorGeneric>
         EnumFacing facing = state.getValue(BlockDoorGeneric.FACING);
 
         float open = te.getOpenFraction(partialTicks);
+        int previousLight = useRoomLight(te);
 
         GlStateManager.pushMatrix();
         GlStateManager.translate(x + 0.5, y, z + 0.5);          // bottom centre of the core cell
@@ -76,6 +81,34 @@ public class RenderDoor extends TileEntitySpecialRenderer<TileEntityDoorGeneric>
         GlStateManager.disableBlend();
         GlStateManager.disableRescaleNormal();
         GlStateManager.popMatrix();
+        restoreLight(previousLight);
+    }
+
+    /**
+     * A light-sealed door makes its own cells opaque, so the lightmap the dispatcher picked for the
+     * core cell is black. Sample the six neighbours instead and keep the brighter side: the door
+     * then looks like the room it divides instead of going dark because it blocks light.
+     */
+    private static int useRoomLight(TileEntityDoorGeneric te) {
+        World world = te.getWorld();
+        BlockPos pos = te.getPos();
+        int original = world.getCombinedLight(pos, 0);
+        int block = original & 0xFFFF;
+        int sky = original >>> 16;
+        for (EnumFacing face : NEIGHBOURS) {
+            BlockPos neighbour = pos.offset(face);
+            if (!world.isBlockLoaded(neighbour)) continue;
+            int packed = world.getCombinedLight(neighbour, 0);
+            block = Math.max(block, packed & 0xFFFF);
+            sky = Math.max(sky, packed >>> 16);
+        }
+        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, (float) block, (float) sky);
+        return original;
+    }
+
+    private static void restoreLight(int packed) {
+        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit,
+                (float) (packed & 0xFFFF), (float) (packed >>> 16));
     }
 
     /**
