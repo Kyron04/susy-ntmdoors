@@ -29,7 +29,7 @@ Needs JDK 8 (ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs). The Gradl
   `silo_hatch_large`, `large_vehicle_door`, `qe_containment`, `blast_door`, `cargo_door`,
   `water_door`, and `transition_seal`, plus a `_locked` copy of each
 * Screwdriver: sneak + right click on a door with alternate skins cycles through them; right click
-  a keypad to start its code-reset sequence
+  a keypad to start its code-reset sequence; sneak + right click a keypad toggles distance binding
 * Sliding Blast Door Keypad: wall-mounted code panel that locks/unlocks the door it is placed
   next to. Set a 1-6 digit code and enter it to toggle the door; `R` closes an open door. The first
   code set is bound to the door, and every keypad on that door must use the same code to open it.
@@ -37,7 +37,11 @@ Needs JDK 8 (ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs). The Gradl
   already-bound door copies the code automatically and shows `Code synced`. The binding stays on
   the door when a keypad is broken, until the door itself is destroyed. With a screwdriver: first
   click shows `Reset code?`, second click confirms, then entering the current code clears the
-  binding from the door and every keypad linked to it
+  binding from the door and every keypad linked to it. Sneak + right click the keypad with the
+  screwdriver to enter distance binding (the LCD shows `Distance Bounding Mode` in blue), then
+  sneak + right click each **closed** door within 32 blocks; every linked door answers
+  `Distance Bound Successful`. Pressing any key leaves the mode, and the code typed on the pad then
+  toggles all of the linked doors
 * The secure access door ships nine skins: red, yellow, green, blue, grey, black (white writing),
   HBM yellow, white (black writing) and orange (white writing). The colour variants are generated
   by recolouring only the red warning paint; all other pixels are unchanged. Base colours: green

@@ -4,18 +4,22 @@ import com.ntmdoors.block.BlockDoorKeypad;
 import com.ntmdoors.door.DoorState;
 import com.ntmdoors.util.Facings;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentTranslation;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -28,12 +32,18 @@ import java.util.List;
  *
  * <p>A keypad only links to a door when it is placed directly next to one of the door's cells.
  * This keeps a keypad from binding or auto-syncing to a door elsewhere in the room.</p>
+ *
+ * <p>Doors can also be bound from a distance: sneak + right click the keypad with a screwdriver to
+ * enter distance-binding mode, then sneak + right click any closed door to link it. The link is
+ * stored on the keypad, so the code typed there opens the remote doors too.</p>
  */
 public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable {
 
     public static final int CODE_LENGTH = 6;
     public static final int BUTTONS = 12;
     public static final int SEARCH_RADIUS = 8;
+    /** How far a door may be from the keypad to be bound and operated remotely. */
+    public static final double MAX_BIND_DISTANCE = 32.0;
     /** Bottom row of the keypad model: reset, zero, enter. */
     public static final int BUTTON_RESET = 9;
     public static final int BUTTON_ZERO = 10;
@@ -99,6 +109,10 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
     private int feedbackTicks;
     private int blackScreenTicks;
     private final byte[] cooldowns = new byte[BUTTONS];
+    /** True while the player is linking remote doors; synced so the LCD can show the mode. */
+    private boolean distanceMode;
+    /** Cores controlled from a distance. Server-only; positions are validated when used. */
+    private final List<BlockPos> boundDoors = new ArrayList<>();
 
     // ------------------------------------------------------------ state queries
 
@@ -127,6 +141,11 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
 
     public int getBlackScreenTicks() {
         return blackScreenTicks;
+    }
+
+    /** Whether the keypad is waiting for doors to be linked at range. */
+    public boolean isDistanceMode() {
+        return distanceMode;
     }
 
     // ------------------------------------------------------------ ticking
@@ -177,6 +196,9 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
         if (cooldowns[id] > 0) return;
         cooldowns[id] = 20;
 
+        // Any key leaves distance-binding mode: the player is back at the pad to enter a code.
+        distanceMode = false;
+
         world.playSound(null, pos, SoundEvents.UI_BUTTON_CLICK,
                 SoundCategory.BLOCKS, 0.5F, 0.9F + world.rand.nextFloat() * 0.2F);
 
@@ -211,9 +233,10 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
             showFeedback(Feedback.NONE);
             return;
         }
-        TileEntityDoorGeneric door = findDoor();
-        if (door != null && door.getState() != DoorState.CLOSED && isAuthorized(door)) {
-            door.request(false);
+        for (TileEntityDoorGeneric door : controlDoors()) {
+            if (door.getState() != DoorState.CLOSED && isAuthorized(door)) {
+                door.request(false);
+            }
         }
         entry = "";
         showFeedback(Feedback.NONE);
@@ -224,16 +247,16 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
         if (entry.isEmpty()) return;
         String entered = entry;
         entry = "";
-        TileEntityDoorGeneric door = findDoor();
+        List<TileEntityDoorGeneric> doors = controlDoors();
         switch (mode) {
             case SET_CODE:
-                setCode(entered, door);
+                setCode(entered, doors);
                 break;
             case RESET_ENTER:
-                resetCode(entered, door);
+                resetCode(entered, doors);
                 break;
             default:
-                openWithCode(entered, door);
+                openWithCode(entered, doors);
         }
     }
 
@@ -241,38 +264,47 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
      * Stores the keypad's first code. Any code can be set; a keypad whose code differs from the
      * door's binding simply cannot open it (the door keeps the first code it was given).
      */
-    private void setCode(String entered, @Nullable TileEntityDoorGeneric door) {
+    private void setCode(String entered, List<TileEntityDoorGeneric> doors) {
         storedCode = entered;
         mode = Mode.ENTER_CODE;
-        if (door != null && !door.isKeypadBound()) door.bindKeypadCode(entered);
+        for (TileEntityDoorGeneric door : doors) {
+            if (!door.isKeypadBound()) door.bindKeypadCode(entered);
+        }
         showFeedback(Feedback.CODE_SET);
     }
 
     /** Clears the door and every linked keypad once the current code has been confirmed. */
-    private void resetCode(String entered, @Nullable TileEntityDoorGeneric door) {
-        String expected = door != null && door.isKeypadBound() ? door.getKeypadCode() : storedCode;
+    private void resetCode(String entered, List<TileEntityDoorGeneric> doors) {
+        String expected = storedCode;
+        for (TileEntityDoorGeneric door : doors) {
+            if (door.isKeypadBound()) {
+                expected = door.getKeypadCode();
+                break;
+            }
+        }
         if (!expected.isEmpty() && expected.equals(entered)) {
-            resetCodes(door);
+            resetCodes(doors);
             showFeedback(Feedback.RESET_DONE);
         } else {
             showFeedback(Feedback.DENIED);
         }
     }
 
-    /** Opens (or closes) the door when both the keypad code and the door's bound code match. */
-    private void openWithCode(String entered, @Nullable TileEntityDoorGeneric door) {
-        if (door == null || !entered.equals(storedCode)) {
+    /** Opens (or closes) every controlled door when both codes match. */
+    private void openWithCode(String entered, List<TileEntityDoorGeneric> doors) {
+        if (!entered.equals(storedCode)) {
             showFeedback(Feedback.DENIED);
             return;
         }
-        // A keypad that was configured before its door existed adopts the door on first use.
-        if (!door.isKeypadBound()) door.bindKeypadCode(storedCode);
-        if (!entered.equals(door.getKeypadCode())) {
-            showFeedback(Feedback.DENIED);
-            return;
+        boolean toggled = false;
+        for (TileEntityDoorGeneric door : doors) {
+            // A keypad that was configured before its door existed adopts the door on first use.
+            if (!door.isKeypadBound()) door.bindKeypadCode(storedCode);
+            if (!entered.equals(door.getKeypadCode())) continue;
+            door.toggle();
+            toggled = true;
         }
-        showFeedback(Feedback.SUCCESS);
-        door.toggle();
+        showFeedback(toggled ? Feedback.SUCCESS : Feedback.DENIED);
     }
 
     private boolean isAuthorized(TileEntityDoorGeneric door) {
@@ -283,6 +315,13 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
     public void onScrewdriverUse() {
         if (world == null || world.isRemote || !hasStoredCode()) return;
         entry = "";
+        if (distanceMode) {
+            // A plain click leaves distance mode first; a second click starts the reset.
+            distanceMode = false;
+            showFeedback(Feedback.NONE);
+            sync();
+            return;
+        }
         switch (mode) {
             case RESET_CONFIRM:
                 mode = Mode.RESET_ENTER;
@@ -295,6 +334,47 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
         }
         showFeedback(Feedback.NONE);
         sync();
+    }
+
+    /**
+     * Server side: enters or leaves distance-binding mode. Returns the new state so the screwdriver
+     * can remember which keypad is waiting for doors.
+     */
+    public boolean toggleDistanceMode(EntityPlayer player) {
+        if (world == null || world.isRemote) return false;
+        distanceMode = !distanceMode;
+        entry = "";
+        showFeedback(Feedback.NONE);
+        msg(player, distanceMode ? "ntmdoors.msg.bind_mode_on" : "ntmdoors.msg.bind_mode_off");
+        sync();
+        return distanceMode;
+    }
+
+    /**
+     * Server side: links a door while the player is in distance-binding mode. The door must be
+     * closed, within range and not already controlled by a different code.
+     */
+    public boolean bindDoor(TileEntityDoorGeneric door, EntityPlayer player) {
+        if (world == null || world.isRemote || door == null || !distanceMode) return false;
+        if (door.getState() != DoorState.CLOSED) {
+            msg(player, "ntmdoors.msg.bind_open");
+            return false;
+        }
+        if (pos.distanceSq(door.getPos()) > MAX_BIND_DISTANCE * MAX_BIND_DISTANCE) {
+            msg(player, "ntmdoors.msg.bind_far");
+            return false;
+        }
+        if (door.isKeypadBound() && (storedCode.isEmpty() || !storedCode.equals(door.getKeypadCode()))) {
+            msg(player, "ntmdoors.msg.bind_code");
+            return false;
+        }
+        if (!storedCode.isEmpty() && !door.isKeypadBound()) door.bindKeypadCode(storedCode);
+        if (!isBoundTo(door)) {
+            boundDoors.add(door.getPos());
+            markDirty();
+        }
+        msg(player, "ntmdoors.msg.bind_success");
+        return true;
     }
 
     private void enterDigit(int digit) {
@@ -370,6 +450,54 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
     }
 
     /**
+     * Every door this keypad can operate: the adjacent door, plus each door bound at a distance.
+     * Stale links (broken or replaced doors) are dropped as they are found.
+     */
+    public List<TileEntityDoorGeneric> controlDoors() {
+        List<TileEntityDoorGeneric> doors = new ArrayList<>();
+        TileEntityDoorGeneric adjacent = findDoor();
+        if (adjacent != null) doors.add(adjacent);
+        if (world == null) return doors;
+
+        boolean dropped = false;
+        for (Iterator<BlockPos> it = boundDoors.iterator(); it.hasNext(); ) {
+            BlockPos p = it.next();
+            if (!world.isBlockLoaded(p)) continue;
+            TileEntity te = world.getTileEntity(p);
+            if (te instanceof TileEntityDoorGeneric) {
+                TileEntityDoorGeneric door = (TileEntityDoorGeneric) te;
+                if (!containsDoor(doors, door.getPos())) doors.add(door);
+            } else {
+                it.remove();
+                dropped = true;
+            }
+        }
+        if (dropped) markDirty();
+        return doors;
+    }
+
+    private boolean isBoundTo(TileEntityDoorGeneric door) {
+        for (BlockPos p : boundDoors) {
+            if (p.equals(door.getPos())) return true;
+        }
+        return false;
+    }
+
+    /** True when this keypad can operate the door, either next to it or through a distance link. */
+    private boolean controls(TileEntityDoorGeneric door) {
+        if (isBoundTo(door)) return true;
+        TileEntityDoorGeneric adjacent = findDoor();
+        return adjacent != null && adjacent.getPos().equals(door.getPos());
+    }
+
+    private static boolean containsDoor(List<TileEntityDoorGeneric> doors, BlockPos pos) {
+        for (TileEntityDoorGeneric door : doors) {
+            if (door.getPos().equals(pos)) return true;
+        }
+        return false;
+    }
+
+    /**
      * Called when a keypad is placed. If the adjacent door is already bound to a code, the new
      * keypad adopts it so both sides of the door work without re-entering the code.
      */
@@ -393,15 +521,14 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
             TileEntity te = world.getTileEntity(p);
             if (!(te instanceof TileEntityDoorKeypad)) continue;
             TileEntityDoorKeypad other = (TileEntityDoorKeypad) te;
-            TileEntityDoorGeneric linked = other.findDoor();
-            if (linked != null && linked.getPos().equals(door.getPos())) keypads.add(other);
+            if (other.controls(door)) keypads.add(other);
         }
         return keypads;
     }
 
-    /** Unbinds the door and clears the code from this keypad and every keypad linked to it. */
-    private void resetCodes(@Nullable TileEntityDoorGeneric door) {
-        if (door != null) {
+    /** Unbinds every controlled door and clears the code from this keypad and its neighbours. */
+    private void resetCodes(List<TileEntityDoorGeneric> doors) {
+        for (TileEntityDoorGeneric door : doors) {
             for (TileEntityDoorKeypad other : keypadsSharing(door)) {
                 other.wipeCode();
                 other.sync();
@@ -409,6 +536,10 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
             door.clearKeypadCode();
         }
         wipeCode();
+    }
+
+    private static void msg(EntityPlayer player, String key) {
+        player.sendStatusMessage(new TextComponentTranslation(key), true);
     }
 
     // ------------------------------------------------------------ persistence / sync
@@ -423,14 +554,25 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
         tag.setInteger("feedbackTicks", feedbackTicks);
         tag.setInteger("blackScreen", blackScreenTicks);
         tag.setByteArray("cooldowns", cooldowns.clone());
+        tag.setBoolean("distance", distanceMode);
+        NBTTagList links = new NBTTagList();
+        for (BlockPos p : boundDoors) {
+            NBTTagCompound link = new NBTTagCompound();
+            link.setInteger("x", p.getX());
+            link.setInteger("y", p.getY());
+            link.setInteger("z", p.getZ());
+            links.appendTag(link);
+        }
+        tag.setTag("boundDoors", links);
         return tag;
     }
 
-    /** Update packets need the LCD state but never the stored code itself. */
+    /** Update packets need the LCD state but never the stored code or the door links. */
     @Override
     protected NBTTagCompound writeSyncTag(NBTTagCompound tag) {
         writeToNBT(tag);
         tag.removeTag("stored");
+        tag.removeTag("boundDoors");
         return tag;
     }
 
@@ -453,6 +595,13 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
         feedback = Feedback.byId(tag.getInteger("feedback"));
         feedbackTicks = tag.getInteger("feedbackTicks");
         blackScreenTicks = tag.getInteger("blackScreen");
+        distanceMode = tag.getBoolean("distance");
+        boundDoors.clear();
+        NBTTagList links = tag.getTagList("boundDoors", 10);
+        for (int i = 0; i < links.tagCount(); i++) {
+            NBTTagCompound link = links.getCompoundTagAt(i);
+            boundDoors.add(new BlockPos(link.getInteger("x"), link.getInteger("y"), link.getInteger("z")));
+        }
         byte[] cd = tag.getByteArray("cooldowns");
         if (cd.length == BUTTONS) {
             System.arraycopy(cd, 0, cooldowns, 0, BUTTONS);

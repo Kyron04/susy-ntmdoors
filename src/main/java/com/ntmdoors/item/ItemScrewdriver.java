@@ -11,6 +11,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
@@ -19,11 +20,17 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
+import javax.annotation.Nullable;
+
 /**
- * Screwdriver. Right click a keypad to start its code-reset sequence; sneak + right click a door
- * with alternate skins cycles through them.
+ * Screwdriver. Right click a keypad to start its code-reset sequence; sneak + right click a keypad
+ * to enter distance-binding mode, then sneak + right click closed doors to link them. Sneak +
+ * right click a door with alternate skins cycles through them.
  */
 public class ItemScrewdriver extends Item {
+
+    /** Item NBT key holding the keypad that is waiting for doors to be bound at range. */
+    private static final String TAG_BIND_KEYPAD = "bindKeypad";
 
     public ItemScrewdriver() {
         setRegistryName(NTMDoors.MODID, "screwdriver");
@@ -44,6 +51,25 @@ public class ItemScrewdriver extends Item {
         TileEntity te = world.getTileEntity(pos);
         if (te instanceof TileEntityDoorKeypad) {
             TileEntityDoorKeypad keypad = (TileEntityDoorKeypad) te;
+            if (player.isSneaking()) {
+                // Sneak: enter/leave distance-binding mode. Remember the pad on the tool so the
+                // doors that are clicked next know which keypad they belong to.
+                if (!world.isRemote) {
+                    boolean on = keypad.toggleDistanceMode(player);
+                    ItemStack stack = player.getHeldItem(hand);
+                    NBTTagCompound tag = stack.getTagCompound();
+                    if (on) {
+                        if (tag == null) {
+                            tag = new NBTTagCompound();
+                            stack.setTagCompound(tag);
+                        }
+                        tag.setLong(TAG_BIND_KEYPAD, keypad.getPos().toLong());
+                    } else if (tag != null) {
+                        tag.removeTag(TAG_BIND_KEYPAD);
+                    }
+                }
+                return EnumActionResult.SUCCESS;
+            }
             int button = keypad.buttonAt(hitX, hitY, hitZ);
             // R is the close/clear key and must always reach the keypad, even with the tool in
             // hand. While the reset is waiting for the current code, every key must type, so the
@@ -60,6 +86,13 @@ public class ItemScrewdriver extends Item {
         if (!player.isSneaking()) return EnumActionResult.PASS;
         TileEntityDoorGeneric core = findCore(world, pos);
         if (core == null) return EnumActionResult.PASS;
+
+        TileEntityDoorKeypad binder = bindKeypad(world, player, hand);
+        if (binder != null) {
+            if (!world.isRemote) binder.bindDoor(core, player);
+            return EnumActionResult.SUCCESS;
+        }
+
         DoorDecl decl = core.getDecl();
         if (decl == null || !decl.hasSkinVariants()) return EnumActionResult.PASS;
 
@@ -81,5 +114,24 @@ public class ItemScrewdriver extends Item {
         return state.getBlock() instanceof BlockDoorGeneric
                 ? ((BlockDoorGeneric) state.getBlock()).getCore(world, pos, state)
                 : null;
+    }
+
+    /**
+     * The keypad this screwdriver is currently binding doors for, or null. The link lives on the
+     * tool so the player can walk to a door and link it without the keypad staying in reach.
+     */
+    @Nullable
+    private static TileEntityDoorKeypad bindKeypad(World world, EntityPlayer player, EnumHand hand) {
+        ItemStack stack = player.getHeldItem(hand);
+        NBTTagCompound tag = stack.getTagCompound();
+        if (tag == null || !tag.hasKey(TAG_BIND_KEYPAD)) return null;
+        BlockPos padPos = BlockPos.fromLong(tag.getLong(TAG_BIND_KEYPAD));
+        TileEntity te = world.getTileEntity(padPos);
+        if (!(te instanceof TileEntityDoorKeypad) || !((TileEntityDoorKeypad) te).isDistanceMode()) {
+            // The keypad is gone or no longer waiting; stop treating clicks as binds.
+            tag.removeTag(TAG_BIND_KEYPAD);
+            return null;
+        }
+        return (TileEntityDoorKeypad) te;
     }
 }

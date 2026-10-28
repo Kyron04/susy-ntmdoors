@@ -172,6 +172,12 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
         } else if (te.getBlackScreenTicks() > 0) {
             line1 = "";
             color = 0;
+        } else if (te.isDistanceMode()) {
+            line1 = "Distance";
+            line2 = "Bounding Mode";
+            color = 0xFF3FA9F5;
+            line2Color = 0xFF3FA9F5;
+            twoLines = true;
         } else {
             switch (te.getMode()) {
                 case RESET_CONFIRM:
