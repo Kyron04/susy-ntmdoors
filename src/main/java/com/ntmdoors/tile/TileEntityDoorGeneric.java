@@ -26,10 +26,8 @@ import javax.annotation.Nullable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /** Core cell of a door. Owns the state machine, redstone handling, keypad binding and animation timing. */
@@ -57,13 +55,6 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
     private DoorState boxCacheState;
     private EnumFacing boxCacheFacing;
     private AxisAlignedBB[] boxCache = EMPTY_BOXES;
-
-    /** Per-cell light sealing, rebuilt while the door moves. Key is {@link BlockPos#toLong()}. */
-    private Map<Long, Boolean> lightCells;
-    /** Set on load so the first tick can correct light that was computed before the tile existed. */
-    private boolean lightUpdatePending;
-    /** Ticks between seal refreshes while moving; huge doors use a slower cadence. */
-    private int lightRefreshInterval = 4;
 
     /*
      * Client-side movement loops. The server plays the one-shot start/end sounds and timed cues,
@@ -129,57 +120,6 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         return boxCache;
     }
 
-    // ------------------------------------------------------------ light sealing
-
-    /** True when this door cell currently holds collision geometry and therefore blocks light. */
-    public boolean blocksLightAt(BlockPos cell) {
-        DoorDecl d = getDecl();
-        if (d != null && !d.sealsLight) return false;
-        Map<Long, Boolean> cells = lightCells;
-        if (cells == null) return true;
-        Boolean solid = cells.get(cell.toLong());
-        return solid != null && solid;
-    }
-
-    /**
-     * Rebuilds the per-cell sealing map and asks the light engine to recheck the cells whose
-     * solidity changed. Runs on both sides: the server keeps the gameplay light correct, and the
-     * client keeps its own light arrays (which are not resent for a tile entity change) correct.
-     */
-    private void updateLightSeal(boolean force) {
-        if (world == null) return;
-        DoorDecl d = getDecl();
-        if (d == null) return;
-        Block block = getBlockType();
-        IBlockState own = world.getBlockState(pos);
-        if (own.getBlock() != block) return;
-        EnumFacing facing = own.getValue(BlockDoorGeneric.FACING);
-
-        Map<Long, Boolean> previous = lightCells;
-        Map<Long, Boolean> current = new HashMap<>();
-        boolean seals = d.sealsLight;
-        BlockPos[] cells = d.getCells(facing);
-        // A 27x24 door changes hundreds of opacity cells. Rechecking all of them every 4 ticks
-        // costs far more than the visible difference; large doors refresh every 10 ticks.
-        lightRefreshInterval = cells.length > 128 ? 10 : 4;
-        for (BlockPos offset : cells) {
-            BlockPos cell = pos.add(offset);
-            IBlockState state = world.getBlockState(cell);
-            boolean solid = seals && state.getBlock() == block
-                    && ((BlockDoorGeneric) block).hasCollisionInCell(state, world, cell);
-            current.put(cell.toLong(), solid);
-        }
-
-        // Publish first: the light engine asks blocksLightAt while it recalculates.
-        lightCells = current;
-        for (Map.Entry<Long, Boolean> entry : current.entrySet()) {
-            if (!force && previous != null && entry.getValue().equals(previous.get(entry.getKey()))) {
-                continue;
-            }
-            world.checkLight(BlockPos.fromLong(entry.getKey()));
-        }
-    }
-
     // ------------------------------------------------------------ ticking / state machine
 
     @Override
@@ -188,10 +128,6 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         if (passUpdatePending && !client) {
             passUpdatePending = false;
             updatePassState(state == DoorState.OPEN);
-        }
-        if (lightUpdatePending) {
-            lightUpdatePending = false;
-            updateLightSeal(true);
         }
         if (!state.isMoving()) {
             // The loop may still be running on the first tick after the server reports the final
@@ -204,12 +140,7 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         timer++;
         if (!client) playCues(d, state == DoorState.OPENING, timer);
         int dur = state == DoorState.OPENING ? d.openTicks : d.closeTicks;
-        if (timer >= dur) {
-            finishMove(d);
-        } else if (timer % lightRefreshInterval == 0) {
-            // Follow the clearing hitboxes, so light enters a doorway as the panel leaves it.
-            updateLightSeal(false);
-        }
+        if (timer >= dur) finishMove(d);
         // Run after the movement so a loop starts on the first moving tick and stops on the same
         // tick that the animation finishes, keeping the audio exactly as long as the door travel.
         if (client) updateClientSounds();
@@ -219,7 +150,6 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         boolean opening = state == DoorState.OPENING;
         state = opening ? DoorState.OPEN : DoorState.CLOSED;
         timer = 0;
-        updateLightSeal(false);
         if (world.isRemote) return;
         // The hatch only becomes passable once it is fully open, so ordinary falling blocks
         // still land on the closed lid while it is moving.
@@ -244,7 +174,6 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
             // HBM's vault door fires a cue on the very first tick of the movement.
             playCues(d, opening, 0);
         }
-        updateLightSeal(false);
         sync();
     }
 
@@ -531,9 +460,6 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
     public void onLoad() {
         super.onLoad();
         passUpdatePending = world != null && !world.isRemote;
-        // Light may have been computed before this tile entity existed (or with an older state),
-        // so recompute the sealed cells once on the first tick.
-        lightUpdatePending = world != null;
     }
 
     // ------------------------------------------------------------ rendering hints

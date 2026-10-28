@@ -8,18 +8,10 @@ import com.ntmdoors.util.Facings;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
-import net.minecraft.entity.Entity;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3i;
-import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-
-import javax.annotation.Nullable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
@@ -64,9 +56,6 @@ public class RenderDoor extends TileEntitySpecialRenderer<TileEntityDoorGeneric>
         EnumFacing facing = state.getValue(BlockDoorGeneric.FACING);
 
         float open = te.getOpenFraction(partialTicks);
-        // Glass doors do not seal light, so the dispatcher's per-cell lightmap is already correct.
-        // Only sealed doors need the room-side override.
-        int previousLight = d.sealsLight ? useRoomLight(te, facing) : -1;
 
         GlStateManager.pushMatrix();
         GlStateManager.translate(x + 0.5, y, z + 0.5);          // bottom centre of the core cell
@@ -87,67 +76,6 @@ public class RenderDoor extends TileEntitySpecialRenderer<TileEntityDoorGeneric>
         GlStateManager.disableBlend();
         GlStateManager.disableRescaleNormal();
         GlStateManager.popMatrix();
-        if (previousLight >= 0) restoreLight(previousLight);
-    }
-
-    /**
-     * A light-sealed door makes its own cells opaque, so the lightmap the dispatcher picked for the
-     * core cell is black. Use the light of the room the camera stands in instead: the visible face
-     * of a door is always the one facing the viewer, so that is the light level the door should
-     * show. Doors never inherit the brightness of the room on their far side.
-     */
-    private static int useRoomLight(TileEntityDoorGeneric te, EnumFacing facing) {
-        World world = te.getWorld();
-        BlockPos pos = te.getPos();
-        int original = world.getCombinedLight(pos, 0);
-        EnumFacing side = cameraSide(pos, te.getDecl(), facing);
-        int packed = side == null ? 0 : roomLight(world, pos, side);
-        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit,
-                (float) (packed & 0xFFFF), (float) (packed >>> 16));
-        return original;
-    }
-
-    /**
-     * The visible side of the door from the render camera's position. Vertical doors are split by
-     * their facing plane; horizontal doors (the silo hatches) by their height.
-     */
-    @Nullable
-    private static EnumFacing cameraSide(BlockPos pos, DoorDecl decl, EnumFacing facing) {
-        Minecraft mc = Minecraft.getMinecraft();
-        RenderManager rm = mc.getRenderManager();
-        if (decl != null && decl.minY == decl.maxY) {
-            double eye = rm.viewerPosY;
-            Entity view = mc.getRenderViewEntity();
-            if (view != null) eye += view.getEyeHeight();
-            return eye >= pos.getY() + 0.5 ? EnumFacing.UP : EnumFacing.DOWN;
-        }
-        Vec3i normal = facing.getDirectionVec();
-        double dot = (rm.viewerPosX - pos.getX() - 0.5) * normal.getX()
-                + (rm.viewerPosZ - pos.getZ() - 0.5) * normal.getZ();
-        return dot >= 0 ? facing : facing.getOpposite();
-    }
-
-    /**
-     * Samples the first unblocked cell on the camera's side of the door. Stepping outwards (rather
-     * than falling back to all six neighbours) is what stops a single block placed against the
-     * door from blacking out the whole model; it also keeps thin doors from borrowing light that
-     * wrapped around their edge from the far side.
-     */
-    private static int roomLight(World world, BlockPos pos, EnumFacing side) {
-        Vec3i step = side.getDirectionVec();
-        for (int distance = 1; distance <= 4; distance++) {
-            BlockPos candidate = pos.add(step.getX() * distance, step.getY() * distance, step.getZ() * distance);
-            if (!world.isBlockLoaded(candidate)) break;
-            if (world.getBlockState(candidate).getLightOpacity(world, candidate) == 0) {
-                return world.getCombinedLight(candidate, 0);
-            }
-        }
-        return 0;
-    }
-
-    private static void restoreLight(int packed) {
-        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit,
-                (float) (packed & 0xFFFF), (float) (packed >>> 16));
     }
 
     /**
