@@ -52,13 +52,15 @@ public class ItemScrewdriver extends Item {
         if (te instanceof TileEntityDoorKeypad) {
             TileEntityDoorKeypad keypad = (TileEntityDoorKeypad) te;
             if (player.isSneaking()) {
-                // Sneak: enter/leave distance-binding mode. Remember the pad on the tool so the
-                // doors that are clicked next know which keypad they belong to.
+                // Sneak: cycle the binding mode (or reset once the pad is in use). Remember the
+                // pad on the tool so the doors clicked next know where they belong.
                 if (!world.isRemote) {
-                    boolean on = keypad.toggleDistanceMode(player);
+                    keypad.onScrewdriverSneak(player);
                     ItemStack stack = player.getHeldItem(hand);
                     NBTTagCompound tag = stack.getTagCompound();
-                    if (on) {
+                    boolean armed = keypad.isLinking()
+                            && keypad.getBindMode() != TileEntityDoorKeypad.BindMode.NONE;
+                    if (armed) {
                         if (tag == null) {
                             tag = new NBTTagCompound();
                             stack.setTagCompound(tag);
@@ -73,9 +75,11 @@ public class ItemScrewdriver extends Item {
             int button = keypad.buttonAt(hitX, hitY, hitZ);
             // R is the close/clear key and must always reach the keypad, even with the tool in
             // hand. While the reset is waiting for the current code, every key must type, so the
-            // entry can never be swallowed by the tool.
+            // entry can never be swallowed by the tool. Binding modes also need the digits, so the
+            // player can pick a multi door without putting the screwdriver away.
             boolean typingReset = keypad.getMode() == TileEntityDoorKeypad.Mode.RESET_ENTER;
-            if (button == TileEntityDoorKeypad.BUTTON_RESET || (typingReset && button >= 0)) {
+            boolean bindingMode = keypad.getBindMode() != TileEntityDoorKeypad.BindMode.NONE;
+            if (button >= 0 && (button == TileEntityDoorKeypad.BUTTON_RESET || typingReset || bindingMode)) {
                 return EnumActionResult.PASS;
             }
             if (!keypad.hasStoredCode()) return EnumActionResult.PASS;
@@ -117,7 +121,7 @@ public class ItemScrewdriver extends Item {
     }
 
     /**
-     * The keypad this screwdriver is currently binding doors for, or null. The link lives on the
+     * The keypad this screwdriver is currently linking doors for, or null. The link lives on the
      * tool so the player can walk to a door and link it without the keypad staying in reach.
      */
     @Nullable
@@ -127,11 +131,16 @@ public class ItemScrewdriver extends Item {
         if (tag == null || !tag.hasKey(TAG_BIND_KEYPAD)) return null;
         BlockPos padPos = BlockPos.fromLong(tag.getLong(TAG_BIND_KEYPAD));
         TileEntity te = world.getTileEntity(padPos);
-        if (!(te instanceof TileEntityDoorKeypad) || !((TileEntityDoorKeypad) te).isDistanceMode()) {
-            // The keypad is gone or no longer waiting; stop treating clicks as binds.
+        if (!(te instanceof TileEntityDoorKeypad)) {
             tag.removeTag(TAG_BIND_KEYPAD);
             return null;
         }
-        return (TileEntityDoorKeypad) te;
+        TileEntityDoorKeypad keypad = (TileEntityDoorKeypad) te;
+        if (!keypad.isLinking() || keypad.getBindMode() == TileEntityDoorKeypad.BindMode.NONE) {
+            // The pad is no longer linking; stop treating clicks as binds.
+            tag.removeTag(TAG_BIND_KEYPAD);
+            return null;
+        }
+        return keypad;
     }
 }

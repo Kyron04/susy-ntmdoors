@@ -163,6 +163,10 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
                     color = 0xFF15FF00;
                     twoLines = true;
                     break;
+                case NO_DOOR:
+                    line1 = "No door";
+                    color = 0xFFFF0800;
+                    break;
                 default: // DENIED
                     line1 = "Access";
                     line2 = "Denied";
@@ -172,11 +176,35 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
         } else if (te.getBlackScreenTicks() > 0) {
             line1 = "";
             color = 0;
-        } else if (te.isDistanceMode()) {
-            line1 = "Distance";
-            line2 = "Bounding Mode";
+        } else if (te.getMode() == TileEntityDoorKeypad.Mode.RESET_CONFIRM) {
+            line1 = "Reset code?";
             color = 0xFF3FA9F5;
-            line2Color = 0xFF3FA9F5;
+        } else if (te.getMode() == TileEntityDoorKeypad.Mode.RESET_ENTER) {
+            line1 = "Input current";
+            line2 = te.getEntry().isEmpty() ? "code" : te.getEntry();
+            color = 0xFFFFEE00;
+            line2Color = 0xFFFFEE00;
+            twoLines = true;
+        } else if (te.getBindMode() == TileEntityDoorKeypad.BindMode.MULTI) {
+            int slot = te.getSelectedSlot();
+            if (slot >= 0) {
+                line1 = "Door " + (slot + 1);
+                line2 = te.getEntry().isEmpty() ? "Input code" : te.getEntry();
+                color = 0xFFFFFFFF;
+                line2Color = te.getEntry().isEmpty() ? 0xFFFFFFFF : 0xFFFFEE00;
+            } else {
+                line1 = "Multi";
+                line2 = "Bounding Mode";
+                color = 0xFF3FA9F5;
+                line2Color = 0xFF3FA9F5;
+            }
+            twoLines = true;
+        } else if (te.getBindMode() == TileEntityDoorKeypad.BindMode.DISTANCE) {
+            boolean typing = !te.getEntry().isEmpty();
+            line1 = typing ? "Enter code" : "Distance";
+            line2 = typing ? te.getEntry() : "Bounding Mode";
+            color = typing ? 0xFFFFFFFF : 0xFF3FA9F5;
+            line2Color = typing ? 0xFFFFEE00 : 0xFF3FA9F5;
             twoLines = true;
         } else {
             switch (te.getMode()) {

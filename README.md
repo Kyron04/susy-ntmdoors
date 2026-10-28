@@ -29,7 +29,8 @@ Needs JDK 8 (ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs). The Gradl
   `silo_hatch_large`, `large_vehicle_door`, `qe_containment`, `blast_door`, `cargo_door`,
   `water_door`, and `transition_seal`, plus a `_locked` copy of each
 * Screwdriver: sneak + right click on a door with alternate skins cycles through them; right click
-  a keypad to start its code-reset sequence; sneak + right click a keypad toggles distance binding
+  a keypad to start its code-reset sequence; sneak + right click an unused keypad cycles its
+  binding mode
 * Sliding Blast Door Keypad: wall-mounted code panel that locks/unlocks the door it is placed
   next to. Set a 1-6 digit code and enter it to toggle the door; `R` closes an open door. The first
   code set is bound to the door, and every keypad on that door must use the same code to open it.
@@ -37,11 +38,15 @@ Needs JDK 8 (ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs). The Gradl
   already-bound door copies the code automatically and shows `Code synced`. The binding stays on
   the door when a keypad is broken, until the door itself is destroyed. With a screwdriver: first
   click shows `Reset code?`, second click confirms, then entering the current code clears the
-  binding from the door and every keypad linked to it. Sneak + right click the keypad with the
-  screwdriver to enter distance binding (the LCD shows `Distance Bounding Mode` in blue), then
-  sneak + right click each **closed** door within 32 blocks; every linked door answers
-  `Distance Bound Successful`. Pressing any key leaves the mode, and the code typed on the pad then
-  toggles all of the linked doors
+  binding from the door and every keypad linked to it
+* Keypad binding modes (sneak + right click with the screwdriver, only while the pad is unused):
+  off → **Distance** → **Multi** → off. In either mode, sneak + right click each **closed** door
+  within 32 blocks to link it. Distance binds one door and answers `Distance Bound Successful`;
+  the single code typed on the pad toggles it. Multi holds up to nine doors, next to the pad or
+  away from it, and answers `Multi Bound Successful: Door N`; press `1`–`9` to pick a door, type
+  its own code and press `E` (first time stores it, later presses toggle it). Pressing any key ends
+  linking so codes can be entered. Once a code or link exists the mode is fixed and the
+  screwdriver can only reset the pad, which clears every slot and link
 * The secure access door ships nine skins: red, yellow, green, blue, grey, black (white writing),
   HBM yellow, white (black writing) and orange (white writing). The colour variants are generated
   by recolouring only the red warning paint; all other pixels are unchanged. Base colours: green
