@@ -320,6 +320,22 @@ public class DoorDecl {
     }
 
     /**
+     * Adds a collision approximation of a round panel as a stack of horizontal bands. The profile
+     * is read bottom-up as alternating band tops and half-widths, so a round door does not need a
+     * full grid of boxes. Every band follows the same animated group.
+     */
+    public DoorDecl movingDisc(String group, double xMin, double xMax, double yBottom, double... profile) {
+        double y = yBottom;
+        for (int i = 0; i + 1 < profile.length; i += 2) {
+            double top = profile[i];
+            double halfWidth = Math.abs(profile[i + 1]);
+            movingBox(group, new AxisAlignedBB(xMin, y, -halfWidth, xMax, top, halfWidth));
+            y = top;
+        }
+        return this;
+    }
+
+    /**
      * Loads the model-space group bounds used by {@code movingGroup(...)}. Called once during mod
      * setup so the first collision query never has to read an OBJ file.
      */

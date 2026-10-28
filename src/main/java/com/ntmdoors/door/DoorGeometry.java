@@ -10,9 +10,9 @@ import java.util.List;
  *
  * <p>The renderer applies every {@link PartAnim} with {@code GlStateManager.translate/rotate},
  * which post-multiplies the current matrix, so a vertex is transformed by
- * {@code A1 * A2 * ... * An}. The model offset is applied after the part transforms and before the
- * model/facing yaw. This class mirrors that order exactly, which lets a box bound to an animated
- * OBJ group follow the mesh instead of jumping between cell-sized states.</p>
+ * {@code T * A1 * A2 * ... * An}, where {@code T} is the model offset. This class mirrors that
+ * order exactly, which lets a box bound to an animated OBJ group follow the mesh instead of
+ * jumping between cell-sized states.</p>
  *
  * <p>A rotated box is approximated by the AABB of its eight transformed corners. For non-90-degree
  * rotations the box is sliced first and every slice gets its own AABB, keeping the union close to
@@ -59,6 +59,11 @@ public final class DoorGeometry {
         }
 
         Mat mat = new Mat();
+        // The renderer translates by modelOffset before it applies the part steps, and OpenGL
+        // post-multiplies, so the offset ends up to the left of the animation matrices. Applying it
+        // here (before the loop) reproduces that order; doing it afterwards would rotate the offset
+        // together with the part instead of moving the part's result.
+        mat.translate(ox, oy, oz);
         if (steps != null) {
             for (PartAnim a : steps) {
                 double p = a.progress(open);
@@ -71,9 +76,6 @@ public final class DoorGeometry {
                 }
             }
         }
-        // The renderer translates by modelOffset while the model matrix is still in model space,
-        // so the offset is applied before the model yaw.
-        mat.translate(ox, oy, oz);
 
         int n = rotates ? Math.max(1, splits) : 1;
         int splitAxis = n > 1 ? splitAxis(box, axisX, axisY, axisZ) : 0;

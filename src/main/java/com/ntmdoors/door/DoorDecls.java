@@ -57,22 +57,41 @@ public final class DoorDecls {
     /** 5x5 roll-up vault door. The frame track deliberately extends to one side, just like HBM. */
     public static final DoorDecl VAULT_DOOR = reg(new DoorDecl("vault_door")
             .footprint(-2, 2, 0, 4, 0, 0).times(120, 120).strength(30F, 5000F)
-            // Give the floor its own permanent collision, then follow the rotating panel with the
-            // same model transform the renderer uses. The slices keep the AABB of the rolled panel
-            // close to the real plate instead of one large box.
-            .collisionSplits(8)
-            .movingGroup("Door")
-            .open(box(-2.5, 0, -0.5, 2.5, 1, 0.5))
-            // The two vertical frame rails stay solid while the panel rolls away. Their inner
-            // edges match the door model's width (z -2.158..2.158 before the 90-degree yaw) and
-            // they run the full frame height.
-            .open(box(-2.5, 1, -0.5, -2.158, 5, 0.5),
-                    box(2.158, 1, -0.5, 2.5, 5, 0.5))
-            // HBM's extra dimensions add a service/track row behind the door. The open panel
-            // rests further along that track, so both the row and its hitboxes extend west.
-            .extraCellsRow(-6, 2, 0, 1)
-            .open(box(-2.5, 0, 0.5, 2.5, 1, 1.5))
-            .box(box(-5.75, 0, 0.5, -2.5, 1.125, 1.5), 1F / 3F, 1.0001F, true, true)
+            // The panel is a round gear plate. A single rotated AABB balloons into a diamond, so the
+            // collision follows the disc's silhouette as horizontal bands. The rotation is about the
+            // disc's centre, which does not change that silhouette, so the collision only needs the
+            // pull-out and the sideways roll.
+            .anim("VaultPanel",
+                    PartAnim.translate(-1.0, 0, 0, 0F, 1F / 3F),
+                    PartAnim.translate(0, 0, 5.0, 1F / 3F, 1F))
+            .movingDisc("VaultPanel", -0.5, 0.4375, 0.396711,
+                    0.728, 0.50,
+                    1.20, 0.91,
+                    1.40, 1.21,
+                    2.60, 1.70,
+                    3.15, 2.08,
+                    4.05, 1.41,
+                    4.35, 1.20,
+                    4.64728, 0.26)
+            // The frame is a 5x5 slab with a gear-shaped opening, and its track is a low rail that
+            // runs 4.5 blocks to the right (door-local +X). The track is the floor: it is 0.728
+            // high and two cells deep, so it covers the doorway and the service row behind it.
+            .open(box(-2.5, 0, -0.5, 6.5, 0.728, 1.5))
+            // The frame stays solid while the panel rolls away. Each band follows the opening's
+            // silhouette (measured from the OBJ), so the thick upper corners are not left hollow.
+            .open(box(-2.5, 0.728, -0.5, -0.91, 1.20, 0.5), box(0.91, 0.728, -0.5, 2.5, 1.20, 0.5))
+            .open(box(-2.5, 1.20, -0.5, -1.21, 1.40, 0.5), box(1.21, 1.20, -0.5, 2.5, 1.40, 0.5))
+            .open(box(-2.5, 1.40, -0.5, -1.70, 2.60, 0.5), box(1.70, 1.40, -0.5, 2.5, 2.60, 0.5))
+            .open(box(-2.5, 2.60, -0.5, -2.08, 3.15, 0.5), box(2.08, 2.60, -0.5, 2.5, 3.15, 0.5))
+            .open(box(-2.5, 3.15, -0.5, -1.41, 4.05, 0.5), box(1.41, 3.15, -0.5, 2.5, 4.05, 0.5))
+            .open(box(-2.5, 4.05, -0.5, -1.20, 4.35, 0.5), box(1.20, 4.05, -0.5, 2.5, 4.35, 0.5))
+            .open(box(-2.5, 4.35, -0.5, -0.26, 4.65, 0.5), box(0.26, 4.35, -0.5, 2.5, 4.65, 0.5))
+            // The lintel closes the top of the frame above the opening.
+            .open(box(-2.5, 4.65, -0.5, 2.5, 5, 0.5))
+            // The track needs its own cells so blocks cannot be placed inside it and the whole
+            // structure is removed together. It runs east, matching the rendered track.
+            .extraCellsRow(-2, 6, 0, 1)
+            .extraCellsRow(3, 6, 0, 0)
             .modelPath("models/doors/vault_door.obj", "textures/models/doors/vault_door.png")
             .modelYaw(90F)
             // HBM's seven Vault-Tec skins: three door plates and four label variants. The label
