@@ -21,7 +21,6 @@ Needs JDK 8 (ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs). The Gradl
 * Every door is also registered as a locked, redstone-only copy named `<door>_locked`
 * State dependent collision and selection boxes that follow the door animation continuously
   (walk through when open, click-through gaps)
-* Padlock (sneak + right click to fit) and keys (padlock + iron ingot, keeps the padlock); sneak + key removes it
 * OBJ renderer (TESR) with per-group translate/rotate animations, X/Y/Z clipping and sounds
 * 3D door item rendering (inventory, hand, ground) from the same OBJ model, matching HBM's door item renderer
 * 16 multiblock OBJ doors: `vault_door`, `sliding_blast_door`, `qe_sliding_door`, `qe_sliding_panel`,
@@ -60,9 +59,8 @@ Needs JDK 8 (ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs). The Gradl
 Models live under `src/main/resources/assets/ntmdoors/models/doors/`, textures under
 `textures/models/doors/`, and sounds under `sounds/doors/`. Door items do **not** need flat
 `textures/items/<door>.png` icons: the inventory/hand item is rendered from the same OBJ model
-and texture as the placed door. Only the padlock, key, screwdriver and keypad item use flat icons
-(`textures/items/padlock.png`, `textures/items/door_key.png`, `textures/items/screwdriver.png`
-and `textures/items/sliding_blast_door_keypad.png`).
+and texture as the placed door. Only the screwdriver and keypad items use flat icons
+(`textures/items/screwdriver.png` and `textures/items/sliding_blast_door_keypad.png`).
 
 | door | animated OBJ groups | notes |
 |---|---|---|
@@ -95,5 +93,5 @@ and `.clipZ(...)` where the original HBM renderer used a clip plane. Moving part
 for explicit model-space bounds; `.collisionSplits(n)` tightens rotating parts by slicing their AABB.
 
 ## Not included
-Crafting recipes for the doors (the originals need NTM materials), configs, NEI/JEI, the door key
-lock-picking, and other NTM items.
+Crafting recipes for the doors (the originals need NTM materials), configs, NEI/JEI, and other
+NTM items.

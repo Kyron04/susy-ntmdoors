@@ -13,7 +13,6 @@ under the GNU Lesser General Public License, version 3 (LGPL-3.0):
   * Door OBJ models under assets/ntmdoors/models/doors/
   * Door model textures under assets/ntmdoors/textures/models/doors/
   * Door sounds under assets/ntmdoors/sounds/doors/
-  * Key and padlock item textures under assets/ntmdoors/textures/items/
   * Door geometry, animation dimensions and behaviour used by
     src/main/java/com/ntmdoors/door/DoorDecls.java
 

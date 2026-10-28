@@ -30,8 +30,6 @@ public class ClientModels {
         }
         invisible(ModContent.KEYPAD);
         inventory(Item.getItemFromBlock(ModContent.KEYPAD));
-        inventory(ModContent.PADLOCK);
-        inventory(ModContent.KEY);
         inventory(ModContent.SCREWDRIVER);
     }
 

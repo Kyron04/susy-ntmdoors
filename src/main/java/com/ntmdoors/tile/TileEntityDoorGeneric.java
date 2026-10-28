@@ -4,17 +4,12 @@ import com.ntmdoors.block.BlockDoorGeneric;
 import com.ntmdoors.client.DoorLoopSound;
 import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.DoorState;
-import com.ntmdoors.item.ItemDoorKey;
-import com.ntmdoors.item.ItemPadlock;
-import com.ntmdoors.item.LockUtil;
-import com.ntmdoors.registry.ModContent;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -36,7 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/** Core cell of a door. Owns the state machine, redstone handling, lock and animation timing. */
+/** Core cell of a door. Owns the state machine, redstone handling, keypad binding and animation timing. */
 public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable {
 
     private static final AxisAlignedBB[] EMPTY_BOXES = new AxisAlignedBB[0];
@@ -46,7 +41,6 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
     private boolean powered;
     /** Opposite request received while moving; null when nothing is queued. */
     private Boolean queuedOpen;
-    private int lockCode;        // 0 = unlocked
     private int skinIndex;
     /** Code a keypad has bound to this door; empty when no keypad controls it. Server-only. */
     private String keypadCode = "";
@@ -84,10 +78,6 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
 
     public DoorState getState() {
         return state;
-    }
-
-    public boolean isLocked() {
-        return lockCode != 0;
     }
 
     /** Marks the door as being torn down. Returns false when the teardown is already running. */
@@ -385,7 +375,6 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         if (p == powered) return;
         powered = p;
         markDirty();
-        // Redstone bypasses the padlock, matching HBM's default behaviour.
         request(p);
     }
 
@@ -398,58 +387,14 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
             return;
         }
 
-        ItemStack held = player.getHeldItem(hand);
-
         // Skin changes never reach here: vanilla skips block activation for a sneaking player,
-        // so ItemScrewdriver.onItemUseFirst owns that interaction (and keeps working while locked).
+        // so ItemScrewdriver.onItemUseFirst owns that interaction.
         if (isKeypadBound()) {
             reject(player);
             return;
         }
 
-        if (player.isSneaking() && held.getItem() instanceof ItemPadlock) {
-            fitPadlock(player, held);
-            return;
-        }
-
-        if (isLocked() && !tryOpenWithKey(player, held)) return;
-
         toggle();
-    }
-
-    /** Sneak + padlock: attach the held padlock's code to this door. */
-    private void fitPadlock(EntityPlayer player, ItemStack padlock) {
-        if (isLocked()) {
-            msg(player, "ntmdoors.msg.already_locked");
-            return;
-        }
-        int code = LockUtil.getCode(padlock);
-        if (code == 0) return;
-        lockCode = code;
-        if (!player.capabilities.isCreativeMode) padlock.shrink(1);
-        world.playSound(null, pos, SoundEvents.BLOCK_IRON_TRAPDOOR_CLOSE, SoundCategory.BLOCKS, 1F, 1.2F);
-        msg(player, "ntmdoors.msg.lock_applied");
-        sync();
-    }
-
-    /**
-     * Returns true when the player may operate the door. A matching key removes the padlock when
-     * sneaking; any other held item is rejected with the usual locked feedback.
-     */
-    private boolean tryOpenWithKey(EntityPlayer player, ItemStack held) {
-        if (!(held.getItem() instanceof ItemDoorKey) || LockUtil.getCode(held) != lockCode) {
-            reject(player);
-            return false;
-        }
-        if (!player.isSneaking()) return true;
-
-        ItemStack padlock = LockUtil.withCode(new ItemStack(ModContent.PADLOCK), lockCode);
-        lockCode = 0;
-        if (!player.addItemStackToInventory(padlock)) player.dropItem(padlock, false);
-        world.playSound(null, pos, SoundEvents.BLOCK_IRON_TRAPDOOR_OPEN, SoundCategory.BLOCKS, 1F, 1.2F);
-        msg(player, "ntmdoors.msg.unlocked");
-        sync();
-        return false;
     }
 
     private boolean isRedstoneOnly() {
@@ -475,17 +420,15 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         tag.setInteger("timer", timer);
         tag.setBoolean("powered", powered);
         tag.setInteger("queued", queuedOpen == null ? -1 : queuedOpen ? 1 : 0);
-        tag.setInteger("lock", lockCode);
         tag.setInteger("skin", skinIndex);
         tag.setString("keypadCode", keypadCode);
         return tag;
     }
 
-    /** Lock codes stay on the server; clients only need the visual state. */
+    /** Keypad codes stay on the server; clients only need the visual state. */
     @Override
     protected NBTTagCompound writeSyncTag(NBTTagCompound tag) {
         writeToNBT(tag);
-        tag.removeTag("lock");
         tag.removeTag("keypadCode");
         return tag;
     }
@@ -498,7 +441,6 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         powered = tag.getBoolean("powered");
         int queued = tag.hasKey("queued") ? tag.getInteger("queued") : -1;
         queuedOpen = queued < 0 ? null : queued == 1;
-        lockCode = tag.getInteger("lock");
         skinIndex = tag.hasKey("skin") ? tag.getInteger("skin") : 0;
         keypadCode = tag.getString("keypadCode");
     }
