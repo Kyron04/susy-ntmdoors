@@ -112,13 +112,15 @@ public class RenderDoor extends TileEntitySpecialRenderer<TileEntityDoorGeneric>
         RenderManager rm = Minecraft.getMinecraft().getRenderManager();
         if (d.minY == d.maxY) {
             // Horizontal hatches: sample above or below the lid.
-            return new DoorLight(te.getWorld(), 0F, rm.viewerPosY >= pos.getY() + 0.5 ? 1F : -1F, 0F);
+            return new DoorLight(te.getWorld(), rm.viewerPosX, rm.viewerPosY, rm.viewerPosZ,
+                    0F, rm.viewerPosY >= pos.getY() + 0.5 ? 1F : -1F, 0F);
         }
         Vec3i normal = facing.getDirectionVec();
         double dot = (rm.viewerPosX - pos.getX() - 0.5) * normal.getX()
                 + (rm.viewerPosZ - pos.getZ() - 0.5) * normal.getZ();
         Vec3i side = (dot >= 0 ? facing : facing.getOpposite()).getDirectionVec();
-        return new DoorLight(te.getWorld(), side.getX(), side.getY(), side.getZ());
+        return new DoorLight(te.getWorld(), rm.viewerPosX, rm.viewerPosY, rm.viewerPosZ,
+                side.getX(), side.getY(), side.getZ());
     }
 
     /**
@@ -130,41 +132,137 @@ public class RenderDoor extends TileEntitySpecialRenderer<TileEntityDoorGeneric>
     static final class DoorLight implements ObjModel.VertexLight {
 
         private final World world;
+        private final double cx, cy, cz;
         private final float ox, oy, oz;
         private final Map<Long, Integer> cache = new HashMap<>();
+        private final Map<Long, Integer> normalCache = new HashMap<>();
         private final BlockPos.PooledMutableBlockPos sample = BlockPos.PooledMutableBlockPos.retain();
 
-        private DoorLight(World world, float ox, float oy, float oz) {
+        private DoorLight(World world, double cx, double cy, double cz, float ox, float oy, float oz) {
             this.world = world;
+            this.cx = cx;
+            this.cy = cy;
+            this.cz = cz;
             this.ox = ox;
             this.oy = oy;
             this.oz = oz;
         }
 
         @Override
-        public int lightAt(double x, double y, double z) {
+        public int lightAt(double x, double y, double z, float nx, float ny, float nz) {
             // Step out of the panel towards the camera's room. One cell usually reaches the
-            // adjacent room; a very thick part may need a second step before it leaves the
-            // door's own opaque cells.
+            // adjacent room; a very thick part, a wall or a deep frame may need more.
+            int bx = 0, by = 0, bz = 0;
+            for (int attempt = 0; attempt < 3; attempt++) {
+                double distance = 0.55 + attempt * 0.75;
+                bx = (int) Math.floor(x + ox * distance);
+                by = Math.max(0, Math.min(255, (int) Math.floor(y + oy * distance)));
+                bz = (int) Math.floor(z + oz * distance);
+                sample.setPos(bx, by, bz);
+                if (world.getBlockState(sample).getLightOpacity(world, sample) == 0) break;
+            }
+
+            sample.setPos(bx, by, bz);
+            long cellKey = sample.toLong();
+            int block, sky;
+            Integer cached = cache.get(cellKey);
+            if (cached != null) {
+                block = cached & 0xFFFF;
+                sky = cached >>> 16;
+            } else {
+                // Start with the cell just outside the surface, then take the brightest light in
+                // its immediate neighbourhood that stays on the same side of the door plane. This
+                // removes the black patches caused by a single vertex landing in a wall, a door
+                // cell or a shadowed gap, without ever sampling through to the other side.
+                int packed = world.getCombinedLight(sample, 0);
+                block = packed & 0xFFFF;
+                sky = packed >>> 16;
+
+                if (oy == 0F) {
+                    // Vertical door: move vertically and along the door's width, never through it.
+                    int tx = (int) -oz;
+                    int tz = (int) ox;
+                    block = Math.max(block, sampleComponent(bx, by - 1, bz, true));
+                    sky = Math.max(sky, sampleComponent(bx, by - 1, bz, false));
+                    block = Math.max(block, sampleComponent(bx, by + 1, bz, true));
+                    sky = Math.max(sky, sampleComponent(bx, by + 1, bz, false));
+                    block = Math.max(block, sampleComponent(bx + tx, by, bz + tz, true));
+                    sky = Math.max(sky, sampleComponent(bx + tx, by, bz + tz, false));
+                    block = Math.max(block, sampleComponent(bx - tx, by, bz - tz, true));
+                    sky = Math.max(sky, sampleComponent(bx - tx, by, bz - tz, false));
+                } else {
+                    // Horizontal hatch: move across the lid, never above/below it.
+                    block = Math.max(block, sampleComponent(bx - 1, by, bz, true));
+                    sky = Math.max(sky, sampleComponent(bx - 1, by, bz, false));
+                    block = Math.max(block, sampleComponent(bx + 1, by, bz, true));
+                    sky = Math.max(sky, sampleComponent(bx + 1, by, bz, false));
+                    block = Math.max(block, sampleComponent(bx, by, bz - 1, true));
+                    sky = Math.max(sky, sampleComponent(bx, by, bz - 1, false));
+                    block = Math.max(block, sampleComponent(bx, by, bz + 1, true));
+                    sky = Math.max(sky, sampleComponent(bx, by, bz + 1, false));
+                }
+                cache.put(cellKey, block | (sky << 16));
+            }
+
+            // If the visible face is still almost unlit, the fixed side is not the right local
+            // side for this part (deep frames and tracks do this). Try the real surface normal,
+            // oriented towards the camera, and keep the brighter result. Only dark vertices take
+            // this path, so lit faces keep their smooth room-side gradient.
+            if ((block >>> 4) + (sky >>> 4) <= 2) {
+                float len = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);
+                if (len > 1.0E-4F) {
+                    float ux = nx / len;
+                    float uy = ny / len;
+                    float uz = nz / len;
+                    if (ux * (cx - x) + uy * (cy - y) + uz * (cz - z) < 0) {
+                        ux = -ux;
+                        uy = -uy;
+                        uz = -uz;
+                    }
+                    int nk = (Math.round(ux * 8F) & 0xFF)
+                            | ((Math.round(uy * 8F) & 0xFF) << 8)
+                            | ((Math.round(uz * 8F) & 0xFF) << 16);
+                    long normalKey = cellKey * 31L + nk;
+                    Integer normalCached = normalCache.get(normalKey);
+                    int normalPacked;
+                    if (normalCached != null) {
+                        normalPacked = normalCached;
+                    } else {
+                        normalPacked = sampleDirection(x, y, z, ux, uy, uz);
+                        normalCache.put(normalKey, normalPacked);
+                    }
+                    if (normalPacked >= 0) {
+                        block = Math.max(block, normalPacked & 0xFFFF);
+                        sky = Math.max(sky, normalPacked >>> 16);
+                    }
+                }
+            }
+            return block | (sky << 16);
+        }
+
+        /** Samples outwards along an arbitrary direction; -1 when no clear cell is found. */
+        private int sampleDirection(double x, double y, double z, float dx, float dy, float dz) {
             for (int attempt = 0; attempt < 3; attempt++) {
                 double distance = 0.55 + attempt * 0.75;
                 sample.setPos(
-                        (int) Math.floor(x + ox * distance),
-                        Math.max(0, Math.min(255, (int) Math.floor(y + oy * distance))),
-                        (int) Math.floor(z + oz * distance));
-                IBlockState state = world.getBlockState(sample);
-                if (!(state.getBlock() instanceof BlockDoorGeneric)
-                        || state.getLightOpacity(world, sample) == 0) {
-                    break;
+                        (int) Math.floor(x + dx * distance),
+                        Math.max(0, Math.min(255, (int) Math.floor(y + dy * distance))),
+                        (int) Math.floor(z + dz * distance));
+                if (world.getBlockState(sample).getLightOpacity(world, sample) == 0) {
+                    return world.getCombinedLight(sample, 0);
                 }
             }
+            return -1;
+        }
 
-            long key = sample.toLong();
-            Integer cached = cache.get(key);
-            if (cached != null) return cached;
+        /** One light component of a neighbour cell, or -1 when the cell is missing/opaque. */
+        private int sampleComponent(int x, int y, int z, boolean blockLight) {
+            if (y < 0 || y > 255) return -1;
+            sample.setPos(x, y, z);
+            IBlockState state = world.getBlockState(sample);
+            if (state.getLightOpacity(world, sample) != 0) return -1;
             int packed = world.getCombinedLight(sample, 0);
-            cache.put(key, packed);
-            return packed;
+            return blockLight ? packed & 0xFFFF : packed >>> 16;
         }
 
         private void release() {

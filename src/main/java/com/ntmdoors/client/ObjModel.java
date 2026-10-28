@@ -107,8 +107,8 @@ public class ObjModel {
 
     /** Samples the world light for one rendered vertex. */
     public interface VertexLight {
-        /** Packed {@code blockLight | skyLight << 16} at a world-space vertex. */
-        int lightAt(double x, double y, double z);
+        /** Packed {@code blockLight | skyLight << 16} at a world-space vertex and normal. */
+        int lightAt(double x, double y, double z, float nx, float ny, float nz);
     }
 
     /**
@@ -125,14 +125,18 @@ public class ObjModel {
         GL11.glBegin(GL11.GL_TRIANGLES);
         for (int i = 0; i < d.length; i += 8) {
             float vx = d[i], vy = d[i + 1], vz = d[i + 2];
+            float nx = d[i + 5], ny = d[i + 6], nz = d[i + 7];
 
             float wx = m[0] * vx + m[4] * vy + m[8] * vz + m[12];
             float wy = m[1] * vx + m[5] * vy + m[9] * vz + m[13];
             float wz = m[2] * vx + m[6] * vy + m[10] * vz + m[14];
+            float wnx = m[0] * nx + m[4] * ny + m[8] * nz;
+            float wny = m[1] * nx + m[5] * ny + m[9] * nz;
+            float wnz = m[2] * nx + m[6] * ny + m[10] * nz;
 
-            int packed = light.lightAt(wx, wy, wz);
+            int packed = light.lightAt(wx, wy, wz, wnx, wny, wnz);
             GL13.glMultiTexCoord2f(GL13.GL_TEXTURE1, packed & 0xFFFF, packed >>> 16);
-            GL11.glNormal3f(d[i + 5], d[i + 6], d[i + 7]);
+            GL11.glNormal3f(nx, ny, nz);
             GL11.glTexCoord2f(d[i + 3], d[i + 4]);
             GL11.glVertex3f(vx, vy, vz);
         }

@@ -391,6 +391,8 @@ public final class DoorDecls {
      */
     public static final DoorDecl CARGO_DOOR = reg(new DoorDecl("cargo_door")
             .footprint(-1, 1, 0, 2, 0, 0).times(60, 60).strength(5F, 50F)
+            // Cargo doors are glass-panelled like the QE sliding doors; do not seal light.
+            .lightPasses()
             // Both halves follow their own model transform. The upper panel leaves a shallow
             // lintel when open, and the floor keeps a click target for closing the door.
             .movingGroup("DoorBot")
