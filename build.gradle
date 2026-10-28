@@ -125,7 +125,7 @@ task downloadAssets {
                 boolean ok = false
                 for (int attempt = 1; attempt <= 3 && !ok; attempt++) {
                     try {
-                        new URL("https://resources.download.minecraft.net/${hash.substring(0, 2)}/${hash}").openStream().withInputStream { input ->
+                        new URL("https://resources.download.minecraft.net/${hash.substring(0, 2)}/${hash}").openStream().withStream { input ->
                             partial.withOutputStream { output -> output << input }
                         }
                         if (partial.length() == size) {
