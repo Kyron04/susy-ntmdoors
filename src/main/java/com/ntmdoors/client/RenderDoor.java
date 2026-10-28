@@ -10,11 +10,15 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+
+import javax.annotation.Nullable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
@@ -60,7 +64,7 @@ public class RenderDoor extends TileEntitySpecialRenderer<TileEntityDoorGeneric>
         EnumFacing facing = state.getValue(BlockDoorGeneric.FACING);
 
         float open = te.getOpenFraction(partialTicks);
-        int previousLight = useRoomLight(te);
+        int previousLight = useRoomLight(te, facing);
 
         GlStateManager.pushMatrix();
         GlStateManager.translate(x + 0.5, y, z + 0.5);          // bottom centre of the core cell
@@ -86,15 +90,44 @@ public class RenderDoor extends TileEntitySpecialRenderer<TileEntityDoorGeneric>
 
     /**
      * A light-sealed door makes its own cells opaque, so the lightmap the dispatcher picked for the
-     * core cell is black. Sample the six neighbours instead and keep the brighter side: the door
-     * then looks like the room it divides instead of going dark because it blocks light.
+     * core cell is black. Use the light of the room the camera stands in instead: the visible face
+     * of a door is always the one facing the viewer, so that is the light level the door should
+     * show. Doors never inherit the brightness of the room on their far side.
      */
-    private static int useRoomLight(TileEntityDoorGeneric te) {
+    private static int useRoomLight(TileEntityDoorGeneric te, EnumFacing facing) {
         World world = te.getWorld();
         BlockPos pos = te.getPos();
         int original = world.getCombinedLight(pos, 0);
-        int block = original & 0xFFFF;
-        int sky = original >>> 16;
+        BlockPos sample = cameraSide(world, pos, te.getDecl(), facing);
+        int packed = sample != null && world.isBlockLoaded(sample)
+                ? world.getCombinedLight(sample, 0)
+                : brightestNeighbour(world, pos, original);
+        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit,
+                (float) (packed & 0xFFFF), (float) (packed >>> 16));
+        return original;
+    }
+
+    /**
+     * The air cell on the side of the door the camera is on. Vertical doors are split by their
+     * facing plane; horizontal doors (the silo hatches) by their height.
+     */
+    @Nullable
+    private static BlockPos cameraSide(World world, BlockPos pos, DoorDecl decl, EnumFacing facing) {
+        Entity view = Minecraft.getMinecraft().getRenderViewEntity();
+        if (view == null) return null;
+        if (decl != null && decl.minY == decl.maxY) {
+            return view.posY >= pos.getY() + 0.5 ? pos.up() : pos.down();
+        }
+        Vec3i normal = facing.getDirectionVec();
+        double dot = (view.posX - pos.getX() - 0.5) * normal.getX()
+                + (view.posZ - pos.getZ() - 0.5) * normal.getZ();
+        return dot >= 0 ? pos.offset(facing) : pos.offset(facing.getOpposite());
+    }
+
+    /** Fallback when the camera is unknown: the brightest neighbouring cell. */
+    private static int brightestNeighbour(World world, BlockPos pos, int fallback) {
+        int block = fallback & 0xFFFF;
+        int sky = fallback >>> 16;
         for (EnumFacing face : NEIGHBOURS) {
             BlockPos neighbour = pos.offset(face);
             if (!world.isBlockLoaded(neighbour)) continue;
@@ -102,8 +135,7 @@ public class RenderDoor extends TileEntitySpecialRenderer<TileEntityDoorGeneric>
             block = Math.max(block, packed & 0xFFFF);
             sky = Math.max(sky, packed >>> 16);
         }
-        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, (float) block, (float) sky);
-        return original;
+        return block | (sky << 16);
     }
 
     private static void restoreLight(int packed) {

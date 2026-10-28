@@ -93,7 +93,16 @@ public final class DoorDecls {
             // The rear rail needs its own cells so blocks cannot be placed inside it and the whole
             // structure is removed together. The front row only exists under the frame, so it stays
             // part of the normal footprint.
-            .extraCellsRow(-2, 6, 0, 1)
+            //
+            // The opened panel stands on that rail one cell behind the frame and five blocks to the
+            // right (X 2.92..7.08, Y 0.40..4.65), so its parking bay needs cells for the full height.
+            // The single bottom row only made its lower edge solid.
+            .extraCellsRow(-2, 2, 0, 1)
+            .extraCellsRow(3, 7, 0, 1)
+            .extraCellsRow(3, 7, 1, 1)
+            .extraCellsRow(3, 7, 2, 1)
+            .extraCellsRow(3, 7, 3, 1)
+            .extraCellsRow(3, 7, 4, 1)
             .modelPath("models/doors/vault_door.obj", "textures/models/doors/vault_door.png")
             .modelYaw(90F)
             // HBM's seven Vault-Tec skins: three door plates and four label variants. The label
