@@ -73,7 +73,7 @@ public class RenderDoorItem extends TileEntityItemStackRenderer {
         GlStateManager.rotate(d.modelYaw, 0F, 1F, 0F);
         GlStateManager.translate(-cx, -cy, -cz);
 
-        RenderDoor.drawParts(d, model, 0F, groups, false, 0, null, null);
+        RenderDoor.drawParts(d, model, 0F, groups, false, 0);
 
         GlStateManager.disableBlend();
         GlStateManager.popMatrix();

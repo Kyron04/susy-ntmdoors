@@ -62,6 +62,8 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
     private Map<Long, Boolean> lightCells;
     /** Set on load so the first tick can correct light that was computed before the tile existed. */
     private boolean lightUpdatePending;
+    /** Ticks between seal refreshes while moving; huge doors use a slower cadence. */
+    private int lightRefreshInterval = 4;
 
     /*
      * Client-side movement loops. The server plays the one-shot start/end sounds and timed cues,
@@ -156,7 +158,11 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         Map<Long, Boolean> previous = lightCells;
         Map<Long, Boolean> current = new HashMap<>();
         boolean seals = d.sealsLight;
-        for (BlockPos offset : d.getCells(facing)) {
+        BlockPos[] cells = d.getCells(facing);
+        // A 27x24 door changes hundreds of opacity cells. Rechecking all of them every 4 ticks
+        // costs far more than the visible difference; large doors refresh every 10 ticks.
+        lightRefreshInterval = cells.length > 128 ? 10 : 4;
+        for (BlockPos offset : cells) {
             BlockPos cell = pos.add(offset);
             IBlockState state = world.getBlockState(cell);
             boolean solid = seals && state.getBlock() == block
@@ -200,7 +206,7 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         int dur = state == DoorState.OPENING ? d.openTicks : d.closeTicks;
         if (timer >= dur) {
             finishMove(d);
-        } else if ((timer & 3) == 0) {
+        } else if (timer % lightRefreshInterval == 0) {
             // Follow the clearing hitboxes, so light enters a doorway as the panel leaves it.
             updateLightSeal(false);
         }

@@ -37,7 +37,6 @@ public final class KeyframeAnimation {
     private static final Map<ResourceLocation, Map<String, KeyframeAnimation>> CACHE = new HashMap<>();
     private static final Set<ResourceLocation> WARNED = new HashSet<>();
     private static final FloatBuffer MATRIX = BufferUtils.createFloatBuffer(16);
-    private static final float[] MATRIX_ARRAY = new float[16];
 
     private final Sample[] samples;
 
@@ -96,23 +95,6 @@ public final class KeyframeAnimation {
     /** Applies this group's interpolated transform to the current model-view matrix. */
     public void apply(float open) {
         if (samples.length == 0) return;
-        getMatrix(open, MATRIX_ARRAY);
-        MATRIX.clear();
-        MATRIX.put(MATRIX_ARRAY);
-        MATRIX.flip();
-        GL11.glMultMatrix(MATRIX);
-    }
-
-    /**
-     * Writes this group's interpolated transform to {@code out} as a column-major 4x4 matrix,
-     * matching the matrix that {@link #apply(float)} multiplies into the model-view stack.
-     */
-    public void getMatrix(float open, float[] out) {
-        if (samples.length == 0) {
-            java.util.Arrays.fill(out, 0F);
-            out[0] = out[5] = out[10] = out[15] = 1F;
-            return;
-        }
 
         float t = Math.max(0F, Math.min(1F, open));
         Sample a = samples[0];
@@ -172,22 +154,13 @@ public final class KeyframeAnimation {
         float xx = qx * qx, xy = qx * qy, xz = qx * qz, xw = qx * qw;
         float yy = qy * qy, yz = qy * qz, yw = qy * qw;
         float zz = qz * qz, zw = qz * qw;
-        out[0] = 1F - 2F * (yy + zz);
-        out[1] = 2F * (xy + zw);
-        out[2] = 2F * (xz - yw);
-        out[3] = 0F;
-        out[4] = 2F * (xy - zw);
-        out[5] = 1F - 2F * (xx + zz);
-        out[6] = 2F * (yz + xw);
-        out[7] = 0F;
-        out[8] = 2F * (xz + yw);
-        out[9] = 2F * (yz - xw);
-        out[10] = 1F - 2F * (xx + yy);
-        out[11] = 0F;
-        out[12] = tx;
-        out[13] = ty;
-        out[14] = tz;
-        out[15] = 1F;
+        MATRIX.clear();
+        MATRIX.put(1F - 2F * (yy + zz)).put(2F * (xy + zw)).put(2F * (xz - yw)).put(0F);
+        MATRIX.put(2F * (xy - zw)).put(1F - 2F * (xx + zz)).put(2F * (yz + xw)).put(0F);
+        MATRIX.put(2F * (xz + yw)).put(2F * (yz - xw)).put(1F - 2F * (xx + yy)).put(0F);
+        MATRIX.put(tx).put(ty).put(tz).put(1F);
+        MATRIX.flip();
+        GL11.glMultMatrix(MATRIX);
     }
 
     private static final class Sample {

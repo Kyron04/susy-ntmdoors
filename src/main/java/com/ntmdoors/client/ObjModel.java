@@ -8,7 +8,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL13;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -103,113 +102,6 @@ public class ObjModel {
             lists.put(group, id);
         }
         GL11.glCallList(id);
-    }
-
-    /** Samples the world light for one rendered vertex. */
-    public interface VertexLight {
-        /** Packed {@code blockLight | skyLight << 16} at a world-space vertex and normal. */
-        int lightAt(double x, double y, double z, float nx, float ny, float nz);
-    }
-
-    /**
-     * Draws a group with a lightmap coordinate per vertex. The display list path cannot do this:
-     * its light coordinates are baked at compile time, so a door that seals light ends up uniformly
-     * lit (or uniformly black). Computing the coordinate for every vertex lets the fixed-function
-     * lightmap interpolate across the face, which is what makes the brightness fade smoothly from a
-     * lit half of the door into a dark half.
-     */
-    public void drawLit(String group, VertexLight light, Transform transform) {
-        float[] d = data.get(group);
-        if (d == null) return;
-        float[] m = transform.matrix;
-        GL11.glBegin(GL11.GL_TRIANGLES);
-        for (int i = 0; i < d.length; i += 8) {
-            float vx = d[i], vy = d[i + 1], vz = d[i + 2];
-            float nx = d[i + 5], ny = d[i + 6], nz = d[i + 7];
-
-            float wx = m[0] * vx + m[4] * vy + m[8] * vz + m[12];
-            float wy = m[1] * vx + m[5] * vy + m[9] * vz + m[13];
-            float wz = m[2] * vx + m[6] * vy + m[10] * vz + m[14];
-            float wnx = m[0] * nx + m[4] * ny + m[8] * nz;
-            float wny = m[1] * nx + m[5] * ny + m[9] * nz;
-            float wnz = m[2] * nx + m[6] * ny + m[10] * nz;
-
-            int packed = light.lightAt(wx, wy, wz, wnx, wny, wnz);
-            GL13.glMultiTexCoord2f(GL13.GL_TEXTURE1, packed & 0xFFFF, packed >>> 16);
-            GL11.glNormal3f(nx, ny, nz);
-            GL11.glTexCoord2f(d[i + 3], d[i + 4]);
-            GL11.glVertex3f(vx, vy, vz);
-        }
-        GL11.glEnd();
-    }
-
-    /**
-     * Minimal column-major 4x4 transform used to reproduce the renderer's matrix stack for light
-     * sampling. Only translations and rotations are needed, so there is no inverse-transpose path.
-     */
-    public static final class Transform {
-        private static final float[] ROTATION = new float[16];
-        private static final float[] SCRATCH = new float[16];
-
-        public final float[] matrix = new float[16];
-
-        public Transform() {
-            matrix[0] = matrix[5] = matrix[10] = matrix[15] = 1F;
-        }
-
-        public Transform(Transform other) {
-            System.arraycopy(other.matrix, 0, matrix, 0, 16);
-        }
-
-        public void translate(float x, float y, float z) {
-            for (int row = 0; row < 4; row++) {
-                matrix[12 + row] += matrix[row] * x + matrix[4 + row] * y + matrix[8 + row] * z;
-            }
-        }
-
-        public void rotate(float degrees, float x, float y, float z) {
-            float len = (float) Math.sqrt(x * x + y * y + z * z);
-            if (len < 1.0E-6F) return;
-            x /= len;
-            y /= len;
-            z /= len;
-            float radians = (float) Math.toRadians(degrees);
-            float c = (float) Math.cos(radians);
-            float s = (float) Math.sin(radians);
-            float t = 1F - c;
-
-            ROTATION[0] = c + x * x * t;
-            ROTATION[1] = y * x * t + z * s;
-            ROTATION[2] = z * x * t - y * s;
-            ROTATION[3] = 0F;
-            ROTATION[4] = x * y * t - z * s;
-            ROTATION[5] = c + y * y * t;
-            ROTATION[6] = z * y * t + x * s;
-            ROTATION[7] = 0F;
-            ROTATION[8] = x * z * t + y * s;
-            ROTATION[9] = y * z * t - x * s;
-            ROTATION[10] = c + z * z * t;
-            ROTATION[11] = 0F;
-            ROTATION[12] = 0F;
-            ROTATION[13] = 0F;
-            ROTATION[14] = 0F;
-            ROTATION[15] = 1F;
-            multiply(ROTATION);
-        }
-
-        /** Post-multiplies this transform by another column-major matrix. */
-        public void multiply(float[] other) {
-            for (int col = 0; col < 4; col++) {
-                for (int row = 0; row < 4; row++) {
-                    float sum = 0F;
-                    for (int k = 0; k < 4; k++) {
-                        sum += matrix[k * 4 + row] * other[col * 4 + k];
-                    }
-                    SCRATCH[col * 4 + row] = sum;
-                }
-            }
-            System.arraycopy(SCRATCH, 0, matrix, 0, 16);
-        }
     }
 
     private static int compile(float[] d) {

@@ -23,9 +23,8 @@ Needs JDK 8 (ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs). The Gradl
   (walk through when open, click-through gaps)
 * Light sealing: while a door's hitboxes occupy a cell it blocks block and sky light, and the
   doorway lets light through as the panel clears it. The glass QE sliding doors and the cargo door
-  opt out and always let light through. Sealed doors sample the lightmap per vertex, and each
-  vertex takes the brightest nearby cell that stays on the camera's side of the door, so faces do
-  not go black just because one sample lands in a wall or a shadowed gap
+  opt out and always let light through. Sealed doors use the light of the room the camera is in,
+  so each face matches its own side instead of glowing from the far side
 * OBJ renderer (TESR) with per-group translate/rotate animations, X/Y/Z clipping and sounds
 * 3D door item rendering (inventory, hand, ground) from the same OBJ model, matching HBM's door item renderer
 * 16 multiblock OBJ doors: `vault_door`, `sliding_blast_door`, `qe_sliding_door`, `qe_sliding_panel`,
