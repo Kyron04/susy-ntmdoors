@@ -41,14 +41,13 @@ Needs JDK 8 (ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs). The Gradl
   binding from the door and every keypad linked to it
 * Keypad binding modes (sneak + right click with the screwdriver, only while the pad is unused):
   off → **Distance** → **Multi** → off. In either mode, sneak + right click each **closed** door
-  within 32 blocks to link it. Distance binds one door and answers `Distance Bound Successful`;
-  the single code typed on the pad toggles it. Multi holds up to nine doors, next to the pad or
-  away from it, and answers `Multi Bound Successful: Door N`; press `1`–`9` to pick a door, type
-  its own code and press `E` (first time stores it, later presses toggle it). Linking a multi door
-  selects it immediately, so the pad shows `Input multi code` and the code can be typed straight
-  away; once a door is linked the LCD shows `Input code` instead of the mode banner. Pressing any
-  key ends linking so codes can be entered. Once a code or link exists the mode is fixed and the
-  screwdriver can only reset the pad, which clears every slot and link
+  within 32 blocks to link it. Distance binds one door; Multi holds up to nine, next to the pad or
+  away from it. Both modes share one code, and the pad shows `Confirm Door Bounding?` (with
+  `X Doors` under Multi) until `E` accepts the links; the LCD then shows `Input code` /
+  `Input multi code`, and the code typed there toggles every linked door. Pressing any key ends
+  linking. Once a code or link exists the mode is fixed and the screwdriver can only reset the
+  pad, which clears every link and code. A keypad placed next to an already-bound door auto-syncs
+  its code and skips the confirmation
 * The secure access door ships nine skins: red, yellow, green, blue, grey, black (white writing),
   HBM yellow, white (black writing) and orange (white writing). The colour variants are generated
   by recolouring only the red warning paint; all other pixels are unchanged. Base colours: green

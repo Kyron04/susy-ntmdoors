@@ -102,6 +102,8 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
     private static final float LABEL_Y_OFFSET = -0.013671875F;
     private static final float LABEL_SCALE = 0.01F;
     private static final float DISPLAY_SCALE = 0.0065F;
+    /** Width of the LCD in keypad model units. */
+    private static final float DISPLAY_MAX_WIDTH = 0.6F;
 
     private void drawLabelsAndDisplay(TileEntityDoorKeypad te) {
         FontRenderer font = Minecraft.getMinecraft().fontRenderer;
@@ -163,10 +165,6 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
                     color = 0xFF15FF00;
                     twoLines = true;
                     break;
-                case NO_DOOR:
-                    line1 = "No door";
-                    color = 0xFFFF0800;
-                    break;
                 default: // DENIED
                     line1 = "Access";
                     line2 = "Denied";
@@ -185,25 +183,29 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
             color = 0xFFFFEE00;
             line2Color = 0xFFFFEE00;
             twoLines = true;
+        } else if (te.isPendingConfirm()) {
+            line1 = "Confirm Door Bounding?";
+            int doors = te.getDoorCount();
+            line2 = te.getBindMode() == TileEntityDoorKeypad.BindMode.MULTI && doors > 0
+                    ? (doors == 1 ? "1 Door" : doors + " Doors")
+                    : "";
+            color = 0xFF3FA9F5;
+            line2Color = 0xFFFFFFFF;
+            twoLines = !line2.isEmpty();
         } else if (te.getBindMode() == TileEntityDoorKeypad.BindMode.MULTI) {
-            int slot = te.getSelectedSlot();
-            if (slot >= 0) {
+            if (te.isBound()) {
                 line1 = "Input multi code";
-                line2 = te.getEntry().isEmpty() ? "Door " + (slot + 1) : te.getEntry();
+                line2 = te.getEntry();
                 color = 0xFFFFFFFF;
-                line2Color = te.getEntry().isEmpty() ? 0xFF3FA9F5 : 0xFFFFEE00;
-            } else if (te.isBound()) {
-                line1 = "Input multi code";
-                line2 = "Select door";
-                color = 0xFFFFFFFF;
-                line2Color = 0xFF3FA9F5;
+                line2Color = 0xFFFFEE00;
+                twoLines = !line2.isEmpty();
             } else {
                 line1 = "Multi";
                 line2 = "Bounding Mode";
                 color = 0xFF3FA9F5;
                 line2Color = 0xFF3FA9F5;
+                twoLines = true;
             }
-            twoLines = true;
         } else if (te.getBindMode() == TileEntityDoorKeypad.BindMode.DISTANCE) {
             if (te.isBound()) {
                 line1 = "Input code";
@@ -247,10 +249,17 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
         }
 
         // The display sits centred at y ~0.84375, slightly further forward than the buttons so it
-        // clears the raised black screen bezel.
+        // clears the raised black screen bezel. Long prompts (Confirm Door Bounding?) are scaled
+        // down so they stay inside the 0.625-wide screen.
+        float scale = DISPLAY_SCALE;
+        int textWidth = Math.max(font.getStringWidth(line1), font.getStringWidth(line2));
+        if (textWidth > 0 && textWidth * scale > DISPLAY_MAX_WIDTH) {
+            scale = DISPLAY_MAX_WIDTH / textWidth;
+        }
+
         GlStateManager.pushMatrix();
         GlStateManager.translate(0, 0.84375, 0.04F);
-        GlStateManager.scale(DISPLAY_SCALE, -DISPLAY_SCALE, DISPLAY_SCALE);
+        GlStateManager.scale(scale, -scale, scale);
         GlStateManager.color(1F, 1F, 1F, 1F);
         if (!line1.isEmpty()) {
             int y = twoLines ? -font.FONT_HEIGHT : -font.FONT_HEIGHT / 2;
