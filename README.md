@@ -79,7 +79,7 @@ and `textures/items/sliding_blast_door_keypad.png`).
 | `cargo_door` | `DoorBot`, `DoorTop` | 3x3 lifting cargo door |
 | `large_vehicle_door` | `Left`, `Right` | 7x6 vehicle door |
 | `qe_containment` | `Door` | 3x3 containment shield |
-| `blast_door` | `Tooth`, `Slider1`-`Slider4` | 1x7 HBM standalone roller Sliding Blast Door |
+| `blast_door` | `Tooth`, `Slider1`-`Slider4` | 1x7 roller shutter (Roller Blast Door) |
 | `water_door` | `Door_Cube.003`, `Bolts`, `Top`, `Bottom` | 3x3 swinging water-tight door |
 | `transition_seal` | 20 rigid keyframed groups | converted from HBM `seal.dae`; full Collada action replayed as per-group matrices |
 

@@ -449,7 +449,7 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
             pendingConfirm = true;
             sync();
             if (bindMode == BindMode.MULTI) {
-                msg(player, "ntmdoors.msg.bind_multi_success", existing + 1);
+                msgMultiBound(player, boundDoors.size());
             } else {
                 msg(player, "ntmdoors.msg.bind_success");
             }
@@ -476,7 +476,7 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
         pendingConfirm = true;
         sync();
         if (bindMode == BindMode.MULTI) {
-            msg(player, "ntmdoors.msg.bind_multi_success", boundDoors.size());
+            msgMultiBound(player, boundDoors.size());
         } else {
             msg(player, "ntmdoors.msg.bind_success");
         }
@@ -664,6 +664,15 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
                 return "ntmdoors.msg.mode_multi";
             default:
                 return "ntmdoors.msg.mode_off";
+        }
+    }
+
+    /** Chat feedback for a multi link, worded for the number of doors now on the pad. */
+    private static void msgMultiBound(EntityPlayer player, int count) {
+        if (count == 1) {
+            msg(player, "ntmdoors.msg.bind_multi_success_one");
+        } else {
+            msg(player, "ntmdoors.msg.bind_multi_success", count);
         }
     }
 
