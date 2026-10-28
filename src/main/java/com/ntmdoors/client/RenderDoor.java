@@ -9,6 +9,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.EnumFacing;
@@ -37,7 +38,6 @@ public class RenderDoor extends TileEntitySpecialRenderer<TileEntityDoorGeneric>
     private static final DoubleBuffer CLIP_BUFFER = BufferUtils.createDoubleBuffer(4);
     private static final ClipPlane[] NO_PLANES = new ClipPlane[0];
     private static final Map<DoorDecl, ClipPlane[]> CLIP_PLANES = new IdentityHashMap<>();
-    private static final EnumFacing[] NEIGHBOURS = EnumFacing.values();
 
     /**
      * Doors are multiblocks, and large ones (the transition seal is 27x24) extend far beyond the
@@ -100,44 +100,49 @@ public class RenderDoor extends TileEntitySpecialRenderer<TileEntityDoorGeneric>
         World world = te.getWorld();
         BlockPos pos = te.getPos();
         int original = world.getCombinedLight(pos, 0);
-        BlockPos sample = cameraSide(world, pos, te.getDecl(), facing);
-        int packed = sample != null && world.isBlockLoaded(sample)
-                ? world.getCombinedLight(sample, 0)
-                : brightestNeighbour(world, pos, original);
+        EnumFacing side = cameraSide(pos, te.getDecl(), facing);
+        int packed = side == null ? 0 : roomLight(world, pos, side);
         OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit,
                 (float) (packed & 0xFFFF), (float) (packed >>> 16));
         return original;
     }
 
     /**
-     * The air cell on the side of the door the camera is on. Vertical doors are split by their
-     * facing plane; horizontal doors (the silo hatches) by their height.
+     * The visible side of the door from the render camera's position. Vertical doors are split by
+     * their facing plane; horizontal doors (the silo hatches) by their height.
      */
     @Nullable
-    private static BlockPos cameraSide(World world, BlockPos pos, DoorDecl decl, EnumFacing facing) {
-        Entity view = Minecraft.getMinecraft().getRenderViewEntity();
-        if (view == null) return null;
+    private static EnumFacing cameraSide(BlockPos pos, DoorDecl decl, EnumFacing facing) {
+        Minecraft mc = Minecraft.getMinecraft();
+        RenderManager rm = mc.getRenderManager();
         if (decl != null && decl.minY == decl.maxY) {
-            return view.posY >= pos.getY() + 0.5 ? pos.up() : pos.down();
+            double eye = rm.viewerPosY;
+            Entity view = mc.getRenderViewEntity();
+            if (view != null) eye += view.getEyeHeight();
+            return eye >= pos.getY() + 0.5 ? EnumFacing.UP : EnumFacing.DOWN;
         }
         Vec3i normal = facing.getDirectionVec();
-        double dot = (view.posX - pos.getX() - 0.5) * normal.getX()
-                + (view.posZ - pos.getZ() - 0.5) * normal.getZ();
-        return dot >= 0 ? pos.offset(facing) : pos.offset(facing.getOpposite());
+        double dot = (rm.viewerPosX - pos.getX() - 0.5) * normal.getX()
+                + (rm.viewerPosZ - pos.getZ() - 0.5) * normal.getZ();
+        return dot >= 0 ? facing : facing.getOpposite();
     }
 
-    /** Fallback when the camera is unknown: the brightest neighbouring cell. */
-    private static int brightestNeighbour(World world, BlockPos pos, int fallback) {
-        int block = fallback & 0xFFFF;
-        int sky = fallback >>> 16;
-        for (EnumFacing face : NEIGHBOURS) {
-            BlockPos neighbour = pos.offset(face);
-            if (!world.isBlockLoaded(neighbour)) continue;
-            int packed = world.getCombinedLight(neighbour, 0);
-            block = Math.max(block, packed & 0xFFFF);
-            sky = Math.max(sky, packed >>> 16);
+    /**
+     * Samples the first unblocked cell on the camera's side of the door. Stepping outwards (rather
+     * than falling back to all six neighbours) is what stops a single block placed against the
+     * door from blacking out the whole model; it also keeps thin doors from borrowing light that
+     * wrapped around their edge from the far side.
+     */
+    private static int roomLight(World world, BlockPos pos, EnumFacing side) {
+        Vec3i step = side.getDirectionVec();
+        for (int distance = 1; distance <= 4; distance++) {
+            BlockPos candidate = pos.add(step.getX() * distance, step.getY() * distance, step.getZ() * distance);
+            if (!world.isBlockLoaded(candidate)) break;
+            if (world.getBlockState(candidate).getLightOpacity(world, candidate) == 0) {
+                return world.getCombinedLight(candidate, 0);
+            }
         }
-        return block | (sky << 16);
+        return 0;
     }
 
     private static void restoreLight(int packed) {
