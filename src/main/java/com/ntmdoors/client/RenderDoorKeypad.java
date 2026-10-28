@@ -188,10 +188,15 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
         } else if (te.getBindMode() == TileEntityDoorKeypad.BindMode.MULTI) {
             int slot = te.getSelectedSlot();
             if (slot >= 0) {
-                line1 = "Door " + (slot + 1);
-                line2 = te.getEntry().isEmpty() ? "Input code" : te.getEntry();
+                line1 = "Input multi code";
+                line2 = te.getEntry().isEmpty() ? "Door " + (slot + 1) : te.getEntry();
                 color = 0xFFFFFFFF;
-                line2Color = te.getEntry().isEmpty() ? 0xFFFFFFFF : 0xFFFFEE00;
+                line2Color = te.getEntry().isEmpty() ? 0xFF3FA9F5 : 0xFFFFEE00;
+            } else if (te.isBound()) {
+                line1 = "Input multi code";
+                line2 = "Select door";
+                color = 0xFFFFFFFF;
+                line2Color = 0xFF3FA9F5;
             } else {
                 line1 = "Multi";
                 line2 = "Bounding Mode";
@@ -200,12 +205,19 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
             }
             twoLines = true;
         } else if (te.getBindMode() == TileEntityDoorKeypad.BindMode.DISTANCE) {
-            boolean typing = !te.getEntry().isEmpty();
-            line1 = typing ? "Enter code" : "Distance";
-            line2 = typing ? te.getEntry() : "Bounding Mode";
-            color = typing ? 0xFFFFFFFF : 0xFF3FA9F5;
-            line2Color = typing ? 0xFFFFEE00 : 0xFF3FA9F5;
-            twoLines = true;
+            if (te.isBound()) {
+                line1 = "Input code";
+                line2 = te.getEntry();
+                color = 0xFFFFFFFF;
+                line2Color = 0xFFFFEE00;
+                twoLines = !line2.isEmpty();
+            } else {
+                line1 = "Distance";
+                line2 = "Bounding Mode";
+                color = 0xFF3FA9F5;
+                line2Color = 0xFF3FA9F5;
+                twoLines = true;
+            }
         } else {
             switch (te.getMode()) {
                 case RESET_CONFIRM:

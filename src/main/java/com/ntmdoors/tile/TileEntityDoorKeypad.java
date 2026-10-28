@@ -542,6 +542,10 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
                 boolean valid = linked != null
                         && (slotCodes[existing].isEmpty() || slotCodes[existing].equals(linked.getKeypadCode()));
                 if (valid) {
+                    // Re-selecting the door puts the pad straight into its code entry.
+                    selectedSlot = existing;
+                    entry = "";
+                    sync();
                     msg(player, "ntmdoors.msg.bind_multi_success", existing + 1);
                     return true;
                 }
@@ -560,7 +564,10 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
                 return false;
             }
             slotDoors[free] = door.getPos();
-            markDirty();
+            // Pick the new slot so the pad is already waiting for this door's code.
+            selectedSlot = free;
+            entry = "";
+            sync();
             msg(player, "ntmdoors.msg.bind_multi_success", free + 1);
             return true;
         }

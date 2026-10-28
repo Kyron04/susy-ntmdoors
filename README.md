@@ -44,8 +44,10 @@ Needs JDK 8 (ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs). The Gradl
   within 32 blocks to link it. Distance binds one door and answers `Distance Bound Successful`;
   the single code typed on the pad toggles it. Multi holds up to nine doors, next to the pad or
   away from it, and answers `Multi Bound Successful: Door N`; press `1`–`9` to pick a door, type
-  its own code and press `E` (first time stores it, later presses toggle it). Pressing any key ends
-  linking so codes can be entered. Once a code or link exists the mode is fixed and the
+  its own code and press `E` (first time stores it, later presses toggle it). Linking a multi door
+  selects it immediately, so the pad shows `Input multi code` and the code can be typed straight
+  away; once a door is linked the LCD shows `Input code` instead of the mode banner. Pressing any
+  key ends linking so codes can be entered. Once a code or link exists the mode is fixed and the
   screwdriver can only reset the pad, which clears every slot and link
 * The secure access door ships nine skins: red, yellow, green, blue, grey, black (white writing),
   HBM yellow, white (black writing) and orange (white writing). The colour variants are generated
