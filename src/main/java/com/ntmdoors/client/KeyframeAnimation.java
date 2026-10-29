@@ -46,13 +46,15 @@ public final class KeyframeAnimation {
 
     public static Map<String, KeyframeAnimation> get(ResourceLocation location) {
         if (location == null) return Collections.emptyMap();
-        Map<String, KeyframeAnimation> cached = CACHE.get(location);
-        if (cached != null) return cached;
+        if (CACHE.containsKey(location)) {
+            // A null entry marks a failed load, cached so the file is not re-parsed every frame.
+            Map<String, KeyframeAnimation> cached = CACHE.get(location);
+            return cached != null ? cached : Collections.emptyMap();
+        }
 
         Map<String, KeyframeAnimation> loaded = load(location);
-        if (loaded == null) return Collections.emptyMap();
         CACHE.put(location, loaded);
-        return loaded;
+        return loaded != null ? loaded : Collections.emptyMap();
     }
 
     public static void clear() {

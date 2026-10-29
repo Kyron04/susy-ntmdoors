@@ -43,7 +43,6 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
 
     public static final int CODE_LENGTH = 6;
     public static final int BUTTONS = 12;
-    public static final int SEARCH_RADIUS = 8;
     /** How far a door may be from the keypad to be bound and operated remotely. */
     public static final double MAX_BIND_DISTANCE = 32.0;
     /** Maximum number of doors a multi-binding keypad can hold. */
@@ -438,6 +437,11 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
         if (world == null || world.isRemote || door == null) return false;
         if (!linking || bindMode == BindMode.NONE) return false;
         if (mode == Mode.RESET_CONFIRM || mode == Mode.RESET_ENTER) return false;
+        if (door.isRedstoneOnly()) {
+            // _locked doors stay redstone-only; binding a code would also cut their redstone.
+            msg(player, "ntmdoors.msg.bind_redstone");
+            return false;
+        }
         if (door.getState() != DoorState.CLOSED) {
             msg(player, "ntmdoors.msg.bind_open");
             return false;
@@ -545,6 +549,7 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
                         continue;
                     }
                     double d2 = p.distanceSq(pos);
+                    if (core.isRedstoneOnly()) continue;
                     if (d2 < bestDist) {
                         bestDist = d2;
                         best = core;
@@ -553,12 +558,6 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
             }
         }
         return best;
-    }
-
-    private Iterable<? extends BlockPos> searchArea() {
-        return BlockPos.getAllInBoxMutable(
-                pos.add(-SEARCH_RADIUS, -SEARCH_RADIUS, -SEARCH_RADIUS),
-                pos.add(SEARCH_RADIUS, SEARCH_RADIUS, SEARCH_RADIUS));
     }
 
     /**
@@ -582,6 +581,13 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
             TileEntity te = world.getTileEntity(p);
             if (te instanceof TileEntityDoorGeneric) {
                 TileEntityDoorGeneric door = (TileEntityDoorGeneric) te;
+                if (door.isRedstoneOnly()) {
+                    // Never drive a redstone-only door from a keypad, and never leave an old
+                    // binding to one behind.
+                    it.remove();
+                    dropped = true;
+                    continue;
+                }
                 if (!containsDoor(doors, door.getPos())) doors.add(door);
             } else {
                 it.remove();
@@ -591,6 +597,7 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
         if (dropped) {
             doorCount = boundDoors.size();
             markDirty();
+            sync();
         }
         return doors;
     }
@@ -619,15 +626,18 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
         sync();
     }
 
-    /** Other keypads in range that are linked to the same door. */
+    /** Other keypads within binding range that are linked to the same door. */
     private List<TileEntityDoorKeypad> keypadsSharing(TileEntityDoorGeneric door) {
         List<TileEntityDoorKeypad> keypads = new ArrayList<>();
         if (world == null) return keypads;
-        for (BlockPos p : searchArea()) {
-            if (p.equals(pos) || !world.isBlockLoaded(p)) continue;
-            TileEntity te = world.getTileEntity(p);
+        // A pad can be linked from anywhere within MAX_BIND_DISTANCE, so scan the loaded tile
+        // entities instead of a small cube around this pad; a fixed 8-block scan used to miss
+        // remote links and leave them alive after a reset.
+        double max = MAX_BIND_DISTANCE * MAX_BIND_DISTANCE;
+        for (TileEntity te : new ArrayList<>(world.loadedTileEntityList)) {
             if (!(te instanceof TileEntityDoorKeypad)) continue;
             TileEntityDoorKeypad other = (TileEntityDoorKeypad) te;
+            if (other == this || other.getPos().distanceSq(pos) > max) continue;
             if (other.controls(door)) keypads.add(other);
         }
         return keypads;
@@ -645,15 +655,27 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
         return false;
     }
 
-    /** Unbinds every controlled door and clears the code from this keypad and its neighbours. */
+    /**
+     * Unbinds every controlled door and clears the code from this keypad and its neighbours.
+     * The reset follows the whole cluster: a keypad that shares one of these doors may also control
+     * further doors, and those doors must be cleared too or they stay bound with no usable pad.
+     */
     private void resetCodes(List<TileEntityDoorGeneric> doors) {
-        for (TileEntityDoorGeneric door : doors) {
-            for (TileEntityDoorKeypad other : keypadsSharing(door)) {
-                other.clearBindings();
-                other.sync();
+        List<TileEntityDoorGeneric> allDoors = new ArrayList<>(doors);
+        List<TileEntityDoorKeypad> pads = new ArrayList<>();
+        for (int i = 0; i < allDoors.size(); i++) {
+            for (TileEntityDoorKeypad other : keypadsSharing(allDoors.get(i))) {
+                if (!pads.contains(other)) pads.add(other);
+                for (TileEntityDoorGeneric otherDoor : other.controlDoors()) {
+                    if (!containsDoor(allDoors, otherDoor.getPos())) allDoors.add(otherDoor);
+                }
             }
-            door.clearKeypadCode();
         }
+        for (TileEntityDoorKeypad pad : pads) {
+            pad.clearBindings();
+            pad.sync();
+        }
+        for (TileEntityDoorGeneric door : allDoors) door.clearKeypadCode();
         clearBindings();
     }
 

@@ -14,6 +14,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.opengl.GL11;
 
 /**
  * Renders the keypad model, pressed keys, and the LCD prompts. The transform mirrors the
@@ -22,10 +23,10 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @SideOnly(Side.CLIENT)
 public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKeypad> {
 
-    private static final ResourceLocation TEX_KEYPAD = new ResourceLocation(NTMDoors.MODID, "textures/models/doors/keypad.png");
-    private static final ResourceLocation TEX_SUCCESS = new ResourceLocation(NTMDoors.MODID, "textures/models/doors/keypad_success.png");
-    private static final ResourceLocation TEX_ERROR = new ResourceLocation(NTMDoors.MODID, "textures/models/doors/keypad_error.png");
-    private static final ResourceLocation MODEL = new ResourceLocation(NTMDoors.MODID, "models/doors/keypad.obj");
+    public static final ResourceLocation TEX_KEYPAD = new ResourceLocation(NTMDoors.MODID, "textures/models/doors/keypad.png");
+    public static final ResourceLocation TEX_SUCCESS = new ResourceLocation(NTMDoors.MODID, "textures/models/doors/keypad_success.png");
+    public static final ResourceLocation TEX_ERROR = new ResourceLocation(NTMDoors.MODID, "textures/models/doors/keypad_error.png");
+    public static final ResourceLocation MODEL = new ResourceLocation(NTMDoors.MODID, "models/doors/keypad.obj");
 
     // 9 numbers in a 3x3 grid above the function row (R, 0, E) at the bottom.
     private static final String[] BUTTON_LABELS = {
@@ -112,11 +113,16 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
 
         // Labels and display text are drawn just in front of the keypad face with depth testing on,
         // so they are occluded by world geometry (no X-ray) but still sit on top of the keypad.
+        // The glyph quads carry no normal of their own, so they would otherwise inherit the last
+        // normal the model emitted and be lit differently on each facing. Flat text is drawn unlit.
+        boolean lit = GL11.glIsEnabled(GL11.GL_LIGHTING);
+        GlStateManager.disableLighting();
         GlStateManager.enablePolygonOffset();
         GlStateManager.doPolygonOffset(-1.0F, -1.0F);
         drawButtonLabels(font);
         drawDisplay(font, te);
         GlStateManager.disablePolygonOffset();
+        if (lit) GlStateManager.enableLighting();
     }
 
     /** Button labels. The font is flipped vertically so it reads upright on the keypad face. */

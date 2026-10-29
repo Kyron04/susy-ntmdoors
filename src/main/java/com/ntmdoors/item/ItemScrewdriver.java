@@ -31,6 +31,7 @@ public class ItemScrewdriver extends Item {
 
     /** Item NBT key holding the keypad that is waiting for doors to be bound at range. */
     private static final String TAG_BIND_KEYPAD = "bindKeypad";
+    private static final String TAG_BIND_DIM = "bindKeypadDim";
 
     public ItemScrewdriver() {
         setRegistryName(NTMDoors.MODID, "screwdriver");
@@ -65,8 +66,10 @@ public class ItemScrewdriver extends Item {
                             stack.setTagCompound(tag);
                         }
                         tag.setLong(TAG_BIND_KEYPAD, keypad.getPos().toLong());
+                        tag.setInteger(TAG_BIND_DIM, world.provider.getDimension());
                     } else if (tag != null) {
                         tag.removeTag(TAG_BIND_KEYPAD);
+                        tag.removeTag(TAG_BIND_DIM);
                     }
                 }
                 return EnumActionResult.SUCCESS;
@@ -128,16 +131,24 @@ public class ItemScrewdriver extends Item {
         ItemStack stack = player.getHeldItem(hand);
         NBTTagCompound tag = stack.getTagCompound();
         if (tag == null || !tag.hasKey(TAG_BIND_KEYPAD)) return null;
+        if (tag.hasKey(TAG_BIND_DIM) && tag.getInteger(TAG_BIND_DIM) != world.provider.getDimension()) {
+            // The pad is in another dimension; the stored position means something else here.
+            tag.removeTag(TAG_BIND_KEYPAD);
+            tag.removeTag(TAG_BIND_DIM);
+            return null;
+        }
         BlockPos padPos = BlockPos.fromLong(tag.getLong(TAG_BIND_KEYPAD));
         TileEntity te = world.getTileEntity(padPos);
         if (!(te instanceof TileEntityDoorKeypad)) {
             tag.removeTag(TAG_BIND_KEYPAD);
+            tag.removeTag(TAG_BIND_DIM);
             return null;
         }
         TileEntityDoorKeypad keypad = (TileEntityDoorKeypad) te;
         if (!keypad.isLinking() || keypad.getBindMode() == TileEntityDoorKeypad.BindMode.NONE) {
             // The pad is no longer linking; stop treating clicks as binds.
             tag.removeTag(TAG_BIND_KEYPAD);
+            tag.removeTag(TAG_BIND_DIM);
             return null;
         }
         return keypad;

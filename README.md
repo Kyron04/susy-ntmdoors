@@ -20,7 +20,8 @@ Needs JDK 8 (ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs). The Gradl
 * Redstone from any cell of the door (edge triggered), right click toggle
 * Every door is also registered as a locked, redstone-only copy named `<door>_locked`, and as a
   `<door>_security` copy intended for the future security system (currently behaves like the normal
-  door). The two silo hatches have no security variant.
+  door). The two silo hatches have no security variant. Keypads refuse to bind to, sync with or
+  drive a locked door, so its redstone control can never be taken over.
 * State dependent collision and selection boxes that follow the door animation continuously
   (walk through when open, click-through gaps)
 * OBJ renderer (TESR) with per-group translate/rotate animations, X/Y/Z clipping and sounds
@@ -39,7 +40,7 @@ Needs JDK 8 (ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs). The Gradl
   already-bound door copies the code automatically and shows `Code synced`. The binding stays on
   the door when a keypad is broken, until the door itself is destroyed. With a screwdriver: first
   click shows `Reset code?`, second click confirms, then entering the current code clears the
-  binding from the door and every keypad linked to it
+  binding from the door, every keypad linked to it, and any further doors those keypads controlled
 * Keypad binding modes (sneak + right click with the screwdriver, only while the pad is unused):
   off → **Distance** → **Multi** → off. In either mode, sneak + right click each **closed** door
   within 32 blocks to link it. Distance binds one door; Multi holds up to nine, next to the pad or

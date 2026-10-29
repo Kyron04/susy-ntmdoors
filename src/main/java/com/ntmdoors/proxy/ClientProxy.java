@@ -7,6 +7,7 @@ import com.ntmdoors.client.RenderDoor;
 import com.ntmdoors.client.RenderDoorKeypad;
 import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.DoorDecls;
+import com.ntmdoors.door.ObjBounds;
 import com.ntmdoors.tile.TileEntityDoorGeneric;
 import com.ntmdoors.tile.TileEntityDoorKeypad;
 import net.minecraft.client.Minecraft;
@@ -38,6 +39,7 @@ public class ClientProxy extends CommonProxy {
                 .registerReloadListener(resourceManager -> {
                     ObjModel.clear();
                     KeyframeAnimation.clear();
+                    ObjBounds.clear();
                     logMissingAssets(resourceManager);
                 });
         logMissingAssets(Minecraft.getMinecraft().getResourceManager());
@@ -46,22 +48,27 @@ public class ClientProxy extends CommonProxy {
     /** Prints the exact resource paths that are absent, instead of leaving only a purple/black texture in game. */
     private static void logMissingAssets(IResourceManager resources) {
         for (DoorDecl d : DoorDecls.ALL) {
-            check(resources, d.model, "model", d);
-            check(resources, d.texture, "texture", d);
-            check(resources, d.keyframeAnim, "keyframe animation", d);
+            String owner = "door '" + d.name + "'";
+            check(resources, d.model, "model", owner);
+            check(resources, d.texture, "texture", owner);
+            check(resources, d.keyframeAnim, "keyframe animation", owner);
             for (ResourceLocation partTexture : d.partTextures.values()) {
-                check(resources, partTexture, "part texture", d);
+                check(resources, partTexture, "part texture", owner);
             }
             for (List<ResourceLocation> skins : d.partSkins.values()) {
-                for (ResourceLocation skin : skins) check(resources, skin, "part skin", d);
+                for (ResourceLocation skin : skins) check(resources, skin, "part skin", owner);
             }
-            for (ResourceLocation skin : d.skins) check(resources, skin, "skin", d);
+            for (ResourceLocation skin : d.skins) check(resources, skin, "skin", owner);
         }
+        check(resources, RenderDoorKeypad.MODEL, "model", "the keypad");
+        check(resources, RenderDoorKeypad.TEX_KEYPAD, "texture", "the keypad");
+        check(resources, RenderDoorKeypad.TEX_SUCCESS, "texture", "the keypad");
+        check(resources, RenderDoorKeypad.TEX_ERROR, "texture", "the keypad");
     }
 
-    private static void check(IResourceManager resources, @Nullable ResourceLocation location, String kind, DoorDecl door) {
+    private static void check(IResourceManager resources, @Nullable ResourceLocation location, String kind, String owner) {
         if (location == null || exists(resources, location)) return;
-        NTMDoors.LOGGER.warn("Missing {} for door '{}': {}", kind, door.name, location);
+        NTMDoors.LOGGER.warn("Missing {} for {}: {}", kind, owner, location);
     }
 
     private static boolean exists(IResourceManager resources, ResourceLocation location) {

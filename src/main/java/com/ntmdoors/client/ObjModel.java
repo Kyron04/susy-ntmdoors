@@ -40,12 +40,12 @@ public class ObjModel {
     private float minX = Float.POSITIVE_INFINITY, minY = Float.POSITIVE_INFINITY, minZ = Float.POSITIVE_INFINITY;
     private float maxX = Float.NEGATIVE_INFINITY, maxY = Float.NEGATIVE_INFINITY, maxZ = Float.NEGATIVE_INFINITY;
 
-    /** Returns null (and logs once) if the model cannot be loaded. Missing models are retried. */
+    /**
+     * Returns null (and logs once) if the model cannot be loaded. Failures are cached too, so a
+     * broken model is not re-read every frame; the next resource reload clears the cache.
+     */
     public static ObjModel get(ResourceLocation loc) {
-        ObjModel cached = CACHE.get(loc);
-        if (cached != null) return cached;
-        // Do not cache a negative result: the first item/TESR draw can happen before the reload
-        // listener has finished, and that would otherwise hide the model until F3+T.
+        if (CACHE.containsKey(loc)) return CACHE.get(loc);
         ObjModel m = null;
         try (IResource res = Minecraft.getMinecraft().getResourceManager().getResource(loc)) {
             m = parse(res.getInputStream());
@@ -54,12 +54,13 @@ public class ObjModel {
                 NTMDoors.LOGGER.warn("Could not load door model {} ({})", loc, ex.toString());
             }
         }
-        if (m != null) CACHE.put(loc, m);
+        CACHE.put(loc, m);
         return m;
     }
 
     public static void clear() {
         for (ObjModel m : CACHE.values()) {
+            if (m == null) continue;
             for (int id : m.lists.values()) GLAllocation.deleteDisplayLists(id);
             m.lists.clear();
         }

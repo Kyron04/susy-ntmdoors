@@ -377,7 +377,8 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
     /** Called when any part of the door gets a neighbour update. Reacts to redstone edges only. */
     public void checkRedstone() {
         if (world == null || world.isRemote) return;
-        if (isKeypadBound()) return;
+        // Redstone-only doors keep working even if an old save still carries a keypad code.
+        if (!isRedstoneOnly() && isKeypadBound()) return;
         boolean p = isGroupReceivingPower();
         if (p == powered) return;
         powered = p;
@@ -404,7 +405,11 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         toggle();
     }
 
-    private boolean isRedstoneOnly() {
+    /**
+     * True for the {@code _locked} twins: they refuse every manual interaction and only react to
+     * redstone, so keypads must never bind to them.
+     */
+    public boolean isRedstoneOnly() {
         Block block = getBlockType();
         return block instanceof BlockDoorGeneric && ((BlockDoorGeneric) block).locked;
     }

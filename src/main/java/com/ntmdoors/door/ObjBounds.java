@@ -30,6 +30,10 @@ public final class ObjBounds {
     private ObjBounds() {
     }
 
+    public static synchronized void clear() {
+        CACHE.clear();
+    }
+
     public static synchronized Map<String, AxisAlignedBB> get(ResourceLocation model) {
         if (model == null) return Collections.emptyMap();
         Map<String, AxisAlignedBB> cached = CACHE.get(model);

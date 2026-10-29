@@ -635,6 +635,7 @@ public class DoorDecl {
         if (!movingDefs.isEmpty()) {
             if (modelBounds == null) modelBounds = ObjBounds.get(model);
             float yaw = Facings.yaw(f) + modelYaw;
+            AxisAlignedBB clip = clipVolume();
             for (BoxDef b : movingDefs) {
                 if (collision ? !b.collision : !b.selection) continue;
                 if (t + 0.00001F < b.start || t >= b.end) continue;
@@ -643,26 +644,23 @@ public class DoorDecl {
                 int splits = b.splits > 0 ? b.splits : collisionSplits;
                 AxisAlignedBB[] boxes = DoorGeometry.transform(
                         anims.get(b.anim != null ? b.anim : b.group), t, src, splits,
-                        yaw, modelX, modelY, modelZ);
-                for (AxisAlignedBB box : boxes) {
-                    AxisAlignedBB clipped = clip(box);
-                    if (clipped != null) active.add(clipped);
-                }
+                        yaw, modelX, modelY, modelZ, clip);
+                for (AxisAlignedBB box : boxes) active.add(box);
             }
         }
         return active.toArray(new AxisAlignedBB[0]);
     }
 
-    /** Intersects a transformed box with the door's clip volume; null when nothing is left. */
+    /**
+     * The renderer's clip volume in model space. DoorGeometry clips the animated box before the
+     * facing rotation, which is the same space the GL clip planes are expressed in.
+     */
     @Nullable
-    private AxisAlignedBB clip(AxisAlignedBB box) {
-        double x1 = Math.max(box.minX, clipMinX);
-        double y1 = Math.max(box.minY, clipMinY);
-        double z1 = Math.max(box.minZ, clipMinZ);
-        double x2 = Math.min(box.maxX, clipMaxX);
-        double y2 = Math.min(box.maxY, clipMaxY);
-        double z2 = Math.min(box.maxZ, clipMaxZ);
-        if (x2 <= x1 || y2 <= y1 || z2 <= z1) return null;
-        return new AxisAlignedBB(x1, y1, z1, x2, y2, z2);
+    private AxisAlignedBB clipVolume() {
+        if (Double.isInfinite(clipMinX) && Double.isInfinite(clipMinY) && Double.isInfinite(clipMinZ)
+                && Double.isInfinite(clipMaxX) && Double.isInfinite(clipMaxY) && Double.isInfinite(clipMaxZ)) {
+            return null;
+        }
+        return new AxisAlignedBB(clipMinX, clipMinY, clipMinZ, clipMaxX, clipMaxY, clipMaxZ);
     }
 }

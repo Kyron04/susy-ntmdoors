@@ -2,6 +2,7 @@ package com.ntmdoors.door;
 
 import net.minecraft.util.math.AxisAlignedBB;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,11 +38,13 @@ public final class DoorGeometry {
      * @param ox     model offset X (applied in model space)
      * @param oy     model offset Y
      * @param oz     model offset Z
+     * @param clip   clip volume in model space (after the model offset), or null
      * @return boxes in door-local space, relative to the core cell's bottom centre
      */
     public static AxisAlignedBB[] transform(List<PartAnim> steps, float open, AxisAlignedBB box,
                                             int splits, float yaw,
-                                            double ox, double oy, double oz) {
+                                            double ox, double oy, double oz,
+                                            @Nullable AxisAlignedBB clip) {
         if (box == null) return EMPTY;
 
         boolean rotates = false;
@@ -83,13 +86,40 @@ public final class DoorGeometry {
         List<AxisAlignedBB> result = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
             AxisAlignedBB slice = slice(box, splitAxis, i, n);
-            double x1 = Double.POSITIVE_INFINITY, y1 = Double.POSITIVE_INFINITY, z1 = Double.POSITIVE_INFINITY;
-            double x2 = Double.NEGATIVE_INFINITY, y2 = Double.NEGATIVE_INFINITY, z2 = Double.NEGATIVE_INFINITY;
+            // Animate the slice into model space first. The renderer's clip planes live in this
+            // space (after the model offset, before the facing rotation), so clipping here keeps
+            // the collision box consistent with what is actually drawn.
+            double mx1 = Double.POSITIVE_INFINITY, my1 = Double.POSITIVE_INFINITY, mz1 = Double.POSITIVE_INFINITY;
+            double mx2 = Double.NEGATIVE_INFINITY, my2 = Double.NEGATIVE_INFINITY, mz2 = Double.NEGATIVE_INFINITY;
             for (int corner = 0; corner < 8; corner++) {
                 double x = (corner & 1) == 0 ? slice.minX : slice.maxX;
                 double y = (corner & 2) == 0 ? slice.minY : slice.maxY;
                 double z = (corner & 4) == 0 ? slice.minZ : slice.maxZ;
                 mat.point(x, y, z, point);
+                if (point[0] < mx1) mx1 = point[0];
+                if (point[1] < my1) my1 = point[1];
+                if (point[2] < mz1) mz1 = point[2];
+                if (point[0] > mx2) mx2 = point[0];
+                if (point[1] > my2) my2 = point[1];
+                if (point[2] > mz2) mz2 = point[2];
+            }
+            if (clip != null) {
+                mx1 = Math.max(mx1, clip.minX);
+                my1 = Math.max(my1, clip.minY);
+                mz1 = Math.max(mz1, clip.minZ);
+                mx2 = Math.min(mx2, clip.maxX);
+                my2 = Math.min(my2, clip.maxY);
+                mz2 = Math.min(mz2, clip.maxZ);
+            }
+            if (mx2 - mx1 <= EPS || my2 - my1 <= EPS || mz2 - mz1 <= EPS) continue;
+
+            // Rotate the clipped model-space box into door space.
+            double x1 = Double.POSITIVE_INFINITY, y1 = Double.POSITIVE_INFINITY, z1 = Double.POSITIVE_INFINITY;
+            double x2 = Double.NEGATIVE_INFINITY, y2 = Double.NEGATIVE_INFINITY, z2 = Double.NEGATIVE_INFINITY;
+            for (int corner = 0; corner < 8; corner++) {
+                point[0] = (corner & 1) == 0 ? mx1 : mx2;
+                point[1] = (corner & 2) == 0 ? my1 : my2;
+                point[2] = (corner & 4) == 0 ? mz1 : mz2;
                 rotateY(point, yaw);
                 if (point[0] < x1) x1 = point[0];
                 if (point[1] < y1) y1 = point[1];
