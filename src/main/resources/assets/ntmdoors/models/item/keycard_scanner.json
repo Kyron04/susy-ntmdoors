@@ -1,3 +1,6 @@
 {
-  "parent": "ntmdoors:item/keycard_scanner_base"
+  "parent": "builtin/generated",
+  "textures": {
+    "layer0": "ntmdoors:items/keycard_scanner"
+  }
 }

@@ -6,11 +6,9 @@ import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.registry.ModContent;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.statemap.StateMapperBase;
 import net.minecraft.item.Item;
-import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.Mod;
@@ -33,43 +31,14 @@ public class ClientModels {
         }
         invisible(ModContent.KEYPAD);
         inventory(Item.getItemFromBlock(ModContent.KEYPAD));
-        // The scanner keeps a normal blockstate instead of the shared invisible mapper, so the item
-        // also resolves through the standard blockstate "inventory" variant. That is a second route
-        // to the same model in case the custom item location is ignored.
-        Item scannerItem = Item.getItemFromBlock(ModContent.KEYCARD_SCANNER);
-        scannerItem.setTileEntityItemStackRenderer(RenderKeycardScannerItem.INSTANCE);
-        ModelResourceLocation scannerModel = new ModelResourceLocation(NTMDoors.MODID + ":keycard_scanner", "inventory");
-        ModelLoader.setCustomMeshDefinition(scannerItem, stack -> scannerModel);
-        ModelLoader.setCustomModelResourceLocation(scannerItem, 0, scannerModel);
-        NTMDoors.LOGGER.info("Keycard Scanner item {} -> {}", scannerItem.getRegistryName(), scannerModel);
+        // The scanner is the opposite way round: a flat icon in the inventory and hand, while the
+        // placed block is drawn from the OBJ by RenderKeycardScanner. Its blockstate also carries an
+        // "inventory" variant that points at the same item model.
+        inventory(Item.getItemFromBlock(ModContent.KEYCARD_SCANNER));
         inventory(ModContent.SCREWDRIVER);
         for (ItemRfidCard card : ModContent.RFID_CARDS) inventory(card);
         inventory(ModContent.CREATIVE_KEYCARD);
         inventory(ModContent.RELAY_KEY);
-    }
-
-    /**
-     * Verifies the scanner's item model actually baked as a builtin/entity model. That flag is what
-     * makes Forge call {@link RenderKeycardScannerItem}; when it is false the item draws nothing at
-     * all, which is indistinguishable from a renderer that never ran. A door item is logged next to
-     * it as a control, because the doors use the same item path and do render.
-     */
-    @SubscribeEvent
-    public static void onModelBake(ModelBakeEvent e) {
-        report(e, new ModelResourceLocation(NTMDoors.MODID + ":keycard_scanner", "inventory"), "scanner");
-        report(e, new ModelResourceLocation(NTMDoors.MODID + ":vault_door", "inventory"), "vault_door control");
-    }
-
-    private static void report(ModelBakeEvent e, ModelResourceLocation location, String label) {
-        IBakedModel baked = e.getModelRegistry().getObject(location);
-        if (baked == null) {
-            NTMDoors.LOGGER.warn("[{}] {} is not in the model registry", label, location);
-            return;
-        }
-        NTMDoors.LOGGER.info("[{}] {} builtin={} quads={} class={} particle={}", label, location,
-                baked.isBuiltInRenderer(), baked.getQuads(null, null, 0).size(),
-                baked.getClass().getSimpleName(),
-                baked.getParticleTexture() == null ? "null" : baked.getParticleTexture().getIconName());
     }
 
     /** Every state of the block maps to the empty model; the TESR draws the real thing. */
