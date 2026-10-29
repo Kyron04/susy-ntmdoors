@@ -438,7 +438,7 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
         if (!linking || bindMode == BindMode.NONE) return false;
         if (mode == Mode.RESET_CONFIRM || mode == Mode.RESET_ENTER) return false;
         if (!door.acceptsKeypad()) {
-            // Locked and security doors never take a keypad code.
+            // Security doors never take a keypad code. Locked doors do, like normal ones.
             msg(player, "ntmdoors.msg.bind_no_keypad");
             return false;
         }
@@ -582,8 +582,7 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
             if (te instanceof TileEntityDoorGeneric) {
                 TileEntityDoorGeneric door = (TileEntityDoorGeneric) te;
                 if (!door.acceptsKeypad()) {
-                    // Never drive a locked or security door from a keypad, and never leave an old
-                    // binding to one behind.
+                    // Security doors are never keypad-driven; drop any stale link to one.
                     it.remove();
                     dropped = true;
                     continue;

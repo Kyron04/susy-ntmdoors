@@ -21,8 +21,8 @@ Needs JDK 8 (ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs). The Gradl
 * Every door is also registered as a locked, redstone-only copy named `<door>_locked`, and as a
   `<door>_security` copy that only the Creative Keycard can open: keypads (every binding mode) and
   redstone never move it, and hand clicks are refused. The two silo hatches have no security
-  variant. Keypads refuse to bind to, sync with or drive a locked or security door, so their
-  access control can never be taken over.
+  variant. Keypads may bind and drive locked doors exactly like normal ones (a bound door is then
+  code-driven rather than redstone-driven); only security doors are off limits.
 * State dependent collision and selection boxes that follow the door animation continuously
   (walk through when open, click-through gaps)
 * OBJ renderer (TESR) with per-group translate/rotate animations, X/Y/Z clipping and sounds

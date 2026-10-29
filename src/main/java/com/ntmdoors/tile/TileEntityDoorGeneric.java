@@ -381,8 +381,8 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         if (world == null || world.isRemote) return;
         // Security doors never react to redstone; only the Creative Keycard opens them.
         if (isSecurityDoor()) return;
-        // Redstone-only doors keep working even if an old save still carries a keypad code.
-        if (!isRedstoneOnly() && isKeypadBound()) return;
+        // A door under keypad control is code-driven, locked twins included.
+        if (isKeypadBound()) return;
         boolean p = isGroupReceivingPower();
         if (p == powered) return;
         powered = p;
@@ -442,11 +442,10 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         return block instanceof BlockDoorGeneric && ((BlockDoorGeneric) block).isSecurity();
     }
 
-    /** True when a keypad may bind and drive this door; locked and security doors are excluded. */
+    /** True when a keypad may bind and drive this door; only security doors are excluded. */
     public boolean acceptsKeypad() {
         Block block = getBlockType();
-        return block instanceof BlockDoorGeneric
-                && ((BlockDoorGeneric) block).variant == BlockDoorGeneric.Variant.NORMAL;
+        return block instanceof BlockDoorGeneric && !((BlockDoorGeneric) block).isSecurity();
     }
 
     private void reject(EntityPlayer player, String key) {
