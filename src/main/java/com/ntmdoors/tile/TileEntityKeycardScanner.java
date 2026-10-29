@@ -25,7 +25,7 @@ import java.util.UUID;
 public class TileEntityKeycardScanner extends TileEntitySynced implements ITickable {
 
     public enum State {
-        IDLE, BINDING, SCANNING, GRANTED, DENIED
+        IDLE, BINDING, SCANNING, GRANTED, DENIED, SYNCED
     }
 
     private static final State[] STATES = State.values();
@@ -40,6 +40,8 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
     private static final int RESULT_TICKS = 40;
     /** A binding session the player walks away from expires after a minute. */
     private static final int BINDING_TICKS = 20 * 60;
+    /** Scanner-opened doors close themselves again after ten seconds. */
+    private static final int AUTO_CLOSE_TICKS = 20 * 10;
 
     private final List<BlockPos> boundDoors = new ArrayList<>();
     /** Doors selected in the current session but not committed yet. */
@@ -100,6 +102,7 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
                 break;
             case GRANTED:
             case DENIED:
+            case SYNCED:
                 if (--ticks <= 0) {
                     state = bindingPlayer != null ? State.BINDING : State.IDLE;
                     ticks = 0;
@@ -157,8 +160,8 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
             msg(player, "ntmdoors.msg.bind_far");
             return;
         }
-        if (door.isBoundToScanner()) {
-            msg(player, "ntmdoors.msg.scanner_taken");
+        if (door.isKeypadBound()) {
+            msg(player, "ntmdoors.msg.scanner_keypad");
             return;
         }
         if (pendingDoors.contains(door.getPos()) || boundDoors.contains(door.getPos())) {
@@ -232,7 +235,9 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
             BlockPos doorPos = boundDoors.get(i);
             TileEntity te = world.getTileEntity(doorPos);
             if (te instanceof TileEntityDoorGeneric) {
-                ((TileEntityDoorGeneric) te).request(true);
+                TileEntityDoorGeneric door = (TileEntityDoorGeneric) te;
+                door.request(true);
+                door.closeAfter(AUTO_CLOSE_TICKS);
             } else {
                 boundDoors.remove(i);
             }
@@ -243,12 +248,14 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
     // ------------------------------------------------------------ restore / bookkeeping
 
     /**
-     * A replacement scanner picks the doors back up. Each door remembers which scanner position it
-     * was bound to, so no data has to survive on the scanner itself.
+     * A replacement scanner picks the doors back up, and a scanner mounted against a door that
+     * another scanner already controls joins it too. Each door remembers the scanners that own it,
+     * so no data has to survive on the scanner itself.
      */
     private void restoreBindings() {
         if (world == null) return;
         int before = boundDoors.size();
+
         for (TileEntity te : world.loadedTileEntityList) {
             if (!(te instanceof TileEntityDoorGeneric)) continue;
             if (te.getPos().distanceSq(pos) > MAX_BIND_DISTANCE * MAX_BIND_DISTANCE) continue;
@@ -257,8 +264,46 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
                 boundDoors.add(door.getPos().toImmutable());
             }
         }
+
+        // Mounted against a door that already belongs to another scanner: join it.
+        for (TileEntityDoorGeneric door : adjacentDoors()) {
+            if (!door.isBoundToScanner() || boundDoors.contains(door.getPos())) continue;
+            door.bindToScanner(pos);
+            boundDoors.add(door.getPos().toImmutable());
+        }
+
         refreshCount();
-        if (boundDoors.size() != before) sync();
+        if (boundDoors.size() != before) {
+            state = State.SYNCED;
+            ticks = RESULT_TICKS;
+            sync();
+        }
+    }
+
+    /** Door cores in the 26 cells around this scanner, the same rule the keypad uses. */
+    private List<TileEntityDoorGeneric> adjacentDoors() {
+        List<TileEntityDoorGeneric> out = new ArrayList<>();
+        if (world == null) return out;
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = -1; dy <= 1; dy++) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    if (dx == 0 && dy == 0 && dz == 0) continue;
+                    BlockPos neighbour = pos.add(dx, dy, dz);
+                    if (!world.isBlockLoaded(neighbour)) continue;
+                    TileEntity te = world.getTileEntity(neighbour);
+                    TileEntityDoorGeneric core = null;
+                    if (te instanceof TileEntityDoorGeneric) {
+                        core = (TileEntityDoorGeneric) te;
+                    } else if (te instanceof TileEntityDoorPart) {
+                        BlockPos corePos = ((TileEntityDoorPart) te).corePos;
+                        TileEntity coreTe = corePos == null ? null : world.getTileEntity(corePos);
+                        if (coreTe instanceof TileEntityDoorGeneric) core = (TileEntityDoorGeneric) coreTe;
+                    }
+                    if (core != null && !out.contains(core)) out.add(core);
+                }
+            }
+        }
+        return out;
     }
 
     private void refreshCount() {

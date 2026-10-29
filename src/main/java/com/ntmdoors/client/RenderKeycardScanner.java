@@ -41,6 +41,7 @@ public class RenderKeycardScanner extends TileEntitySpecialRenderer<TileEntityKe
     private static final String SCANNING_TEXT = "Scanning";
     private static final String GRANTED_TEXT = "Access granted!";
     private static final String DENIED_TEXT = "Access denied";
+    private static final String SYNCED_TEXT = "Synced";
     private static final float TEXT_SCALE = 0.0042F;
     /** Width of the recessed screen in model units, minus a small margin. */
     private static final float TEXT_MAX_WIDTH = 0.36F;
@@ -50,6 +51,7 @@ public class RenderKeycardScanner extends TileEntitySpecialRenderer<TileEntityKe
     private static final int COLOR_SCANNING = 0xFFFFFFFF;
     private static final int COLOR_GRANTED = 0xFF55FF55;
     private static final int COLOR_DENIED = 0xFFFF5555;
+    private static final int COLOR_SYNCED = 0xFF9FFFB0;
 
     @Override
     public void render(TileEntityKeycardScanner te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
@@ -95,7 +97,7 @@ public class RenderKeycardScanner extends TileEntitySpecialRenderer<TileEntityKe
 
     /**
      * Lights the lens that matches the current state. The lens geometry is already drawn with the
-     * rest of the model; drawing it again fullbright with a colour tint makes it read as lit.
+     * rest of the model; drawing it again fullbright with additive blending makes it read as lit.
      */
     private static void drawStatusLight(ObjModel model, TileEntityKeycardScanner.State state) {
         String group;
@@ -110,15 +112,21 @@ public class RenderKeycardScanner extends TileEntitySpecialRenderer<TileEntityKe
                 red = 1F; green = 0.45F; blue = 0.45F;
                 break;
             case BINDING:
+            case SCANNING:
                 group = "LightYellow";
                 red = 1F; green = 0.9F; blue = 0.35F;
                 break;
             default:
                 return;
         }
+
+        // Additive, drawn twice: the lenses sit in a dark recess, so a plain re-draw barely shows.
+        GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
         GlStateManager.color(red, green, blue, 1F);
         model.draw(group);
+        model.draw(group);
         GlStateManager.color(1F, 1F, 1F, 1F);
+        GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
     }
 
     /**
@@ -147,6 +155,10 @@ public class RenderKeycardScanner extends TileEntitySpecialRenderer<TileEntityKe
             case DENIED:
                 first = DENIED_TEXT;
                 color = COLOR_DENIED;
+                break;
+            case SYNCED:
+                first = SYNCED_TEXT;
+                color = COLOR_SYNCED;
                 break;
             default:
                 first = IDLE_TEXT;

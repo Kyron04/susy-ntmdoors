@@ -446,6 +446,11 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
             msg(player, "ntmdoors.msg.bind_open");
             return false;
         }
+        if (door.isBoundToScanner()) {
+            // A door is either keypad-driven or scanner-driven, never both.
+            msg(player, "ntmdoors.msg.bind_scanner");
+            return false;
+        }
         if (pos.distanceSq(door.getPos()) > MAX_BIND_DISTANCE * MAX_BIND_DISTANCE) {
             msg(player, "ntmdoors.msg.bind_far");
             return false;
@@ -616,7 +621,7 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
     public void syncWithDoor() {
         if (world == null || world.isRemote) return;
         TileEntityDoorGeneric door = findDoor();
-        if (door == null || !door.isKeypadBound()) return;
+        if (door == null || !door.isKeypadBound() || door.isBoundToScanner()) return;
         storedCode = door.getKeypadCode();
         mode = Mode.ENTER_CODE;
         entry = "";

@@ -45,9 +45,13 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
     private int skinIndex;
     /** Code a keypad has bound to this door; empty when no keypad controls it. Server-only. */
     private String keypadCode = "";
-    /** Scanner this door is bound to, or null. Server-only, and kept when that scanner is broken. */
-    @Nullable
-    private BlockPos boundScanner;
+    /**
+     * Scanners controlling this door. Server-only, and kept when a scanner is broken so a
+     * replacement placed in the same spot adopts the door again.
+     */
+    private final List<BlockPos> boundScanners = new ArrayList<>();
+    /** Ticks until a scanner-opened door closes itself; 0 when no timer is running. */
+    private int autoCloseTicks;
 
     /** Set while the structure is being torn down so parts don't recurse. */
     private boolean dismantling;
@@ -130,6 +134,7 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
     @Override
     public void update() {
         boolean client = world != null && world.isRemote;
+        if (!client) tickAutoClose();
         if (passUpdatePending && !client) {
             passUpdatePending = false;
             updatePassState(state == DoorState.OPEN);
@@ -149,6 +154,23 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         // Run after the movement so a loop starts on the first moving tick and stops on the same
         // tick that the animation finishes, keeping the audio exactly as long as the door travel.
         if (client) updateClientSounds();
+    }
+
+    /**
+     * Runs the scanner's auto-close timer. It only counts while the door is fully open, so a door
+     * somebody closed by hand simply drops the timer instead of being forced shut later.
+     */
+    private void tickAutoClose() {
+        if (autoCloseTicks <= 0) return;
+        if (state == DoorState.CLOSED) {
+            autoCloseTicks = 0;
+            return;
+        }
+        if (state != DoorState.OPEN) return;
+        if (--autoCloseTicks <= 0) {
+            autoCloseTicks = 0;
+            request(false);
+        }
     }
 
     private void finishMove(DoorDecl d) {
@@ -302,21 +324,28 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         sync();
     }
 
-    /** True when a scanner controls this door. The binding survives that scanner being broken. */
+    /** True when at least one scanner controls this door. The binding survives that scanner breaking. */
     public boolean isBoundToScanner() {
-        return boundScanner != null;
+        return !boundScanners.isEmpty();
     }
 
-    /** True when this door is bound to the scanner at {@code scannerPos}. */
+    /** True when the scanner at {@code scannerPos} controls this door. */
     public boolean isBoundToScanner(BlockPos scannerPos) {
-        return scannerPos != null && scannerPos.equals(boundScanner);
+        return scannerPos != null && boundScanners.contains(scannerPos);
     }
 
-    /** Binds this door to a scanner. A door only ever belongs to one scanner. */
+    /** Adds a scanner to this door. A door may be controlled by several scanners. */
     public void bindToScanner(BlockPos scannerPos) {
-        if (boundScanner != null || scannerPos == null) return;
-        boundScanner = scannerPos.toImmutable();
+        if (scannerPos == null) return;
+        BlockPos scanner = scannerPos.toImmutable();
+        if (boundScanners.contains(scanner)) return;
+        boundScanners.add(scanner);
         sync();
+    }
+
+    /** Makes this door close itself after {@code ticks}, used for scanner-opened doors. */
+    public void closeAfter(int ticks) {
+        autoCloseTicks = Math.max(0, ticks);
     }
 
     /**
@@ -488,18 +517,18 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         tag.setInteger("queued", queuedOpen == null ? -1 : queuedOpen ? 1 : 0);
         tag.setInteger("skin", skinIndex);
         tag.setString("keypadCode", keypadCode);
-        tag.setBoolean("hasBoundScanner", boundScanner != null);
-        if (boundScanner != null) tag.setLong("boundScannerPos", boundScanner.toLong());
+        tag.setString("boundScanners", encodeScanners());
+        tag.setInteger("autoClose", autoCloseTicks);
         return tag;
     }
 
-    /** Keypad codes stay on the server; clients only need the visual state. */
+    /** Keypad codes and scanner links stay on the server; clients only need the visual state. */
     @Override
     protected NBTTagCompound writeSyncTag(NBTTagCompound tag) {
         writeToNBT(tag);
         tag.removeTag("keypadCode");
-        tag.removeTag("hasBoundScanner");
-        tag.removeTag("boundScannerPos");
+        tag.removeTag("boundScanners");
+        tag.removeTag("autoClose");
         return tag;
     }
 
@@ -513,7 +542,27 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         queuedOpen = queued < 0 ? null : queued == 1;
         skinIndex = tag.hasKey("skin") ? tag.getInteger("skin") : 0;
         keypadCode = tag.getString("keypadCode");
-        boundScanner = tag.getBoolean("hasBoundScanner") ? BlockPos.fromLong(tag.getLong("boundScannerPos")) : null;
+        autoCloseTicks = tag.getInteger("autoClose");
+        boundScanners.clear();
+        String scanners = tag.getString("boundScanners");
+        if (!scanners.isEmpty()) {
+            for (String part : scanners.split(";")) {
+                String[] xyz = part.split(",");
+                if (xyz.length != 3) continue;
+                boundScanners.add(new BlockPos(Integer.parseInt(xyz[0]), Integer.parseInt(xyz[1]),
+                        Integer.parseInt(xyz[2])));
+            }
+        }
+    }
+
+    /** Scanner positions are stored as "x,y,z;x,y,z". */
+    private String encodeScanners() {
+        StringBuilder out = new StringBuilder();
+        for (BlockPos scanner : boundScanners) {
+            if (out.length() > 0) out.append(';');
+            out.append(scanner.getX()).append(',').append(scanner.getY()).append(',').append(scanner.getZ());
+        }
+        return out.toString();
     }
 
     /**
