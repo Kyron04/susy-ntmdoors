@@ -18,7 +18,9 @@ Needs JDK 8 (ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs). The Gradl
 * Multiblock doors of any footprint, placed in one click, rotate with the player, removed as one piece
 * Core tile entity with state machine CLOSED / OPENING / OPEN / CLOSING, synced to clients
 * Redstone from any cell of the door (edge triggered), right click toggle
-* Every door is also registered as a locked, redstone-only copy named `<door>_locked`
+* Every door is also registered as a locked, redstone-only copy named `<door>_locked`, and as a
+  `<door>_security` copy intended for the future security system (currently behaves like the normal
+  door). The two silo hatches have no security variant.
 * State dependent collision and selection boxes that follow the door animation continuously
   (walk through when open, click-through gaps)
 * OBJ renderer (TESR) with per-group translate/rotate animations, X/Y/Z clipping and sounds
@@ -47,6 +49,13 @@ Needs JDK 8 (ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs). The Gradl
   linking. Once a code or link exists the mode is fixed and the screwdriver can only reset the
   pad, which clears every link and code. A keypad placed next to an already-bound door auto-syncs
   its code and skips the confirmation
+* RFID cards: one blank card plus red, violet, green, blue, black, orange and yellow variants.
+  Each colour is a separate item (`ntmdoors:red_rfid_card` and so on) sharing a single item class
+  and one hand-display model, so they all sit in the hand identically. The cards are the groundwork
+  for the keycard system and have no in-game function yet.
+* Relay Key and Creative Keycard (`ntmdoors:relay_key`, `ntmdoors:creative_keycard`): groundwork for
+  the keycard system. The Creative Keycard is the debug card that is meant to bypass door bindings,
+  keypads and redstone; neither item has behaviour yet.
 * The secure access door ships nine skins: red, yellow, green, blue, grey, black (white writing),
   HBM yellow, white (black writing) and orange (white writing). The colour variants are generated
   by recolouring only the red warning paint; all other pixels are unchanged. Base colours: green
@@ -59,8 +68,9 @@ Needs JDK 8 (ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs). The Gradl
 Models live under `src/main/resources/assets/ntmdoors/models/doors/`, textures under
 `textures/models/doors/`, and sounds under `sounds/doors/`. Door items do **not** need flat
 `textures/items/<door>.png` icons: the inventory/hand item is rendered from the same OBJ model
-and texture as the placed door. Only the screwdriver and keypad items use flat icons
-(`textures/items/screwdriver.png` and `textures/items/sliding_blast_door_keypad.png`).
+and texture as the placed door. Only the screwdriver, the keypad and the RFID cards use flat icons
+(`textures/items/screwdriver.png`, `textures/items/sliding_blast_door_keypad.png`, and
+`textures/items/blank_rfid_card.png` plus `textures/items/rfid_card_<colour>.png`).
 
 | door | animated OBJ groups | notes |
 |---|---|---|

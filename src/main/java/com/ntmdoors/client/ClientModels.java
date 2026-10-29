@@ -33,6 +33,8 @@ public class ClientModels {
         inventory(Item.getItemFromBlock(ModContent.KEYPAD));
         inventory(ModContent.SCREWDRIVER);
         for (ItemRfidCard card : ModContent.RFID_CARDS) inventory(card);
+        inventory(ModContent.CREATIVE_KEYCARD);
+        inventory(ModContent.RELAY_KEY);
     }
 
     /** Every state of the block maps to the empty model; the TESR draws the real thing. */

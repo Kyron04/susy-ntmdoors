@@ -17,7 +17,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-@Mod(modid = NTMDoors.MODID, name = "NTM Doors", version = "1.0.36", acceptedMinecraftVersions = "[1.12.2]")
+@Mod(modid = NTMDoors.MODID, name = "NTM Doors", version = "1.0.37", acceptedMinecraftVersions = "[1.12.2]")
 public class NTMDoors {
 
     public static final String MODID = "ntmdoors";
@@ -34,16 +34,20 @@ public class NTMDoors {
         }
 
         /**
-         * Fixed order instead of registry order: normal doors, their locked twins, then the two
-         * tools. Keeping the lists separate means the order does not depend on registration.
+         * Fixed order instead of registry order: normal doors, their locked and security twins, then
+         * the tools and cards. Keeping the lists separate means the order does not depend on
+         * registration.
          */
         @Override
         public void displayAllRelevantItems(NonNullList<ItemStack> items) {
             for (BlockDoorGeneric door : ModContent.NORMAL_DOORS) items.add(new ItemStack(door));
             for (BlockDoorGeneric door : ModContent.LOCKED_DOORS) items.add(new ItemStack(door));
+            for (BlockDoorGeneric door : ModContent.SECURITY_DOORS) items.add(new ItemStack(door));
             items.add(new ItemStack(ModContent.SCREWDRIVER));
             items.add(new ItemStack(ModContent.KEYPAD));
             for (ItemRfidCard card : ModContent.RFID_CARDS) items.add(new ItemStack(card));
+            items.add(new ItemStack(ModContent.CREATIVE_KEYCARD));
+            items.add(new ItemStack(ModContent.RELAY_KEY));
         }
 
         @Override

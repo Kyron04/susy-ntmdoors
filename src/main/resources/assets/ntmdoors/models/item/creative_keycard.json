@@ -1,0 +1,6 @@
+{
+  "parent": "ntmdoors:item/rfid_card_base",
+  "textures": {
+    "layer0": "ntmdoors:items/creative_keycard"
+  }
+}

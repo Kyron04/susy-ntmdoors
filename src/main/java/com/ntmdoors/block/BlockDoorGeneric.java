@@ -46,9 +46,10 @@ import java.util.List;
  * logic) and any number of DUMMY cells (tile entity that points at the core). All cells share the same
  * block. Rendering is done by a TESR on the core, so the block itself is invisible.
  *
- * <p>Each {@link DoorDecl} is registered twice: the normal door and a {@code _locked} twin that only
- * reacts to redstone. Both variants share the same declaration; the lock is a block property, so it can
- * never drift out of sync with the door definition.</p>
+ * <p>Each {@link DoorDecl} is registered as the normal door, a {@code _locked} twin that only
+ * reacts to redstone, and a {@code _security} variant that is reserved for the future security
+ * system. All variants share the same declaration; the variant only affects the registry name and
+ * the lock flag, so they can never drift out of sync with the door definition.</p>
  */
 public class BlockDoorGeneric extends Block {
 
@@ -70,15 +71,35 @@ public class BlockDoorGeneric extends Block {
         }
     }
 
+    /** The registered forms of a door declaration. */
+    public enum Variant {
+        NORMAL("", ""),
+        LOCKED("_locked", " (Locked)"),
+        /** Placeholder for the future security system; behaves like a normal door for now. */
+        SECURITY("_security", " (Security)");
+
+        /** Registry/translation key suffix appended to the declaration name. */
+        public final String suffix;
+        /** Suffix used for the fallback display name when the language file has no entry. */
+        public final String displaySuffix;
+
+        Variant(String suffix, String displaySuffix) {
+            this.suffix = suffix;
+            this.displaySuffix = displaySuffix;
+        }
+    }
+
     public final DoorDecl decl;
+    public final Variant variant;
     /** Locked twins refuse every manual interaction; only redstone can move them. */
     public final boolean locked;
 
-    public BlockDoorGeneric(DoorDecl decl, boolean locked) {
+    public BlockDoorGeneric(DoorDecl decl, Variant variant) {
         super(Material.IRON);
         this.decl = decl;
-        this.locked = locked;
-        String name = locked ? decl.name + "_locked" : decl.name;
+        this.variant = variant;
+        this.locked = variant == Variant.LOCKED;
+        String name = decl.name + variant.suffix;
         setRegistryName(NTMDoors.MODID, name);
         setTranslationKey(NTMDoors.MODID + "." + name);
         setCreativeTab(NTMDoors.TAB);
@@ -249,7 +270,7 @@ public class BlockDoorGeneric extends Block {
     /** Prefer the language file, but never show a raw translation key if a line is missing. */
     @Override
     public String getLocalizedName() {
-        String fallback = locked ? decl.displayName + " (Locked)" : decl.displayName;
+        String fallback = decl.displayName + variant.displaySuffix;
         return Names.translationOr(getTranslationKey() + ".name", fallback);
     }
 

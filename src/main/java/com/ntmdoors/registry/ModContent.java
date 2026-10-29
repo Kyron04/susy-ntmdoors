@@ -7,6 +7,7 @@ import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.DoorDecls;
 import com.ntmdoors.item.ItemBlockKeypad;
 import com.ntmdoors.item.ItemDoorBlock;
+import com.ntmdoors.item.ItemRelayKey;
 import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.item.ItemScrewdriver;
 import net.minecraft.block.Block;
@@ -26,15 +27,21 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Mod.EventBusSubscriber(modid = NTMDoors.MODID)
 public class ModContent {
 
     public static final List<BlockDoorGeneric> NORMAL_DOORS = new ArrayList<>();
     public static final List<BlockDoorGeneric> LOCKED_DOORS = new ArrayList<>();
-    /** Normal doors first, then their locked twins; used for registration and rendering setup. */
+    public static final List<BlockDoorGeneric> SECURITY_DOORS = new ArrayList<>();
+    /** Normal doors first, then their locked and security twins; used for registration and rendering setup. */
     public static final List<BlockDoorGeneric> DOORS = new ArrayList<>();
+    /** The two silo hatches stay single-variant. */
+    private static final Set<String> NO_SECURITY_VARIANT = new HashSet<>(Arrays.asList(
+            "silo_hatch", "silo_hatch_large"));
     public static final BlockDoorKeypad KEYPAD = new BlockDoorKeypad();
     public static final ItemScrewdriver SCREWDRIVER = new ItemScrewdriver();
     public static final ItemRfidCard BLANK_RFID_CARD = new ItemRfidCard("blank_rfid_card");
@@ -45,6 +52,9 @@ public class ModContent {
     public static final ItemRfidCard BLACK_RFID_CARD = new ItemRfidCard("black_rfid_card");
     public static final ItemRfidCard ORANGE_RFID_CARD = new ItemRfidCard("orange_rfid_card");
     public static final ItemRfidCard YELLOW_RFID_CARD = new ItemRfidCard("yellow_rfid_card");
+    /** Debug card that is meant to bypass every door restriction. */
+    public static final ItemRfidCard CREATIVE_KEYCARD = new ItemRfidCard("creative_keycard");
+    public static final ItemRelayKey RELAY_KEY = new ItemRelayKey();
 
     /** Blank first, then the colour variants in creative-tab order. */
     public static final List<ItemRfidCard> RFID_CARDS = Collections.unmodifiableList(Arrays.asList(
@@ -52,10 +62,16 @@ public class ModContent {
             BLUE_RFID_CARD, BLACK_RFID_CARD, ORANGE_RFID_CARD, YELLOW_RFID_CARD));
 
     static {
-        for (DoorDecl d : DoorDecls.ALL) NORMAL_DOORS.add(new BlockDoorGeneric(d, false));
-        for (DoorDecl d : DoorDecls.ALL) LOCKED_DOORS.add(new BlockDoorGeneric(d, true));
+        for (DoorDecl d : DoorDecls.ALL) NORMAL_DOORS.add(new BlockDoorGeneric(d, BlockDoorGeneric.Variant.NORMAL));
+        for (DoorDecl d : DoorDecls.ALL) LOCKED_DOORS.add(new BlockDoorGeneric(d, BlockDoorGeneric.Variant.LOCKED));
+        for (DoorDecl d : DoorDecls.ALL) {
+            if (!NO_SECURITY_VARIANT.contains(d.name)) {
+                SECURITY_DOORS.add(new BlockDoorGeneric(d, BlockDoorGeneric.Variant.SECURITY));
+            }
+        }
         DOORS.addAll(NORMAL_DOORS);
         DOORS.addAll(LOCKED_DOORS);
+        DOORS.addAll(SECURITY_DOORS);
     }
 
     @SubscribeEvent
@@ -70,6 +86,8 @@ public class ModContent {
         e.getRegistry().register(new ItemBlockKeypad(KEYPAD).setRegistryName(KEYPAD.getRegistryName()));
         e.getRegistry().register(SCREWDRIVER);
         for (ItemRfidCard card : RFID_CARDS) e.getRegistry().register(card);
+        e.getRegistry().register(CREATIVE_KEYCARD);
+        e.getRegistry().register(RELAY_KEY);
     }
 
     @SubscribeEvent
