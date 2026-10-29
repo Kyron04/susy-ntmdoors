@@ -30,9 +30,9 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import javax.annotation.Nullable;
 
 /**
- * Wall-mounted keycard reader. The screen and the three indicator lenses are currently inert: the
- * block exists so the model, placement and item rendering can be refined before the access logic
- * is wired up.
+ * Wall-mounted keycard reader. The tile entity owns the binding session and the access state; this
+ * block supplies the placement, the plate collision box and the click routing (empty hand confirms
+ * a binding, an RFID card starts a scan).
  */
 public class BlockKeycardScanner extends Block {
 

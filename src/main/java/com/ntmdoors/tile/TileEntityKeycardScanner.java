@@ -1,13 +1,20 @@
 package com.ntmdoors.tile;
 
+import com.ntmdoors.client.ScannerLoopSound;
 import com.ntmdoors.door.DoorState;
 import com.ntmdoors.item.ItemCreativeKeycard;
+import com.ntmdoors.util.ModSounds;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -42,6 +49,8 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
     private static final int BINDING_TICKS = 20 * 60;
     /** Scanner-opened doors close themselves again after ten seconds. */
     private static final int AUTO_CLOSE_TICKS = 20 * 10;
+    /** Quieter than the door movement sounds: a scanner sits at head height next to the player. */
+    private static final float SOUND_VOLUME = 0.8F;
 
     private final List<BlockPos> boundDoors = new ArrayList<>();
     /** Doors selected in the current session but not committed yet. */
@@ -61,6 +70,10 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
     private UUID scanningPlayer;
 
     private boolean restorePending;
+
+    /** Client-side copy of the scanning loop; null while no scan is running. */
+    @SideOnly(Side.CLIENT)
+    private ScannerLoopSound scanSound;
 
     // ------------------------------------------------------------ state accessors
 
@@ -84,7 +97,11 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
 
     @Override
     public void update() {
-        if (world == null || world.isRemote) return;
+        if (world == null) return;
+        if (world.isRemote) {
+            updateClientSound();
+            return;
+        }
 
         if (restorePending) {
             restorePending = false;
@@ -112,6 +129,39 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
             default:
                 break;
         }
+    }
+
+    /** Starts the card-read loop on the client when the synced state becomes SCANNING. */
+    @SideOnly(Side.CLIENT)
+    private void updateClientSound() {
+        if (state == State.SCANNING) {
+            if (scanSound == null) {
+                scanSound = new ScannerLoopSound(this, ModSounds.SCANNER_BELL1, SOUND_VOLUME);
+                Minecraft.getMinecraft().getSoundHandler().playSound(scanSound);
+            }
+        } else {
+            stopClientSound();
+        }
+    }
+
+    @SideOnly(Side.CLIENT)
+    private void stopClientSound() {
+        if (scanSound == null) return;
+        SoundHandler handler = Minecraft.getMinecraft().getSoundHandler();
+        if (handler != null) handler.stopSound(scanSound);
+        scanSound = null;
+    }
+
+    @Override
+    public void invalidate() {
+        if (world != null && world.isRemote) stopClientSound();
+        super.invalidate();
+    }
+
+    @Override
+    public void onChunkUnload() {
+        if (world != null && world.isRemote) stopClientSound();
+        super.onChunkUnload();
     }
 
     // ------------------------------------------------------------ binding session
@@ -210,6 +260,7 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         scanningPlayer = player.getUniqueID();
         state = State.SCANNING;
         ticks = SCAN_TICKS;
+        world.playSound(null, pos, ModSounds.SCANNER_BUTTON3, SoundCategory.BLOCKS, SOUND_VOLUME, 1F);
         sync();
     }
 
@@ -218,10 +269,12 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         boolean granted = player != null && ItemCreativeKeycard.isHeldBy(player);
 
         if (granted) {
+            world.playSound(null, pos, ModSounds.SCANNER_BUTTON3, SoundCategory.BLOCKS, SOUND_VOLUME, 1F);
             openBoundDoors();
             state = State.GRANTED;
             if (player != null) msg(player, "ntmdoors.msg.scanner_granted");
         } else {
+            world.playSound(null, pos, ModSounds.SCANNER_BUTTON8, SoundCategory.BLOCKS, SOUND_VOLUME, 1F);
             state = State.DENIED;
             if (player != null) msg(player, "ntmdoors.msg.scanner_denied");
         }

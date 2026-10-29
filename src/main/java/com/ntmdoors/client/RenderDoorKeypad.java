@@ -62,7 +62,7 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
         ResourceLocation activeTex = TEX_KEYPAD;
         if (feedback == Feedback.SUCCESS || feedback == Feedback.RESET_DONE) {
             activeTex = TEX_SUCCESS;
-        } else if (feedback == Feedback.DENIED) {
+        } else if (feedback == Feedback.DENIED || feedback == Feedback.UNABLE) {
             activeTex = TEX_ERROR;
         }
 
@@ -172,6 +172,10 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
                     line2 = "Granted";
                     color = 0xFF15FF00;
                     twoLines = true;
+                    break;
+                case UNABLE:
+                    line1 = "Unable to bound";
+                    color = 0xFFFF0800;
                     break;
                 default: // DENIED
                     line1 = "Access";

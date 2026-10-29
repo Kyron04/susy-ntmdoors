@@ -94,5 +94,29 @@
     "sounds": [
       "ntmdoors:doors/door_lever"
     ]
+  },
+  "scanner_button3": {
+    "category": "block",
+    "sounds": [
+      "ntmdoors:scanner/button3"
+    ]
+  },
+  "scanner_button8": {
+    "category": "block",
+    "sounds": [
+      "ntmdoors:scanner/button8"
+    ]
+  },
+  "scanner_button9": {
+    "category": "block",
+    "sounds": [
+      "ntmdoors:scanner/button9"
+    ]
+  },
+  "scanner_bell1": {
+    "category": "block",
+    "sounds": [
+      "ntmdoors:scanner/bell1"
+    ]
   }
 }

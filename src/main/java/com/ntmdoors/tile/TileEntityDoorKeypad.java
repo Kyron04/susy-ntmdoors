@@ -43,6 +43,8 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
 
     public static final int CODE_LENGTH = 6;
     public static final int BUTTONS = 12;
+    /** Ticks a key stays visually pressed, and the guard against a double click on the same key. */
+    private static final int BUTTON_COOLDOWN_TICKS = 4;
     /** How far a door may be from the keypad to be bound and operated remotely. */
     public static final double MAX_BIND_DISTANCE = 32.0;
     /** Maximum number of doors a multi-binding keypad can hold. */
@@ -92,7 +94,9 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
 
     /** Transient message on the LCD. */
     public enum Feedback {
-        NONE, CODE_SET, RESET_DONE, SUCCESS, DENIED, CODE_SYNCED;
+        NONE, CODE_SET, RESET_DONE, SUCCESS, DENIED, CODE_SYNCED,
+        /** The adjoining door can never be driven by a keypad (security, or scanner-controlled). */
+        UNABLE;
 
         private static final Feedback[] VALUES = values();
 
@@ -245,7 +249,7 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
         if (world == null || world.isRemote) return;
         if (id < 0 || id >= BUTTONS) return;
         if (cooldowns[id] > 0) return;
-        cooldowns[id] = 20;
+        cooldowns[id] = BUTTON_COOLDOWN_TICKS;
 
         world.playSound(null, pos, SoundEvents.UI_BUTTON_CLICK,
                 SoundCategory.BLOCKS, 0.5F, 0.9F + world.rand.nextFloat() * 0.2F);
@@ -439,6 +443,8 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
         if (mode == Mode.RESET_CONFIRM || mode == Mode.RESET_ENTER) return false;
         if (!door.acceptsKeypad()) {
             // Security doors never take a keypad code. Locked doors do, like normal ones.
+            showFeedback(Feedback.UNABLE);
+            sync();
             msg(player, "ntmdoors.msg.bind_no_keypad");
             return false;
         }
@@ -448,6 +454,8 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
         }
         if (door.isBoundToScanner()) {
             // A door is either keypad-driven or scanner-driven, never both.
+            showFeedback(Feedback.UNABLE);
+            sync();
             msg(player, "ntmdoors.msg.bind_scanner");
             return false;
         }
@@ -503,7 +511,8 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
 
     private void showFeedback(Feedback value) {
         feedback = value;
-        feedbackTicks = value == Feedback.NONE ? 0 : 20;
+        // "Unable to bound" is a placement warning, so keep it up longer than a result flash.
+        feedbackTicks = value == Feedback.NONE ? 0 : value == Feedback.UNABLE ? 60 : 20;
         blackScreenTicks = 0;
     }
 
@@ -529,6 +538,15 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
      */
     @Nullable
     public TileEntityDoorGeneric findDoor() {
+        return findAdjacentDoor(false);
+    }
+
+    /**
+     * The closest door core touching this keypad. Security doors are skipped unless
+     * {@code includeSecurity} is set, which placement uses to report that the pad cannot bind.
+     */
+    @Nullable
+    private TileEntityDoorGeneric findAdjacentDoor(boolean includeSecurity) {
         if (world == null) return null;
 
         TileEntityDoorGeneric best = null;
@@ -554,7 +572,7 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
                         continue;
                     }
                     double d2 = p.distanceSq(pos);
-                    if (!core.acceptsKeypad()) continue;
+                    if (!includeSecurity && !core.acceptsKeypad()) continue;
                     if (d2 < bestDist) {
                         bestDist = d2;
                         best = core;
@@ -575,7 +593,9 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
 
         if (bindMode == BindMode.NONE) {
             TileEntityDoorGeneric adjacent = findDoor();
-            if (adjacent != null) doors.add(adjacent);
+            // Scanner-controlled doors are off limits, the same way keypad-bound doors are off
+            // limits to scanners: a door is driven by one system or the other, never both.
+            if (adjacent != null && !adjacent.isBoundToScanner()) doors.add(adjacent);
             return doors;
         }
 
@@ -586,8 +606,9 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
             TileEntity te = world.getTileEntity(p);
             if (te instanceof TileEntityDoorGeneric) {
                 TileEntityDoorGeneric door = (TileEntityDoorGeneric) te;
-                if (!door.acceptsKeypad()) {
-                    // Security doors are never keypad-driven; drop any stale link to one.
+                if (!door.acceptsKeypad() || door.isBoundToScanner()) {
+                    // Security doors are never keypad-driven, and scanner-controlled doors are
+                    // off limits; drop any stale link.
                     it.remove();
                     dropped = true;
                     continue;
@@ -620,14 +641,33 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
      */
     public void syncWithDoor() {
         if (world == null || world.isRemote) return;
+
+        // Prefer a door a keypad is allowed to drive. Security doors are deliberately skipped by
+        // findDoor(), so they are only consulted when there is nothing bindable next to the pad.
         TileEntityDoorGeneric door = findDoor();
-        if (door == null || !door.isKeypadBound() || door.isBoundToScanner()) return;
-        storedCode = door.getKeypadCode();
-        mode = Mode.ENTER_CODE;
-        entry = "";
-        pendingConfirm = false;
-        showFeedback(Feedback.CODE_SYNCED);
-        sync();
+        if (door != null) {
+            if (door.isBoundToScanner()) {
+                showFeedback(Feedback.UNABLE);
+                sync();
+                return;
+            }
+            if (!door.isKeypadBound()) return;
+            storedCode = door.getKeypadCode();
+            mode = Mode.ENTER_CODE;
+            entry = "";
+            pendingConfirm = false;
+            showFeedback(Feedback.CODE_SYNCED);
+            sync();
+            return;
+        }
+
+        // Only a security door touches this pad: say why it cannot be bound, whatever the door's
+        // own binding state is.
+        TileEntityDoorGeneric security = findAdjacentDoor(true);
+        if (security != null && !security.acceptsKeypad()) {
+            showFeedback(Feedback.UNABLE);
+            sync();
+        }
     }
 
     /** Other keypads within binding range that are linked to the same door. */

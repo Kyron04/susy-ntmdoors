@@ -23,10 +23,10 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
 * Core tile entity with state machine CLOSED / OPENING / OPEN / CLOSING, synced to clients
 * Redstone from any cell of the door (edge triggered), right click toggle
 * Every door is also registered as a locked, redstone-only copy named `<door>_locked`, and as a
-  `<door>_security` copy that only the Creative Keycard can open: keypads (every binding mode) and
-  redstone never move it, and hand clicks are refused. The two silo hatches have no security
-  variant. Keypads may bind and drive locked doors exactly like normal ones (a bound door is then
-  code-driven rather than redstone-driven); only security doors are off limits.
+  `<door>_security` copy that only a keycard scanner (or the Creative Keycard directly) can open:
+  keypads in every binding mode, redstone and hand clicks never move it. The two silo hatches have
+  no security variant. Keypads may bind and drive locked doors exactly like normal ones (a bound
+  door is then code-driven rather than redstone-driven); security doors are off limits to keypads.
 * State dependent collision and selection boxes that follow the door animation continuously
   (walk through when open, click-through gaps)
 * OBJ renderer (TESR) with per-group translate/rotate animations, X/Y/Z clipping and sounds
@@ -54,21 +54,29 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   `Input multi code`, and the code typed there toggles every linked door. Pressing any key ends
   linking. Once a code or link exists the mode is fixed and the screwdriver can only reset the
   pad, which clears every link and code. A keypad placed next to an already-bound door auto-syncs
-  its code and skips the confirmation
-* Keycard Scanner (`ntmdoors:keycard_scanner`): wall-mounted card reader with a black display showing
-  `Please insert key`, a blue security stripe across the body and a vertical column of green /
-  yellow / red indicator lenses (all dark for now) beside the screen. A card slot sits below the
-  stripe. Placement and facing match the keypad; the lights are inert until the keycard access
-  logic is added. The item uses a matching 3D model in the inventory and hand, at the same angled
-  view as the doors.
+  its code and skips the confirmation. A keypad never binds or drives a security door: placing one
+  against a security door shows `Unable to bound` in red on the LCD. A door is also driven by
+  keypads or keycard scanners, never both, so a pad refuses a door a scanner already controls
+* Keycard Scanner (`ntmdoors:keycard_scanner`): wall-mounted card reader with a black display, a
+  blue security stripe and green / yellow / red indicator lenses. Sneak + right click it with the
+  screwdriver to start a binding session, sneak + right click up to nine closed doors within 32
+  blocks, then click the scanner with an empty hand to confirm. Normal, locked and security doors
+  can all be bound. Scanning a card shows `Scanning`; the Creative Keycard grants access, opens
+  every bound door and closes them again after ten seconds, and any other card is denied until the
+  keycard access rules are added. The LCD shows `Please insert key` while idle, and the matching
+  lens lights yellow while scanning/binding, green on access and red on denial. A card insert and a
+  successful scan play `button3`, a denied scan plays `button8`, and `bell1` loops while the scan
+  runs. Placement and facing match the keypad; the item uses a matching 3D model in the inventory
+  and hand.
 * RFID cards: one blank card plus red, violet, green, blue, black, orange and yellow variants.
   Each colour is a separate item (`ntmdoors:red_rfid_card` and so on) sharing a single item class
-  and one hand-display model, so they all sit in the hand identically. The cards are the groundwork
-  for the keycard system and have no in-game function yet.
+  and one hand-display model, so they all sit in the hand identically. The scanner recognises them
+  but denies them until the keycard access rules are added.
 * Relay Key and Creative Keycard (`ntmdoors:relay_key`, `ntmdoors:creative_keycard`): groundwork for
-  the keycard system. The Creative Keycard is the debug item: its name is purple, and right clicking
-  any door opens or closes it regardless of locked/security variants, keypad codes or redstone, with
-  a purple `Door overridden` status message. The Relay Key has no behaviour yet.
+  the keycard system. The Creative Keycard is the debug item for testing: its name is purple, and
+  right clicking any door opens or closes it regardless of locked/security variants, keypad codes or
+  redstone, with a purple `Door overridden` status message. It is also the only card the scanner
+  currently accepts. The Relay Key has no behaviour yet.
 * The secure access door ships nine skins: red, yellow, green, blue, grey, black (white writing),
   HBM yellow, white (black writing) and orange (white writing). The colour variants are generated
   by recolouring only the red warning paint; all other pixels are unchanged. Base colours: green

@@ -13,6 +13,7 @@ import com.ntmdoors.item.ItemDoorBlock;
 import com.ntmdoors.item.ItemRelayKey;
 import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.item.ItemScrewdriver;
+import com.ntmdoors.util.ModSounds;
 import net.minecraft.block.Block;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
@@ -99,6 +100,7 @@ public class ModContent {
     @SubscribeEvent
     public static void registerSounds(RegistryEvent.Register<SoundEvent> e) {
         for (SoundEvent s : DoorDecl.ALL_SOUNDS) e.getRegistry().register(s);
+        for (SoundEvent s : ModSounds.ALL) e.getRegistry().register(s);
     }
 
     @SubscribeEvent
