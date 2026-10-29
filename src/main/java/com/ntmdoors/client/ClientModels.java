@@ -32,9 +32,7 @@ public class ClientModels {
         invisible(ModContent.KEYPAD);
         inventory(Item.getItemFromBlock(ModContent.KEYPAD));
         invisible(ModContent.KEYCARD_SCANNER);
-        Item scannerItem = Item.getItemFromBlock(ModContent.KEYCARD_SCANNER);
-        scannerItem.setTileEntityItemStackRenderer(RenderKeycardScannerItem.INSTANCE);
-        inventory(scannerItem);
+        inventory(Item.getItemFromBlock(ModContent.KEYCARD_SCANNER));
         inventory(ModContent.SCREWDRIVER);
         for (ItemRfidCard card : ModContent.RFID_CARDS) inventory(card);
         inventory(ModContent.CREATIVE_KEYCARD);

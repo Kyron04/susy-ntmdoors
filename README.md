@@ -55,8 +55,8 @@ Needs JDK 8 (ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs). The Gradl
   `Please insert key`, a blue security stripe across the body and a vertical column of green /
   yellow / red indicator lenses (all dark for now) beside the screen. A card slot sits below the
   stripe. Placement and facing match the keypad; the lights are inert until the keycard access
-  logic is added. The item is rendered from the scanner OBJ in the inventory and hand, at the same
-  angled view as the doors.
+  logic is added. The item uses a matching 3D model in the inventory and hand, at the same angled
+  view as the doors.
 * RFID cards: one blank card plus red, violet, green, blue, black, orange and yellow variants.
   Each colour is a separate item (`ntmdoors:red_rfid_card` and so on) sharing a single item class
   and one hand-display model, so they all sit in the hand identically. The cards are the groundwork
@@ -80,7 +80,7 @@ Models live under `src/main/resources/assets/ntmdoors/models/doors/`, textures u
 and texture as the placed door. Only the screwdriver, the keypad and the RFID cards use flat icons
 (`textures/items/screwdriver.png`, `textures/items/sliding_blast_door_keypad.png`, and
 `textures/items/blank_rfid_card.png` plus `textures/items/rfid_card_<colour>.png`). The keycard
-scanner also uses its 3D OBJ in the inventory and hand, like the doors.
+scanner uses a 3D model in the inventory and hand too, like the doors.
 
 | door | animated OBJ groups | notes |
 |---|---|---|
