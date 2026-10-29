@@ -31,8 +31,8 @@ import javax.annotation.Nullable;
 
 /**
  * Wall-mounted keycard reader. The tile entity owns the binding session and the access state; this
- * block supplies the placement, the plate collision box and the click routing (empty hand confirms
- * a binding, an RFID card starts a scan).
+ * block supplies the placement, the plate collision box and the click routing for an RFID card.
+ * Binding is driven entirely by the screwdriver.
  */
 public class BlockKeycardScanner extends Block {
 
@@ -170,12 +170,10 @@ public class BlockKeycardScanner extends Block {
 
         TileEntityKeycardScanner scanner = (TileEntityKeycardScanner) te;
         ItemStack held = player.getHeldItem(hand);
-        if (held.isEmpty()) {
-            // Empty hand commits the doors selected during binding.
-            scanner.confirm(player);
-        } else if (held.getItem() instanceof ItemRfidCard) {
+        if (held.getItem() instanceof ItemRfidCard) {
             scanner.useCard(player);
+            return true;
         }
-        return true;
+        return false;
     }
 }

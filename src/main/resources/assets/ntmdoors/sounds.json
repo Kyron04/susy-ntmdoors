@@ -107,10 +107,10 @@
       "ntmdoors:scanner/button8"
     ]
   },
-  "scanner_button9": {
+  "button9": {
     "category": "block",
     "sounds": [
-      "ntmdoors:scanner/button9"
+      "ntmdoors:button9"
     ]
   },
   "scanner_bell1": {

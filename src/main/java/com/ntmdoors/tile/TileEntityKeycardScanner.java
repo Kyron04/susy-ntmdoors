@@ -25,7 +25,7 @@ import java.util.UUID;
  * Keycard reader tile entity. It owns the list of doors bound to it and the screen state.
  *
  * <p>Binding is a short session: a screwdriver sneak-click opens it, sneak-clicking closed doors
- * selects them, and an empty-hand click on the scanner commits the selection. The binding is also
+ * selects them, and a screwdriver click on the scanner commits the selection. The binding is also
  * recorded on each door, so destroying the scanner leaves the doors bound; a replacement scanner
  * placed in the same spot adopts them again on its first tick.</p>
  */
@@ -228,7 +228,7 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         sync();
     }
 
-    /** Server side: commits the pending selection. Called by an empty-hand click. */
+    /** Server side: commits the pending selection. Called by a screwdriver click. */
     public boolean confirm(EntityPlayer player) {
         if (!isBindingFor(player)) return false;
 

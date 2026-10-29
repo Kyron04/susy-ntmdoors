@@ -6,10 +6,10 @@ import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.tile.TileEntityDoorGeneric;
 import com.ntmdoors.tile.TileEntityDoorKeypad;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
+import com.ntmdoors.util.ModSounds;
 import com.ntmdoors.util.Names;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -26,10 +26,14 @@ import javax.annotation.Nullable;
 /**
  * Screwdriver. Right click a keypad to start its code-reset sequence; sneak + right click a keypad
  * to enter a binding mode, then sneak + right click closed doors to link them. Sneak + right click
- * a keycard scanner to enter its binding mode, and sneak + right click closed doors to collect
- * them. Sneak + right click a door with alternate skins cycles through them.
+ * a keycard scanner to enter its binding mode, sneak + right click closed doors to collect them and
+ * right click the scanner again to commit. Sneak + right click a door with alternate skins cycles
+ * through them. Every interaction the tool handles clicks once.
  */
 public class ItemScrewdriver extends Item {
+
+    /** Short tool click; quiet enough to sit under the door and keypad audio. */
+    private static final float SOUND_VOLUME = 0.8F;
 
     /** Item NBT key holding the keypad that is waiting for doors to be bound at range. */
     private static final String TAG_BIND_KEYPAD = "bindKeypad";
@@ -53,13 +57,25 @@ public class ItemScrewdriver extends Item {
     public EnumActionResult onItemUseFirst(EntityPlayer player, World world, BlockPos pos,
                                            EnumFacing side, float hitX, float hitY, float hitZ,
                                            EnumHand hand) {
+        EnumActionResult result = useTool(player, world, pos, hitX, hitY, hitZ, hand);
+        // One click per handled interaction, sent from the server so nearby players hear it.
+        if (!world.isRemote && result == EnumActionResult.SUCCESS) {
+            world.playSound(null, pos, ModSounds.BUTTON9, SoundCategory.BLOCKS, SOUND_VOLUME, 1F);
+        }
+        return result;
+    }
+
+    /** The actual interaction; the caller plays the click once when this reports a handled use. */
+    private EnumActionResult useTool(EntityPlayer player, World world, BlockPos pos,
+                                     float hitX, float hitY, float hitZ, EnumHand hand) {
         TileEntity te = world.getTileEntity(pos);
         if (te instanceof TileEntityKeycardScanner) {
-            // Sneak: open or close the scanner's binding session. Doors clicked next are added to it.
-            if (!player.isSneaking()) return EnumActionResult.PASS;
+            // Sneak: open or close the scanner's binding session. Plain click: commit the doors
+            // collected so far. Doors clicked in between are added to the session.
             if (!world.isRemote) {
                 TileEntityKeycardScanner scanner = (TileEntityKeycardScanner) te;
-                scanner.toggleBinding(player);
+                if (player.isSneaking()) scanner.toggleBinding(player);
+                else scanner.confirm(player);
                 updateScannerTag(player, hand, scanner);
             }
             return EnumActionResult.SUCCESS;
@@ -124,11 +140,7 @@ public class ItemScrewdriver extends Item {
         DoorDecl decl = core.getDecl();
         if (decl == null || !decl.hasSkinVariants()) return EnumActionResult.PASS;
 
-        if (!world.isRemote) {
-            if (core.cycleSkin()) {
-                world.playSound(null, pos, SoundEvents.ENTITY_ITEM_BREAK, SoundCategory.BLOCKS, 0.5F, 1.5F);
-            }
-        }
+        if (!world.isRemote) core.cycleSkin();
         return EnumActionResult.SUCCESS;
     }
 

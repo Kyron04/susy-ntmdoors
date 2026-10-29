@@ -37,7 +37,8 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   `water_door`, and `transition_seal`, plus a `_locked` copy of each
 * Screwdriver: sneak + right click on a door with alternate skins cycles through them; right click
   a keypad to start its code-reset sequence; sneak + right click an unused keypad cycles its
-  binding mode
+  binding mode. Every interaction the tool handles plays `button9`, so nearby players hear the
+  tool being used
 * Keypad: wall-mounted code panel that locks/unlocks the door it is placed
   next to. Set a 1-6 digit code and enter it to toggle the door; `R` closes an open door. The first
   code set is bound to the door, and every keypad on that door must use the same code to open it.
@@ -60,14 +61,14 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
 * Keycard Scanner (`ntmdoors:keycard_scanner`): wall-mounted card reader with a black display, a
   blue security stripe and green / yellow / red indicator lenses. Sneak + right click it with the
   screwdriver to start a binding session, sneak + right click up to nine closed doors within 32
-  blocks, then click the scanner with an empty hand to confirm. Normal, locked and security doors
-  can all be bound. Scanning a card shows `Scanning`; the Creative Keycard grants access, opens
-  every bound door and closes them again after ten seconds, and any other card is denied until the
-  keycard access rules are added. The LCD shows `Please insert key` while idle, and the matching
-  lens lights yellow while scanning/binding, green on access and red on denial. A card insert and a
-  successful scan play `button3`, a denied scan plays `button8`, and `bell1` loops while the scan
-  runs. Placement and facing match the keypad; the item uses a matching 3D model in the inventory
-  and hand.
+  blocks, then right click the scanner with the screwdriver again to confirm. Normal, locked and
+  security doors can all be bound. Scanning a card shows `Scanning`; the Creative Keycard grants
+  access, opens every bound door and closes them again after ten seconds, and any other card is
+  denied until the keycard access rules are added. The LCD shows `Please insert key` while idle, and
+  the matching lens lights yellow while scanning/binding, green on access and red on denial. A card
+  insert and a successful scan play `button3`, a denied scan plays `button8`, and `bell1` loops
+  while the scan runs. Placement and facing match the keypad; the item uses a matching 3D model in
+  the inventory and hand.
 * RFID cards: one blank card plus red, violet, green, blue, black, orange and yellow variants.
   Each colour is a separate item (`ntmdoors:red_rfid_card` and so on) sharing a single item class
   and one hand-display model, so they all sit in the hand identically. The scanner recognises them
