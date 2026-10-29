@@ -300,9 +300,11 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         return tag;
     }
 
-    /** Clients only need what the screen and the lenses show. */
+    /** Clients only need what the screen and the lenses show, plus the tile position. */
     @Override
     protected NBTTagCompound writeSyncTag(NBTTagCompound tag) {
+        // TileEntity.readFromNBT rebuilds pos from x/y/z, so the sync tag must carry them.
+        super.writeToNBT(tag);
         tag.setByte("scanState", (byte) state.ordinal());
         tag.setInteger("scanTicks", ticks);
         tag.setInteger("visibleCount", visibleCount);
