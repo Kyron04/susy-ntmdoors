@@ -51,10 +51,12 @@ Needs JDK 8 (ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs). The Gradl
   linking. Once a code or link exists the mode is fixed and the screwdriver can only reset the
   pad, which clears every link and code. A keypad placed next to an already-bound door auto-syncs
   its code and skips the confirmation
-* Keycard Scanner (`ntmdoors:keycard_scanner`): wall-mounted card reader with a black display, a
-  vertical column of green / yellow / red indicator lenses (all dark for now) and a card slot.
-  Placement and facing match the keypad; the screen and lights are inert until the keycard access
-  logic is added.
+* Keycard Scanner (`ntmdoors:keycard_scanner`): wall-mounted card reader with a black display showing
+  `Please insert key`, a blue security stripe across the body and a vertical column of green /
+  yellow / red indicator lenses (all dark for now) beside the screen. A card slot sits below the
+  stripe. Placement and facing match the keypad; the lights are inert until the keycard access
+  logic is added. The item is rendered from the scanner OBJ in the inventory and hand, at the same
+  angled view as the doors.
 * RFID cards: one blank card plus red, violet, green, blue, black, orange and yellow variants.
   Each colour is a separate item (`ntmdoors:red_rfid_card` and so on) sharing a single item class
   and one hand-display model, so they all sit in the hand identically. The cards are the groundwork
@@ -75,10 +77,10 @@ Needs JDK 8 (ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs). The Gradl
 Models live under `src/main/resources/assets/ntmdoors/models/doors/`, textures under
 `textures/models/doors/`, and sounds under `sounds/doors/`. Door items do **not** need flat
 `textures/items/<door>.png` icons: the inventory/hand item is rendered from the same OBJ model
-and texture as the placed door. Only the screwdriver, the keypad, the keycard scanner and the RFID
-cards use flat icons (`textures/items/screwdriver.png`, `textures/items/sliding_blast_door_keypad.png`,
-`textures/items/keycard_scanner.png`, and `textures/items/blank_rfid_card.png` plus
-`textures/items/rfid_card_<colour>.png`).
+and texture as the placed door. Only the screwdriver, the keypad and the RFID cards use flat icons
+(`textures/items/screwdriver.png`, `textures/items/sliding_blast_door_keypad.png`, and
+`textures/items/blank_rfid_card.png` plus `textures/items/rfid_card_<colour>.png`). The keycard
+scanner also uses its 3D OBJ in the inventory and hand, like the doors.
 
 | door | animated OBJ groups | notes |
 |---|---|---|
