@@ -1,0 +1,9 @@
+{
+  "variants": {
+    "facing=north": { "model": "ntmdoors:door_empty" },
+    "facing=east": { "model": "ntmdoors:door_empty" },
+    "facing=south": { "model": "ntmdoors:door_empty" },
+    "facing=west": { "model": "ntmdoors:door_empty" },
+    "inventory": { "model": "ntmdoors:item/keycard_scanner" }
+  }
+}

@@ -33,13 +33,15 @@ public class ClientModels {
         }
         invisible(ModContent.KEYPAD);
         inventory(Item.getItemFromBlock(ModContent.KEYPAD));
-        invisible(ModContent.KEYCARD_SCANNER);
-        // Same item path as the doors: builtin/entity plus a TESR. A JSON block model in
-        // models/item/ does not reach the renderer in this pack (it bakes as the generated item
-        // model), while the TESR path draws the OBJ for the inventory, hand and ground forms.
+        // The scanner keeps a normal blockstate instead of the shared invisible mapper, so the item
+        // also resolves through the standard blockstate "inventory" variant. That is a second route
+        // to the same model in case the custom item location is ignored.
         Item scannerItem = Item.getItemFromBlock(ModContent.KEYCARD_SCANNER);
         scannerItem.setTileEntityItemStackRenderer(RenderKeycardScannerItem.INSTANCE);
-        inventory(scannerItem);
+        ModelResourceLocation scannerModel = new ModelResourceLocation(NTMDoors.MODID + ":keycard_scanner", "inventory");
+        ModelLoader.setCustomMeshDefinition(scannerItem, stack -> scannerModel);
+        ModelLoader.setCustomModelResourceLocation(scannerItem, 0, scannerModel);
+        NTMDoors.LOGGER.info("Keycard Scanner item {} -> {}", scannerItem.getRegistryName(), scannerModel);
         inventory(ModContent.SCREWDRIVER);
         for (ItemRfidCard card : ModContent.RFID_CARDS) inventory(card);
         inventory(ModContent.CREATIVE_KEYCARD);
