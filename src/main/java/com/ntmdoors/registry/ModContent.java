@@ -3,8 +3,10 @@ package com.ntmdoors.registry;
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.block.BlockDoorGeneric;
 import com.ntmdoors.block.BlockDoorKeypad;
+import com.ntmdoors.block.BlockKeycardScanner;
 import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.DoorDecls;
+import com.ntmdoors.item.ItemBlockKeycardScanner;
 import com.ntmdoors.item.ItemBlockKeypad;
 import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.item.ItemDoorBlock;
@@ -44,6 +46,7 @@ public class ModContent {
     private static final Set<String> NO_SECURITY_VARIANT = new HashSet<>(Arrays.asList(
             "silo_hatch", "silo_hatch_large"));
     public static final BlockDoorKeypad KEYPAD = new BlockDoorKeypad();
+    public static final BlockKeycardScanner KEYCARD_SCANNER = new BlockKeycardScanner();
     public static final ItemScrewdriver SCREWDRIVER = new ItemScrewdriver();
     public static final ItemRfidCard BLANK_RFID_CARD = new ItemRfidCard("blank_rfid_card");
     public static final ItemRfidCard RED_RFID_CARD = new ItemRfidCard("red_rfid_card");
@@ -79,12 +82,14 @@ public class ModContent {
     public static void registerBlocks(RegistryEvent.Register<Block> e) {
         for (BlockDoorGeneric b : DOORS) e.getRegistry().register(b);
         e.getRegistry().register(KEYPAD);
+        e.getRegistry().register(KEYCARD_SCANNER);
     }
 
     @SubscribeEvent
     public static void registerItems(RegistryEvent.Register<Item> e) {
         for (BlockDoorGeneric b : DOORS) e.getRegistry().register(new ItemDoorBlock(b).setRegistryName(b.getRegistryName()));
         e.getRegistry().register(new ItemBlockKeypad(KEYPAD).setRegistryName(KEYPAD.getRegistryName()));
+        e.getRegistry().register(new ItemBlockKeycardScanner(KEYCARD_SCANNER).setRegistryName(KEYCARD_SCANNER.getRegistryName()));
         e.getRegistry().register(SCREWDRIVER);
         for (ItemRfidCard card : RFID_CARDS) e.getRegistry().register(card);
         e.getRegistry().register(CREATIVE_KEYCARD);

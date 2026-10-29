@@ -6,6 +6,7 @@ import com.ntmdoors.door.DoorDecls;
 import com.ntmdoors.tile.TileEntityDoorGeneric;
 import com.ntmdoors.tile.TileEntityDoorKeypad;
 import com.ntmdoors.tile.TileEntityDoorPart;
+import com.ntmdoors.tile.TileEntityKeycardScanner;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -17,6 +18,7 @@ public class CommonProxy {
         GameRegistry.registerTileEntity(TileEntityDoorGeneric.class, new ResourceLocation(NTMDoors.MODID, "door_core"));
         GameRegistry.registerTileEntity(TileEntityDoorPart.class, new ResourceLocation(NTMDoors.MODID, "door_part"));
         GameRegistry.registerTileEntity(TileEntityDoorKeypad.class, new ResourceLocation(NTMDoors.MODID, "door_keypad"));
+        GameRegistry.registerTileEntity(TileEntityKeycardScanner.class, new ResourceLocation(NTMDoors.MODID, "keycard_scanner"));
         // Read the OBJ group bounds used by moving collision boxes now, so the first collision
         // query on a door never has to touch the filesystem.
         for (DoorDecl d : DoorDecls.ALL) d.prepareGeometry();
