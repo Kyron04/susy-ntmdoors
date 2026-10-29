@@ -6,9 +6,11 @@ import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.registry.ModContent;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.statemap.StateMapperBase;
 import net.minecraft.item.Item;
+import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.Mod;
@@ -42,6 +44,24 @@ public class ClientModels {
         for (ItemRfidCard card : ModContent.RFID_CARDS) inventory(card);
         inventory(ModContent.CREATIVE_KEYCARD);
         inventory(ModContent.RELAY_KEY);
+    }
+
+    /**
+     * Verifies the scanner's item model actually baked as a builtin/entity model. That flag is what
+     * makes Forge call {@link RenderKeycardScannerItem}; when it is false the item draws nothing at
+     * all, which is indistinguishable from a renderer that never ran.
+     */
+    @SubscribeEvent
+    public static void onModelBake(ModelBakeEvent e) {
+        ModelResourceLocation location = new ModelResourceLocation(NTMDoors.MODID + ":keycard_scanner", "inventory");
+        IBakedModel baked = e.getModelRegistry().getObject(location);
+        if (baked == null || !baked.isBuiltInRenderer()) {
+            NTMDoors.LOGGER.warn("Keycard Scanner item model {} did not bake as builtin/entity ({}): "
+                            + "the inventory and hand item will be blank",
+                    location, baked == null ? "missing" : baked.getClass().getName());
+            return;
+        }
+        NTMDoors.LOGGER.info("Keycard Scanner item model {} baked as builtin/entity", location);
     }
 
     /** Every state of the block maps to the empty model; the TESR draws the real thing. */

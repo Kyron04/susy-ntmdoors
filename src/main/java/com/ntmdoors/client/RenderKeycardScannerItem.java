@@ -1,5 +1,6 @@
 package com.ntmdoors.client;
 
+import com.ntmdoors.NTMDoors;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer;
@@ -17,6 +18,15 @@ public class RenderKeycardScannerItem extends TileEntityItemStackRenderer {
 
     public static final RenderKeycardScannerItem INSTANCE = new RenderKeycardScannerItem();
 
+    /**
+     * Longest side of the item, in blocks. 1.0 matches a vanilla block item, i.e. 16 pixels in an
+     * inventory slot; the model itself is 0.75 x 1.0 x 0.3 in OBJ units.
+     */
+    private static final float ITEM_SIZE = 1.0F;
+
+    /** Logged once so a blank item can be told apart from a renderer that never ran. */
+    private static boolean reported;
+
     @Override
     public void renderByItem(ItemStack stack, float partialTicks) {
         ObjModel model = ObjModel.get(RenderKeycardScanner.MODEL);
@@ -28,7 +38,7 @@ public class RenderKeycardScannerItem extends TileEntityItemStackRenderer {
         float size = Math.max(sizeX, Math.max(sizeY, sizeZ));
         if (size <= 0F) return;
 
-        float scale = 1F / size;
+        float scale = ITEM_SIZE / size;
         float cx = (model.minX() + model.maxX()) * 0.5F;
         float cy = (model.minY() + model.maxY()) * 0.5F;
         float cz = (model.minZ() + model.maxZ()) * 0.5F;
@@ -51,6 +61,11 @@ public class RenderKeycardScannerItem extends TileEntityItemStackRenderer {
         GlStateManager.translate(-cx, -cy, -cz);
 
         Minecraft.getMinecraft().getTextureManager().bindTexture(RenderKeycardScanner.TEXTURE);
+        if (!reported) {
+            reported = true;
+            NTMDoors.LOGGER.info("Keycard Scanner item renderer ran: {} groups, scale {}", 
+                    RenderKeycardScanner.GROUPS.length, scale);
+        }
         for (String group : RenderKeycardScanner.GROUPS) model.draw(group);
         model.draw(RenderKeycardScanner.SECURITY_GROUP);
 
