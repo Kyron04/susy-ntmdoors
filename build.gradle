@@ -17,7 +17,8 @@ buildscript {
 
 apply plugin: 'net.minecraftforge.gradle.forge'
 
-version = '1.0.44'
+// Single source of truth for the jar version; see bumpVersion at the bottom of this file.
+version = project.property('mod_version')
 group = 'com.ntmdoors' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'ntmdoors'
 
@@ -164,3 +165,42 @@ afterEvaluate {
     // Run before ForgeGradle's own (HTTP-only) asset downloader.
     tasks.getAssets.dependsOn tasks.downloadAssets
 }
+
+/**
+ * Every jar build advances the patch version, so a jar number is never reused. The bump runs after
+ * the archive has been written: that jar (and the compiled @Mod annotation) carry the version from
+ * gradle.properties, and the next build picks up the increment.
+ */
+task bumpVersion {
+    group = 'build'
+    description = 'Increments mod_version in gradle.properties and NTMDoors.java for the next jar.'
+    // -PnoVersionBump keeps the current number, e.g. when rebuilding an existing release.
+    onlyIf { !project.hasProperty('noVersionBump') }
+
+    doLast {
+        def propsFile = file('gradle.properties')
+        def props = propsFile.getText('UTF-8')
+        def line = props.readLines().find { it.startsWith('mod_version=') }
+        if (line == null) {
+            throw new GradleException('gradle.properties has no mod_version')
+        }
+        def current = line.substring('mod_version='.length()).trim()
+        def parts = current.tokenize('.')
+        if (parts.size() != 3 || !parts.every { it.isInteger() }) {
+            throw new GradleException("mod_version is not MAJOR.MINOR.PATCH: ${current}")
+        }
+        def next = "${parts[0]}.${parts[1]}.${parts[2].toInteger() + 1}"
+        propsFile.setText(props.replace(line, 'mod_version=' + next), 'UTF-8')
+
+        def source = file('src/main/java/com/ntmdoors/NTMDoors.java')
+        def java = source.getText('UTF-8')
+        def updated = java.replace('version = "' + current + '"', 'version = "' + next + '"')
+        if (updated == java) {
+            throw new GradleException("Could not find version = \"${current}\" in NTMDoors.java")
+        }
+        source.setText(updated, 'UTF-8')
+        logger.lifecycle("Version ${current} built. Next jar will be ${next}.")
+    }
+}
+
+tasks.jar.finalizedBy bumpVersion

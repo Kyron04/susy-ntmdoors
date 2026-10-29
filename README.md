@@ -14,6 +14,10 @@ Needs JDK 8 (ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs). The Gradl
     ./gradlew build                  # jar in build/libs
     ./gradlew runClient
 
+The jar version lives in `gradle.properties` (`mod_version`). Every successful `build` writes its
+jar with that version and then bumps the patch number, so the next jar is never the same version.
+Pass `-PnoVersionBump` to rebuild the current version without advancing it.
+
 ## What is implemented
 * Multiblock doors of any footprint, placed in one click, rotate with the player, removed as one piece
 * Core tile entity with state machine CLOSED / OPENING / OPEN / CLOSING, synced to clients
