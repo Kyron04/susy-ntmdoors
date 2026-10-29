@@ -45,6 +45,9 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
     private int skinIndex;
     /** Code a keypad has bound to this door; empty when no keypad controls it. Server-only. */
     private String keypadCode = "";
+    /** Scanner this door is bound to, or null. Server-only, and kept when that scanner is broken. */
+    @Nullable
+    private BlockPos boundScanner;
 
     /** Set while the structure is being torn down so parts don't recurse. */
     private boolean dismantling;
@@ -299,6 +302,23 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         sync();
     }
 
+    /** True when a scanner controls this door. The binding survives that scanner being broken. */
+    public boolean isBoundToScanner() {
+        return boundScanner != null;
+    }
+
+    /** True when this door is bound to the scanner at {@code scannerPos}. */
+    public boolean isBoundToScanner(BlockPos scannerPos) {
+        return scannerPos != null && scannerPos.equals(boundScanner);
+    }
+
+    /** Binds this door to a scanner. A door only ever belongs to one scanner. */
+    public void bindToScanner(BlockPos scannerPos) {
+        if (boundScanner != null || scannerPos == null) return;
+        boundScanner = scannerPos.toImmutable();
+        sync();
+    }
+
     /**
      * Collects this core and its neighbours along the door's width axis. Roller shutters are
      * built as a row of independent 1x7 blocks; HBM treats touching ones as a single door, so a
@@ -468,6 +488,8 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         tag.setInteger("queued", queuedOpen == null ? -1 : queuedOpen ? 1 : 0);
         tag.setInteger("skin", skinIndex);
         tag.setString("keypadCode", keypadCode);
+        tag.setBoolean("hasBoundScanner", boundScanner != null);
+        if (boundScanner != null) tag.setLong("boundScannerPos", boundScanner.toLong());
         return tag;
     }
 
@@ -476,6 +498,8 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
     protected NBTTagCompound writeSyncTag(NBTTagCompound tag) {
         writeToNBT(tag);
         tag.removeTag("keypadCode");
+        tag.removeTag("hasBoundScanner");
+        tag.removeTag("boundScannerPos");
         return tag;
     }
 
@@ -489,6 +513,7 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         queuedOpen = queued < 0 ? null : queued == 1;
         skinIndex = tag.hasKey("skin") ? tag.getInteger("skin") : 0;
         keypadCode = tag.getString("keypadCode");
+        boundScanner = tag.getBoolean("hasBoundScanner") ? BlockPos.fromLong(tag.getLong("boundScannerPos")) : null;
     }
 
     /**

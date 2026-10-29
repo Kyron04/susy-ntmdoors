@@ -1,6 +1,7 @@
 package com.ntmdoors.block;
 
 import com.ntmdoors.NTMDoors;
+import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
 import com.ntmdoors.util.Facings;
 import net.minecraft.block.Block;
@@ -104,12 +105,6 @@ public class BlockKeycardScanner extends Block {
         return new TileEntityKeycardScanner();
     }
 
-    @Override
-    public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-        super.onBlockPlacedBy(world, pos, state, placer, stack);
-        // The tile entity is deliberately empty for now; the scanner has no state to sync yet.
-    }
-
     /**
      * The scanner's world-space box for the given facing. The body sits against the wall on the
      * block's low-Z side for NORTH and is rotated with the same helper the renderer uses.
@@ -169,7 +164,18 @@ public class BlockKeycardScanner extends Block {
     @Override
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player,
                                     EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
-        // No interaction yet. The card swipe logic will be added here once the reader is refined.
-        return false;
+        if (world.isRemote) return true;
+        TileEntity te = world.getTileEntity(pos);
+        if (!(te instanceof TileEntityKeycardScanner)) return false;
+
+        TileEntityKeycardScanner scanner = (TileEntityKeycardScanner) te;
+        ItemStack held = player.getHeldItem(hand);
+        if (held.isEmpty()) {
+            // Empty hand commits the doors selected during binding.
+            scanner.confirm(player);
+        } else if (held.getItem() instanceof ItemRfidCard) {
+            scanner.useCard(player);
+        }
+        return true;
     }
 }

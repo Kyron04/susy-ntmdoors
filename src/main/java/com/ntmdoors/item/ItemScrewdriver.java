@@ -5,6 +5,7 @@ import com.ntmdoors.block.BlockDoorGeneric;
 import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.tile.TileEntityDoorGeneric;
 import com.ntmdoors.tile.TileEntityDoorKeypad;
+import com.ntmdoors.tile.TileEntityKeycardScanner;
 import com.ntmdoors.util.Names;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
@@ -25,13 +26,17 @@ import javax.annotation.Nullable;
 /**
  * Screwdriver. Right click a keypad to start its code-reset sequence; sneak + right click a keypad
  * to enter a binding mode, then sneak + right click closed doors to link them. Sneak + right click
- * a door with alternate skins cycles through them.
+ * a keycard scanner to enter its binding mode, and sneak + right click closed doors to collect
+ * them. Sneak + right click a door with alternate skins cycles through them.
  */
 public class ItemScrewdriver extends Item {
 
     /** Item NBT key holding the keypad that is waiting for doors to be bound at range. */
     private static final String TAG_BIND_KEYPAD = "bindKeypad";
     private static final String TAG_BIND_DIM = "bindKeypadDim";
+    /** Item NBT key holding the keycard scanner that is waiting for doors to be bound at range. */
+    private static final String TAG_BIND_SCANNER = "bindScanner";
+    private static final String TAG_BIND_SCANNER_DIM = "bindScannerDim";
 
     public ItemScrewdriver() {
         setRegistryName(NTMDoors.MODID, "screwdriver");
@@ -49,6 +54,17 @@ public class ItemScrewdriver extends Item {
                                            EnumFacing side, float hitX, float hitY, float hitZ,
                                            EnumHand hand) {
         TileEntity te = world.getTileEntity(pos);
+        if (te instanceof TileEntityKeycardScanner) {
+            // Sneak: open or close the scanner's binding session. Doors clicked next are added to it.
+            if (!player.isSneaking()) return EnumActionResult.PASS;
+            if (!world.isRemote) {
+                TileEntityKeycardScanner scanner = (TileEntityKeycardScanner) te;
+                scanner.toggleBinding(player);
+                updateScannerTag(player, hand, scanner);
+            }
+            return EnumActionResult.SUCCESS;
+        }
+
         if (te instanceof TileEntityDoorKeypad) {
             TileEntityDoorKeypad keypad = (TileEntityDoorKeypad) te;
             if (player.isSneaking()) {
@@ -93,6 +109,12 @@ public class ItemScrewdriver extends Item {
         TileEntityDoorGeneric core = findCore(world, pos);
         if (core == null) return EnumActionResult.PASS;
 
+        TileEntityKeycardScanner scanner = bindScanner(world, player, hand);
+        if (scanner != null) {
+            if (!world.isRemote) scanner.selectDoor(core, player);
+            return EnumActionResult.SUCCESS;
+        }
+
         TileEntityDoorKeypad binder = bindKeypad(world, player, hand);
         if (binder != null) {
             if (!world.isRemote) binder.bindDoor(core, player);
@@ -120,6 +142,47 @@ public class ItemScrewdriver extends Item {
         return state.getBlock() instanceof BlockDoorGeneric
                 ? ((BlockDoorGeneric) state.getBlock()).getCore(world, pos, state)
                 : null;
+    }
+
+    /** Remembers (or forgets) the scanner this tool is currently collecting doors for. */
+    private static void updateScannerTag(EntityPlayer player, EnumHand hand, TileEntityKeycardScanner scanner) {
+        ItemStack stack = player.getHeldItem(hand);
+        NBTTagCompound tag = stack.getTagCompound();
+        if (scanner.isBindingFor(player)) {
+            if (tag == null) {
+                tag = new NBTTagCompound();
+                stack.setTagCompound(tag);
+            }
+            tag.setLong(TAG_BIND_SCANNER, scanner.getPos().toLong());
+            tag.setInteger(TAG_BIND_SCANNER_DIM, scanner.getWorld().provider.getDimension());
+        } else if (tag != null) {
+            tag.removeTag(TAG_BIND_SCANNER);
+            tag.removeTag(TAG_BIND_SCANNER_DIM);
+        }
+    }
+
+    /**
+     * The scanner this screwdriver is currently binding doors for, or null. Like the keypad link,
+     * it lives on the tool so the player can walk to a door without the scanner staying in reach.
+     */
+    @Nullable
+    private static TileEntityKeycardScanner bindScanner(World world, EntityPlayer player, EnumHand hand) {
+        ItemStack stack = player.getHeldItem(hand);
+        NBTTagCompound tag = stack.getTagCompound();
+        if (tag == null || !tag.hasKey(TAG_BIND_SCANNER)) return null;
+        if (tag.hasKey(TAG_BIND_SCANNER_DIM) && tag.getInteger(TAG_BIND_SCANNER_DIM) != world.provider.getDimension()) {
+            tag.removeTag(TAG_BIND_SCANNER);
+            tag.removeTag(TAG_BIND_SCANNER_DIM);
+            return null;
+        }
+        BlockPos scannerPos = BlockPos.fromLong(tag.getLong(TAG_BIND_SCANNER));
+        TileEntity te = world.getTileEntity(scannerPos);
+        if (!(te instanceof TileEntityKeycardScanner) || !((TileEntityKeycardScanner) te).isBindingFor(player)) {
+            tag.removeTag(TAG_BIND_SCANNER);
+            tag.removeTag(TAG_BIND_SCANNER_DIM);
+            return null;
+        }
+        return (TileEntityKeycardScanner) te;
     }
 
     /**
