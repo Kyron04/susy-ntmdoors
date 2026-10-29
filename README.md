@@ -19,9 +19,10 @@ Needs JDK 8 (ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs). The Gradl
 * Core tile entity with state machine CLOSED / OPENING / OPEN / CLOSING, synced to clients
 * Redstone from any cell of the door (edge triggered), right click toggle
 * Every door is also registered as a locked, redstone-only copy named `<door>_locked`, and as a
-  `<door>_security` copy intended for the future security system (currently behaves like the normal
-  door). The two silo hatches have no security variant. Keypads refuse to bind to, sync with or
-  drive a locked door, so its redstone control can never be taken over.
+  `<door>_security` copy that only the Creative Keycard can open: keypads (every binding mode) and
+  redstone never move it, and hand clicks are refused. The two silo hatches have no security
+  variant. Keypads refuse to bind to, sync with or drive a locked or security door, so their
+  access control can never be taken over.
 * State dependent collision and selection boxes that follow the door animation continuously
   (walk through when open, click-through gaps)
 * OBJ renderer (TESR) with per-group translate/rotate animations, X/Y/Z clipping and sounds
@@ -55,8 +56,9 @@ Needs JDK 8 (ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs). The Gradl
   and one hand-display model, so they all sit in the hand identically. The cards are the groundwork
   for the keycard system and have no in-game function yet.
 * Relay Key and Creative Keycard (`ntmdoors:relay_key`, `ntmdoors:creative_keycard`): groundwork for
-  the keycard system. The Creative Keycard is the debug card that is meant to bypass door bindings,
-  keypads and redstone; neither item has behaviour yet.
+  the keycard system. The Creative Keycard is the debug item: its name is purple, and right clicking
+  any door opens or closes it regardless of locked/security variants, keypad codes or redstone, with
+  a purple `Door overridden` status message. The Relay Key has no behaviour yet.
 * The secure access door ships nine skins: red, yellow, green, blue, grey, black (white writing),
   HBM yellow, white (black writing) and orange (white writing). The colour variants are generated
   by recolouring only the red warning paint; all other pixels are unchanged. Base colours: green

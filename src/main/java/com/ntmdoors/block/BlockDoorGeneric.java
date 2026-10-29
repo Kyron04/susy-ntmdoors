@@ -94,6 +94,11 @@ public class BlockDoorGeneric extends Block {
     /** Locked twins refuse every manual interaction; only redstone can move them. */
     public final boolean locked;
 
+    /** True for the {@code _security} form, which only the Creative Keycard may open. */
+    public boolean isSecurity() {
+        return variant == Variant.SECURITY;
+    }
+
     public BlockDoorGeneric(DoorDecl decl, Variant variant) {
         super(Material.IRON);
         this.decl = decl;

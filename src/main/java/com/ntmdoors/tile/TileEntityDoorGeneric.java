@@ -4,6 +4,7 @@ import com.ntmdoors.block.BlockDoorGeneric;
 import com.ntmdoors.client.DoorLoopSound;
 import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.DoorState;
+import com.ntmdoors.item.ItemCreativeKeycard;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -19,6 +20,7 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -377,6 +379,8 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
     /** Called when any part of the door gets a neighbour update. Reacts to redstone edges only. */
     public void checkRedstone() {
         if (world == null || world.isRemote) return;
+        // Security doors never react to redstone; only the Creative Keycard opens them.
+        if (isSecurityDoor()) return;
         // Redstone-only doors keep working even if an old save still carries a keypad code.
         if (!isRedstoneOnly() && isKeypadBound()) return;
         boolean p = isGroupReceivingPower();
@@ -390,15 +394,33 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
 
     public void onPlayerUse(EntityPlayer player) {
         if (getDecl() == null) return;
+
+        // Debug card: bypasses locks, security, keypad bindings and redstone alike.
+        if (ItemCreativeKeycard.isHeldBy(player)) {
+            boolean opening = state == DoorState.CLOSED;
+            toggle();
+            if (opening) {
+                TextComponentTranslation text = new TextComponentTranslation("ntmdoors.msg.door_overridden");
+                text.getStyle().setColor(TextFormatting.LIGHT_PURPLE);
+                player.sendStatusMessage(text, true);
+            }
+            return;
+        }
+
+        if (isSecurityDoor()) {
+            reject(player, "ntmdoors.msg.security");
+            return;
+        }
+
         if (isRedstoneOnly()) {
-            reject(player);
+            reject(player, "ntmdoors.msg.locked");
             return;
         }
 
         // Skin changes never reach here: vanilla skips block activation for a sneaking player,
         // so ItemScrewdriver.onItemUseFirst owns that interaction.
         if (isKeypadBound()) {
-            reject(player);
+            reject(player, "ntmdoors.msg.locked");
             return;
         }
 
@@ -414,9 +436,22 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         return block instanceof BlockDoorGeneric && ((BlockDoorGeneric) block).locked;
     }
 
-    private void reject(EntityPlayer player) {
+    /** True for the {@code _security} twins, which only the Creative Keycard opens. */
+    public boolean isSecurityDoor() {
+        Block block = getBlockType();
+        return block instanceof BlockDoorGeneric && ((BlockDoorGeneric) block).isSecurity();
+    }
+
+    /** True when a keypad may bind and drive this door; locked and security doors are excluded. */
+    public boolean acceptsKeypad() {
+        Block block = getBlockType();
+        return block instanceof BlockDoorGeneric
+                && ((BlockDoorGeneric) block).variant == BlockDoorGeneric.Variant.NORMAL;
+    }
+
+    private void reject(EntityPlayer player, String key) {
         world.playSound(null, pos, SoundEvents.BLOCK_METAL_PRESSPLATE_CLICK_ON, SoundCategory.BLOCKS, 1F, 0.6F);
-        msg(player, "ntmdoors.msg.locked");
+        msg(player, key);
     }
 
     private static void msg(EntityPlayer player, String key) {

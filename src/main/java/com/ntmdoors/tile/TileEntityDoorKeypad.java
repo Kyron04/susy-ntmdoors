@@ -437,9 +437,9 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
         if (world == null || world.isRemote || door == null) return false;
         if (!linking || bindMode == BindMode.NONE) return false;
         if (mode == Mode.RESET_CONFIRM || mode == Mode.RESET_ENTER) return false;
-        if (door.isRedstoneOnly()) {
-            // _locked doors stay redstone-only; binding a code would also cut their redstone.
-            msg(player, "ntmdoors.msg.bind_redstone");
+        if (!door.acceptsKeypad()) {
+            // Locked and security doors never take a keypad code.
+            msg(player, "ntmdoors.msg.bind_no_keypad");
             return false;
         }
         if (door.getState() != DoorState.CLOSED) {
@@ -549,7 +549,7 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
                         continue;
                     }
                     double d2 = p.distanceSq(pos);
-                    if (core.isRedstoneOnly()) continue;
+                    if (!core.acceptsKeypad()) continue;
                     if (d2 < bestDist) {
                         bestDist = d2;
                         best = core;
@@ -581,8 +581,8 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
             TileEntity te = world.getTileEntity(p);
             if (te instanceof TileEntityDoorGeneric) {
                 TileEntityDoorGeneric door = (TileEntityDoorGeneric) te;
-                if (door.isRedstoneOnly()) {
-                    // Never drive a redstone-only door from a keypad, and never leave an old
+                if (!door.acceptsKeypad()) {
+                    // Never drive a locked or security door from a keypad, and never leave an old
                     // binding to one behind.
                     it.remove();
                     dropped = true;

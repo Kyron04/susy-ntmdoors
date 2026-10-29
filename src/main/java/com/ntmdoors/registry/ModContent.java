@@ -6,6 +6,7 @@ import com.ntmdoors.block.BlockDoorKeypad;
 import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.DoorDecls;
 import com.ntmdoors.item.ItemBlockKeypad;
+import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.item.ItemDoorBlock;
 import com.ntmdoors.item.ItemRelayKey;
 import com.ntmdoors.item.ItemRfidCard;
@@ -52,8 +53,8 @@ public class ModContent {
     public static final ItemRfidCard BLACK_RFID_CARD = new ItemRfidCard("black_rfid_card");
     public static final ItemRfidCard ORANGE_RFID_CARD = new ItemRfidCard("orange_rfid_card");
     public static final ItemRfidCard YELLOW_RFID_CARD = new ItemRfidCard("yellow_rfid_card");
-    /** Debug card that is meant to bypass every door restriction. */
-    public static final ItemRfidCard CREATIVE_KEYCARD = new ItemRfidCard("creative_keycard");
+    /** Debug card that bypasses every door restriction. */
+    public static final ItemCreativeKeycard CREATIVE_KEYCARD = new ItemCreativeKeycard();
     public static final ItemRelayKey RELAY_KEY = new ItemRelayKey();
 
     /** Blank first, then the colour variants in creative-tab order. */
