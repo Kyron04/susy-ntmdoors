@@ -51,19 +51,25 @@ public class ClientModels {
     /**
      * Verifies the scanner's item model actually baked as a builtin/entity model. That flag is what
      * makes Forge call {@link RenderKeycardScannerItem}; when it is false the item draws nothing at
-     * all, which is indistinguishable from a renderer that never ran.
+     * all, which is indistinguishable from a renderer that never ran. A door item is logged next to
+     * it as a control, because the doors use the same item path and do render.
      */
     @SubscribeEvent
     public static void onModelBake(ModelBakeEvent e) {
-        ModelResourceLocation location = new ModelResourceLocation(NTMDoors.MODID + ":keycard_scanner", "inventory");
+        report(e, new ModelResourceLocation(NTMDoors.MODID + ":keycard_scanner", "inventory"), "scanner");
+        report(e, new ModelResourceLocation(NTMDoors.MODID + ":vault_door", "inventory"), "vault_door control");
+    }
+
+    private static void report(ModelBakeEvent e, ModelResourceLocation location, String label) {
         IBakedModel baked = e.getModelRegistry().getObject(location);
-        if (baked == null || !baked.isBuiltInRenderer()) {
-            NTMDoors.LOGGER.warn("Keycard Scanner item model {} did not bake as builtin/entity ({}): "
-                            + "the inventory and hand item will be blank",
-                    location, baked == null ? "missing" : baked.getClass().getName());
+        if (baked == null) {
+            NTMDoors.LOGGER.warn("[{}] {} is not in the model registry", label, location);
             return;
         }
-        NTMDoors.LOGGER.info("Keycard Scanner item model {} baked as builtin/entity", location);
+        NTMDoors.LOGGER.info("[{}] {} builtin={} quads={} class={} particle={}", label, location,
+                baked.isBuiltInRenderer(), baked.getQuads(null, null, 0).size(),
+                baked.getClass().getSimpleName(),
+                baked.getParticleTexture() == null ? "null" : baked.getParticleTexture().getIconName());
     }
 
     /** Every state of the block maps to the empty model; the TESR draws the real thing. */
