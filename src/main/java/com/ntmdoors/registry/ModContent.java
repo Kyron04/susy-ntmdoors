@@ -7,6 +7,7 @@ import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.DoorDecls;
 import com.ntmdoors.item.ItemBlockKeypad;
 import com.ntmdoors.item.ItemDoorBlock;
+import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.item.ItemScrewdriver;
 import net.minecraft.block.Block;
 import net.minecraft.init.Items;
@@ -23,6 +24,8 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @Mod.EventBusSubscriber(modid = NTMDoors.MODID)
@@ -34,6 +37,19 @@ public class ModContent {
     public static final List<BlockDoorGeneric> DOORS = new ArrayList<>();
     public static final BlockDoorKeypad KEYPAD = new BlockDoorKeypad();
     public static final ItemScrewdriver SCREWDRIVER = new ItemScrewdriver();
+    public static final ItemRfidCard BLANK_RFID_CARD = new ItemRfidCard("blank_rfid_card");
+    public static final ItemRfidCard RED_RFID_CARD = new ItemRfidCard("red_rfid_card");
+    public static final ItemRfidCard VIOLET_RFID_CARD = new ItemRfidCard("violet_rfid_card");
+    public static final ItemRfidCard GREEN_RFID_CARD = new ItemRfidCard("green_rfid_card");
+    public static final ItemRfidCard BLUE_RFID_CARD = new ItemRfidCard("blue_rfid_card");
+    public static final ItemRfidCard BLACK_RFID_CARD = new ItemRfidCard("black_rfid_card");
+    public static final ItemRfidCard ORANGE_RFID_CARD = new ItemRfidCard("orange_rfid_card");
+    public static final ItemRfidCard YELLOW_RFID_CARD = new ItemRfidCard("yellow_rfid_card");
+
+    /** Blank first, then the colour variants in creative-tab order. */
+    public static final List<ItemRfidCard> RFID_CARDS = Collections.unmodifiableList(Arrays.asList(
+            BLANK_RFID_CARD, RED_RFID_CARD, VIOLET_RFID_CARD, GREEN_RFID_CARD,
+            BLUE_RFID_CARD, BLACK_RFID_CARD, ORANGE_RFID_CARD, YELLOW_RFID_CARD));
 
     static {
         for (DoorDecl d : DoorDecls.ALL) NORMAL_DOORS.add(new BlockDoorGeneric(d, false));
@@ -53,6 +69,7 @@ public class ModContent {
         for (BlockDoorGeneric b : DOORS) e.getRegistry().register(new ItemDoorBlock(b).setRegistryName(b.getRegistryName()));
         e.getRegistry().register(new ItemBlockKeypad(KEYPAD).setRegistryName(KEYPAD.getRegistryName()));
         e.getRegistry().register(SCREWDRIVER);
+        for (ItemRfidCard card : RFID_CARDS) e.getRegistry().register(card);
     }
 
     @SubscribeEvent

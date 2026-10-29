@@ -1,6 +1,7 @@
 package com.ntmdoors;
 
 import com.ntmdoors.block.BlockDoorGeneric;
+import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.proxy.CommonProxy;
 import com.ntmdoors.registry.ModContent;
 import com.ntmdoors.util.Names;
@@ -16,7 +17,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-@Mod(modid = NTMDoors.MODID, name = "NTM Doors", version = "1.0.34", acceptedMinecraftVersions = "[1.12.2]")
+@Mod(modid = NTMDoors.MODID, name = "NTM Doors", version = "1.0.36", acceptedMinecraftVersions = "[1.12.2]")
 public class NTMDoors {
 
     public static final String MODID = "ntmdoors";
@@ -42,6 +43,7 @@ public class NTMDoors {
             for (BlockDoorGeneric door : ModContent.LOCKED_DOORS) items.add(new ItemStack(door));
             items.add(new ItemStack(ModContent.SCREWDRIVER));
             items.add(new ItemStack(ModContent.KEYPAD));
+            for (ItemRfidCard card : ModContent.RFID_CARDS) items.add(new ItemStack(card));
         }
 
         @Override

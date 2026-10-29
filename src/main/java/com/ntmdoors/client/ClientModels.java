@@ -2,6 +2,7 @@ package com.ntmdoors.client;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.block.BlockDoorGeneric;
+import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.registry.ModContent;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -31,6 +32,7 @@ public class ClientModels {
         invisible(ModContent.KEYPAD);
         inventory(Item.getItemFromBlock(ModContent.KEYPAD));
         inventory(ModContent.SCREWDRIVER);
+        for (ItemRfidCard card : ModContent.RFID_CARDS) inventory(card);
     }
 
     /** Every state of the block maps to the empty model; the TESR draws the real thing. */
