@@ -11,7 +11,8 @@ import net.minecraft.world.World;
 import javax.annotation.Nullable;
 
 /**
- * Tile entity with the persistence/sync boilerplate shared by the door cells and the keypad.
+ * Tile entity with the persistence/sync boilerplate shared by the door cells, the keypad and the
+ * keycard scanner.
  * State is sent with the description packet as a full copy of the saved NBT.
  */
 public abstract class TileEntitySynced extends TileEntity {

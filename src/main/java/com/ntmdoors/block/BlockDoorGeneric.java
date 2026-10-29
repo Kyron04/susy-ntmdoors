@@ -47,9 +47,9 @@ import java.util.List;
  * block. Rendering is done by a TESR on the core, so the block itself is invisible.
  *
  * <p>Each {@link DoorDecl} is registered as the normal door, a {@code _locked} twin that only
- * reacts to redstone, and a {@code _security} variant that is reserved for the future security
- * system. All variants share the same declaration; the variant only affects the registry name and
- * the lock flag, so they can never drift out of sync with the door definition.</p>
+ * reacts to redstone, and a {@code _security} variant that only the Creative Keycard opens. All
+ * variants share the same declaration; the variant only affects the registry name and the access
+ * rules, so they can never drift out of sync with the door definition.</p>
  */
 public class BlockDoorGeneric extends Block {
 
@@ -75,7 +75,7 @@ public class BlockDoorGeneric extends Block {
     public enum Variant {
         NORMAL("", ""),
         LOCKED("_locked", " (Locked)"),
-        /** Placeholder for the future security system; behaves like a normal door for now. */
+        /** Only the Creative Keycard opens it; redstone, keypads and hand clicks are refused. */
         SECURITY("_security", " (Security)");
 
         /** Registry/translation key suffix appended to the declaration name. */

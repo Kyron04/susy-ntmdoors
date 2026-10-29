@@ -47,11 +47,6 @@ public final class Facings {
         return worldX(x, z, inverse(f));
     }
 
-    /** Model-space Z of a world-space offset, i.e. the inverse of {@link #worldZ}. */
-    public static double localZ(double x, double z, EnumFacing f) {
-        return worldZ(x, z, inverse(f));
-    }
-
     /**
      * The horizontal facing whose yaw is the negative of {@code f}'s. Note that this is not
      * {@link EnumFacing#getOpposite()}: the opposite turns the model 180 degrees, while this
