@@ -31,6 +31,10 @@ public class ClientModels {
         }
         invisible(ModContent.KEYPAD);
         inventory(Item.getItemFromBlock(ModContent.KEYPAD));
+        // The programmer is a desk unit, so it renders from the OBJ like the keypad; only the item
+        // uses a flat icon.
+        invisible(ModContent.KEYCARD_PROGRAMMER);
+        inventory(Item.getItemFromBlock(ModContent.KEYCARD_PROGRAMMER));
         // The scanner is the opposite way round: a flat icon in the inventory and hand, while the
         // placed block is drawn from the OBJ by RenderKeycardScanner. Its blockstate also carries an
         // "inventory" variant that points at the same item model.

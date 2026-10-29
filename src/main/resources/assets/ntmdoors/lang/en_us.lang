@@ -17,6 +17,7 @@ tile.ntmdoors.cargo_door.name=Cargo Door
 tile.ntmdoors.silo_hatch_large.name=Large Silo Hatch
 tile.ntmdoors.sliding_blast_door_keypad.name=Keypad
 tile.ntmdoors.keycard_scanner.name=Keycard Scanner
+tile.ntmdoors.keycard_programmer.name=Keycard Programmer
 tile.ntmdoors.vault_door_locked.name=Vault-Tec Blast Door (Locked)
 tile.ntmdoors.sliding_blast_door_locked.name=Sliding Blast Door (Locked)
 tile.ntmdoors.qe_sliding_door_locked.name=QE Sliding Door (Locked)

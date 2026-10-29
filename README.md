@@ -69,6 +69,13 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   insert and a successful scan play `button3`, a denied scan plays `button8`, and `bell1` loops
   while the scan runs. Placement and facing match the keypad; the item uses a matching 3D model in
   the inventory and hand.
+* Keycard Programmer (`ntmdoors:keycard_programmer`): a low desk console that sits inside one block
+  and rotates to face the player, with a flat OBJ body, a sloped screen recess and no card reader
+  tower. The front carries a card slit with an `Insert here` label and two buttons on the player's
+  left, plus a green indicator and a small USB port on the right; the vent slots are on the back.
+  The screen shows `Keycard Programmer N4` over `Insert keycard`, drawn live with the font renderer
+  like the scanner's. No recipe and no programming logic yet; it is in the NTM Doors creative tab
+  with a flat 16x16 icon derived from the model.
 * RFID cards: one blank card plus red, violet, green, blue, black, orange and yellow variants.
   Each colour is a separate item (`ntmdoors:red_rfid_card` and so on) sharing a single item class
   and one hand-display model, so they all sit in the hand identically. The scanner recognises them

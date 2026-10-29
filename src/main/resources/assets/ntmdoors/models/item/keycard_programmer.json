@@ -1,0 +1,6 @@
+{
+  "parent": "ntmdoors:item/keycard_programmer_base",
+  "textures": {
+    "layer0": "ntmdoors:items/keycard_programmer"
+  }
+}

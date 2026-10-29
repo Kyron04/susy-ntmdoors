@@ -5,12 +5,14 @@ import com.ntmdoors.client.KeyframeAnimation;
 import com.ntmdoors.client.ObjModel;
 import com.ntmdoors.client.RenderDoor;
 import com.ntmdoors.client.RenderDoorKeypad;
+import com.ntmdoors.client.RenderKeycardProgrammer;
 import com.ntmdoors.client.RenderKeycardScanner;
 import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.DoorDecls;
 import com.ntmdoors.door.ObjBounds;
 import com.ntmdoors.tile.TileEntityDoorGeneric;
 import com.ntmdoors.tile.TileEntityDoorKeypad;
+import com.ntmdoors.tile.TileEntityKeycardProgrammer;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IReloadableResourceManager;
@@ -32,6 +34,7 @@ public class ClientProxy extends CommonProxy {
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityDoorGeneric.class, new RenderDoor());
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityDoorKeypad.class, new RenderDoorKeypad());
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityKeycardScanner.class, new RenderKeycardScanner());
+        ClientRegistry.bindTileEntitySpecialRenderer(TileEntityKeycardProgrammer.class, new RenderKeycardProgrammer());
     }
 
     @Override
@@ -69,6 +72,8 @@ public class ClientProxy extends CommonProxy {
         check(resources, RenderDoorKeypad.TEX_ERROR, "texture", "the keypad");
         check(resources, RenderKeycardScanner.MODEL, "model", "the keycard scanner");
         check(resources, RenderKeycardScanner.TEXTURE, "texture", "the keycard scanner");
+        check(resources, RenderKeycardProgrammer.MODEL, "model", "the keycard programmer");
+        check(resources, RenderKeycardProgrammer.TEXTURE, "texture", "the keycard programmer");
     }
 
     private static void check(IResourceManager resources, @Nullable ResourceLocation location, String kind, String owner) {

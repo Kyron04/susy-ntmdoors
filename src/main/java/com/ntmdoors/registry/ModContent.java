@@ -3,9 +3,11 @@ package com.ntmdoors.registry;
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.block.BlockDoorGeneric;
 import com.ntmdoors.block.BlockDoorKeypad;
+import com.ntmdoors.block.BlockKeycardProgrammer;
 import com.ntmdoors.block.BlockKeycardScanner;
 import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.DoorDecls;
+import com.ntmdoors.item.ItemBlockKeycardProgrammer;
 import com.ntmdoors.item.ItemBlockKeycardScanner;
 import com.ntmdoors.item.ItemBlockKeypad;
 import com.ntmdoors.item.ItemCreativeKeycard;
@@ -48,6 +50,7 @@ public class ModContent {
             "silo_hatch", "silo_hatch_large"));
     public static final BlockDoorKeypad KEYPAD = new BlockDoorKeypad();
     public static final BlockKeycardScanner KEYCARD_SCANNER = new BlockKeycardScanner();
+    public static final BlockKeycardProgrammer KEYCARD_PROGRAMMER = new BlockKeycardProgrammer();
     public static final ItemScrewdriver SCREWDRIVER = new ItemScrewdriver();
     public static final ItemRfidCard BLANK_RFID_CARD = new ItemRfidCard("blank_rfid_card");
     public static final ItemRfidCard RED_RFID_CARD = new ItemRfidCard("red_rfid_card");
@@ -84,6 +87,7 @@ public class ModContent {
         for (BlockDoorGeneric b : DOORS) e.getRegistry().register(b);
         e.getRegistry().register(KEYPAD);
         e.getRegistry().register(KEYCARD_SCANNER);
+        e.getRegistry().register(KEYCARD_PROGRAMMER);
     }
 
     @SubscribeEvent
@@ -91,6 +95,7 @@ public class ModContent {
         for (BlockDoorGeneric b : DOORS) e.getRegistry().register(new ItemDoorBlock(b).setRegistryName(b.getRegistryName()));
         e.getRegistry().register(new ItemBlockKeypad(KEYPAD).setRegistryName(KEYPAD.getRegistryName()));
         e.getRegistry().register(new ItemBlockKeycardScanner(KEYCARD_SCANNER).setRegistryName(KEYCARD_SCANNER.getRegistryName()));
+        e.getRegistry().register(new ItemBlockKeycardProgrammer(KEYCARD_PROGRAMMER).setRegistryName(KEYCARD_PROGRAMMER.getRegistryName()));
         e.getRegistry().register(SCREWDRIVER);
         for (ItemRfidCard card : RFID_CARDS) e.getRegistry().register(card);
         e.getRegistry().register(CREATIVE_KEYCARD);
