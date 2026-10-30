@@ -75,8 +75,10 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   (entered twice), and later visits must repeat it. The screen is a black panel in a light metal
   case with a green readout and twelve green keycaps, including `CLR` and `ENTER`; a correct code
   plays the granted chime and closes the screen, a wrong one plays the denied chime and clears the
-  entry. The code lives only on the server and is never sent to clients. Placement and facing match
-  the keypad; the item uses a matching 3D model in
+  entry. The code lives only on the server and is never sent to clients. A correct code (or a newly
+  set one) replaces the keypad with a glowing green `SUCCESS!!!` card, a wrong one shows a glowing
+  red `FAILED!!!`; either card holds for a second before the screen closes. Placement and facing
+  match the keypad; the item uses a matching 3D model in
   the inventory and hand.
 * Keycard Programmer (`ntmdoors:keycard_programmer`): a low desk console that sits inside one block
   and rotates to face the player, with a flat OBJ body, a sloped screen recess and no card reader

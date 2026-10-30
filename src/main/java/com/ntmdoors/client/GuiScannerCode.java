@@ -5,6 +5,7 @@ import com.ntmdoors.network.MessageScannerCodeResult;
 import com.ntmdoors.network.ModNetwork;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
@@ -36,6 +37,8 @@ public class GuiScannerCode extends GuiScreen {
     private static final int BUTTON_GAP_X = 6;
     private static final int BUTTON_GAP_Y = 4;
     private static final int GRID_TOP = 64;
+    /** A result holds on screen for a little over a second before the GUI closes. */
+    private static final int RESULT_TICKS = 25;
 
     private static final String[] KEY_LABELS = {
             "1", "2", "3",
@@ -57,6 +60,10 @@ public class GuiScannerCode extends GuiScreen {
     /** First-visit confirmation: the chosen digits, and whether the screen is asking again. */
     private String pending = "";
     private boolean confirming;
+    /** True while the SUCCESS!!! / FAILED!!! card is on screen. */
+    private boolean showingResult;
+    private boolean resultSuccess;
+    private int resultTicks;
 
     public GuiScannerCode(BlockPos pos, boolean setting) {
         this.pos = pos;
@@ -75,10 +82,19 @@ public class GuiScannerCode extends GuiScreen {
         return false;
     }
 
+    @Override
+    public void updateScreen() {
+        super.updateScreen();
+        if (showingResult && --resultTicks <= 0) {
+            mc.displayGuiScreen(null);
+        }
+    }
+
     // ------------------------------------------------------------ input
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+        if (showingResult) return;
         int key = keyAt(mouseX, mouseY);
         if (key >= 0 && mouseButton == 0) {
             press(key);
@@ -93,7 +109,7 @@ public class GuiScannerCode extends GuiScreen {
             mc.displayGuiScreen(null);
             return;
         }
-        if (waiting) return;
+        if (waiting || showingResult) return;
         if (keyCode == Keyboard.KEY_RETURN || keyCode == Keyboard.KEY_NUMPADENTER) {
             submit();
             return;
@@ -166,30 +182,17 @@ public class GuiScannerCode extends GuiScreen {
         ModNetwork.INSTANCE.sendToServer(new MessageScannerCode(pos, entry));
     }
 
-    /** Called by the result packet. A set or accepted code closes the screen. */
+    /** Called by the result packet. Both outcomes hold a full-screen card for a moment. */
     public void onResult(BlockPos resultPos, int result) {
         if (resultPos == null || !resultPos.equals(pos)) return;
         waiting = false;
-        switch (result) {
-            case MessageScannerCodeResult.ACCEPTED:
-            case MessageScannerCodeResult.SET:
-                mc.displayGuiScreen(null);
-                break;
-            case MessageScannerCodeResult.UNBOUND:
-                entry = "";
-                pending = "";
-                confirming = false;
-                status = "No doors bound";
-                statusColour = RED;
-                break;
-            default:
-                entry = "";
-                pending = "";
-                confirming = false;
-                status = "Access denied";
-                statusColour = RED;
-                break;
-        }
+        entry = "";
+        pending = "";
+        confirming = false;
+        showingResult = true;
+        resultSuccess = result == MessageScannerCodeResult.ACCEPTED
+                || result == MessageScannerCodeResult.SET;
+        resultTicks = RESULT_TICKS;
     }
 
     private void clickSound() {
@@ -204,13 +207,43 @@ public class GuiScannerCode extends GuiScreen {
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         drawDefaultBackground();
         drawCase();
-        drawHeading();
-        drawReadout();
-        drawKeys(mouseX, mouseY);
-
-        drawCenteredString(fontRenderer, "ESC to cancel", left + PANEL_WIDTH / 2,
-                top + PANEL_HEIGHT - 14, 0xFF6A6A6A);
+        if (showingResult) {
+            drawResult();
+        } else {
+            drawHeading();
+            drawReadout();
+            drawKeys(mouseX, mouseY);
+            drawCenteredString(fontRenderer, "ESC to cancel", left + PANEL_WIDTH / 2,
+                    top + PANEL_HEIGHT - 14, 0xFF6A6A6A);
+        }
         super.drawScreen(mouseX, mouseY, partialTicks);
+    }
+
+    /** The big glowing verdict from the mockups: only the case, the black screen and the word. */
+    private void drawResult() {
+        String text = resultSuccess ? "SUCCESS!!!" : "FAILED!!!";
+        int fill = resultSuccess ? 0xFF75FF82 : 0xFFFF7777;
+        int glow = resultSuccess ? 0x6620FF46 : 0x66FF2525;
+        int stroke = resultSuccess ? 0xFF173D1C : 0xFF4A1111;
+        int cx = left + PANEL_WIDTH / 2;
+        int cy = top + PANEL_HEIGHT / 2;
+
+        // A larger, translucent copy stands in for the SVG's blur glow.
+        drawBigText(text, cx, cy, 2.15F, 0, 0, glow);
+        // One-pixel dark outline, as the mockups stroke the glyphs.
+        drawBigText(text, cx, cy, 2F, -1, 0, stroke);
+        drawBigText(text, cx, cy, 2F, 1, 0, stroke);
+        drawBigText(text, cx, cy, 2F, 0, -1, stroke);
+        drawBigText(text, cx, cy, 2F, 0, 1, stroke);
+        drawBigText(text, cx, cy, 2F, 0, 0, fill);
+    }
+
+    private void drawBigText(String text, int cx, int cy, float scale, int dx, int dy, int colour) {
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(cx + dx, cy + dy, 0F);
+        GlStateManager.scale(scale, scale, 1F);
+        fontRenderer.drawString(text, -fontRenderer.getStringWidth(text) / 2, -4, colour);
+        GlStateManager.popMatrix();
     }
 
     private void drawCase() {
