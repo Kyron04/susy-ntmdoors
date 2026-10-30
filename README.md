@@ -85,8 +85,9 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   a `Backup` button and a five-frame ten-second progress bar. A backup copies the source item's NBT
   to the target: Relay → Relay, Relay → Operator and Operator → Operator are allowed, Operator →
   Relay is not. The source needs NBT and the target must have none. Changing either slot cancels the
-  backup, and the scanner loop plays during the fill, with the scanner denied/granted sounds on
-  cancellation/success. Empty named slots on pages one and two show a dimmed, desaturated copy of
+  backup, and the scanner loop plays during the fill at half the chime volume, with the scanner
+  denied/granted sounds on cancellation/success. Empty named slots on pages one and two show a
+  dimmed, desaturated copy of
   the item they expect, and every machine slot only accepts its allowed item type or types. The GUI
   darkens the world like a normal container GUI and draws item tooltips above JEI/HEI. There is no
   recipe; it is in the NTM Doors creative tab with a flat 16x16 icon derived from the model.

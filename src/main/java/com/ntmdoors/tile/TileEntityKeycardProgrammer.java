@@ -62,6 +62,8 @@ public class TileEntityKeycardProgrammer extends TileEntitySynced implements IIn
     /** How long the full bar remains visible after a successful backup. */
     private static final int SUCCESS_HOLD_TICKS = 10;
     private static final float SOUND_VOLUME = 0.8F;
+    /** The looping bell is sustained for ten seconds, so it plays at half the result chime volume. */
+    private static final float BACKUP_LOOP_VOLUME = SOUND_VOLUME / 2F;
 
     /** Why the current backup slots cannot start a backup. */
     public enum BackupFailure {
@@ -438,7 +440,7 @@ public class TileEntityKeycardProgrammer extends TileEntitySynced implements IIn
     private void updateClientSound() {
         if (backupActive) {
             if (backupSound == null) {
-                backupSound = new BackupLoopSound(this, ModSounds.SCANNER_BELL1, SOUND_VOLUME);
+                backupSound = new BackupLoopSound(this, ModSounds.SCANNER_BELL1, BACKUP_LOOP_VOLUME);
                 Minecraft.getMinecraft().getSoundHandler().playSound(backupSound);
             }
         } else {
