@@ -3,6 +3,7 @@ package com.ntmdoors.tile;
 import com.ntmdoors.block.BlockDoorKeypad;
 import com.ntmdoors.door.DoorState;
 import com.ntmdoors.util.Facings;
+import com.ntmdoors.util.ModSounds;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
@@ -47,6 +48,8 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
     private static final int BUTTON_COOLDOWN_TICKS = 4;
     /** How far a door may be from the keypad to be bound and operated remotely. */
     public static final double MAX_BIND_DISTANCE = 32.0;
+    /** Volume of the success and failure chimes, matching the scanner and programmer. */
+    private static final float FEEDBACK_VOLUME = 0.8F;
     /** Maximum number of doors a multi-binding keypad can hold. */
     public static final int MULTI_SLOTS = 9;
     /** Bottom row of the keypad model: reset, zero, enter. */
@@ -514,6 +517,32 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
         // "Unable to bound" is a placement warning, so keep it up longer than a result flash.
         feedbackTicks = value == Feedback.NONE ? 0 : value == Feedback.UNABLE ? 60 : 20;
         blackScreenTicks = 0;
+        playFeedbackSound(value);
+    }
+
+    /**
+     * Success and failure chime for a keypad result. The scanner's granted/denied sounds keep the
+     * two access machines consistent, and every result is heard at the pad even if the door is
+     * driven from a distance.
+     */
+    private void playFeedbackSound(Feedback value) {
+        if (world == null || world.isRemote) return;
+        switch (value) {
+            case SUCCESS:
+            case CODE_SET:
+            case RESET_DONE:
+            case CODE_SYNCED:
+                world.playSound(null, pos, ModSounds.SCANNER_BUTTON3,
+                        SoundCategory.BLOCKS, FEEDBACK_VOLUME, 1F);
+                break;
+            case DENIED:
+            case UNABLE:
+                world.playSound(null, pos, ModSounds.SCANNER_BUTTON8,
+                        SoundCategory.BLOCKS, FEEDBACK_VOLUME, 1F);
+                break;
+            default:
+                break;
+        }
     }
 
     /** Drops the keypad back to "unconfigured", without touching any door. */

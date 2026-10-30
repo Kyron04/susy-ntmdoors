@@ -44,7 +44,10 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   code set is bound to the door, and every keypad on that door must use the same code to open it.
   A keypad only binds or auto-syncs when it touches one of the door's cells; placing it next to an
   already-bound door copies the code automatically and shows `Code synced`. The binding stays on
-  the door when a keypad is broken, until the door itself is destroyed. With a screwdriver: first
+  the door when a keypad is broken, until the door itself is destroyed. Every key press clicks, and
+  each result chimes at the pad: the scanner's granted sound for an accepted code, a set or reset
+  code, or an auto-synced code, and the denied sound for a wrong code or an impossible binding.
+  With a screwdriver: first
   click shows `Reset code?`, second click confirms, then entering the current code clears the
   binding from the door, every keypad linked to it, and any further doors those keypads controlled
 * Keypad binding modes (sneak + right click with the screwdriver, only while the pad is unused):
