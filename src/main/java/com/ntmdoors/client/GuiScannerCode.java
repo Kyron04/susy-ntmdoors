@@ -38,7 +38,7 @@ public class GuiScannerCode extends GuiScreen {
     private static final int BUTTON_GAP_Y = 4;
     private static final int GRID_TOP = 64;
     /** A result holds on screen for a little over a second before the GUI closes. */
-    private static final int RESULT_TICKS = 25;
+    private static final int RESULT_TICKS = 30;
 
     private static final String[] KEY_LABELS = {
             "1", "2", "3",
@@ -57,9 +57,6 @@ public class GuiScannerCode extends GuiScreen {
     private String status = "";
     private int statusColour = MUTED;
     private boolean waiting;
-    /** First-visit confirmation: the chosen digits, and whether the screen is asking again. */
-    private String pending = "";
-    private boolean confirming;
     /** True while the SUCCESS!!! / FAILED!!! card is on screen. */
     private boolean showingResult;
     private boolean resultSuccess;
@@ -130,8 +127,6 @@ public class GuiScannerCode extends GuiScreen {
         clickSound();
         if (key == 9) {
             entry = "";
-            pending = "";
-            confirming = false;
             clearStatus();
         } else if (key == 11) {
             submit();
@@ -159,23 +154,6 @@ public class GuiScannerCode extends GuiScreen {
             return;
         }
 
-        // A new code is entered twice so a typo cannot lock the scanner on its first visit.
-        if (setting && !confirming) {
-            pending = entry;
-            entry = "";
-            confirming = true;
-            clearStatus();
-            return;
-        }
-        if (setting && !pending.equals(entry)) {
-            entry = "";
-            pending = "";
-            confirming = false;
-            status = "Codes do not match";
-            statusColour = RED;
-            return;
-        }
-
         waiting = true;
         status = "Checking...";
         statusColour = GREEN_TEXT;
@@ -187,8 +165,6 @@ public class GuiScannerCode extends GuiScreen {
         if (resultPos == null || !resultPos.equals(pos)) return;
         waiting = false;
         entry = "";
-        pending = "";
-        confirming = false;
         showingResult = true;
         resultSuccess = result == MessageScannerCodeResult.ACCEPTED
                 || result == MessageScannerCodeResult.SET;
@@ -268,9 +244,9 @@ public class GuiScannerCode extends GuiScreen {
         if (!status.isEmpty()) {
             line = status;
         } else if (setting) {
-            line = confirming ? "Re-enter the code" : "Set a new security code";
+            line = "Set a new security code";
         } else {
-            line = "Scanner locked";
+            line = "Enter your security code";
         }
         int colour = !status.isEmpty() ? statusColour : MUTED;
         drawCenteredString(fontRenderer, line, left + PANEL_WIDTH / 2, top + 26, colour);
