@@ -33,7 +33,7 @@ public class GuiKeycardViewer extends GuiScreen {
     private static final int COLOUR = 0xFFE8E8E8;
     private static final int MUTED = 0xFFAFAFAF;
 
-    private static final String CREATIVE_ENTRY = "THE ENTIRE LIBRARY OF BABLE";
+    private static final String CREATIVE_ENTRY = "THE ENTIRE LIBRARY OF BABEL";
 
     private final ItemStack card;
     private final List<PrivateKeys.Key> keys;
@@ -162,7 +162,7 @@ public class GuiKeycardViewer extends GuiScreen {
         drawRect(left + 1, top + 1, left + PANEL_WIDTH - 1, top + PANEL_HEIGHT - 1, 0xFF2B2B2E);
 
         drawString(fontRenderer, card.getDisplayName(), left + 12, top + 12, COLOUR);
-        drawString(fontRenderer, creative ? "You have access to EVERYTHIN!!!!!" : "You have access to",
+        drawString(fontRenderer, creative ? "You have access to EVERYTHING!!!!!" : "You have access to",
                 left + 12, top + 26, MUTED);
         drawCount();
         drawRect(left + 12, top + 40, left + PANEL_WIDTH - 12, top + 41, 0xFF4A4A4E);

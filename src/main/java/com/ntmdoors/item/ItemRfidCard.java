@@ -2,6 +2,7 @@ package com.ntmdoors.item;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.util.InteractionGuard;
+import com.ntmdoors.util.Names;
 import com.ntmdoors.util.PrivateKeys;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -50,6 +51,12 @@ public class ItemRfidCard extends Item {
 
     @Override
     public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
+        if (!keyViewer) {
+            Names.addDescription(tooltip,
+                    "Use the Keycard Programmer to assign this card",
+                    "a color and private key");
+            return;
+        }
         if (this instanceof ItemOperatorKeycard) return;
         for (PrivateKeys.Key key : PrivateKeys.get(stack)) {
             tooltip.add(TextFormatting.WHITE + key.name);

@@ -105,10 +105,13 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   currently accepts. A blank Relay Key creates one private key when the player sneak right-clicks it
   away from any machine: a naming screen takes up to 32 characters, and confirming it generates a
   ten digit serial on the server and stores both in the key's NBT. A key can be created once and
-  never reset. Its tooltip lists the name and serial in white, and page one of the programmer copies
+  never reset. Its name is yellow, and its tooltip carries a grey description above the white name
+  and serial of its private key. Page one of the programmer copies
   that private key onto Operator Keycards and coloured RFID cards, while page three can back the
   whole key up onto another Relay Key. Sneak right-clicking the Creative Keycard opens the same
-  viewer with the joke entry `THE ENTIRE LIBRARY OF BABLE` under `You have access to EVERYTHIN!!!!!`.
+  viewer with the joke entry `THE ENTIRE LIBRARY OF BABEL` under `You have access to EVERYTHING!!!!!`.
+  Tools, machines and cards each carry a short grey description tooltip; the Operator Keycard's
+  name is orange.
 * The secure access door ships nine skins: red, yellow, green, blue, grey, black (white writing),
   HBM yellow, white (black writing) and orange (white writing). The colour variants are generated
   by recolouring only the red warning paint; all other pixels are unchanged. Base colours: green

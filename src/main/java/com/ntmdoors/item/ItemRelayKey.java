@@ -57,16 +57,16 @@ public class ItemRelayKey extends Item {
     }
 
     @Override
+    public String getItemStackDisplayName(ItemStack stack) {
+        return TextFormatting.YELLOW + super.getItemStackDisplayName(stack);
+    }
+
+    @Override
     public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
-        List<PrivateKeys.Key> keys = PrivateKeys.get(stack);
-        if (keys.isEmpty()) {
-            tooltip.add(TextFormatting.DARK_GRAY + ""
-                    + TextFormatting.ITALIC
-                    + Names.translationOr("ntmdoors.tooltip.relay_key_blank",
-                    "Sneak + right-click to create a private key"));
-            return;
-        }
-        for (PrivateKeys.Key key : keys) {
+        Names.addDescription(tooltip,
+                "Used to generate private keys via",
+                "Sneak + Right Click");
+        for (PrivateKeys.Key key : PrivateKeys.get(stack)) {
             tooltip.add(TextFormatting.WHITE + key.name);
             tooltip.add(TextFormatting.WHITE + key.serial);
         }
