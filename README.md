@@ -90,10 +90,14 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
 * RFID cards: one blank card plus red, violet, green, blue, black, orange and yellow variants.
   Each colour is a separate item (`ntmdoors:red_rfid_card` and so on) sharing a single item class
   and one hand-display model, so they all sit in the hand identically. The scanner recognises them
-  but denies them until the keycard access rules are added.
+  but denies them until the keycard access rules are added. Sneak right-clicking a coloured card
+  opens the read-only card viewer, which lists every private key stored on it; the blank card has
+  no viewer.
 * Operator Keycard (`ntmdoors:operator_keycard`): a dark card with an orange stripe and three orange
   dots, produced by the programmer once its logic is implemented. It shares the RFID hand-display
-  model, and the scanner recognises it as a card; its access rules are not defined yet.
+  model, and the scanner recognises it as a card; its access rules are not defined yet. The same
+  viewer opens on sneak right-click and scrolls through any number of private keys, while the card
+  itself still shows no key tooltip.
 * Relay Key and Creative Keycard (`ntmdoors:relay_key`, `ntmdoors:creative_keycard`): groundwork for
   the keycard system. The Creative Keycard is the debug item for testing: its name is purple, and
   right clicking any door opens or closes it regardless of locked/security variants, keypad codes or
@@ -103,7 +107,8 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   ten digit serial on the server and stores both in the key's NBT. A key can be created once and
   never reset. Its tooltip lists the name and serial in white, and page one of the programmer copies
   that private key onto Operator Keycards and coloured RFID cards, while page three can back the
-  whole key up onto another Relay Key.
+  whole key up onto another Relay Key. Sneak right-clicking the Creative Keycard opens the same
+  viewer with the joke entry `THE ENTIRE LIBRARY OF BABLE` under `You have access to EVERYTHIN!!!!!`.
 * The secure access door ships nine skins: red, yellow, green, blue, grey, black (white writing),
   HBM yellow, white (black writing) and orange (white writing). The colour variants are generated
   by recolouring only the red warning paint; all other pixels are unchanged. Base colours: green

@@ -53,7 +53,7 @@ public class ModContent {
     public static final BlockKeycardScanner KEYCARD_SCANNER = new BlockKeycardScanner();
     public static final BlockKeycardProgrammer KEYCARD_PROGRAMMER = new BlockKeycardProgrammer();
     public static final ItemScrewdriver SCREWDRIVER = new ItemScrewdriver();
-    public static final ItemRfidCard BLANK_RFID_CARD = new ItemRfidCard("blank_rfid_card");
+    public static final ItemRfidCard BLANK_RFID_CARD = new ItemRfidCard("blank_rfid_card", false);
     public static final ItemRfidCard RED_RFID_CARD = new ItemRfidCard("red_rfid_card");
     public static final ItemRfidCard VIOLET_RFID_CARD = new ItemRfidCard("violet_rfid_card");
     public static final ItemRfidCard GREEN_RFID_CARD = new ItemRfidCard("green_rfid_card");

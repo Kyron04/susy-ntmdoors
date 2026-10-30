@@ -12,6 +12,7 @@ import com.ntmdoors.tile.TileEntityKeycardProgrammer;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
@@ -37,5 +38,9 @@ public class CommonProxy {
 
     /** Client only: open the Relay Key naming screen. The server never needs to know about it. */
     public void openRelayKeyNameGui(EnumHand hand) {
+    }
+
+    /** Client only: open the read-only private-key viewer for a held card. */
+    public void openKeycardViewerGui(ItemStack stack) {
     }
 }
