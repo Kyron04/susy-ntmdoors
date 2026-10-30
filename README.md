@@ -74,12 +74,21 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   tower. The front carries a card slit with an `Insert here` label and two buttons on the player's
   left, plus a green indicator and a small USB port on the right; the vent slots are on the back.
   The screen shows `Keycard Programmer N4` over `Insert keycard`, drawn live with the font renderer
-  like the scanner's. No recipe and no programming logic yet; it is in the NTM Doors creative tab
-  with a flat 16x16 icon derived from the model.
+  like the scanner's. Right clicking opens a two-page GUI: page one has the `Relay Key` /
+  `Operator Keycard` and `Relay Key` / `RFID Card` binding rows, and page two has the RFID card
+  slot plus seven colour squares that swap the card's cosmetic colour. Empty named slots show a
+  dimmed, desaturated copy of the item they expect, and every machine slot only accepts its
+  matching item type. The GUI darkens the world like a normal container GUI and draws item
+  tooltips above JEI/HEI. There is no recipe and the Bind buttons are placeholders until the
+  programming logic is defined; it is in the NTM Doors creative tab with a flat 16x16 icon
+  derived from the model.
 * RFID cards: one blank card plus red, violet, green, blue, black, orange and yellow variants.
   Each colour is a separate item (`ntmdoors:red_rfid_card` and so on) sharing a single item class
   and one hand-display model, so they all sit in the hand identically. The scanner recognises them
   but denies them until the keycard access rules are added.
+* Operator Keycard (`ntmdoors:operator_keycard`): a dark card with an orange stripe and three orange
+  dots, produced by the programmer once its logic is implemented. It shares the RFID hand-display
+  model, and the scanner recognises it as a card; its access rules are not defined yet.
 * Relay Key and Creative Keycard (`ntmdoors:relay_key`, `ntmdoors:creative_keycard`): groundwork for
   the keycard system. The Creative Keycard is the debug item for testing: its name is purple, and
   right clicking any door opens or closes it regardless of locked/security variants, keypad codes or
@@ -98,8 +107,9 @@ Models live under `src/main/resources/assets/ntmdoors/models/doors/`, textures u
 `textures/models/doors/`, and sounds under `sounds/doors/`. Door items do **not** need flat
 `textures/items/<door>.png` icons: the inventory/hand item is rendered from the same OBJ model
 and texture as the placed door. Only the screwdriver, the keypad and the RFID cards use flat icons
-(`textures/items/screwdriver.png`, `textures/items/sliding_blast_door_keypad.png`, and
-`textures/items/blank_rfid_card.png` plus `textures/items/rfid_card_<colour>.png`). The keycard
+(`textures/items/screwdriver.png`, `textures/items/sliding_blast_door_keypad.png`,
+`textures/items/blank_rfid_card.png`, `textures/items/operator_keycard.png` plus
+`textures/items/rfid_card_<colour>.png`). The keycard
 scanner uses a 3D model in the inventory and hand too, like the doors.
 
 | door | animated OBJ groups | notes |

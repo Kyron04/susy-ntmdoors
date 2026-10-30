@@ -41,6 +41,7 @@ public class ClientModels {
         inventory(Item.getItemFromBlock(ModContent.KEYCARD_SCANNER));
         inventory(ModContent.SCREWDRIVER);
         for (ItemRfidCard card : ModContent.RFID_CARDS) inventory(card);
+        inventory(ModContent.OPERATOR_KEYCARD);
         inventory(ModContent.CREATIVE_KEYCARD);
         inventory(ModContent.RELAY_KEY);
     }

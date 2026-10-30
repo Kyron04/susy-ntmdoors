@@ -1,6 +1,7 @@
 package com.ntmdoors.block;
 
 import com.ntmdoors.NTMDoors;
+import com.ntmdoors.gui.GuiHandler;
 import com.ntmdoors.tile.TileEntityKeycardProgrammer;
 import com.ntmdoors.util.Facings;
 import net.minecraft.block.Block;
@@ -12,6 +13,7 @@ import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
@@ -136,6 +138,25 @@ public class BlockKeycardProgrammer extends Block {
     @Override
     public AxisAlignedBB getCollisionBoundingBox(IBlockState state, IBlockAccess world, BlockPos pos) {
         return box(state.getValue(FACING));
+    }
+
+    @Override
+    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player,
+                                    EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+        if (!world.isRemote) {
+            player.openGui(NTMDoors.INSTANCE, GuiHandler.KEYCARD_PROGRAMMER, world,
+                    pos.getX(), pos.getY(), pos.getZ());
+        }
+        return true;
+    }
+
+    @Override
+    public void breakBlock(World world, BlockPos pos, IBlockState state) {
+        TileEntity te = world.getTileEntity(pos);
+        if (te instanceof TileEntityKeycardProgrammer) {
+            ((TileEntityKeycardProgrammer) te).dropContents(world, pos);
+        }
+        super.breakBlock(world, pos, state);
     }
 
     @Override

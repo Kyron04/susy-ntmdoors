@@ -12,6 +12,7 @@ import com.ntmdoors.item.ItemBlockKeycardScanner;
 import com.ntmdoors.item.ItemBlockKeypad;
 import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.item.ItemDoorBlock;
+import com.ntmdoors.item.ItemOperatorKeycard;
 import com.ntmdoors.item.ItemRelayKey;
 import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.item.ItemScrewdriver;
@@ -60,9 +61,16 @@ public class ModContent {
     public static final ItemRfidCard BLACK_RFID_CARD = new ItemRfidCard("black_rfid_card");
     public static final ItemRfidCard ORANGE_RFID_CARD = new ItemRfidCard("orange_rfid_card");
     public static final ItemRfidCard YELLOW_RFID_CARD = new ItemRfidCard("yellow_rfid_card");
+    /** Privileged card produced by the programmer; access rules are not defined yet. */
+    public static final ItemOperatorKeycard OPERATOR_KEYCARD = new ItemOperatorKeycard();
     /** Debug card that bypasses every door restriction. */
     public static final ItemCreativeKeycard CREATIVE_KEYCARD = new ItemCreativeKeycard();
     public static final ItemRelayKey RELAY_KEY = new ItemRelayKey();
+
+    /** The seven cosmetic RFID colours, in the order the programmer's second page shows them. */
+    public static final List<ItemRfidCard> COLOUR_CARDS = Collections.unmodifiableList(Arrays.asList(
+            RED_RFID_CARD, VIOLET_RFID_CARD, GREEN_RFID_CARD, BLUE_RFID_CARD,
+            BLACK_RFID_CARD, ORANGE_RFID_CARD, YELLOW_RFID_CARD));
 
     /** Blank first, then the colour variants in creative-tab order. */
     public static final List<ItemRfidCard> RFID_CARDS = Collections.unmodifiableList(Arrays.asList(
@@ -98,6 +106,7 @@ public class ModContent {
         e.getRegistry().register(new ItemBlockKeycardProgrammer(KEYCARD_PROGRAMMER).setRegistryName(KEYCARD_PROGRAMMER.getRegistryName()));
         e.getRegistry().register(SCREWDRIVER);
         for (ItemRfidCard card : RFID_CARDS) e.getRegistry().register(card);
+        e.getRegistry().register(OPERATOR_KEYCARD);
         e.getRegistry().register(CREATIVE_KEYCARD);
         e.getRegistry().register(RELAY_KEY);
     }

@@ -17,11 +17,14 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-@Mod(modid = NTMDoors.MODID, name = "NTM Doors", version = "1.0.75", acceptedMinecraftVersions = "[1.12.2]")
+@Mod(modid = NTMDoors.MODID, name = "NTM Doors", version = "1.0.88", acceptedMinecraftVersions = "[1.12.2]")
 public class NTMDoors {
 
     public static final String MODID = "ntmdoors";
     public static final Logger LOGGER = LogManager.getLogger(MODID);
+
+    @Mod.Instance(NTMDoors.MODID)
+    public static NTMDoors INSTANCE;
 
     @SidedProxy(clientSide = "com.ntmdoors.proxy.ClientProxy", serverSide = "com.ntmdoors.proxy.CommonProxy")
     public static CommonProxy proxy;
@@ -48,6 +51,7 @@ public class NTMDoors {
             items.add(new ItemStack(ModContent.KEYCARD_SCANNER));
             items.add(new ItemStack(ModContent.KEYCARD_PROGRAMMER));
             for (ItemRfidCard card : ModContent.RFID_CARDS) items.add(new ItemStack(card));
+            items.add(new ItemStack(ModContent.OPERATOR_KEYCARD));
             items.add(new ItemStack(ModContent.CREATIVE_KEYCARD));
             items.add(new ItemStack(ModContent.RELAY_KEY));
         }
