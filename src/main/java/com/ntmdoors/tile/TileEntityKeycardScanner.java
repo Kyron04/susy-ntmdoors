@@ -40,6 +40,8 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
     /** Same cap as the keypad's multi binding. */
     public static final int MAX_DOORS = 9;
     public static final double MAX_BIND_DISTANCE = 32D;
+    /** Digits allowed in the Operator Keycard security code, matching a keypad. */
+    public static final int CODE_LENGTH = 6;
 
     /** Ticks the "Scanning" text stays up before the result is shown. */
     private static final int SCAN_TICKS = 20;
@@ -60,6 +62,16 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
     private int ticks;
     /** Count shown by the screen: bound doors plus the pending selection. */
     private int visibleCount;
+    /** Synced committed door count, so a client can tell the scanner is in use. */
+    private int boundDoorCount;
+    /** Synced mirror of {@link #securityCode}; the digits themselves never leave the server. */
+    private boolean codeSet;
+
+    /**
+     * The 1-6 digit code an Operator Keycard sets on its first visit. Empty until then; it is never
+     * sent to clients, only whether one exists.
+     */
+    private String securityCode = "";
 
     /** Server only. The player currently binding this scanner, and the session clock. */
     @Nullable
@@ -91,6 +103,50 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
 
     public boolean isBindingFor(@Nullable EntityPlayer player) {
         return player != null && bindingPlayer != null && bindingPlayer.equals(player.getUniqueID());
+    }
+
+    /** True once at least one door is committed; the Operator Keycard screen only applies then. */
+    public boolean hasBoundDoors() {
+        return boundDoorCount > 0;
+    }
+
+    public int getBoundDoorCount() {
+        return boundDoorCount;
+    }
+
+    /** True once an Operator Keycard has set the scanner's security code. */
+    public boolean hasSecurityCode() {
+        return codeSet;
+    }
+
+    /**
+     * Server side: stores the code chosen on the first Operator Keycard visit. A scanner can only
+     * ever be given one code; breaking it is the only way to start over.
+     */
+    public boolean setSecurityCode(String raw) {
+        if (world == null || world.isRemote || hasSecurityCode()) return false;
+        String code = sanitiseCode(raw);
+        if (code.isEmpty()) return false;
+        securityCode = code;
+        codeSet = true;
+        sync();
+        return true;
+    }
+
+    /** True when the supplied digits match the stored code. */
+    public boolean checkSecurityCode(String raw) {
+        return hasSecurityCode() && securityCode.equals(sanitiseCode(raw));
+    }
+
+    /** Digits only, at most {@link #CODE_LENGTH} characters. */
+    public static String sanitiseCode(String raw) {
+        if (raw == null) return "";
+        StringBuilder out = new StringBuilder();
+        for (int i = 0; i < raw.length() && out.length() < CODE_LENGTH; i++) {
+            char c = raw.charAt(i);
+            if (c >= '0' && c <= '9') out.append(c);
+        }
+        return out.toString();
     }
 
     // ------------------------------------------------------------ ticking
@@ -360,7 +416,8 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
     }
 
     private void refreshCount() {
-        visibleCount = boundDoors.size() + pendingDoors.size();
+        boundDoorCount = boundDoors.size();
+        visibleCount = boundDoorCount + pendingDoors.size();
     }
 
     /** Doors are stored as "x,y,z;x,y,z" so the format never depends on NBT list helpers. */
@@ -393,6 +450,9 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         tag.setInteger("scanTicks", ticks);
         tag.setInteger("visibleCount", visibleCount);
         tag.setInteger("bindingTicks", bindingTicks);
+        tag.setString("securityCode", securityCode);
+        tag.setBoolean("codeSet", codeSet);
+        tag.setInteger("boundDoorCount", boundDoorCount);
         if (bindingPlayer != null) tag.setString("bindingPlayer", bindingPlayer.toString());
         if (scanningPlayer != null) tag.setString("scanningPlayer", scanningPlayer.toString());
         return tag;
@@ -406,6 +466,8 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         tag.setByte("scanState", (byte) state.ordinal());
         tag.setInteger("scanTicks", ticks);
         tag.setInteger("visibleCount", visibleCount);
+        tag.setBoolean("codeSet", codeSet);
+        tag.setInteger("boundDoorCount", boundDoorCount);
         return tag;
     }
 
@@ -424,7 +486,15 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
                             Integer.parseInt(xyz[2])));
                 }
             }
+            boundDoorCount = boundDoors.size();
+        } else if (tag.hasKey("boundDoorCount")) {
+            // Client sync tag: only the number of committed doors is sent.
+            boundDoorCount = tag.getInteger("boundDoorCount");
         }
+        if (tag.hasKey("securityCode")) {
+            securityCode = sanitiseCode(tag.getString("securityCode"));
+        }
+        codeSet = tag.hasKey("codeSet") ? tag.getBoolean("codeSet") : !securityCode.isEmpty();
         if (tag.hasKey("scanState")) {
             state = STATES[Math.floorMod(tag.getByte("scanState"), STATES.length)];
         }

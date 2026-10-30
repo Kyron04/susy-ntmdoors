@@ -70,7 +70,13 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   denied until the keycard access rules are added. The LCD shows `Please insert key` while idle, and
   the matching lens lights yellow while scanning/binding, green on access and red on denial. A card
   insert and a successful scan play `button3`, a denied scan plays `button8`, and `bell1` loops
-  while the scan runs. Placement and facing match the keypad; the item uses a matching 3D model in
+  while the scan runs. Once at least one door is bound, sneak + right clicking the scanner while
+  holding an Operator Keycard opens its security code screen: the first visit sets a 1-6 digit code
+  (entered twice), and later visits must repeat it. The screen is a black panel in a light metal
+  case with a green readout and twelve green keycaps, including `CLR` and `ENTER`; a correct code
+  plays the granted chime and closes the screen, a wrong one plays the denied chime and clears the
+  entry. The code lives only on the server and is never sent to clients. Placement and facing match
+  the keypad; the item uses a matching 3D model in
   the inventory and hand.
 * Keycard Programmer (`ntmdoors:keycard_programmer`): a low desk console that sits inside one block
   and rotates to face the player, with a flat OBJ body, a sloped screen recess and no card reader

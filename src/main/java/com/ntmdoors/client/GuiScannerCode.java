@@ -1,0 +1,302 @@
+package com.ntmdoors.client;
+
+import com.ntmdoors.network.MessageScannerCode;
+import com.ntmdoors.network.MessageScannerCodeResult;
+import com.ntmdoors.network.ModNetwork;
+import com.ntmdoors.tile.TileEntityKeycardScanner;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.init.SoundEvents;
+import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.input.Keyboard;
+
+import java.io.IOException;
+
+/**
+ * Security code screen for a scanner that is already bound to doors. The first Operator Keycard
+ * visit chooses the code; later visits must repeat it. The layout follows the supplied mockup: a
+ * light metal case around a black screen, a green digital readout and twelve green keycaps.
+ */
+@SideOnly(Side.CLIENT)
+public class GuiScannerCode extends GuiScreen {
+
+    private static final int PANEL_WIDTH = 176;
+    private static final int PANEL_HEIGHT = 184;
+
+    private static final int MUTED = 0xFFAFAFAF;
+    private static final int GREEN = 0xFF45EB63;
+    private static final int GREEN_LIGHT = 0xFF58FF6E;
+    private static final int GREEN_TEXT = 0xFF75FF82;
+    private static final int GREEN_DIM = 0xFF2E7A3C;
+    private static final int RED = 0xFFFF5A5A;
+
+    private static final int BUTTON_WIDTH = 44;
+    private static final int BUTTON_HEIGHT = 22;
+    private static final int BUTTON_GAP_X = 6;
+    private static final int BUTTON_GAP_Y = 4;
+    private static final int GRID_TOP = 64;
+
+    private static final String[] KEY_LABELS = {
+            "1", "2", "3",
+            "4", "5", "6",
+            "7", "8", "9",
+            "CLR", "0", "ENTER"
+    };
+
+    private final BlockPos pos;
+    /** True when the scanner has no code yet, so this visit chooses one. */
+    private final boolean setting;
+
+    private int left;
+    private int top;
+    private String entry = "";
+    private String status = "";
+    private int statusColour = MUTED;
+    private boolean waiting;
+    /** First-visit confirmation: the chosen digits, and whether the screen is asking again. */
+    private String pending = "";
+    private boolean confirming;
+
+    public GuiScannerCode(BlockPos pos, boolean setting) {
+        this.pos = pos;
+        this.setting = setting;
+    }
+
+    @Override
+    public void initGui() {
+        super.initGui();
+        left = (width - PANEL_WIDTH) / 2;
+        top = (height - PANEL_HEIGHT) / 2;
+    }
+
+    @Override
+    public boolean doesGuiPauseGame() {
+        return false;
+    }
+
+    // ------------------------------------------------------------ input
+
+    @Override
+    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+        int key = keyAt(mouseX, mouseY);
+        if (key >= 0 && mouseButton == 0) {
+            press(key);
+            return;
+        }
+        super.mouseClicked(mouseX, mouseY, mouseButton);
+    }
+
+    @Override
+    protected void keyTyped(char typedChar, int keyCode) throws IOException {
+        if (keyCode == Keyboard.KEY_ESCAPE) {
+            mc.displayGuiScreen(null);
+            return;
+        }
+        if (waiting) return;
+        if (keyCode == Keyboard.KEY_RETURN || keyCode == Keyboard.KEY_NUMPADENTER) {
+            submit();
+            return;
+        }
+        if (keyCode == Keyboard.KEY_BACK || keyCode == Keyboard.KEY_DELETE) {
+            if (!entry.isEmpty()) entry = entry.substring(0, entry.length() - 1);
+            return;
+        }
+        if (typedChar >= '0' && typedChar <= '9') {
+            append(typedChar);
+            return;
+        }
+        super.keyTyped(typedChar, keyCode);
+    }
+
+    private void press(int key) {
+        if (waiting) return;
+        clickSound();
+        if (key == 9) {
+            entry = "";
+            pending = "";
+            confirming = false;
+            clearStatus();
+        } else if (key == 11) {
+            submit();
+        } else {
+            append((char) ('0' + (key == 10 ? 0 : key + 1)));
+        }
+    }
+
+    private void append(char digit) {
+        if (entry.length() >= TileEntityKeycardScanner.CODE_LENGTH) return;
+        entry += digit;
+        clearStatus();
+    }
+
+    private void clearStatus() {
+        status = "";
+        statusColour = MUTED;
+    }
+
+    private void submit() {
+        if (waiting) return;
+        if (entry.isEmpty()) {
+            status = "Enter a code";
+            statusColour = RED;
+            return;
+        }
+
+        // A new code is entered twice so a typo cannot lock the scanner on its first visit.
+        if (setting && !confirming) {
+            pending = entry;
+            entry = "";
+            confirming = true;
+            clearStatus();
+            return;
+        }
+        if (setting && !pending.equals(entry)) {
+            entry = "";
+            pending = "";
+            confirming = false;
+            status = "Codes do not match";
+            statusColour = RED;
+            return;
+        }
+
+        waiting = true;
+        status = "Checking...";
+        statusColour = GREEN_TEXT;
+        ModNetwork.INSTANCE.sendToServer(new MessageScannerCode(pos, entry));
+    }
+
+    /** Called by the result packet. A set or accepted code closes the screen. */
+    public void onResult(BlockPos resultPos, int result) {
+        if (resultPos == null || !resultPos.equals(pos)) return;
+        waiting = false;
+        switch (result) {
+            case MessageScannerCodeResult.ACCEPTED:
+            case MessageScannerCodeResult.SET:
+                mc.displayGuiScreen(null);
+                break;
+            case MessageScannerCodeResult.UNBOUND:
+                entry = "";
+                pending = "";
+                confirming = false;
+                status = "No doors bound";
+                statusColour = RED;
+                break;
+            default:
+                entry = "";
+                pending = "";
+                confirming = false;
+                status = "Access denied";
+                statusColour = RED;
+                break;
+        }
+    }
+
+    private void clickSound() {
+        if (mc.player == null) return;
+        float pitch = 0.9F + (mc.world == null ? 0F : mc.world.rand.nextFloat() * 0.2F);
+        mc.player.playSound(SoundEvents.UI_BUTTON_CLICK, 0.5F, pitch);
+    }
+
+    // ------------------------------------------------------------ rendering
+
+    @Override
+    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+        drawDefaultBackground();
+        drawCase();
+        drawHeading();
+        drawReadout();
+        drawKeys(mouseX, mouseY);
+
+        drawCenteredString(fontRenderer, "ESC to cancel", left + PANEL_WIDTH / 2,
+                top + PANEL_HEIGHT - 14, 0xFF6A6A6A);
+        super.drawScreen(mouseX, mouseY, partialTicks);
+    }
+
+    private void drawCase() {
+        // Hard shadow, stepped light metal bezel, then the user-supplied black screen.
+        drawRect(left - 2, top - 2, left + PANEL_WIDTH + 2, top + PANEL_HEIGHT + 2, 0xFF555555);
+        drawRect(left - 1, top - 1, left + PANEL_WIDTH + 1, top + PANEL_HEIGHT + 1, 0xFF777777);
+        drawRect(left, top, left + PANEL_WIDTH, top + PANEL_HEIGHT, 0xFFC8C8C8);
+        drawRect(left + 1, top + 1, left + PANEL_WIDTH - 1, top + 2, 0xFFF1F1F1);
+        drawRect(left + 1, top + 1, left + 2, top + PANEL_HEIGHT - 1, 0xFFF1F1F1);
+        drawRect(left + 1, top + PANEL_HEIGHT - 2, left + PANEL_WIDTH - 1, top + PANEL_HEIGHT - 1, 0xFF8A8A8A);
+        drawRect(left + PANEL_WIDTH - 2, top + 1, left + PANEL_WIDTH - 1, top + PANEL_HEIGHT - 1, 0xFF8A8A8A);
+
+        drawRect(left + 4, top + 4, left + PANEL_WIDTH - 4, top + PANEL_HEIGHT - 4, 0xFFF1F1F1);
+        drawRect(left + 5, top + 5, left + PANEL_WIDTH - 5, top + PANEL_HEIGHT - 5, 0xFF090909);
+    }
+
+    private void drawHeading() {
+        drawCenteredString(fontRenderer, "Please input security code",
+                left + PANEL_WIDTH / 2, top + 12, 0xFFF2F2F2);
+
+        String line;
+        if (!status.isEmpty()) {
+            line = status;
+        } else if (setting) {
+            line = confirming ? "Re-enter the code" : "Set a new security code";
+        } else {
+            line = "Scanner locked";
+        }
+        int colour = !status.isEmpty() ? statusColour : MUTED;
+        drawCenteredString(fontRenderer, line, left + PANEL_WIDTH / 2, top + 26, colour);
+    }
+
+    private void drawReadout() {
+        int x = left + (PANEL_WIDTH - 96) / 2;
+        int y = top + 38;
+
+        drawRect(x - 2, y - 2, x + 98, y + 20, 0xFF080808);
+        drawRect(x - 1, y - 1, x + 97, y + 19, GREEN);
+        drawRect(x, y, x + 96, y + 18, 0xFF0B2A12);
+        drawRect(x, y, x + 96, y + 1, GREEN_LIGHT);
+
+        String shown = entry.isEmpty() ? "------" : entry;
+        int colour = entry.isEmpty() ? GREEN_DIM : GREEN_TEXT;
+        drawCenteredString(fontRenderer, shown, x + 48, y + 5, colour);
+    }
+
+    private void drawKeys(int mouseX, int mouseY) {
+        for (int i = 0; i < KEY_LABELS.length; i++) {
+            int x = keyX(i);
+            int y = keyY(i);
+            boolean hovered = !waiting && mouseX >= x && mouseY >= y
+                    && mouseX < x + BUTTON_WIDTH && mouseY < y + BUTTON_HEIGHT;
+            drawKey(x, y, KEY_LABELS[i], hovered);
+        }
+    }
+
+    private void drawKey(int x, int y, String label, boolean hovered) {
+        drawRect(x, y, x + BUTTON_WIDTH, y + BUTTON_HEIGHT, 0xFF080808);
+        drawRect(x + 1, y + 1, x + BUTTON_WIDTH - 1, y + BUTTON_HEIGHT - 1,
+                hovered ? 0xFF7CFF8D : GREEN);
+        drawRect(x + 3, y + 3, x + BUTTON_WIDTH - 3, y + BUTTON_HEIGHT - 3,
+                hovered ? 0xFF15461E : 0xFF0B2A12);
+        drawRect(x + 3, y + 3, x + BUTTON_WIDTH - 3, y + 4, GREEN_LIGHT);
+
+        int colour = hovered ? 0xFFB6FFBC : GREEN_TEXT;
+        int textX = x + (BUTTON_WIDTH - fontRenderer.getStringWidth(label)) / 2;
+        fontRenderer.drawString(label, textX, y + (BUTTON_HEIGHT - 8) / 2, colour);
+    }
+
+    private int keyX(int index) {
+        int gridWidth = BUTTON_WIDTH * 3 + BUTTON_GAP_X * 2;
+        return left + (PANEL_WIDTH - gridWidth) / 2 + (index % 3) * (BUTTON_WIDTH + BUTTON_GAP_X);
+    }
+
+    private int keyY(int index) {
+        return top + GRID_TOP + (index / 3) * (BUTTON_HEIGHT + BUTTON_GAP_Y);
+    }
+
+    private int keyAt(int mouseX, int mouseY) {
+        for (int i = 0; i < KEY_LABELS.length; i++) {
+            int x = keyX(i);
+            int y = keyY(i);
+            if (mouseX >= x && mouseY >= y && mouseX < x + BUTTON_WIDTH && mouseY < y + BUTTON_HEIGHT) {
+                return i;
+            }
+        }
+        return -1;
+    }
+}

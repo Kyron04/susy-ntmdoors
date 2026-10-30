@@ -12,6 +12,7 @@ import com.ntmdoors.tile.TileEntityKeycardProgrammer;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -42,5 +43,9 @@ public class CommonProxy {
 
     /** Client only: open the read-only private-key viewer for a held card. */
     public void openKeycardViewerGui(ItemStack stack) {
+    }
+
+    /** Client only: open the security code screen for a scanner bound to doors. */
+    public void openScannerCodeGui(BlockPos pos, boolean setting) {
     }
 }

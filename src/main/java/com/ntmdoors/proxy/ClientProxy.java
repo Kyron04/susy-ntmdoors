@@ -3,6 +3,7 @@ package com.ntmdoors.proxy;
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.client.GuiKeycardViewer;
 import com.ntmdoors.client.GuiRelayKeyName;
+import com.ntmdoors.client.GuiScannerCode;
 import com.ntmdoors.client.KeyframeAnimation;
 import com.ntmdoors.client.ObjModel;
 import com.ntmdoors.client.RenderDoor;
@@ -22,6 +23,7 @@ import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -49,6 +51,11 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void openKeycardViewerGui(ItemStack stack) {
         Minecraft.getMinecraft().displayGuiScreen(new GuiKeycardViewer(stack));
+    }
+
+    @Override
+    public void openScannerCodeGui(BlockPos pos, boolean setting) {
+        Minecraft.getMinecraft().displayGuiScreen(new GuiScannerCode(pos, setting));
     }
 
     @Override
