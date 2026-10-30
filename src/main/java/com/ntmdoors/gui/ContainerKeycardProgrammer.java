@@ -6,6 +6,7 @@ import com.ntmdoors.item.ItemRelayKey;
 import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.registry.ModContent;
 import com.ntmdoors.tile.TileEntityKeycardProgrammer;
+import com.ntmdoors.util.ModSounds;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.ClickType;
@@ -14,14 +15,15 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
-import net.minecraft.init.SoundEvents;
+import net.minecraft.util.SoundCategory;
 
 import java.util.function.Predicate;
 
 /**
  * Container for the keycard programmer. Page one has the two binding rows, page two has the
- * cosmetic RFID colour picker. Both pages live in one container; the GUI only draws and accepts
- * clicks for the slots that belong to the page currently on screen.
+ * cosmetic RFID colour picker and page three is the legacy backup console. Its left and right slots
+ * both accept Relay Keys and Operator Keycards. All pages live in one container; the GUI only draws
+ * and accepts clicks for the slots that belong to the page currently on screen.
  */
 public class ContainerKeycardProgrammer extends Container {
 
@@ -38,6 +40,18 @@ public class ContainerKeycardProgrammer extends Container {
     public static final int SLOT_RFID_ONE_Y = 78;
     public static final int SLOT_RFID_TWO_X = 80;
     public static final int SLOT_RFID_TWO_Y = 39;
+    public static final int SLOT_LEGACY_LEFT_X = 24;
+    public static final int SLOT_LEGACY_LEFT_Y = 40;
+    public static final int SLOT_LEGACY_RIGHT_X = 136;
+    public static final int SLOT_LEGACY_RIGHT_Y = 40;
+    public static final int BACKUP_BUTTON_X = 65;
+    public static final int BACKUP_BUTTON_Y = 40;
+    public static final int BACKUP_BUTTON_WIDTH = 46;
+    public static final int BACKUP_BUTTON_HEIGHT = 16;
+    public static final int BACKUP_BAR_X = 24;
+    public static final int BACKUP_BAR_Y = 62;
+    public static final int BACKUP_BAR_WIDTH = 128;
+    public static final int BACKUP_BAR_HEIGHT = 12;
     public static final int COLOUR_FIRST_X = 11;
     public static final int COLOUR_Y = 78;
     public static final int COLOUR_STEP = 22;
@@ -47,6 +61,12 @@ public class ContainerKeycardProgrammer extends Container {
 
     public static final int COLOUR_SLOT_START = 5;
     public static final int COLOUR_SLOT_COUNT = 7;
+    public static final int LEGACY_SLOT_START = COLOUR_SLOT_START + COLOUR_SLOT_COUNT;
+    public static final int LEGACY_SLOT_COUNT = 2;
+    /** Fake slot id used to send the page-three Backup button to the server. */
+    public static final int BACKUP_ACTION_SLOT = -2;
+
+    private static final float BUTTON_VOLUME = 0.8F;
 
     private static final Predicate<ItemStack> RELAY_ONLY =
             stack -> stack.getItem() instanceof ItemRelayKey;
@@ -56,6 +76,9 @@ public class ContainerKeycardProgrammer extends Container {
             stack -> stack.getItem() instanceof ItemRfidCard
                     && !(stack.getItem() instanceof ItemOperatorKeycard)
                     && !(stack.getItem() instanceof ItemCreativeKeycard);
+    private static final Predicate<ItemStack> LEGACY_ONLY =
+            stack -> stack.getItem() instanceof ItemRelayKey
+                    || stack.getItem() instanceof ItemOperatorKeycard;
 
     private final TileEntityKeycardProgrammer tile;
     /** Backing inventory for the seven display-only colour slots. */
@@ -81,6 +104,11 @@ public class ContainerKeycardProgrammer extends Container {
                     new ItemStack(ModContent.COLOUR_CARDS.get(i))));
         }
 
+        addSlotToContainer(new SlotProgrammer(tile, TileEntityKeycardProgrammer.SLOT_LEGACY_LEFT,
+                SLOT_LEGACY_LEFT_X, SLOT_LEGACY_LEFT_Y, LEGACY_ONLY));
+        addSlotToContainer(new SlotProgrammer(tile, TileEntityKeycardProgrammer.SLOT_LEGACY_RIGHT,
+                SLOT_LEGACY_RIGHT_X, SLOT_LEGACY_RIGHT_Y, LEGACY_ONLY));
+
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
                 addSlotToContainer(new Slot(playerInventory, col + row * 9 + 9,
@@ -103,6 +131,11 @@ public class ContainerKeycardProgrammer extends Container {
      */
     @Override
     public ItemStack slotClick(int slotId, int dragType, ClickType clickTypeIn, EntityPlayer player) {
+        if (slotId == BACKUP_ACTION_SLOT) {
+            if (!player.world.isRemote) tile.startBackup();
+            // Returning the client's carried stack confirms the synthetic click without moving it.
+            return player.inventory.getItemStack();
+        }
         if (slotId >= COLOUR_SLOT_START && slotId < COLOUR_SLOT_START + COLOUR_SLOT_COUNT) {
             if (!player.world.isRemote) {
                 applyColour(slotId - COLOUR_SLOT_START, player);
@@ -118,7 +151,7 @@ public class ContainerKeycardProgrammer extends Container {
                 || !(card.getItem() instanceof ItemRfidCard)
                 || card.getItem() instanceof ItemOperatorKeycard
                 || card.getItem() instanceof ItemCreativeKeycard) {
-            player.playSound(SoundEvents.UI_BUTTON_CLICK, 0.4F, 0.8F);
+            playButtonClick(player);
             return;
         }
 
@@ -127,8 +160,14 @@ public class ContainerKeycardProgrammer extends Container {
             result.setTagCompound(card.getTagCompound().copy());
         }
         tile.setInventorySlotContents(TileEntityKeycardProgrammer.SLOT_RFID_PAGE_TWO, result);
-        player.playSound(SoundEvents.UI_BUTTON_CLICK, 0.5F, 1.2F);
+        playButtonClick(player);
         detectAndSendChanges();
+    }
+
+    /** The same short click the screwdriver plays for a handled interaction. */
+    private void playButtonClick(EntityPlayer player) {
+        player.world.playSound(null, tile.getPos(), ModSounds.BUTTON9,
+                SoundCategory.BLOCKS, BUTTON_VOLUME, 1F);
     }
 
     @Override
@@ -137,7 +176,7 @@ public class ContainerKeycardProgrammer extends Container {
         tile.closeInventory(player);
     }
 
-    /** Shift-clicking is disabled: the two pages share one container and must not cross-fill. */
+    /** Shift-clicking is disabled: the pages share one container and must not cross-fill. */
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
         return ItemStack.EMPTY;

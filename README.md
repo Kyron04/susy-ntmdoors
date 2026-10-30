@@ -74,14 +74,19 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   tower. The front carries a card slit with an `Insert here` label and two buttons on the player's
   left, plus a green indicator and a small USB port on the right; the vent slots are on the back.
   The screen shows `Keycard Programmer N4` over `Insert keycard`, drawn live with the font renderer
-  like the scanner's. Right clicking opens a two-page GUI: page one has the `Relay Key` /
-  `Operator Keycard` and `Relay Key` / `RFID Card` binding rows, and page two has the RFID card
-  slot plus seven colour squares that swap the card's cosmetic colour. Empty named slots show a
-  dimmed, desaturated copy of the item they expect, and every machine slot only accepts its
-  matching item type. The GUI darkens the world like a normal container GUI and draws item
-  tooltips above JEI/HEI. There is no recipe and the Bind buttons are placeholders until the
-  programming logic is defined; it is in the NTM Doors creative tab with a flat 16x16 icon
-  derived from the model.
+  like the scanner's. Right clicking opens a three-page GUI: page one has the `Relay Key` /
+  `Operator Keycard` and `Relay Key` / `RFID Card` binding rows, page two has the RFID card
+  slot plus seven colour squares that swap the card's cosmetic colour, and page three is the
+  `Legacy Backup Programmer` with a used source slot on the left, a fresh target slot on the right,
+  a `Backup` button and a five-frame ten-second progress bar. A backup copies the source item's NBT
+  to the target: Relay → Relay, Relay → Operator and Operator → Operator are allowed, Operator →
+  Relay is not. The source needs NBT and the target must have none. Changing either slot cancels the
+  backup, and the scanner loop plays during the fill, with the scanner denied/granted sounds on
+  cancellation/success. Empty named slots on pages one and two show a dimmed, desaturated copy of
+  the item they expect, and every machine slot only accepts its allowed item type or types. The GUI
+  darkens the world like a normal container GUI and draws item tooltips above JEI/HEI. There is no
+  recipe and the Bind buttons are placeholders until the binding logic is defined; it is in the NTM
+  Doors creative tab with a flat 16x16 icon derived from the model.
 * RFID cards: one blank card plus red, violet, green, blue, black, orange and yellow variants.
   Each colour is a separate item (`ntmdoors:red_rfid_card` and so on) sharing a single item class
   and one hand-display model, so they all sit in the hand identically. The scanner recognises them
@@ -93,7 +98,8 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   the keycard system. The Creative Keycard is the debug item for testing: its name is purple, and
   right clicking any door opens or closes it regardless of locked/security variants, keypad codes or
   redstone, with a purple `Door overridden` status message. It is also the only card the scanner
-  currently accepts. The Relay Key has no behaviour yet.
+  currently accepts. The Relay Key has no door behaviour yet; its NBT can be backed up on the
+  programmer's third page.
 * The secure access door ships nine skins: red, yellow, green, blue, grey, black (white writing),
   HBM yellow, white (black writing) and orange (white writing). The colour variants are generated
   by recolouring only the red warning paint; all other pixels are unchanged. Base colours: green

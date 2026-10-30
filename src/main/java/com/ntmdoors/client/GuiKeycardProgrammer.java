@@ -1,12 +1,15 @@
 package com.ntmdoors.client;
 
+import com.ntmdoors.NTMDoors;
 import com.ntmdoors.gui.ContainerKeycardProgrammer;
 import com.ntmdoors.tile.TileEntityKeycardProgrammer;
+import com.ntmdoors.util.ModSounds;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.init.SoundEvents;
+import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Slot;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
@@ -16,17 +19,30 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Two-page keycard programmer GUI, styled after the in-game mockups: a light metal frame around a
+ * Three-page keycard programmer GUI, styled after the in-game mockups: a light metal frame around a
  * dark panel, outlined item slots and a paged footer. Page one binds cards, page two re-colours an
- * RFID card.
+ * RFID card and page three is the legacy backup console.
  */
 @SideOnly(Side.CLIENT)
 public class GuiKeycardProgrammer extends GuiContainer {
 
+    private static final int PAGE_COUNT = 3;
     private static final int COLOUR = 0xFFE8E8E8;
     private static final int MUTED = 0xFFAFAFAF;
     private static final int DARK_TEXT = 0xFF2B2B2E;
+    private static final float BUTTON_VOLUME = 0.8F;
+    private static final int BACKUP_FRAME_WIDTH = 876;
+    private static final int BACKUP_FRAME_HEIGHT = 64;
 
+    private static final ResourceLocation[] BACKUP_FRAMES = {
+            new ResourceLocation(NTMDoors.MODID, "textures/gui/legacy_backup_progress_000.png"),
+            new ResourceLocation(NTMDoors.MODID, "textures/gui/legacy_backup_progress_025.png"),
+            new ResourceLocation(NTMDoors.MODID, "textures/gui/legacy_backup_progress_050.png"),
+            new ResourceLocation(NTMDoors.MODID, "textures/gui/legacy_backup_progress_075.png"),
+            new ResourceLocation(NTMDoors.MODID, "textures/gui/legacy_backup_progress_100.png")
+    };
+
+    private final TileEntityKeycardProgrammer tile;
     private int page;
     private String status = "";
     private int statusTicks;
@@ -35,6 +51,7 @@ public class GuiKeycardProgrammer extends GuiContainer {
 
     public GuiKeycardProgrammer(InventoryPlayer playerInventory, TileEntityKeycardProgrammer tile) {
         super(new ContainerKeycardProgrammer(playerInventory, tile));
+        this.tile = tile;
         this.xSize = ContainerKeycardProgrammer.GUI_WIDTH;
         this.ySize = ContainerKeycardProgrammer.GUI_HEIGHT;
 
@@ -111,7 +128,8 @@ public class GuiKeycardProgrammer extends GuiContainer {
         drawRect(5, 141, xSize - 5, 227, 0xFF1B1B1E);
 
         if (page == 0) drawPageOne(mouseX, mouseY);
-        else drawPageTwo(mouseX, mouseY);
+        else if (page == 1) drawPageTwo(mouseX, mouseY);
+        else drawPageThree(mouseX, mouseY);
 
         drawSlotFrames();
         // Draw the ghosts in the same pass as the frames, directly over them. Keeping this out
@@ -156,6 +174,28 @@ public class GuiKeycardProgrammer extends GuiContainer {
         drawPageButtons(mouseX, mouseY);
     }
 
+    private void drawPageThree(int mouseX, int mouseY) {
+        drawButton(ContainerKeycardProgrammer.BACKUP_BUTTON_X, ContainerKeycardProgrammer.BACKUP_BUTTON_Y,
+                ContainerKeycardProgrammer.BACKUP_BUTTON_WIDTH, ContainerKeycardProgrammer.BACKUP_BUTTON_HEIGHT,
+                mouseX, mouseY);
+        drawBackupFrame(tile.getBackupFrame());
+        drawPageButtons(mouseX, mouseY);
+    }
+
+    /** Draws one of the five supplied progress frames at the GUI bar size. */
+    private void drawBackupFrame(int frame) {
+        int index = Math.max(0, Math.min(BACKUP_FRAMES.length - 1, frame));
+        mc.getTextureManager().bindTexture(BACKUP_FRAMES[index]);
+        GlStateManager.color(1F, 1F, 1F, 1F);
+        drawScaledCustomSizeModalRect(ContainerKeycardProgrammer.BACKUP_BAR_X,
+                ContainerKeycardProgrammer.BACKUP_BAR_Y, 0F, 0F,
+                BACKUP_FRAME_WIDTH, BACKUP_FRAME_HEIGHT,
+                ContainerKeycardProgrammer.BACKUP_BAR_WIDTH,
+                ContainerKeycardProgrammer.BACKUP_BAR_HEIGHT,
+                BACKUP_FRAME_WIDTH, BACKUP_FRAME_HEIGHT);
+        GlStateManager.color(1F, 1F, 1F, 1F);
+    }
+
     private void drawPageButtons(int mouseX, int mouseY) {
         drawButton(10, 106, 18, 18, mouseX, mouseY);
         drawButton(148, 106, 18, 18, mouseX, mouseY);
@@ -181,11 +221,20 @@ public class GuiKeycardProgrammer extends GuiContainer {
                     || isHovering(mouseX, mouseY, 122, 78, 46, 16)) {
                 drawCenteredString(fontRenderer, "Binding logic coming soon", xSize / 2, 128, MUTED);
             }
-        } else {
+        } else if (page == 1) {
             drawCenteredString(fontRenderer, "RFID Card", xSize / 2, 27, COLOUR);
+        } else {
+            drawCenteredString(fontRenderer, "Legacy Backup Programmer", xSize / 2, 27, COLOUR);
+            drawButtonLabel("Backup", ContainerKeycardProgrammer.BACKUP_BUTTON_X,
+                    ContainerKeycardProgrammer.BACKUP_BUTTON_Y,
+                    ContainerKeycardProgrammer.BACKUP_BUTTON_WIDTH,
+                    ContainerKeycardProgrammer.BACKUP_BUTTON_HEIGHT);
+            drawCenteredString(fontRenderer, "Backing up Relay Keys and", xSize / 2, 80, MUTED);
+            drawCenteredString(fontRenderer, "Operator Keycards keeps", xSize / 2, 90, MUTED);
+            drawCenteredString(fontRenderer, "critical key data secure", xSize / 2, 100, MUTED);
         }
 
-        drawCenteredString(fontRenderer, (page + 1) + "/2", xSize / 2, 111, COLOUR);
+        drawCenteredString(fontRenderer, (page + 1) + "/" + PAGE_COUNT, xSize / 2, 111, COLOUR);
         drawPageArrows();
 
         if (statusTicks > 0) {
@@ -277,7 +326,7 @@ public class GuiKeycardProgrammer extends GuiContainer {
                     ContainerKeycardProgrammer.SLOT_RELAY_TWO_X, ContainerKeycardProgrammer.SLOT_RELAY_TWO_Y);
             drawGhostIfEmpty(3, GhostIcons.RFID,
                     ContainerKeycardProgrammer.SLOT_RFID_ONE_X, ContainerKeycardProgrammer.SLOT_RFID_ONE_Y);
-        } else {
+        } else if (page == 1) {
             drawGhostIfEmpty(4, GhostIcons.RFID,
                     ContainerKeycardProgrammer.SLOT_RFID_TWO_X, ContainerKeycardProgrammer.SLOT_RFID_TWO_Y);
         }
@@ -331,6 +380,10 @@ public class GuiKeycardProgrammer extends GuiContainer {
                 && index < ContainerKeycardProgrammer.COLOUR_SLOT_START + ContainerKeycardProgrammer.COLOUR_SLOT_COUNT) {
             return page == 1;
         }
+        if (index >= ContainerKeycardProgrammer.LEGACY_SLOT_START
+                && index < ContainerKeycardProgrammer.LEGACY_SLOT_START + ContainerKeycardProgrammer.LEGACY_SLOT_COUNT) {
+            return page == 2;
+        }
         return true;
     }
 
@@ -342,11 +395,12 @@ public class GuiKeycardProgrammer extends GuiContainer {
             int x = mouseX - guiLeft;
             int y = mouseY - guiTop;
 
-            if (inRect(x, y, 10, 106, 28, 124) || inRect(x, y, 148, 106, 166, 124)) {
-                page = 1 - page;
-                statusTicks = 0;
-                updateSlotPositions();
-                playClick();
+            if (inRect(x, y, 10, 106, 28, 124)) {
+                changePage(-1);
+                return;
+            }
+            if (inRect(x, y, 148, 106, 166, 124)) {
+                changePage(1);
                 return;
             }
 
@@ -356,13 +410,62 @@ public class GuiKeycardProgrammer extends GuiContainer {
                 playClick();
                 return;
             }
+
+            if (page == 2 && inRect(x, y,
+                    ContainerKeycardProgrammer.BACKUP_BUTTON_X,
+                    ContainerKeycardProgrammer.BACKUP_BUTTON_Y,
+                    ContainerKeycardProgrammer.BACKUP_BUTTON_X + ContainerKeycardProgrammer.BACKUP_BUTTON_WIDTH,
+                    ContainerKeycardProgrammer.BACKUP_BUTTON_Y + ContainerKeycardProgrammer.BACKUP_BUTTON_HEIGHT)) {
+                if (tile.isBackingUp()) {
+                    status = "Backup already running";
+                    statusTicks = 60;
+                } else {
+                    TileEntityKeycardProgrammer.BackupFailure failure = tile.getBackupFailure();
+                    if (failure != TileEntityKeycardProgrammer.BackupFailure.NONE) {
+                        status = backupFailureStatus(failure);
+                        statusTicks = 80;
+                    } else {
+                        status = "";
+                        statusTicks = 0;
+                        mc.playerController.windowClick(inventorySlots.windowId,
+                                ContainerKeycardProgrammer.BACKUP_ACTION_SLOT, 0,
+                                ClickType.PICKUP, mc.player);
+                    }
+                }
+                playClick();
+                return;
+            }
         }
         super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
+    private void changePage(int delta) {
+        page = (page + delta + PAGE_COUNT) % PAGE_COUNT;
+        statusTicks = 0;
+        updateSlotPositions();
+        playClick();
+    }
+
+    private static String backupFailureStatus(TileEntityKeycardProgrammer.BackupFailure failure) {
+        switch (failure) {
+            case EMPTY:
+                return "Insert a key in both slots";
+            case INVALID_ITEM:
+                return "Invalid backup item";
+            case INVALID_DIRECTION:
+                return "Invalid backup direction";
+            case NO_DATA:
+                return "Left item has no NBT";
+            case TARGET_NOT_FRESH:
+                return "Right item must be fresh";
+            default:
+                return "";
+        }
+    }
+
     private void playClick() {
         if (mc.player != null) {
-            mc.player.playSound(SoundEvents.UI_BUTTON_CLICK, 0.5F, 1F);
+            mc.player.playSound(ModSounds.BUTTON9, BUTTON_VOLUME, 1F);
         }
     }
 
