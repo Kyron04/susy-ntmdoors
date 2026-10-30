@@ -1,6 +1,7 @@
 package com.ntmdoors.proxy;
 
 import com.ntmdoors.NTMDoors;
+import com.ntmdoors.client.GuiRelayKeyName;
 import com.ntmdoors.client.KeyframeAnimation;
 import com.ntmdoors.client.ObjModel;
 import com.ntmdoors.client.RenderDoor;
@@ -17,6 +18,7 @@ import com.ntmdoors.tile.TileEntityKeycardScanner;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IReloadableResourceManager;
 import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -35,6 +37,11 @@ public class ClientProxy extends CommonProxy {
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityDoorKeypad.class, new RenderDoorKeypad());
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityKeycardScanner.class, new RenderKeycardScanner());
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityKeycardProgrammer.class, new RenderKeycardProgrammer());
+    }
+
+    @Override
+    public void openRelayKeyNameGui(EnumHand hand) {
+        Minecraft.getMinecraft().displayGuiScreen(new GuiRelayKeyName(hand));
     }
 
     @Override

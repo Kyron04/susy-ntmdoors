@@ -4,11 +4,13 @@ import com.ntmdoors.NTMDoors;
 import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.DoorDecls;
 import com.ntmdoors.gui.GuiHandler;
+import com.ntmdoors.network.ModNetwork;
 import com.ntmdoors.tile.TileEntityDoorGeneric;
 import com.ntmdoors.tile.TileEntityDoorKeypad;
 import com.ntmdoors.tile.TileEntityDoorPart;
 import com.ntmdoors.tile.TileEntityKeycardProgrammer;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -18,6 +20,7 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 public class CommonProxy {
 
     public void preInit(FMLPreInitializationEvent event) {
+        ModNetwork.register();
         GameRegistry.registerTileEntity(TileEntityDoorGeneric.class, new ResourceLocation(NTMDoors.MODID, "door_core"));
         GameRegistry.registerTileEntity(TileEntityDoorPart.class, new ResourceLocation(NTMDoors.MODID, "door_part"));
         GameRegistry.registerTileEntity(TileEntityDoorKeypad.class, new ResourceLocation(NTMDoors.MODID, "door_keypad"));
@@ -30,5 +33,9 @@ public class CommonProxy {
 
     public void init(FMLInitializationEvent event) {
         NetworkRegistry.INSTANCE.registerGuiHandler(NTMDoors.INSTANCE, new GuiHandler());
+    }
+
+    /** Client only: open the Relay Key naming screen. The server never needs to know about it. */
+    public void openRelayKeyNameGui(EnumHand hand) {
     }
 }

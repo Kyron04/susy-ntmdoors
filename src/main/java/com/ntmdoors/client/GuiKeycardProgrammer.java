@@ -216,11 +216,6 @@ public class GuiKeycardProgrammer extends GuiContainer {
 
             drawButtonLabel("Bind", 122, 38, 46, 16);
             drawButtonLabel("Bind", 122, 78, 46, 16);
-
-            if (isHovering(mouseX, mouseY, 122, 38, 46, 16)
-                    || isHovering(mouseX, mouseY, 122, 78, 46, 16)) {
-                drawCenteredString(fontRenderer, "Binding logic coming soon", xSize / 2, 128, MUTED);
-            }
         } else if (page == 1) {
             drawCenteredString(fontRenderer, "RFID Card", xSize / 2, 27, COLOUR);
         } else {
@@ -405,8 +400,22 @@ public class GuiKeycardProgrammer extends GuiContainer {
             }
 
             if (page == 0 && (inRect(x, y, 122, 38, 168, 54) || inRect(x, y, 122, 78, 168, 94))) {
-                status = "Binding logic coming soon";
-                statusTicks = 80;
+                boolean operatorRow = inRect(x, y, 122, 38, 168, 54);
+                int row = operatorRow
+                        ? TileEntityKeycardProgrammer.BIND_OPERATOR
+                        : TileEntityKeycardProgrammer.BIND_RFID;
+                TileEntityKeycardProgrammer.BindFailure failure = tile.getBindFailure(row);
+                if (failure != TileEntityKeycardProgrammer.BindFailure.NONE) {
+                    status = bindFailureStatus(failure);
+                    statusTicks = 80;
+                } else {
+                    status = "";
+                    statusTicks = 0;
+                    mc.playerController.windowClick(inventorySlots.windowId,
+                            operatorRow ? ContainerKeycardProgrammer.BIND_OPERATOR_ACTION_SLOT
+                                    : ContainerKeycardProgrammer.BIND_RFID_ACTION_SLOT,
+                            0, ClickType.PICKUP, mc.player);
+                }
                 playClick();
                 return;
             }
@@ -444,6 +453,23 @@ public class GuiKeycardProgrammer extends GuiContainer {
         statusTicks = 0;
         updateSlotPositions();
         playClick();
+    }
+
+    private static String bindFailureStatus(TileEntityKeycardProgrammer.BindFailure failure) {
+        switch (failure) {
+            case EMPTY:
+                return "Insert a key in both slots";
+            case NO_KEY:
+                return "The left key has no private key";
+            case INVALID_TARGET:
+                return "Invalid bind target";
+            case BLANK_CARD:
+                return "Blank RFID cards cannot be bound";
+            case ALREADY_BOUND:
+                return "That key is already on this card";
+            default:
+                return "";
+        }
     }
 
     private static String backupFailureStatus(TileEntityKeycardProgrammer.BackupFailure failure) {

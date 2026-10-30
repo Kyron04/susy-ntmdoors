@@ -65,6 +65,9 @@ public class ContainerKeycardProgrammer extends Container {
     public static final int LEGACY_SLOT_COUNT = 2;
     /** Fake slot id used to send the page-three Backup button to the server. */
     public static final int BACKUP_ACTION_SLOT = -2;
+    /** Fake slot ids used to send the two page-one Bind buttons to the server. */
+    public static final int BIND_OPERATOR_ACTION_SLOT = -3;
+    public static final int BIND_RFID_ACTION_SLOT = -4;
 
     private static final float BUTTON_VOLUME = 0.8F;
 
@@ -134,6 +137,14 @@ public class ContainerKeycardProgrammer extends Container {
         if (slotId == BACKUP_ACTION_SLOT) {
             if (!player.world.isRemote) tile.startBackup();
             // Returning the client's carried stack confirms the synthetic click without moving it.
+            return player.inventory.getItemStack();
+        }
+        if (slotId == BIND_OPERATOR_ACTION_SLOT || slotId == BIND_RFID_ACTION_SLOT) {
+            if (!player.world.isRemote) {
+                tile.bind(slotId == BIND_OPERATOR_ACTION_SLOT
+                        ? TileEntityKeycardProgrammer.BIND_OPERATOR
+                        : TileEntityKeycardProgrammer.BIND_RFID);
+            }
             return player.inventory.getItemStack();
         }
         if (slotId >= COLOUR_SLOT_START && slotId < COLOUR_SLOT_START + COLOUR_SLOT_COUNT) {

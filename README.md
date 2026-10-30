@@ -75,7 +75,8 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   left, plus a green indicator and a small USB port on the right; the vent slots are on the back.
   The screen shows `Keycard Programmer N4` over `Insert keycard`, drawn live with the font renderer
   like the scanner's. Right clicking opens a three-page GUI: page one has the `Relay Key` /
-  `Operator Keycard` and `Relay Key` / `RFID Card` binding rows, page two has the RFID card
+  `Operator Keycard` and `Relay Key` / `RFID Card` binding rows, where Bind instantly copies the
+  Relay Key's private key onto the card and keeps any keys the card already holds, page two has the RFID card
   slot plus seven colour squares that swap the card's cosmetic colour, and page three is the
   `Legacy Backup Programmer` with a used source slot on the left, a fresh target slot on the right,
   a `Backup` button and a five-frame ten-second progress bar. A backup copies the source item's NBT
@@ -85,8 +86,7 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   cancellation/success. Empty named slots on pages one and two show a dimmed, desaturated copy of
   the item they expect, and every machine slot only accepts its allowed item type or types. The GUI
   darkens the world like a normal container GUI and draws item tooltips above JEI/HEI. There is no
-  recipe and the Bind buttons are placeholders until the binding logic is defined; it is in the NTM
-  Doors creative tab with a flat 16x16 icon derived from the model.
+  recipe; it is in the NTM Doors creative tab with a flat 16x16 icon derived from the model.
 * RFID cards: one blank card plus red, violet, green, blue, black, orange and yellow variants.
   Each colour is a separate item (`ntmdoors:red_rfid_card` and so on) sharing a single item class
   and one hand-display model, so they all sit in the hand identically. The scanner recognises them
@@ -98,8 +98,12 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   the keycard system. The Creative Keycard is the debug item for testing: its name is purple, and
   right clicking any door opens or closes it regardless of locked/security variants, keypad codes or
   redstone, with a purple `Door overridden` status message. It is also the only card the scanner
-  currently accepts. The Relay Key has no door behaviour yet; its NBT can be backed up on the
-  programmer's third page.
+  currently accepts. A blank Relay Key creates one private key when the player sneak right-clicks it
+  away from any machine: a naming screen takes up to 32 characters, and confirming it generates a
+  ten digit serial on the server and stores both in the key's NBT. A key can be created once and
+  never reset. Its tooltip lists the name and serial in white, and page one of the programmer copies
+  that private key onto Operator Keycards and coloured RFID cards, while page three can back the
+  whole key up onto another Relay Key.
 * The secure access door ships nine skins: red, yellow, green, blue, grey, black (white writing),
   HBM yellow, white (black writing) and orange (white writing). The colour variants are generated
   by recolouring only the red warning paint; all other pixels are unchanged. Base colours: green

@@ -5,7 +5,9 @@ import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.item.ItemOperatorKeycard;
 import com.ntmdoors.item.ItemRelayKey;
 import com.ntmdoors.item.ItemRfidCard;
+import com.ntmdoors.registry.ModContent;
 import com.ntmdoors.util.ModSounds;
+import com.ntmdoors.util.PrivateKeys;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.entity.player.EntityPlayer;
@@ -25,6 +27,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Keycard programmer. The block is a desk console with a seven-slot internal inventory:
@@ -38,10 +41,10 @@ import java.util.Arrays;
  *     Keycards</li>
  * </ul>
  *
- * <p>Page three backs up the NBT on a used key or card in the left slot onto a fresh one in the
- * right slot. The backup takes ten seconds, can copy a Relay Key to either card type, and can copy
- * an Operator Keycard only to another Operator Keycard. Binding and private-key storage remain
- * separate, later features.</p>
+ * <p>Page one binds a Relay Key's private key onto an Operator Keycard or a coloured RFID card;
+ * existing keys on the card are kept. Page three backs up the NBT on a used key or card in the left
+ * slot onto a fresh one in the right slot. The backup takes ten seconds, can copy a Relay Key to
+ * either card type, and can copy an Operator Keycard only to another Operator Keycard.</p>
  */
 public class TileEntityKeycardProgrammer extends TileEntitySynced implements IInventory, ITickable {
 
@@ -220,6 +223,70 @@ public class TileEntityKeycardProgrammer extends TileEntitySynced implements IIn
     @Override
     public ITextComponent getDisplayName() {
         return new TextComponentTranslation(getName());
+    }
+
+    // ------------------------------------------------------------ binding
+
+    public static final int BIND_OPERATOR = 0;
+    public static final int BIND_RFID = 1;
+
+    /** Why the slots of one page-one binding row cannot be bound. */
+    public enum BindFailure {
+        NONE,
+        EMPTY,
+        NO_KEY,
+        INVALID_TARGET,
+        BLANK_CARD,
+        ALREADY_BOUND
+    }
+
+    /**
+     * Checks one page-one row without changing anything. Row {@link #BIND_OPERATOR} pairs the first
+     * Relay Key with the Operator Keycard, row {@link #BIND_RFID} the second Relay Key with an RFID
+     * card.
+     */
+    public BindFailure getBindFailure(int row) {
+        ItemStack relay = slots[row == BIND_OPERATOR ? SLOT_RELAY_ONE : SLOT_RELAY_TWO];
+        ItemStack target = slots[row == BIND_OPERATOR ? SLOT_OPERATOR : SLOT_RFID_PAGE_ONE];
+        if (relay.isEmpty() || target.isEmpty()) return BindFailure.EMPTY;
+        if (!(relay.getItem() instanceof ItemRelayKey)) return BindFailure.INVALID_TARGET;
+
+        List<PrivateKeys.Key> keys = PrivateKeys.get(relay);
+        if (keys.isEmpty()) return BindFailure.NO_KEY;
+
+        if (row == BIND_OPERATOR) {
+            if (!(target.getItem() instanceof ItemOperatorKeycard)) return BindFailure.INVALID_TARGET;
+        } else {
+            if (!(target.getItem() instanceof ItemRfidCard)
+                    || target.getItem() instanceof ItemOperatorKeycard
+                    || target.getItem() instanceof ItemCreativeKeycard) {
+                return BindFailure.INVALID_TARGET;
+            }
+            if (target.getItem() == ModContent.BLANK_RFID_CARD) return BindFailure.BLANK_CARD;
+        }
+
+        for (PrivateKeys.Key key : keys) {
+            if (PrivateKeys.hasSerial(target, key.serial)) return BindFailure.ALREADY_BOUND;
+        }
+        return BindFailure.NONE;
+    }
+
+    /**
+     * Server side: copies the Relay Key's private key onto the card in the same row. Existing keys
+     * on the card are kept, so an Operator Keycard can collect any number of private keys.
+     */
+    public boolean bind(int row) {
+        if (world == null || world.isRemote) return false;
+        if (getBindFailure(row) != BindFailure.NONE) return false;
+
+        ItemStack relay = slots[row == BIND_OPERATOR ? SLOT_RELAY_ONE : SLOT_RELAY_TWO];
+        ItemStack target = slots[row == BIND_OPERATOR ? SLOT_OPERATOR : SLOT_RFID_PAGE_ONE];
+        if (PrivateKeys.addAll(relay, target) <= 0) return false;
+
+        markDirty();
+        world.playSound(null, pos, ModSounds.SCANNER_BUTTON3, SoundCategory.BLOCKS, SOUND_VOLUME, 1F);
+        sync();
+        return true;
     }
 
     // ------------------------------------------------------------ backup

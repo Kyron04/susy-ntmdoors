@@ -87,3 +87,6 @@ ntmdoors.msg.scanner_granted=Access granted!
 ntmdoors.msg.scanner_denied=Access denied
 ntmdoors.msg.scanner_keypad=That door is controlled by a keypad
 ntmdoors.msg.bind_scanner=That door is controlled by a keycard scanner
+ntmdoors.msg.key_exists=This Relay Key already has a private key
+ntmdoors.msg.key_created=%s key created
+ntmdoors.tooltip.relay_key_blank=Sneak + right-click to create a private key
