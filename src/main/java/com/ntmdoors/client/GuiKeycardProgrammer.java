@@ -8,7 +8,6 @@ import com.ntmdoors.tile.TileEntityKeycardProgrammer;
 import com.ntmdoors.util.ModSounds;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Slot;
@@ -95,11 +94,10 @@ public class GuiKeycardProgrammer extends GuiContainer {
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        // Standard container GUIs darken the world first. Drawing the tooltip after super also
-        // puts it above JEI/HEI overlays, matching normal container behaviour.
+        // Standard container GUIs darken the world first. The slot tooltip is drawn from
+        // ProgrammerGuiEvents after JEI/HEI, so it can never end up underneath their item list.
         this.drawDefaultBackground();
         super.drawScreen(mouseX, mouseY, partialTicks);
-        drawSlotTooltip(mouseX, mouseY);
     }
 
     // ------------------------------------------------------------ background
@@ -240,22 +238,18 @@ public class GuiKeycardProgrammer extends GuiContainer {
         }
     }
 
-    /** Shows the item name/NBT when hovering a slot, and the expected item name on empty ghosts. */
-    private void drawSlotTooltip(int mouseX, int mouseY) {
+    /** Item name when hovering a slot, and the expected item name on empty ghosts. */
+    public void drawTooltip(int mouseX, int mouseY) {
         Slot slot = findSlot(mouseX, mouseY);
         if (slot == null) return;
 
-        if (slot.getHasStack()) {
-            ITooltipFlag flag = mc.gameSettings.advancedItemTooltips
-                    ? ITooltipFlag.TooltipFlags.ADVANCED
-                    : ITooltipFlag.TooltipFlags.NORMAL;
-            drawSimpleTooltip(slot.getStack().getTooltip(mc.player, flag), mouseX, mouseY);
-            return;
-        }
-
-        String ghostName = ghostNameFor(slot.slotNumber);
-        if (ghostName != null) {
-            drawSimpleTooltip(Collections.singletonList(ghostName), mouseX, mouseY);
+        // Only the display name: reading the full tooltip fires ItemTooltipEvent, which lets
+        // tooltip mods expand the panel with Shift and disturb the screen's render state.
+        String name = slot.getHasStack()
+                ? slot.getStack().getDisplayName()
+                : ghostNameFor(slot.slotNumber);
+        if (name != null) {
+            drawSimpleTooltip(Collections.singletonList(name), mouseX, mouseY);
         }
     }
 

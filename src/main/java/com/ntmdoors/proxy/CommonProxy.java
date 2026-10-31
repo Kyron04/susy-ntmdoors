@@ -46,6 +46,6 @@ public class CommonProxy {
     }
 
     /** Client only: open the security code screen for a scanner bound to doors. */
-    public void openScannerCodeGui(BlockPos pos, boolean setting) {
+    public void openScannerCodeGui(BlockPos pos) {
     }
 }

@@ -19,9 +19,6 @@ public class MessageScannerCodeResult implements IMessage {
     public static final int SET = 1;
     public static final int DENIED = 2;
     public static final int UNBOUND = 3;
-    /** Answer to {@link MessageScannerCodeQuery}: a code exists / does not exist. */
-    public static final int STATE_SET = 4;
-    public static final int STATE_UNSET = 5;
 
     private BlockPos pos;
     private int result;

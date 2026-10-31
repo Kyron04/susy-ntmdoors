@@ -54,7 +54,7 @@ public class ItemRfidCard extends Item {
             TileEntityKeycardScanner scanner = scannerInSight(player);
             if (scanner != null && scanner.hasBoundDoors()) {
                 if (world.isRemote) {
-                    NTMDoors.proxy.openScannerCodeGui(scanner.getPos(), scanner.hasSecurityCode());
+                    NTMDoors.proxy.openScannerCodeGui(scanner.getPos());
                 }
                 return new ActionResult<>(EnumActionResult.SUCCESS, stack);
             }

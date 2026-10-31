@@ -51,7 +51,7 @@ public class ItemOperatorKeycard extends ItemRfidCard {
         if (!scanner.hasBoundDoors()) return EnumActionResult.PASS;
 
         if (world.isRemote) {
-            NTMDoors.proxy.openScannerCodeGui(scanner.getPos(), scanner.hasSecurityCode());
+            NTMDoors.proxy.openScannerCodeGui(scanner.getPos());
         }
         return EnumActionResult.SUCCESS;
     }

@@ -54,8 +54,8 @@ public class ClientProxy extends CommonProxy {
     }
 
     @Override
-    public void openScannerCodeGui(BlockPos pos, boolean setting) {
-        Minecraft.getMinecraft().displayGuiScreen(new GuiScannerCode(pos, setting));
+    public void openScannerCodeGui(BlockPos pos) {
+        Minecraft.getMinecraft().displayGuiScreen(new GuiScannerCode(pos));
     }
 
     @Override

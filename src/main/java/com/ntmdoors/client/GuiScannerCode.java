@@ -1,14 +1,12 @@
 package com.ntmdoors.client;
 
 import com.ntmdoors.network.MessageScannerCode;
-import com.ntmdoors.network.MessageScannerCodeQuery;
 import com.ntmdoors.network.MessageScannerCodeResult;
 import com.ntmdoors.network.ModNetwork;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.init.SoundEvents;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -50,8 +48,6 @@ public class GuiScannerCode extends GuiScreen {
     };
 
     private final BlockPos pos;
-    /** True when the scanner has no code yet, so this visit chooses one. Refreshed from the tile. */
-    private boolean setting;
 
     private int left;
     private int top;
@@ -64,9 +60,8 @@ public class GuiScannerCode extends GuiScreen {
     private boolean resultSuccess;
     private int resultTicks;
 
-    public GuiScannerCode(BlockPos pos, boolean setting) {
+    public GuiScannerCode(BlockPos pos) {
         this.pos = pos;
-        this.setting = setting;
     }
 
     @Override
@@ -74,7 +69,6 @@ public class GuiScannerCode extends GuiScreen {
         super.initGui();
         left = (width - PANEL_WIDTH) / 2;
         top = (height - PANEL_HEIGHT) / 2;
-        ModNetwork.INSTANCE.sendToServer(new MessageScannerCodeQuery(pos));
     }
 
     @Override
@@ -85,14 +79,6 @@ public class GuiScannerCode extends GuiScreen {
     @Override
     public void updateScreen() {
         super.updateScreen();
-        // A code set by this visit or a nearby sync can land a tick after the screen opens, so
-        // always trust the tile entity instead of the flag captured when the screen was built.
-        if (mc.world != null) {
-            TileEntity te = mc.world.getTileEntity(pos);
-            if (te instanceof TileEntityKeycardScanner) {
-                setting = ((TileEntityKeycardScanner) te).hasSecurityCode();
-            }
-        }
         if (showingResult && --resultTicks <= 0) {
             // A correct code goes on to the key assignment screen; a failure just closes.
             mc.displayGuiScreen(resultSuccess ? new GuiScannerKeys(pos) : null);
@@ -175,11 +161,6 @@ public class GuiScannerCode extends GuiScreen {
     /** Called by the result packet. Both outcomes hold a full-screen card for a moment. */
     public void onResult(BlockPos resultPos, int result) {
         if (resultPos == null || !resultPos.equals(pos)) return;
-        if (result == MessageScannerCodeResult.STATE_SET
-                || result == MessageScannerCodeResult.STATE_UNSET) {
-            setting = result == MessageScannerCodeResult.STATE_SET;
-            return;
-        }
         waiting = false;
         entry = "";
         showingResult = true;
@@ -260,8 +241,6 @@ public class GuiScannerCode extends GuiScreen {
         String line;
         if (!status.isEmpty()) {
             line = status;
-        } else if (setting) {
-            line = "Set a new security code";
         } else {
             line = "Enter your security code";
         }
