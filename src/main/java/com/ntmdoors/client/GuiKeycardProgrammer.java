@@ -270,9 +270,14 @@ public class GuiKeycardProgrammer extends GuiContainer {
 
         int x = mouseX + 8;
         int y = mouseY - 8;
+        // Prefer the left side near the screen edge. This keeps the tooltip off JEI/HEI's panel
+        // instead of clamping it against the right edge where their item list sits.
+        if (x + boxWidth + 4 > width) {
+            x = mouseX - boxWidth - 8;
+        }
+        x = Math.max(2, x);
         if (x + boxWidth + 4 > width) x = width - boxWidth - 4;
         if (y + boxHeight + 4 > height) y = height - boxHeight - 4;
-        x = Math.max(2, x);
         y = Math.max(2, y);
 
         drawRect(x - 1, y - 1, x + boxWidth + 1, y + boxHeight + 1, 0xFF08080A);
