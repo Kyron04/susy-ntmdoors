@@ -30,8 +30,13 @@ public class ItemRelayKey extends Item {
     private static final float FEEDBACK_VOLUME = 0.8F;
 
     public ItemRelayKey() {
-        setRegistryName(NTMDoors.MODID, "relay_key");
-        setTranslationKey(NTMDoors.MODID + ".relay_key");
+        this("relay_key");
+    }
+
+    /** Lets the biometric variant reuse the naming flow with its own registry name. */
+    protected ItemRelayKey(String name) {
+        setRegistryName(NTMDoors.MODID, name);
+        setTranslationKey(NTMDoors.MODID + "." + name);
         setCreativeTab(NTMDoors.TAB);
     }
 
@@ -58,7 +63,12 @@ public class ItemRelayKey extends Item {
 
     @Override
     public String getItemStackDisplayName(ItemStack stack) {
-        return TextFormatting.YELLOW + super.getItemStackDisplayName(stack);
+        return nameColour() + super.getItemStackDisplayName(stack);
+    }
+
+    /** The plain key is yellow; the biometric variant overrides this with aqua. */
+    protected TextFormatting nameColour() {
+        return TextFormatting.YELLOW;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.ntmdoors.gui;
 
+import com.ntmdoors.item.ItemBiometricKeycard;
 import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.item.ItemOperatorKeycard;
 import com.ntmdoors.item.ItemRelayKey;
@@ -84,6 +85,10 @@ public class ContainerKeycardProgrammer extends Container {
             stack -> stack.getItem() instanceof ItemRfidCard
                     && !(stack.getItem() instanceof ItemOperatorKeycard)
                     && !(stack.getItem() instanceof ItemCreativeKeycard);
+    /** Page two's card slot: the biometric card keeps its fixed yellow identity, so no recolour. */
+    private static final Predicate<ItemStack> RECOLOUR_ONLY =
+            stack -> RFID_ONLY.test(stack)
+                    && !(stack.getItem() instanceof ItemBiometricKeycard);
     private static final Predicate<ItemStack> LEGACY_ONLY =
             stack -> stack.getItem() instanceof ItemRelayKey
                     || stack.getItem() instanceof ItemOperatorKeycard;
@@ -106,7 +111,7 @@ public class ContainerKeycardProgrammer extends Container {
         addSlotToContainer(new SlotProgrammer(tile, TileEntityKeycardProgrammer.SLOT_RFID_PAGE_ONE,
                 SLOT_RFID_ONE_X, SLOT_RFID_ONE_Y, RFID_ONLY));
         addSlotToContainer(new SlotProgrammer(tile, TileEntityKeycardProgrammer.SLOT_RFID_PAGE_TWO,
-                SLOT_RFID_TWO_X, SLOT_RFID_TWO_Y, RFID_ONLY));
+                SLOT_RFID_TWO_X, SLOT_RFID_TWO_Y, RECOLOUR_ONLY));
 
         for (int i = 0; i < COLOUR_SLOT_COUNT; i++) {
             addSlotToContainer(new SlotColourOption(colourInventory, i,
@@ -168,7 +173,8 @@ public class ContainerKeycardProgrammer extends Container {
         if (card.isEmpty()
                 || !(card.getItem() instanceof ItemRfidCard)
                 || card.getItem() instanceof ItemOperatorKeycard
-                || card.getItem() instanceof ItemCreativeKeycard) {
+                || card.getItem() instanceof ItemCreativeKeycard
+                || card.getItem() instanceof ItemBiometricKeycard) {
             playButtonClick(player);
             return;
         }
@@ -274,6 +280,7 @@ public class ContainerKeycardProgrammer extends Container {
         if (slot == null || slot.getHasStack() || !slot.isItemValid(stack)) return false;
         return mergeItemStack(stack, index, index + 1, false);
     }
+
     /** A machine slot with a hard item-type whitelist; blocks, tools and other cards are rejected. */
     private static class SlotProgrammer extends Slot {
 

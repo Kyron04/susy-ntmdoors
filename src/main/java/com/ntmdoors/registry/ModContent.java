@@ -10,6 +10,9 @@ import com.ntmdoors.door.DoorDecls;
 import com.ntmdoors.item.ItemBlockKeycardProgrammer;
 import com.ntmdoors.item.ItemBlockKeycardScanner;
 import com.ntmdoors.item.ItemBlockKeypad;
+import com.ntmdoors.item.ItemBiometricKeycard;
+import com.ntmdoors.item.ItemBiometricOperatorKeycard;
+import com.ntmdoors.item.ItemBiometricRelayKey;
 import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.item.ItemDoorBlock;
 import com.ntmdoors.item.ItemOperatorKeycard;
@@ -66,6 +69,12 @@ public class ModContent {
     /** Debug card that bypasses every door restriction. */
     public static final ItemCreativeKeycard CREATIVE_KEYCARD = new ItemCreativeKeycard();
     public static final ItemRelayKey RELAY_KEY = new ItemRelayKey();
+    /** Yellow card that records the player it first entered; not a recolourable colour variant. */
+    public static final ItemBiometricKeycard BIOMETRIC_KEYCARD = new ItemBiometricKeycard();
+    /** Operator Keycard with a recorded owner, shown with a blue name. */
+    public static final ItemBiometricOperatorKeycard BIOMETRIC_OPERATOR_KEYCARD = new ItemBiometricOperatorKeycard();
+    /** Relay Key that also records the owner, shown with a blue name. */
+    public static final ItemBiometricRelayKey BIOMETRIC_RELAY_KEY = new ItemBiometricRelayKey();
 
     /** The seven cosmetic RFID colours, in the order the programmer's second page shows them. */
     public static final List<ItemRfidCard> COLOUR_CARDS = Collections.unmodifiableList(Arrays.asList(
@@ -109,6 +118,9 @@ public class ModContent {
         e.getRegistry().register(OPERATOR_KEYCARD);
         e.getRegistry().register(CREATIVE_KEYCARD);
         e.getRegistry().register(RELAY_KEY);
+        e.getRegistry().register(BIOMETRIC_KEYCARD);
+        e.getRegistry().register(BIOMETRIC_OPERATOR_KEYCARD);
+        e.getRegistry().register(BIOMETRIC_RELAY_KEY);
     }
 
     @SubscribeEvent

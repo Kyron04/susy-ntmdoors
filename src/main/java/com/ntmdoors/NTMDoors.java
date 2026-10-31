@@ -17,7 +17,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-@Mod(modid = NTMDoors.MODID, name = "NTM Doors", version = "1.0.109", acceptedMinecraftVersions = "[1.12.2]")
+@Mod(modid = NTMDoors.MODID, name = "NTM Doors", version = "1.0.113", acceptedMinecraftVersions = "[1.12.2]")
 public class NTMDoors {
 
     public static final String MODID = "ntmdoors";
@@ -51,9 +51,12 @@ public class NTMDoors {
             items.add(new ItemStack(ModContent.KEYCARD_SCANNER));
             items.add(new ItemStack(ModContent.KEYCARD_PROGRAMMER));
             for (ItemRfidCard card : ModContent.RFID_CARDS) items.add(new ItemStack(card));
+            items.add(new ItemStack(ModContent.BIOMETRIC_KEYCARD));
             items.add(new ItemStack(ModContent.OPERATOR_KEYCARD));
+            items.add(new ItemStack(ModContent.BIOMETRIC_OPERATOR_KEYCARD));
             items.add(new ItemStack(ModContent.CREATIVE_KEYCARD));
             items.add(new ItemStack(ModContent.RELAY_KEY));
+            items.add(new ItemStack(ModContent.BIOMETRIC_RELAY_KEY));
         }
 
         @Override

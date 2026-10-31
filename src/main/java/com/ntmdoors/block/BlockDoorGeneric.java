@@ -46,10 +46,11 @@ import java.util.List;
  * logic) and any number of DUMMY cells (tile entity that points at the core). All cells share the same
  * block. Rendering is done by a TESR on the core, so the block itself is invisible.
  *
- * <p>Each {@link DoorDecl} is registered as the normal door, a {@code _locked} twin that only
- * reacts to redstone, and a {@code _security} variant that only the Creative Keycard opens. All
- * variants share the same declaration; the variant only affects the registry name and the access
- * rules, so they can never drift out of sync with the door definition.</p>
+ * <p>Each {@link DoorDecl} is registered as the normal door, a {@code _locked} twin that is driven
+ * by keypads and scanners, and a {@code _security} variant that only a bound Keycard Scanner (or
+ * the Creative Keycard) opens. All variants share the same declaration; the variant only affects
+ * the registry name and the access rules, so they can never drift out of sync with the door
+ * definition.</p>
  */
 public class BlockDoorGeneric extends Block {
 
@@ -75,7 +76,7 @@ public class BlockDoorGeneric extends Block {
     public enum Variant {
         NORMAL("", ""),
         LOCKED("_locked", " (Locked)"),
-        /** Only the Creative Keycard opens it; redstone, keypads and hand clicks are refused. */
+        /** Bound scanners and the Creative Keycard open it; redstone, keypads and hand clicks are refused. */
         SECURITY("_security", " (Security)");
 
         /** Registry/translation key suffix appended to the declaration name. */
@@ -91,10 +92,10 @@ public class BlockDoorGeneric extends Block {
 
     public final DoorDecl decl;
     public final Variant variant;
-    /** Locked twins refuse every manual interaction; only redstone can move them. */
+    /** Locked twins refuse hand clicks and redstone; keypads and scanners drive them. */
     public final boolean locked;
 
-    /** True for the {@code _security} form, which only the Creative Keycard may open. */
+    /** True for the {@code _security} form: scanners and the Creative Keycard, nothing else. */
     public boolean isSecurity() {
         return variant == Variant.SECURITY;
     }

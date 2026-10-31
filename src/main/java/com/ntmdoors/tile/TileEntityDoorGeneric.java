@@ -428,10 +428,9 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
     /** Called when any part of the door gets a neighbour update. Reacts to redstone edges only. */
     public void checkRedstone() {
         if (world == null || world.isRemote) return;
-        // Security doors never react to redstone; only the Creative Keycard opens them.
-        if (isSecurityDoor()) return;
-        // A door under keypad control is code-driven, locked twins included.
-        if (isKeypadBound()) return;
+        // Only plain doors are redstone-driven. Locked doors belong to keypads and scanners, and
+        // security doors to scanners alone, so neither may be opened by a lever or a plate.
+        if (isLockedDoor() || isSecurityDoor()) return;
         boolean p = isGroupReceivingPower();
         if (p == powered) return;
         powered = p;
@@ -461,7 +460,7 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
             return;
         }
 
-        if (isRedstoneOnly()) {
+        if (isLockedDoor()) {
             reject(player, "ntmdoors.msg.locked");
             return;
         }
@@ -477,21 +476,21 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
     }
 
     /**
-     * True for the {@code _locked} twins: they refuse every manual interaction and only react to
-     * redstone, so keypads must never bind to them.
+     * True for the {@code _locked} twins: hand clicks and redstone are refused, while keypads and
+     * scanners open them.
      */
-    public boolean isRedstoneOnly() {
+    public boolean isLockedDoor() {
         Block block = getBlockType();
         return block instanceof BlockDoorGeneric && ((BlockDoorGeneric) block).locked;
     }
 
-    /** True for the {@code _security} twins, which only the Creative Keycard opens. */
+    /** True for the {@code _security} twins: scanners and the Creative Keycard only. */
     public boolean isSecurityDoor() {
         Block block = getBlockType();
         return block instanceof BlockDoorGeneric && ((BlockDoorGeneric) block).isSecurity();
     }
 
-    /** True when a keypad may bind and drive this door; only security doors are excluded. */
+    /** True when a keypad may bind and drive this door: normal and locked doors, never security. */
     public boolean acceptsKeypad() {
         Block block = getBlockType();
         return block instanceof BlockDoorGeneric && !((BlockDoorGeneric) block).isSecurity();

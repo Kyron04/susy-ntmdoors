@@ -595,4 +595,10 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         bindingPlayer = tag.hasKey("bindingPlayer") ? UUID.fromString(tag.getString("bindingPlayer")) : null;
         scanningPlayer = tag.hasKey("scanningPlayer") ? UUID.fromString(tag.getString("scanningPlayer")) : null;
     }
+
+    /** Matches the keypad and the doors: the screen stays legible out to 128 blocks. */
+    @Override
+    public double getMaxRenderDistanceSquared() {
+        return 16384D;
+    }
 }

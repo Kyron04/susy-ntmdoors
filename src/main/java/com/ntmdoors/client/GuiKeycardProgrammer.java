@@ -140,9 +140,13 @@ public class GuiKeycardProgrammer extends GuiContainer {
         drawRect(4, 140, xSize - 4, 228, 0xFF0B0B0D);
         drawRect(5, 141, xSize - 5, 227, 0xFF1B1B1E);
 
-        if (page == 0) drawPageOne(mouseX, mouseY);
-        else if (page == 1) drawPageTwo(mouseX, mouseY);
-        else drawPageThree(mouseX, mouseY);
+        if (page == 0) {
+            drawPageOne(mouseX, mouseY);
+        } else if (page == 1) {
+            drawPageTwo(mouseX, mouseY);
+        } else {
+            drawPageThree(mouseX, mouseY);
+        }
 
         drawSlotFrames();
         // Draw the ghosts in the same pass as the frames, directly over them. Keeping this out
@@ -577,6 +581,8 @@ public class GuiKeycardProgrammer extends GuiContainer {
                 return "Left item has no NBT";
             case TARGET_NOT_FRESH:
                 return "Right item must be fresh";
+            case BIOMETRIC:
+                return "Biometric items cannot be copied";
             default:
                 return "";
         }

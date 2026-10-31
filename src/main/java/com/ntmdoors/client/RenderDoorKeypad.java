@@ -196,7 +196,7 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
             line2Color = 0xFFFFEE00;
             twoLines = true;
         } else if (te.isPendingConfirm()) {
-            line1 = "Confirm Door Bounding?";
+            line1 = "Confirm Door Binding?";
             int doors = te.getDoorCount();
             line2 = te.getBindMode() == TileEntityDoorKeypad.BindMode.MULTI && doors > 0
                     ? (doors == 1 ? "1 Door" : doors + " Doors")
@@ -213,7 +213,7 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
                 twoLines = !line2.isEmpty();
             } else {
                 line1 = "Multi";
-                line2 = "Bounding Mode";
+                line2 = "Binding Mode";
                 color = 0xFF3FA9F5;
                 line2Color = 0xFF3FA9F5;
                 twoLines = true;
@@ -227,7 +227,7 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
                 twoLines = !line2.isEmpty();
             } else {
                 line1 = "Distance";
-                line2 = "Bounding Mode";
+                line2 = "Binding Mode";
                 color = 0xFF3FA9F5;
                 line2Color = 0xFF3FA9F5;
                 twoLines = true;
@@ -250,7 +250,7 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
         }
 
         // The display sits centred at y ~0.84375, slightly further forward than the buttons so it
-        // clears the raised black screen bezel. Long prompts (Confirm Door Bounding?) are scaled
+        // clears the raised black screen bezel. Long prompts (Confirm Door Binding?) are scaled
         // down so they stay inside the 0.625-wide screen.
         float scale = DISPLAY_SCALE;
         int textWidth = Math.max(font.getStringWidth(line1), font.getStringWidth(line2));

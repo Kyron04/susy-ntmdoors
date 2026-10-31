@@ -1,11 +1,13 @@
 package com.ntmdoors.tile;
 
 import com.ntmdoors.client.BackupLoopSound;
+import com.ntmdoors.item.ItemBiometricKeycard;
 import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.item.ItemOperatorKeycard;
 import com.ntmdoors.item.ItemRelayKey;
 import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.registry.ModContent;
+import com.ntmdoors.util.Biometrics;
 import com.ntmdoors.util.ModSounds;
 import com.ntmdoors.util.PrivateKeys;
 import net.minecraft.client.Minecraft;
@@ -72,7 +74,8 @@ public class TileEntityKeycardProgrammer extends TileEntitySynced implements IIn
         INVALID_ITEM,
         INVALID_DIRECTION,
         NO_DATA,
-        TARGET_NOT_FRESH
+        TARGET_NOT_FRESH,
+        BIOMETRIC
     }
 
     private final ItemStack[] slots = new ItemStack[SLOT_COUNT];
@@ -177,10 +180,10 @@ public class TileEntityKeycardProgrammer extends TileEntitySynced implements IIn
             case SLOT_OPERATOR:
                 return stack.getItem() instanceof ItemOperatorKeycard;
             case SLOT_RFID_PAGE_ONE:
+                return isPlainCard(stack);
             case SLOT_RFID_PAGE_TWO:
-                return stack.getItem() instanceof ItemRfidCard
-                        && !(stack.getItem() instanceof ItemOperatorKeycard)
-                        && !(stack.getItem() instanceof ItemCreativeKeycard);
+                // The biometric card keeps its fixed identity, so it is not a valid recolour input.
+                return isPlainCard(stack) && !(stack.getItem() instanceof ItemBiometricKeycard);
             case SLOT_LEGACY_LEFT:
             case SLOT_LEGACY_RIGHT:
                 return stack.getItem() instanceof ItemRelayKey
@@ -188,6 +191,13 @@ public class TileEntityKeycardProgrammer extends TileEntitySynced implements IIn
             default:
                 return false;
         }
+    }
+
+    /** RFID card that is neither privileged (operator) nor debug (creative). */
+    private static boolean isPlainCard(ItemStack stack) {
+        return stack.getItem() instanceof ItemRfidCard
+                && !(stack.getItem() instanceof ItemOperatorKeycard)
+                && !(stack.getItem() instanceof ItemCreativeKeycard);
     }
 
     @Override
@@ -325,6 +335,11 @@ public class TileEntityKeycardProgrammer extends TileEntitySynced implements IIn
         }
         // Relay Keys can seed either fresh card type; Operator cards cannot seed a Relay Key.
         if (sourceOperator && targetRelay) return BackupFailure.INVALID_DIRECTION;
+
+        // A biometric item's value is that it is tied to one person. Copying its keys off it, or
+        // onto another biometric item, would move the keys without the identity, so neither end
+        // of a legacy backup may be biometric.
+        if (Biometrics.isBound(source) || Biometrics.isBound(target)) return BackupFailure.BIOMETRIC;
 
         NBTTagCompound sourceTag = source.getTagCompound();
         if (sourceTag == null || sourceTag.isEmpty()) return BackupFailure.NO_DATA;
@@ -519,5 +534,11 @@ public class TileEntityKeycardProgrammer extends TileEntitySynced implements IIn
         backupSuccess = tag.getBoolean("backupSuccess");
         successTicks = tag.getInteger("successTicks");
         lastSyncedFrame = -1;
+    }
+
+    /** Matches the keypad and the doors: the screen stays legible out to 128 blocks. */
+    @Override
+    public double getMaxRenderDistanceSquared() {
+        return 16384D;
     }
 }

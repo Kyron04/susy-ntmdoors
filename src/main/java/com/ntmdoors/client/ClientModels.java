@@ -2,13 +2,13 @@ package com.ntmdoors.client;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.block.BlockDoorGeneric;
-import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.registry.ModContent;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.statemap.StateMapperBase;
 import net.minecraft.item.Item;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.Mod;
@@ -25,25 +25,22 @@ public class ClientModels {
         for (BlockDoorGeneric block : ModContent.DOORS) {
             invisible(block);
             // Like HBM's ItemRenderLibraryDoors: draw the OBJ in the inventory instead of a flat icon.
-            Item item = Item.getItemFromBlock(block);
-            item.setTileEntityItemStackRenderer(RenderDoorItem.INSTANCE);
-            inventory(item);
+            Item.getItemFromBlock(block).setTileEntityItemStackRenderer(RenderDoorItem.INSTANCE);
         }
         invisible(ModContent.KEYPAD);
-        inventory(Item.getItemFromBlock(ModContent.KEYPAD));
         // The programmer is a desk unit, so it renders from the OBJ like the keypad; only the item
         // uses a flat icon.
         invisible(ModContent.KEYCARD_PROGRAMMER);
-        inventory(Item.getItemFromBlock(ModContent.KEYCARD_PROGRAMMER));
         // The scanner is the opposite way round: a flat icon in the inventory and hand, while the
         // placed block is drawn from the OBJ by RenderKeycardScanner. Its blockstate also carries an
         // "inventory" variant that points at the same item model.
-        inventory(Item.getItemFromBlock(ModContent.KEYCARD_SCANNER));
-        inventory(ModContent.SCREWDRIVER);
-        for (ItemRfidCard card : ModContent.RFID_CARDS) inventory(card);
-        inventory(ModContent.OPERATOR_KEYCARD);
-        inventory(ModContent.CREATIVE_KEYCARD);
-        inventory(ModContent.RELAY_KEY);
+
+        // Sweep the item registry rather than listing items by hand. The old list silently dropped
+        // anything added later, and an unregistered item renders as a magenta checkerboard.
+        for (Item item : Item.REGISTRY) {
+            ResourceLocation name = item.getRegistryName();
+            if (name != null && NTMDoors.MODID.equals(name.getNamespace())) inventory(item);
+        }
     }
 
     /** Every state of the block maps to the empty model; the TESR draws the real thing. */

@@ -28,12 +28,24 @@ import java.util.List;
 public class ItemOperatorKeycard extends ItemRfidCard {
 
     public ItemOperatorKeycard() {
-        super("operator_keycard");
+        this("operator_keycard");
     }
 
+    /** Lets the biometric variant reuse every behaviour with its own registry name. */
+    protected ItemOperatorKeycard(String name) {
+        super(name);
+    }
+
+    /**
+     * The name colour is per-variant: the plain card is gold, the biometric one is aqua.
+     */
     @Override
     public String getItemStackDisplayName(ItemStack stack) {
-        return TextFormatting.GOLD + super.getItemStackDisplayName(stack);
+        return nameColour() + super.getItemStackDisplayName(stack);
+    }
+
+    protected TextFormatting nameColour() {
+        return TextFormatting.GOLD;
     }
 
     /**
