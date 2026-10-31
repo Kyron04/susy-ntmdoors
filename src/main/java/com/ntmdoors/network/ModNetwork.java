@@ -19,6 +19,8 @@ public final class ModNetwork {
         INSTANCE.registerMessage(MessageScannerKey.Handler.class, MessageScannerKey.class, 3, Side.SERVER);
         INSTANCE.registerMessage(MessageProgrammerPage.Handler.class, MessageProgrammerPage.class, 4,
                 Side.SERVER);
+        INSTANCE.registerMessage(MessageScannerCodeQuery.Handler.class, MessageScannerCodeQuery.class, 5,
+                Side.SERVER);
     }
 
     private ModNetwork() {

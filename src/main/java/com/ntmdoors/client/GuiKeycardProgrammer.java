@@ -8,6 +8,7 @@ import com.ntmdoors.tile.TileEntityKeycardProgrammer;
 import com.ntmdoors.util.ModSounds;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Slot;
@@ -245,13 +246,47 @@ public class GuiKeycardProgrammer extends GuiContainer {
         if (slot == null) return;
 
         if (slot.getHasStack()) {
-            drawHoveringText(getItemToolTip(slot.getStack()), mouseX, mouseY);
+            ITooltipFlag flag = mc.gameSettings.advancedItemTooltips
+                    ? ITooltipFlag.TooltipFlags.ADVANCED
+                    : ITooltipFlag.TooltipFlags.NORMAL;
+            drawSimpleTooltip(slot.getStack().getTooltip(mc.player, flag), mouseX, mouseY);
             return;
         }
 
         String ghostName = ghostNameFor(slot.slotNumber);
         if (ghostName != null) {
-            drawHoveringText(Collections.singletonList(ghostName), mouseX, mouseY);
+            drawSimpleTooltip(Collections.singletonList(ghostName), mouseX, mouseY);
+        }
+    }
+
+    /**
+     * Draws the tooltip directly instead of going through {@code drawHoveringText}. Tooltip mods
+     * hook that path and can leave the GUI scaled or otherwise softened when Shift expands a
+     * tooltip; this GUI stays crisp no matter what is installed.
+     */
+    private void drawSimpleTooltip(List<String> lines, int mouseX, int mouseY) {
+        if (lines.isEmpty()) return;
+
+        int textWidth = 0;
+        for (String line : lines) {
+            textWidth = Math.max(textWidth, fontRenderer.getStringWidth(line));
+        }
+        int boxWidth = textWidth + 4;
+        int boxHeight = lines.size() * 10 + 4;
+
+        int x = mouseX + 8;
+        int y = mouseY - 8;
+        if (x + boxWidth + 4 > width) x = width - boxWidth - 4;
+        if (y + boxHeight + 4 > height) y = height - boxHeight - 4;
+        x = Math.max(2, x);
+        y = Math.max(2, y);
+
+        drawRect(x - 1, y - 1, x + boxWidth + 1, y + boxHeight + 1, 0xFF08080A);
+        drawRect(x, y, x + boxWidth, y + boxHeight, 0xFF1B1B1E);
+        drawRect(x, y, x + boxWidth, y + 1, 0xFF4A4A4E);
+
+        for (int i = 0; i < lines.size(); i++) {
+            fontRenderer.drawStringWithShadow(lines.get(i), x + 2, y + 2 + i * 10, 0xFFE8E8E8);
         }
     }
 

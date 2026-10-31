@@ -1,6 +1,7 @@
 package com.ntmdoors.client;
 
 import com.ntmdoors.network.MessageScannerCode;
+import com.ntmdoors.network.MessageScannerCodeQuery;
 import com.ntmdoors.network.MessageScannerCodeResult;
 import com.ntmdoors.network.ModNetwork;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
@@ -73,6 +74,7 @@ public class GuiScannerCode extends GuiScreen {
         super.initGui();
         left = (width - PANEL_WIDTH) / 2;
         top = (height - PANEL_HEIGHT) / 2;
+        ModNetwork.INSTANCE.sendToServer(new MessageScannerCodeQuery(pos));
     }
 
     @Override
@@ -173,6 +175,11 @@ public class GuiScannerCode extends GuiScreen {
     /** Called by the result packet. Both outcomes hold a full-screen card for a moment. */
     public void onResult(BlockPos resultPos, int result) {
         if (resultPos == null || !resultPos.equals(pos)) return;
+        if (result == MessageScannerCodeResult.STATE_SET
+                || result == MessageScannerCodeResult.STATE_UNSET) {
+            setting = result == MessageScannerCodeResult.STATE_SET;
+            return;
+        }
         waiting = false;
         entry = "";
         showingResult = true;
