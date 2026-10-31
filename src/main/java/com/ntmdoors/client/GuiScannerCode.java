@@ -83,7 +83,8 @@ public class GuiScannerCode extends GuiScreen {
     public void updateScreen() {
         super.updateScreen();
         if (showingResult && --resultTicks <= 0) {
-            mc.displayGuiScreen(null);
+            // A correct code goes on to the key assignment screen; a failure just closes.
+            mc.displayGuiScreen(resultSuccess ? new GuiScannerKeys(pos) : null);
         }
     }
 

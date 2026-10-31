@@ -95,6 +95,7 @@ public class MessageScannerCode implements IMessage {
                 player.world.playSound(null, message.pos, ModSounds.SCANNER_BUTTON3,
                         SoundCategory.BLOCKS, 0.8F, 1F);
                 player.sendStatusMessage(new TextComponentTranslation("ntmdoors.msg.scanner_code_set"), true);
+                scanner.openCodeSession(player);
                 result(player, message.pos, MessageScannerCodeResult.SET);
                 return;
             }
@@ -103,6 +104,7 @@ public class MessageScannerCode implements IMessage {
                 player.world.playSound(null, message.pos, ModSounds.SCANNER_BUTTON3,
                         SoundCategory.BLOCKS, 0.8F, 1F);
                 player.sendStatusMessage(new TextComponentTranslation("ntmdoors.msg.scanner_code_accepted"), true);
+                scanner.openCodeSession(player);
                 result(player, message.pos, MessageScannerCodeResult.ACCEPTED);
             } else {
                 player.world.playSound(null, message.pos, ModSounds.SCANNER_BUTTON8,

@@ -3,21 +3,26 @@ package com.ntmdoors.tile;
 import com.ntmdoors.client.ScannerLoopSound;
 import com.ntmdoors.door.DoorState;
 import com.ntmdoors.item.ItemCreativeKeycard;
+import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.util.ModSounds;
+import com.ntmdoors.util.PrivateKeys;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,6 +47,8 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
     public static final double MAX_BIND_DISTANCE = 32D;
     /** Digits allowed in the Operator Keycard security code, matching a keypad. */
     public static final int CODE_LENGTH = 6;
+    /** How long a correct code leaves the assignment screen usable. */
+    public static final int CODE_SESSION_TICKS = 20 * 120;
 
     /** Ticks the "Scanning" text stays up before the result is shown. */
     private static final int SCAN_TICKS = 20;
@@ -72,6 +79,14 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
      * sent to clients, only whether one exists.
      */
     private String securityCode = "";
+
+    /** Private keys that may open this scanner's doors. Synced so the assignment screen sees them. */
+    private final List<PrivateKeys.Key> assignedKeys = new ArrayList<>();
+
+    /** Server only. The player who just passed the code and may edit the assignment list. */
+    @Nullable
+    private UUID codeSessionPlayer;
+    private int codeSessionTicks;
 
     /** Server only. The player currently binding this scanner, and the session clock. */
     @Nullable
@@ -149,6 +164,69 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         return out.toString();
     }
 
+    // ------------------------------------------------------------ key assignment
+
+    /** The private keys currently allowed to open this scanner's doors. */
+    public List<PrivateKeys.Key> getAssignedKeys() {
+        return Collections.unmodifiableList(assignedKeys);
+    }
+
+    public boolean hasAssignedKey(String serial) {
+        for (PrivateKeys.Key key : assignedKeys) {
+            if (key.serial.equals(serial)) return true;
+        }
+        return false;
+    }
+
+    /** Server side: adds a key copied from the operator's card. */
+    public boolean assignKey(PrivateKeys.Key key) {
+        if (world == null || world.isRemote || key == null || key.serial.isEmpty()) return false;
+        if (hasAssignedKey(key.serial)) return false;
+        assignedKeys.add(key);
+        sync();
+        return true;
+    }
+
+    /** Server side: removes a key by serial. */
+    public boolean unassignKey(String serial) {
+        if (world == null || world.isRemote || serial == null) return false;
+        for (int i = 0; i < assignedKeys.size(); i++) {
+            if (assignedKeys.get(i).serial.equals(serial)) {
+                assignedKeys.remove(i);
+                sync();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Server side: a correct code opens the assignment screen for this player. */
+    public void openCodeSession(EntityPlayer player) {
+        if (player == null) return;
+        codeSessionPlayer = player.getUniqueID();
+        codeSessionTicks = CODE_SESSION_TICKS;
+    }
+
+    public boolean hasCodeSessionFor(@Nullable EntityPlayer player) {
+        return player != null && codeSessionPlayer != null
+                && codeSessionTicks > 0
+                && codeSessionPlayer.equals(player.getUniqueID());
+    }
+
+    /** True when either held card carries any private key assigned to this scanner. */
+    private boolean holdsAssignedKey(EntityPlayer player) {
+        return grantsAccess(player.getHeldItemMainhand())
+                || grantsAccess(player.getHeldItemOffhand());
+    }
+
+    private boolean grantsAccess(ItemStack stack) {
+        if (stack.isEmpty() || !(stack.getItem() instanceof ItemRfidCard)) return false;
+        for (PrivateKeys.Key key : PrivateKeys.get(stack)) {
+            if (hasAssignedKey(key.serial)) return true;
+        }
+        return false;
+    }
+
     // ------------------------------------------------------------ ticking
 
     @Override
@@ -167,6 +245,11 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         if (bindingPlayer != null) {
             boolean gone = world.getPlayerEntityByUUID(bindingPlayer) == null;
             if (gone || --bindingTicks <= 0) stopBinding(null);
+        }
+
+        if (codeSessionPlayer != null && --codeSessionTicks <= 0) {
+            codeSessionPlayer = null;
+            codeSessionTicks = 0;
         }
 
         switch (state) {
@@ -322,7 +405,8 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
 
     private void resolveScan() {
         EntityPlayer player = scanningPlayer == null ? null : world.getPlayerEntityByUUID(scanningPlayer);
-        boolean granted = player != null && ItemCreativeKeycard.isHeldBy(player);
+        boolean granted = player != null
+                && (ItemCreativeKeycard.isHeldBy(player) || holdsAssignedKey(player));
 
         if (granted) {
             world.playSound(null, pos, ModSounds.SCANNER_BUTTON3, SoundCategory.BLOCKS, SOUND_VOLUME, 1F);
@@ -453,6 +537,7 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         tag.setString("securityCode", securityCode);
         tag.setBoolean("codeSet", codeSet);
         tag.setInteger("boundDoorCount", boundDoorCount);
+        tag.setTag("assignedKeys", PrivateKeys.toList(assignedKeys));
         if (bindingPlayer != null) tag.setString("bindingPlayer", bindingPlayer.toString());
         if (scanningPlayer != null) tag.setString("scanningPlayer", scanningPlayer.toString());
         return tag;
@@ -468,6 +553,7 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         tag.setInteger("visibleCount", visibleCount);
         tag.setBoolean("codeSet", codeSet);
         tag.setInteger("boundDoorCount", boundDoorCount);
+        tag.setTag("assignedKeys", PrivateKeys.toList(assignedKeys));
         return tag;
     }
 
@@ -495,6 +581,11 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
             securityCode = sanitiseCode(tag.getString("securityCode"));
         }
         codeSet = tag.hasKey("codeSet") ? tag.getBoolean("codeSet") : !securityCode.isEmpty();
+        if (tag.hasKey("assignedKeys", Constants.NBT.TAG_LIST)) {
+            assignedKeys.clear();
+            assignedKeys.addAll(PrivateKeys.fromList(
+                    tag.getTagList("assignedKeys", Constants.NBT.TAG_COMPOUND)));
+        }
         if (tag.hasKey("scanState")) {
             state = STATES[Math.floorMod(tag.getByte("scanState"), STATES.length)];
         }

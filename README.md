@@ -66,19 +66,22 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   screwdriver to start a binding session, sneak + right click up to nine closed doors within 32
   blocks, then right click the scanner with the screwdriver again to confirm. Normal, locked and
   security doors can all be bound. Scanning a card shows `Scanning`; the Creative Keycard grants
-  access, opens every bound door and closes them again after ten seconds, and any other card is
-  denied until the keycard access rules are added. The LCD shows `Please insert key` while idle, and
-  the matching lens lights yellow while scanning/binding, green on access and red on denial. A card
-  insert and a successful scan play `button3`, a denied scan plays `button8`, and `bell1` loops
-  while the scan runs. Once at least one door is bound, sneak + right clicking the scanner while
-  holding an Operator Keycard opens its security code screen: the first visit sets a 1-6 digit code
-  with a single entry, and later visits must repeat it. The screen is a black panel in a light metal
-  case with a green readout and twelve green keycaps, including `CLR` and `ENTER`; a correct code
-  plays the granted chime and closes the screen, a wrong one plays the denied chime and clears the
-  entry. The code lives only on the server and is never sent to clients. A correct code (or a newly
-  set one) replaces the keypad with a glowing green `SUCCESS!!!` card, a wrong one shows a glowing
-  red `FAILED!!!`; either card holds for a second before the screen closes. Placement and facing
-  match the keypad; the item uses a matching 3D model in
+  access to every door, and any other card opens the bound doors only when one of its private keys
+  is assigned to that scanner. The doors close themselves again after ten seconds. The LCD shows
+  `Please insert key` while idle, and the matching lens lights yellow while scanning/binding, green
+  on access and red on denial. A card insert and a successful scan play `button3`, a denied scan
+  plays `button8`, and `bell1` loops while the scan runs. Once at least one door is bound, sneak +
+  right clicking the scanner while holding an Operator Keycard opens its security code screen: the
+  first visit sets a 1-6 digit code with a single entry, and later visits must repeat it. The screen
+  is a black panel in a light metal case with a green readout and twelve green keycaps, including
+  `CLR` and `ENTER`; a correct code plays the granted chime, a wrong one plays the denied chime and
+  clears the entry. The code lives only on the server and is never sent to clients. A correct code
+  (or a newly set one) shows a glowing green `SUCCESS!!!` card, a wrong one a glowing red
+  `FAILED!!!` card. Success then opens the `KEYCARD SCANNER` assignment screen: `ASSIGNED KEYS` on
+  the left, `NON-ASSIGNED KEYS` from the held Operator Keycard on the right, with click-to-move rows
+  and wheel scrolling. Assigned keys are stored on the scanner and copied from the card, so any
+  keycard that carries one can open the scanner's doors; the screen stays usable for two minutes
+  after the code. Placement and facing match the keypad; the item uses a matching 3D model in
   the inventory and hand.
 * Keycard Programmer (`ntmdoors:keycard_programmer`): a low desk console that sits inside one block
   and rotates to face the player, with a flat OBJ body, a sloped screen recess and no card reader

@@ -52,8 +52,11 @@ public final class PrivateKeys {
         if (stack.isEmpty() || !stack.hasTagCompound()) return Collections.emptyList();
         NBTTagCompound tag = stack.getTagCompound();
         if (!tag.hasKey(ROOT, Constants.NBT.TAG_LIST)) return Collections.emptyList();
+        return fromList(tag.getTagList(ROOT, Constants.NBT.TAG_COMPOUND));
+    }
 
-        NBTTagList list = tag.getTagList(ROOT, Constants.NBT.TAG_COMPOUND);
+    /** Parses the standard {@code { Name, Serial }} list shape, skipping entries without a serial. */
+    public static List<Key> fromList(NBTTagList list) {
         List<Key> keys = new ArrayList<>(list.tagCount());
         for (int i = 0; i < list.tagCount(); i++) {
             NBTTagCompound entry = list.getCompoundTagAt(i);
@@ -62,6 +65,18 @@ public final class PrivateKeys {
             keys.add(new Key(entry.getString(NAME), serial));
         }
         return keys;
+    }
+
+    /** Writes keys in the standard {@code { Name, Serial }} list shape. */
+    public static NBTTagList toList(List<Key> keys) {
+        NBTTagList list = new NBTTagList();
+        for (Key key : keys) {
+            NBTTagCompound entry = new NBTTagCompound();
+            entry.setString(NAME, key.name);
+            entry.setString(SERIAL, key.serial);
+            list.appendTag(entry);
+        }
+        return list;
     }
 
     public static int count(ItemStack stack) {
