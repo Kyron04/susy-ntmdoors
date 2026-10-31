@@ -8,9 +8,11 @@ import com.ntmdoors.tile.TileEntityKeycardProgrammer;
 import com.ntmdoors.util.ModSounds;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Slot;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -94,16 +96,26 @@ public class GuiKeycardProgrammer extends GuiContainer {
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        // Standard container GUIs darken the world first. The slot tooltip is drawn from
-        // ProgrammerGuiEvents after JEI/HEI, so it can never end up underneath their item list.
+        // Standard container GUIs darken the world first.
         this.drawDefaultBackground();
         super.drawScreen(mouseX, mouseY, partialTicks);
+
+        // super.drawScreen() has now drawn the background, the foreground labels, every slot item
+        // and every overlay that hooks GuiScreenEvent.DrawScreenEvent.Post (JEI/HEI included).
+        // Drawing the slot tooltip after it returns is the only way to guarantee it is on top of
+        // their item list - DrawScreenEvent.Post fires in the middle of GuiContainer.drawScreen.
+        drawSlotTooltip(mouseX, mouseY);
     }
 
     // ------------------------------------------------------------ background
 
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
+        // A tooltip drawn last frame (ours or JEI's) leaves lighting and rescale-normal enabled,
+        // and GuiContainer draws this layer before it clears them. Reset first so the casing and
+        // the buttons are never lit by the world light rig.
+        resetGuiState();
+
         // GuiContainer calls this before it applies the guiLeft/guiTop translation, so the
         // background has to enter GUI space itself or it lands in the screen's top-left corner.
         GlStateManager.pushMatrix();
@@ -206,6 +218,21 @@ public class GuiKeycardProgrammer extends GuiContainer {
 
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
+        // Both the background pass and the item pass can leave blend/lighting/colour state
+        // behind. Save the whole attribute stack so the labels start from a known-good state
+        // instead of inheriting whatever the last pass left (that is what dims the text).
+        GlStateManager.pushAttrib();
+        GlStateManager.color(1F, 1F, 1F, 1F);
+        GlStateManager.enableTexture2D();
+        GlStateManager.enableBlend();
+        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA,
+                GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+                GlStateManager.SourceFactor.ONE,
+                GlStateManager.DestFactor.ZERO);
+        GlStateManager.enableAlpha();
+        GlStateManager.disableLighting();
+        GlStateManager.disableDepth();
+
         fontRenderer.drawString("Keycard Programmer", 8, 7, DARK_TEXT);
 
         if (page == 0) {
@@ -236,27 +263,57 @@ public class GuiKeycardProgrammer extends GuiContainer {
         if (statusTicks > 0) {
             drawCenteredString(fontRenderer, status, xSize / 2, 128, MUTED);
         }
+
+        GlStateManager.popAttrib();
     }
 
-    /** Item name when hovering a slot, and the expected item name on empty ghosts. */
-    public void drawTooltip(int mouseX, int mouseY) {
+    /**
+     * Slot tooltip for the item under the mouse. Called from {@link #drawScreen} after
+     * super.drawScreen() has returned, so it is drawn above the GUI, its items and JEI/HEI.
+     */
+    private void drawSlotTooltip(int mouseX, int mouseY) {
         Slot slot = findSlot(mouseX, mouseY);
         if (slot == null) return;
 
-        // Only the display name: reading the full tooltip fires ItemTooltipEvent, which lets
-        // tooltip mods expand the panel with Shift and disturb the screen's render state.
-        String name = slot.getHasStack()
-                ? slot.getStack().getDisplayName()
-                : ghostNameFor(slot.slotNumber);
+        ItemStack stack = slot.getStack();
+        if (!stack.isEmpty()) {
+            this.renderToolTip(stack, mouseX, mouseY);
+            // renderToolTip ends in GuiUtils.drawHoveringText, which always leaves lighting,
+            // depth, rescale-normal and the world light rig switched on. Vanilla can ignore that
+            // because a tooltip is the last thing it draws in a frame; we cannot, or the next
+            // frame's casing, buttons and item counts are drawn lit and go flat and grey.
+            resetGuiState();
+            return;
+        }
+
+        String name = ghostNameFor(slot.slotNumber);
         if (name != null) {
             drawSimpleTooltip(Collections.singletonList(name), mouseX, mouseY);
         }
     }
 
     /**
-     * Draws the tooltip directly instead of going through {@code drawHoveringText}. Tooltip mods
-     * hook that path and can leave the GUI scaled or otherwise softened when Shift expands a
-     * tooltip; this GUI stays crisp no matter what is installed.
+     * Restores the GL state a container GUI expects after a tooltip has been drawn. Mirrors what
+     * GuiUtils.drawHoveringText switches on but never switches back off.
+     */
+    private static void resetGuiState() {
+        RenderHelper.disableStandardItemLighting();
+        GlStateManager.disableLighting();
+        GlStateManager.disableRescaleNormal();
+        GlStateManager.disableDepth();
+        GlStateManager.enableTexture2D();
+        GlStateManager.enableBlend();
+        GlStateManager.color(1F, 1F, 1F, 1F);
+    }
+
+    /** Vanilla's own hovered-slot pass stays empty so the tooltip is only ever drawn once. */
+    @Override
+    protected void renderHoveredToolTip(int mouseX, int mouseY) {
+    }
+
+    /**
+     * Flat tooltip used for the empty "ghost" slots, which have no ItemStack to hand to the
+     * vanilla renderer. Real items go through {@link #renderToolTip}.
      */
     private void drawSimpleTooltip(List<String> lines, int mouseX, int mouseY) {
         if (lines.isEmpty()) return;
@@ -314,11 +371,6 @@ public class GuiKeycardProgrammer extends GuiContainer {
             default:
                 return null;
         }
-    }
-
-    @Override
-    protected void renderHoveredToolTip(int mouseX, int mouseY) {
-        // Drawn from drawScreen after all overlays, so the vanilla pass is intentionally empty.
     }
 
     private void drawPageArrows() {

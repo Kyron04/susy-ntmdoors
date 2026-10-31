@@ -6,7 +6,6 @@ import com.ntmdoors.client.GuiRelayKeyName;
 import com.ntmdoors.client.GuiScannerCode;
 import com.ntmdoors.client.KeyframeAnimation;
 import com.ntmdoors.client.ObjModel;
-import com.ntmdoors.client.ProgrammerGuiEvents;
 import com.ntmdoors.client.RenderDoor;
 import com.ntmdoors.client.RenderDoorKeypad;
 import com.ntmdoors.client.RenderKeycardProgrammer;
@@ -63,8 +62,6 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void init(FMLInitializationEvent event) {
         super.init(event);
-        // Explicit registration so the programmer tooltip always draws after JEI/HEI.
-        MinecraftForge.EVENT_BUS.register(ProgrammerGuiEvents.class);
         // drop cached models / display lists whenever resources reload (F3+T)
         ((IReloadableResourceManager) Minecraft.getMinecraft().getResourceManager())
                 .registerReloadListener(resourceManager -> {
