@@ -2,6 +2,8 @@ package com.ntmdoors.client;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.gui.ContainerKeycardProgrammer;
+import com.ntmdoors.network.MessageProgrammerPage;
+import com.ntmdoors.network.ModNetwork;
 import com.ntmdoors.tile.TileEntityKeycardProgrammer;
 import com.ntmdoors.util.ModSounds;
 import net.minecraft.client.gui.inventory.GuiContainer;
@@ -452,6 +454,11 @@ public class GuiKeycardProgrammer extends GuiContainer {
         page = (page + delta + PAGE_COUNT) % PAGE_COUNT;
         statusTicks = 0;
         updateSlotPositions();
+        // Keep the client container's prediction in step with the server's shift-click routing.
+        if (inventorySlots instanceof ContainerKeycardProgrammer) {
+            ((ContainerKeycardProgrammer) inventorySlots).setPage(page);
+        }
+        ModNetwork.INSTANCE.sendToServer(new MessageProgrammerPage(page));
         playClick();
     }
 

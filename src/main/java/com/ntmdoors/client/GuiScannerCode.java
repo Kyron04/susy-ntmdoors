@@ -7,6 +7,7 @@ import com.ntmdoors.tile.TileEntityKeycardScanner;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.init.SoundEvents;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -48,8 +49,8 @@ public class GuiScannerCode extends GuiScreen {
     };
 
     private final BlockPos pos;
-    /** True when the scanner has no code yet, so this visit chooses one. */
-    private final boolean setting;
+    /** True when the scanner has no code yet, so this visit chooses one. Refreshed from the tile. */
+    private boolean setting;
 
     private int left;
     private int top;
@@ -82,6 +83,14 @@ public class GuiScannerCode extends GuiScreen {
     @Override
     public void updateScreen() {
         super.updateScreen();
+        // A code set by this visit or a nearby sync can land a tick after the screen opens, so
+        // always trust the tile entity instead of the flag captured when the screen was built.
+        if (mc.world != null) {
+            TileEntity te = mc.world.getTileEntity(pos);
+            if (te instanceof TileEntityKeycardScanner) {
+                setting = ((TileEntityKeycardScanner) te).hasSecurityCode();
+            }
+        }
         if (showingResult && --resultTicks <= 0) {
             // A correct code goes on to the key assignment screen; a failure just closes.
             mc.displayGuiScreen(resultSuccess ? new GuiScannerKeys(pos) : null);

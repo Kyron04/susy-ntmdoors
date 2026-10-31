@@ -63,6 +63,11 @@ public class ContainerKeycardProgrammer extends Container {
     public static final int COLOUR_SLOT_COUNT = 7;
     public static final int LEGACY_SLOT_START = COLOUR_SLOT_START + COLOUR_SLOT_COUNT;
     public static final int LEGACY_SLOT_COUNT = 2;
+    /** Machine storage slots 0..4 hold pages one and two; the colour squares are display-only. */
+    public static final int MACHINE_SLOT_COUNT = 5;
+    public static final int PLAYER_SLOT_START = LEGACY_SLOT_START + LEGACY_SLOT_COUNT;
+    public static final int PLAYER_SLOT_COUNT = 36;
+    public static final int PLAYER_SLOT_END = PLAYER_SLOT_START + PLAYER_SLOT_COUNT;
     /** Fake slot id used to send the page-three Backup button to the server. */
     public static final int BACKUP_ACTION_SLOT = -2;
     /** Fake slot ids used to send the two page-one Bind buttons to the server. */
@@ -86,6 +91,8 @@ public class ContainerKeycardProgrammer extends Container {
     private final TileEntityKeycardProgrammer tile;
     /** Backing inventory for the seven display-only colour slots. */
     private final IInventory colourInventory = new InventoryBasic("keycard_colours", false, COLOUR_SLOT_COUNT);
+    /** Which page the client shows; shift-clicking fills only slots from that page. */
+    private int page;
 
     public ContainerKeycardProgrammer(InventoryPlayer playerInventory, TileEntityKeycardProgrammer tile) {
         this.tile = tile;
@@ -187,12 +194,86 @@ public class ContainerKeycardProgrammer extends Container {
         tile.closeInventory(player);
     }
 
-    /** Shift-clicking is disabled: the pages share one container and must not cross-fill. */
-    @Override
-    public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return ItemStack.EMPTY;
+    /** Which page the client is showing. Only the visible page's slots may be shift-filled. */
+    public void setPage(int page) {
+        this.page = Math.max(0, Math.min(2, page));
     }
 
+    /**
+     * Shift-click: machine slots empty into the player inventory; the player inventory fills only
+     * the slots of the page on screen, so nothing disappears into a hidden page.
+     */
+    @Override
+    public ItemStack transferStackInSlot(EntityPlayer player, int index) {
+        Slot slot = inventorySlots.get(index);
+        if (slot == null || !slot.getHasStack()) return ItemStack.EMPTY;
+
+        ItemStack stack = slot.getStack();
+        ItemStack before = stack.copy();
+
+        if (isMachineSlot(index)) {
+            if (!mergeItemStack(stack, PLAYER_SLOT_START, PLAYER_SLOT_END, true)) {
+                return ItemStack.EMPTY;
+            }
+        } else if (index >= PLAYER_SLOT_START && index < PLAYER_SLOT_END) {
+            if (!moveIntoPage(stack)) return ItemStack.EMPTY;
+        } else {
+            return ItemStack.EMPTY;
+        }
+
+        if (stack.isEmpty()) {
+            slot.putStack(ItemStack.EMPTY);
+        } else {
+            slot.onSlotChanged();
+        }
+
+        if (stack.getCount() == before.getCount()) return ItemStack.EMPTY;
+        slot.onTake(player, stack);
+        return before;
+    }
+
+    private static boolean isMachineSlot(int index) {
+        return (index >= 0 && index < MACHINE_SLOT_COUNT)
+                || (index >= LEGACY_SLOT_START && index < LEGACY_SLOT_START + LEGACY_SLOT_COUNT);
+    }
+
+    /** Routes a player-inventory stack into the first accepting slot of the visible page. */
+    private boolean moveIntoPage(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+
+        switch (page) {
+            case 0:
+                if (stack.getItem() instanceof ItemRelayKey) {
+                    return mergeInto(stack, TileEntityKeycardProgrammer.SLOT_RELAY_ONE)
+                            || mergeInto(stack, TileEntityKeycardProgrammer.SLOT_RELAY_TWO);
+                }
+                if (stack.getItem() instanceof ItemOperatorKeycard) {
+                    return mergeInto(stack, TileEntityKeycardProgrammer.SLOT_OPERATOR);
+                }
+                if (RFID_ONLY.test(stack)) {
+                    return mergeInto(stack, TileEntityKeycardProgrammer.SLOT_RFID_PAGE_ONE);
+                }
+                return false;
+            case 1:
+                return RFID_ONLY.test(stack)
+                        && mergeInto(stack, TileEntityKeycardProgrammer.SLOT_RFID_PAGE_TWO);
+            case 2:
+                if (stack.getItem() instanceof ItemRelayKey
+                        || stack.getItem() instanceof ItemOperatorKeycard) {
+                    return mergeInto(stack, TileEntityKeycardProgrammer.SLOT_LEGACY_LEFT)
+                            || mergeInto(stack, TileEntityKeycardProgrammer.SLOT_LEGACY_RIGHT);
+                }
+                return false;
+            default:
+                return false;
+        }
+    }
+
+    private boolean mergeInto(ItemStack stack, int index) {
+        Slot slot = inventorySlots.get(index);
+        if (slot == null || slot.getHasStack() || !slot.isItemValid(stack)) return false;
+        return mergeItemStack(stack, index, index + 1, false);
+    }
     /** A machine slot with a hard item-type whitelist; blocks, tools and other cards are rejected. */
     private static class SlotProgrammer extends Slot {
 

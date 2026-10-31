@@ -99,9 +99,11 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   backup, and the scanner loop plays during the fill at half the chime volume, with the scanner
   denied/granted sounds on cancellation/success. Empty named slots on pages one and two show a
   dimmed, desaturated copy of
-  the item they expect, and every machine slot only accepts its allowed item type or types. The GUI
-  darkens the world like a normal container GUI and draws item tooltips above JEI/HEI. There is no
-  recipe; it is in the NTM Doors creative tab with a flat 16x16 icon derived from the model.
+  the item they expect, and every machine slot only accepts its allowed item type or types. Shift
+  clicking moves items between the player inventory and the slots of the page on screen, so nothing
+  is dropped into a hidden page. The GUI darkens the world like a normal container GUI and draws
+  item tooltips above JEI/HEI. There is no recipe; it is in the NTM Doors creative tab with a flat
+  16x16 icon derived from the model.
 * RFID cards: one blank card plus red, violet, green, blue, black, orange and yellow variants.
   Each colour is a separate item (`ntmdoors:red_rfid_card` and so on) sharing a single item class
   and one hand-display model, so they all sit in the hand identically. The scanner recognises them
