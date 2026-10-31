@@ -1,9 +1,11 @@
 package com.ntmdoors.tile;
 
 import com.ntmdoors.client.ScannerLoopSound;
+import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.DoorState;
 import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.item.ItemRfidCard;
+import com.ntmdoors.util.Biometrics;
 import com.ntmdoors.util.ModSounds;
 import com.ntmdoors.util.PrivateKeys;
 import net.minecraft.client.Minecraft;
@@ -11,6 +13,7 @@ import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
@@ -40,6 +43,18 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         IDLE, BINDING, SCANNING, GRANTED, DENIED, SYNCED
     }
 
+    /** One enrolled identity: the UUID stored on a card plus the cached name to display. */
+    public static final class BiometricId {
+
+        public final String uuid;
+        public final String name;
+
+        public BiometricId(String uuid, String name) {
+            this.uuid = uuid;
+            this.name = name;
+        }
+    }
+
     private static final State[] STATES = State.values();
 
     /** Same cap as the keypad's multi binding. */
@@ -49,6 +64,10 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
     public static final int CODE_LENGTH = 6;
     /** How long a correct code leaves the assignment screen usable. */
     public static final int CODE_SESSION_TICKS = 20 * 120;
+    /** Failed cards or codes tolerated by Lockout Mode before it locks the reader. */
+    public static final int LOCKOUT_FAILURES = 3;
+    /** Five minutes of lockout, in ticks. */
+    public static final int LOCKOUT_TICKS = 20 * 60 * 5;
 
     /** Ticks the "Scanning" text stays up before the result is shown. */
     private static final int SCAN_TICKS = 20;
@@ -82,6 +101,32 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
 
     /** Private keys that may open this scanner's doors. Synced so the assignment screen sees them. */
     private final List<PrivateKeys.Key> assignedKeys = new ArrayList<>();
+
+    /** Biometric identities that may open this scanner's doors. Synced like the keys. */
+    private final List<BiometricId> assignedIds = new ArrayList<>();
+
+    /**
+     * True when a biometric identity only works for the player it belongs to. A card can be handed
+     * to someone else; with this on, the identity it carries stops working for them.
+     */
+    private boolean matchHolder = true;
+
+    /** Manual emergency lock: the bound doors stay shut and no card opens them. */
+    private boolean lockdown;
+    /** Automatic protection: repeated failures lock the reader for a few minutes. */
+    private boolean lockoutMode;
+    /** Access switches. Each one disables its own auth method, not the other. */
+    private boolean ignoreKeys;
+    private boolean ignoreIds;
+
+    /** Synced mirror of {@link #lockoutTicks > 0}. */
+    private boolean lockedOut;
+    /** Synced mirror of whether a bound door is currently moving, so the GUI can lock its toggles. */
+    private boolean doorsMoving;
+    /** Server only: consecutive failures, reset by a successful code or scan. */
+    private int failedAttempts;
+    /** Server only: remaining lockout ticks; drives {@link #lockedOut}. */
+    private int lockoutTicks;
 
     /** Server only. The player who just passed the code and may edit the assignment list. */
     @Nullable
@@ -144,8 +189,44 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         if (code.isEmpty()) return false;
         securityCode = code;
         codeSet = true;
+        // The door keeps a copy so breaking the scanner cannot reset the code.
+        for (BlockPos doorPos : boundDoors) {
+            TileEntity te = world.getTileEntity(doorPos);
+            if (te instanceof TileEntityDoorGeneric) ((TileEntityDoorGeneric) te).setScannerCode(code);
+        }
         sync();
         return true;
+    }
+
+    /**
+     * Server side: keeps the scanner and its doors in step. A scanner with no code adopts the one
+     * its doors remember - which is how a replacement after breaking the block keeps the old code -
+     * then writes its code back onto every bound door. Returns true when a code was adopted.
+     */
+    private boolean syncSecurityCode() {
+        if (world == null) return false;
+        boolean adopted = false;
+        if (!hasSecurityCode()) {
+            for (BlockPos doorPos : boundDoors) {
+                TileEntity te = world.getTileEntity(doorPos);
+                if (!(te instanceof TileEntityDoorGeneric)) continue;
+                String code = ((TileEntityDoorGeneric) te).getScannerCode();
+                if (code == null || code.isEmpty()) continue;
+                securityCode = code;
+                codeSet = true;
+                adopted = true;
+                break;
+            }
+        }
+        if (hasSecurityCode()) {
+            for (BlockPos doorPos : boundDoors) {
+                TileEntity te = world.getTileEntity(doorPos);
+                if (te instanceof TileEntityDoorGeneric) {
+                    ((TileEntityDoorGeneric) te).setScannerCode(securityCode);
+                }
+            }
+        }
+        return adopted;
     }
 
     /** True when the supplied digits match the stored code. */
@@ -200,6 +281,185 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         return false;
     }
 
+    // ------------------------------------------------------------ biometric assignment
+
+    /** The identities currently allowed to open this scanner's doors. */
+    public List<BiometricId> getAssignedIds() {
+        return Collections.unmodifiableList(assignedIds);
+    }
+
+    public boolean hasAssignedId(String uuid) {
+        for (BiometricId id : assignedIds) {
+            if (id.uuid.equals(uuid)) return true;
+        }
+        return false;
+    }
+
+    /** Server side: adds an identity copied from the operator's card. */
+    public boolean assignId(BiometricId id) {
+        if (world == null || world.isRemote || id == null || id.uuid.isEmpty()) return false;
+        if (hasAssignedId(id.uuid)) return false;
+        assignedIds.add(id);
+        sync();
+        return true;
+    }
+
+    /** Server side: removes an identity by UUID. */
+    public boolean unassignId(String uuid) {
+        if (world == null || world.isRemote || uuid == null) return false;
+        for (int i = 0; i < assignedIds.size(); i++) {
+            if (assignedIds.get(i).uuid.equals(uuid)) {
+                assignedIds.remove(i);
+                sync();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** True when a biometric identity only opens the door for the player it belongs to. */
+    public boolean isMatchHolder() {
+        return matchHolder;
+    }
+
+    /** Server side: toggles the holder check for this scanner. */
+    public boolean setMatchHolder(boolean value) {
+        if (world == null || world.isRemote || matchHolder == value) return false;
+        matchHolder = value;
+        sync();
+        return true;
+    }
+
+    /** True while the manual emergency lock is holding the doors shut. */
+    public boolean isLockdown() {
+        return lockdown;
+    }
+
+    /** Server side: raises or lifts the emergency lock, closing every bound door when raised. */
+    public boolean setLockdown(boolean value) {
+        if (world == null || world.isRemote || lockdown == value) return false;
+        lockdown = value;
+        if (value) closeBoundDoors();
+        sync();
+        return true;
+    }
+
+    public boolean isLockoutMode() {
+        return lockoutMode;
+    }
+
+    /** Server side: turning Lockout Mode off also clears a lockout that is already running. */
+    public boolean setLockoutMode(boolean value) {
+        if (world == null || world.isRemote || lockoutMode == value) return false;
+        lockoutMode = value;
+        if (!value) clearLockout();
+        sync();
+        return true;
+    }
+
+    public boolean isIgnoreKeys() {
+        return ignoreKeys;
+    }
+
+    public boolean setIgnoreKeys(boolean value) {
+        if (world == null || world.isRemote || ignoreKeys == value) return false;
+        ignoreKeys = value;
+        sync();
+        return true;
+    }
+
+    public boolean isIgnoreIds() {
+        return ignoreIds;
+    }
+
+    public boolean setIgnoreIds(boolean value) {
+        if (world == null || world.isRemote || ignoreIds == value) return false;
+        ignoreIds = value;
+        sync();
+        return true;
+    }
+
+    /** True while repeated failures are keeping the reader shut. */
+    public boolean isLockedOut() {
+        return lockedOut;
+    }
+
+    /** True while a bound door is opening or closing; the settings screen refuses changes then. */
+    public boolean isDoorsMoving() {
+        return doorsMoving;
+    }
+
+    /**
+     * Server side: one failed code or card. Three in a row start a lockout when Lockout Mode is on.
+     * Calls made during an active lockout are ignored, so denied scans cannot extend it forever.
+     */
+    public void recordFailure() {
+        if (!lockoutMode || lockedOut) return;
+        if (++failedAttempts < LOCKOUT_FAILURES) return;
+        failedAttempts = 0;
+        lockoutTicks = LOCKOUT_TICKS;
+        lockedOut = true;
+        if (world != null) {
+            // The door alarm asset already ships with the mod; a low, flat pitch reads as a lockout.
+            world.playSound(null, pos, DoorDecl.sound("door_alarm"),
+                    SoundCategory.BLOCKS, 1F, 1F);
+        }
+        sync();
+    }
+
+    /** Server side: a good code or a granted scan clears the failure streak. */
+    public void resetFailures() {
+        failedAttempts = 0;
+    }
+
+    private void clearLockout() {
+        lockoutTicks = 0;
+        lockedOut = false;
+        failedAttempts = 0;
+    }
+
+    /** Server side: closes the doors without touching their state through the lockdown gate. */
+    private void closeBoundDoors() {
+        if (world == null) return;
+        for (BlockPos doorPos : boundDoors) {
+            TileEntity te = world.getTileEntity(doorPos);
+            if (te instanceof TileEntityDoorGeneric) ((TileEntityDoorGeneric) te).request(false);
+        }
+    }
+
+    /**
+     * Server side: manual override. Opens every bound door through any lock, keypad state or
+     * lockdown, and clears the auto-close so it stays open until something closes it.
+     */
+    public void forceOpenDoors() {
+        if (world == null || world.isRemote) return;
+        for (BlockPos doorPos : boundDoors) {
+            TileEntity te = world.getTileEntity(doorPos);
+            if (!(te instanceof TileEntityDoorGeneric)) continue;
+            TileEntityDoorGeneric door = (TileEntityDoorGeneric) te;
+            door.request(true, true);
+            door.closeAfter(0);
+        }
+    }
+
+    /** Server side: manual close. Closing never needs an override. */
+    public void forceCloseDoors() {
+        closeBoundDoors();
+    }
+
+    /** Server side: true when any bound door is mid-move. */
+    public boolean hasMovingDoor() {
+        if (world == null) return false;
+        for (BlockPos doorPos : boundDoors) {
+            TileEntity te = world.getTileEntity(doorPos);
+            if (te instanceof TileEntityDoorGeneric
+                    && ((TileEntityDoorGeneric) te).getState().isMoving()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** Server side: a correct code opens the assignment screen for this player. */
     public void openCodeSession(EntityPlayer player) {
         if (player == null) return;
@@ -213,18 +473,27 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
                 && codeSessionPlayer.equals(player.getUniqueID());
     }
 
-    /** True when either held card carries any private key assigned to this scanner. */
+    /** True when either held card carries a key or identity assigned to this scanner. */
     private boolean holdsAssignedKey(EntityPlayer player) {
-        return grantsAccess(player.getHeldItemMainhand())
-                || grantsAccess(player.getHeldItemOffhand());
+        return grantsAccess(player.getHeldItemMainhand(), player)
+                || grantsAccess(player.getHeldItemOffhand(), player);
     }
 
-    private boolean grantsAccess(ItemStack stack) {
+    /**
+     * A private key on the card works unless keys are ignored. A biometric identity only works
+     * when IDs are enabled, it is enrolled here, and - unless the scanner is configured otherwise -
+     * only for the player the identity belongs to.
+     */
+    private boolean grantsAccess(ItemStack stack, EntityPlayer player) {
         if (stack.isEmpty() || !(stack.getItem() instanceof ItemRfidCard)) return false;
-        for (PrivateKeys.Key key : PrivateKeys.get(stack)) {
-            if (hasAssignedKey(key.serial)) return true;
+        if (!ignoreKeys) {
+            for (PrivateKeys.Key key : PrivateKeys.get(stack)) {
+                if (hasAssignedKey(key.serial)) return true;
+            }
         }
-        return false;
+        if (ignoreIds || !Biometrics.isBound(stack)) return false;
+        if (!hasAssignedId(Biometrics.ownerUuid(stack))) return false;
+        return !matchHolder || Biometrics.isOwnedBy(stack, player);
     }
 
     // ------------------------------------------------------------ ticking
@@ -267,6 +536,18 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
                 break;
             default:
                 break;
+        }
+
+        if (lockoutTicks > 0 && --lockoutTicks == 0) {
+            lockedOut = false;
+            sync();
+        }
+
+        // The GUI only needs to know whether to lock its toggle rows; sync the edge, not the value.
+        boolean moving = hasMovingDoor();
+        if (moving != doorsMoving) {
+            doorsMoving = moving;
+            sync();
         }
     }
 
@@ -381,6 +662,7 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         }
         pendingDoors.clear();
 
+        syncSecurityCode();
         bindingPlayer = null;
         bindingTicks = 0;
         state = State.IDLE;
@@ -405,15 +687,19 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
 
     private void resolveScan() {
         EntityPlayer player = scanningPlayer == null ? null : world.getPlayerEntityByUUID(scanningPlayer);
-        boolean granted = player != null
-                && (ItemCreativeKeycard.isHeldBy(player) || holdsAssignedKey(player));
+        boolean creative = player != null && ItemCreativeKeycard.isHeldBy(player);
+        boolean blocked = lockdown || lockedOut;
+        boolean granted = player != null && (creative || (!blocked && holdsAssignedKey(player)));
 
         if (granted) {
+            resetFailures();
             world.playSound(null, pos, ModSounds.SCANNER_BUTTON3, SoundCategory.BLOCKS, SOUND_VOLUME, 1F);
-            openBoundDoors();
+            openBoundDoors(creative);
             state = State.GRANTED;
             if (player != null) msg(player, "ntmdoors.msg.scanner_granted");
         } else {
+            // A lockdown or lockout is not an invalid card, so it must not extend the failure run.
+            if (!blocked && player != null) recordFailure();
             world.playSound(null, pos, ModSounds.SCANNER_BUTTON8, SoundCategory.BLOCKS, SOUND_VOLUME, 1F);
             state = State.DENIED;
             if (player != null) msg(player, "ntmdoors.msg.scanner_denied");
@@ -423,13 +709,13 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         sync();
     }
 
-    private void openBoundDoors() {
+    private void openBoundDoors(boolean override) {
         for (int i = boundDoors.size() - 1; i >= 0; i--) {
             BlockPos doorPos = boundDoors.get(i);
             TileEntity te = world.getTileEntity(doorPos);
             if (te instanceof TileEntityDoorGeneric) {
                 TileEntityDoorGeneric door = (TileEntityDoorGeneric) te;
-                door.request(true);
+                door.request(true, override);
                 door.closeAfter(AUTO_CLOSE_TICKS);
             } else {
                 boundDoors.remove(i);
@@ -465,8 +751,9 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
             boundDoors.add(door.getPos().toImmutable());
         }
 
+        boolean adopted = syncSecurityCode();
         refreshCount();
-        if (boundDoors.size() != before) {
+        if (boundDoors.size() != before || adopted) {
             state = State.SYNCED;
             ticks = RESULT_TICKS;
             sync();
@@ -526,6 +813,52 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
 
     // ------------------------------------------------------------ persistence / sync
 
+    /** Identities are a small list of { Id, Name } compounds, so names may contain any character. */
+    private NBTTagList encodeIds() {
+        NBTTagList list = new NBTTagList();
+        for (BiometricId id : assignedIds) {
+            NBTTagCompound entry = new NBTTagCompound();
+            entry.setString("Id", id.uuid);
+            entry.setString("Name", id.name);
+            list.appendTag(entry);
+        }
+        return list;
+    }
+
+    private void readIds(NBTTagCompound tag) {
+        if (!tag.hasKey("assignedIds", Constants.NBT.TAG_LIST)) return;
+        assignedIds.clear();
+        NBTTagList list = tag.getTagList("assignedIds", Constants.NBT.TAG_COMPOUND);
+        for (int i = 0; i < list.tagCount(); i++) {
+            NBTTagCompound entry = list.getCompoundTagAt(i);
+            String uuid = entry.getString("Id");
+            if (uuid.isEmpty()) continue;
+            assignedIds.add(new BiometricId(uuid, entry.getString("Name")));
+        }
+    }
+
+    /** The option switches, shared by the save tag and the client sync tag. */
+    private void writeOptions(NBTTagCompound tag) {
+        tag.setBoolean("matchHolder", matchHolder);
+        tag.setBoolean("lockdown", lockdown);
+        tag.setBoolean("lockoutMode", lockoutMode);
+        tag.setBoolean("ignoreKeys", ignoreKeys);
+        tag.setBoolean("ignoreIds", ignoreIds);
+        tag.setBoolean("lockedOut", lockedOut);
+        tag.setBoolean("doorsMoving", doorsMoving);
+    }
+
+    private void readOptions(NBTTagCompound tag) {
+        // Holder matching defaults on, so a scanner saved before this option existed keeps it.
+        matchHolder = !tag.hasKey("matchHolder") || tag.getBoolean("matchHolder");
+        lockdown = tag.getBoolean("lockdown");
+        lockoutMode = tag.getBoolean("lockoutMode");
+        ignoreKeys = tag.getBoolean("ignoreKeys");
+        ignoreIds = tag.getBoolean("ignoreIds");
+        lockedOut = tag.getBoolean("lockedOut");
+        doorsMoving = tag.getBoolean("doorsMoving");
+    }
+
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
@@ -538,6 +871,10 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         tag.setBoolean("codeSet", codeSet);
         tag.setInteger("boundDoorCount", boundDoorCount);
         tag.setTag("assignedKeys", PrivateKeys.toList(assignedKeys));
+        tag.setTag("assignedIds", encodeIds());
+        writeOptions(tag);
+        tag.setInteger("failedAttempts", failedAttempts);
+        tag.setInteger("lockoutTicks", lockoutTicks);
         if (bindingPlayer != null) tag.setString("bindingPlayer", bindingPlayer.toString());
         if (scanningPlayer != null) tag.setString("scanningPlayer", scanningPlayer.toString());
         return tag;
@@ -554,6 +891,8 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         tag.setBoolean("codeSet", codeSet);
         tag.setInteger("boundDoorCount", boundDoorCount);
         tag.setTag("assignedKeys", PrivateKeys.toList(assignedKeys));
+        tag.setTag("assignedIds", encodeIds());
+        writeOptions(tag);
         return tag;
     }
 
@@ -585,6 +924,13 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
             assignedKeys.clear();
             assignedKeys.addAll(PrivateKeys.fromList(
                     tag.getTagList("assignedKeys", Constants.NBT.TAG_COMPOUND)));
+        }
+        readIds(tag);
+        readOptions(tag);
+        if (tag.hasKey("failedAttempts")) failedAttempts = tag.getInteger("failedAttempts");
+        if (tag.hasKey("lockoutTicks")) {
+            lockoutTicks = tag.getInteger("lockoutTicks");
+            lockedOut = lockoutTicks > 0;
         }
         if (tag.hasKey("scanState")) {
             state = STATES[Math.floorMod(tag.getByte("scanState"), STATES.length)];

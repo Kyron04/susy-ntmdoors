@@ -138,32 +138,38 @@ public class RenderKeycardScanner extends TileEntitySpecialRenderer<TileEntityKe
         String first;
         String second = null;
         int color;
-        switch (te.getState()) {
-            case BINDING:
-                first = BINDING_TEXT;
-                second = "Bound doors " + te.getVisibleCount();
-                color = COLOR_BINDING;
-                break;
-            case SCANNING:
-                first = SCANNING_TEXT;
-                color = COLOR_SCANNING;
-                break;
-            case GRANTED:
-                first = GRANTED_TEXT;
-                color = COLOR_GRANTED;
-                break;
-            case DENIED:
-                first = DENIED_TEXT;
-                color = COLOR_DENIED;
-                break;
-            case SYNCED:
-                first = SYNCED_TEXT;
-                color = COLOR_SYNCED;
-                break;
-            default:
-                first = IDLE_TEXT;
-                color = COLOR_IDLE;
-                break;
+        if (te.isLockedOut()) {
+            // A lockout outranks the transient scan states: the reader is shut, so say so.
+            first = "Locked";
+            color = COLOR_DENIED;
+        } else {
+            switch (te.getState()) {
+                case BINDING:
+                    first = BINDING_TEXT;
+                    second = "Bound doors " + te.getVisibleCount();
+                    color = COLOR_BINDING;
+                    break;
+                case SCANNING:
+                    first = SCANNING_TEXT;
+                    color = COLOR_SCANNING;
+                    break;
+                case GRANTED:
+                    first = GRANTED_TEXT;
+                    color = COLOR_GRANTED;
+                    break;
+                case DENIED:
+                    first = DENIED_TEXT;
+                    color = COLOR_DENIED;
+                    break;
+                case SYNCED:
+                    first = SYNCED_TEXT;
+                    color = COLOR_SYNCED;
+                    break;
+                default:
+                    first = IDLE_TEXT;
+                    color = COLOR_IDLE;
+                    break;
+            }
         }
 
         FontRenderer font = Minecraft.getMinecraft().fontRenderer;

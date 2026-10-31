@@ -2,6 +2,7 @@ package com.ntmdoors.tile;
 
 import com.ntmdoors.client.BackupLoopSound;
 import com.ntmdoors.item.ItemBiometricKeycard;
+import com.ntmdoors.item.ItemBiometricRelayKey;
 import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.item.ItemOperatorKeycard;
 import com.ntmdoors.item.ItemRelayKey;
@@ -74,8 +75,7 @@ public class TileEntityKeycardProgrammer extends TileEntitySynced implements IIn
         INVALID_ITEM,
         INVALID_DIRECTION,
         NO_DATA,
-        TARGET_NOT_FRESH,
-        BIOMETRIC
+        TARGET_NOT_FRESH
     }
 
     private final ItemStack[] slots = new ItemStack[SLOT_COUNT];
@@ -247,9 +247,12 @@ public class TileEntityKeycardProgrammer extends TileEntitySynced implements IIn
         NONE,
         EMPTY,
         NO_KEY,
+        NO_BIOMETRIC,
         INVALID_TARGET,
         BLANK_CARD,
-        ALREADY_BOUND
+        ALREADY_BOUND,
+        BIOMETRIC_TAKEN,
+        BIOMETRIC_ALREADY
     }
 
     /**
@@ -263,8 +266,14 @@ public class TileEntityKeycardProgrammer extends TileEntitySynced implements IIn
         if (relay.isEmpty() || target.isEmpty()) return BindFailure.EMPTY;
         if (!(relay.getItem() instanceof ItemRelayKey)) return BindFailure.INVALID_TARGET;
 
+        boolean biometric = Biometrics.isBound(relay);
         List<PrivateKeys.Key> keys = PrivateKeys.get(relay);
-        if (keys.isEmpty()) return BindFailure.NO_KEY;
+        if (!biometric && keys.isEmpty()) {
+            // The biometric key never generates private keys, so an unbound one has nothing to give.
+            return relay.getItem() instanceof ItemBiometricRelayKey
+                    ? BindFailure.NO_BIOMETRIC
+                    : BindFailure.NO_KEY;
+        }
 
         if (row == BIND_OPERATOR) {
             if (!(target.getItem() instanceof ItemOperatorKeycard)) return BindFailure.INVALID_TARGET;
@@ -277,6 +286,13 @@ public class TileEntityKeycardProgrammer extends TileEntitySynced implements IIn
             if (target.getItem() == ModContent.BLANK_RFID_CARD) return BindFailure.BLANK_CARD;
         }
 
+        if (biometric) {
+            if (!Biometrics.isBound(target)) return BindFailure.NONE;
+            return Biometrics.ownerUuid(target).equals(Biometrics.ownerUuid(relay))
+                    ? BindFailure.BIOMETRIC_ALREADY
+                    : BindFailure.BIOMETRIC_TAKEN;
+        }
+
         for (PrivateKeys.Key key : keys) {
             if (PrivateKeys.hasSerial(target, key.serial)) return BindFailure.ALREADY_BOUND;
         }
@@ -284,8 +300,9 @@ public class TileEntityKeycardProgrammer extends TileEntitySynced implements IIn
     }
 
     /**
-     * Server side: copies the Relay Key's private key onto the card in the same row. Existing keys
-     * on the card are kept, so an Operator Keycard can collect any number of private keys.
+     * Server side: copies the Relay Key's private key, or its biometric identity, onto the card in
+     * the same row. Existing keys on the card are kept, so an Operator Keycard can collect any
+     * number of private keys; an identity is only ever written onto an unbound card.
      */
     public boolean bind(int row) {
         if (world == null || world.isRemote) return false;
@@ -293,7 +310,9 @@ public class TileEntityKeycardProgrammer extends TileEntitySynced implements IIn
 
         ItemStack relay = slots[row == BIND_OPERATOR ? SLOT_RELAY_ONE : SLOT_RELAY_TWO];
         ItemStack target = slots[row == BIND_OPERATOR ? SLOT_OPERATOR : SLOT_RFID_PAGE_ONE];
-        if (PrivateKeys.addAll(relay, target) <= 0) return false;
+        boolean changed = Biometrics.copyOwner(relay, target);
+        if (PrivateKeys.addAll(relay, target) > 0) changed = true;
+        if (!changed) return false;
 
         markDirty();
         world.playSound(null, pos, ModSounds.SCANNER_BUTTON3, SoundCategory.BLOCKS, SOUND_VOLUME, 1F);
@@ -335,11 +354,6 @@ public class TileEntityKeycardProgrammer extends TileEntitySynced implements IIn
         }
         // Relay Keys can seed either fresh card type; Operator cards cannot seed a Relay Key.
         if (sourceOperator && targetRelay) return BackupFailure.INVALID_DIRECTION;
-
-        // A biometric item's value is that it is tied to one person. Copying its keys off it, or
-        // onto another biometric item, would move the keys without the identity, so neither end
-        // of a legacy backup may be biometric.
-        if (Biometrics.isBound(source) || Biometrics.isBound(target)) return BackupFailure.BIOMETRIC;
 
         NBTTagCompound sourceTag = source.getTagCompound();
         if (sourceTag == null || sourceTag.isEmpty()) return BackupFailure.NO_DATA;

@@ -1,6 +1,7 @@
 package com.ntmdoors.item;
 
 import com.ntmdoors.NTMDoors;
+import com.ntmdoors.util.Biometrics;
 import com.ntmdoors.util.InteractionGuard;
 import com.ntmdoors.util.ModSounds;
 import com.ntmdoors.util.Names;
@@ -27,7 +28,7 @@ import java.util.List;
  */
 public class ItemRelayKey extends Item {
 
-    private static final float FEEDBACK_VOLUME = 0.8F;
+    protected static final float FEEDBACK_VOLUME = 0.8F;
 
     public ItemRelayKey() {
         this("relay_key");
@@ -80,5 +81,6 @@ public class ItemRelayKey extends Item {
             tooltip.add(TextFormatting.WHITE + key.name);
             tooltip.add(TextFormatting.WHITE + key.serial);
         }
+        Biometrics.addOwnerIfBound(tooltip, stack);
     }
 }

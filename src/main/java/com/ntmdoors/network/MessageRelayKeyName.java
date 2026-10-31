@@ -1,5 +1,6 @@
 package com.ntmdoors.network;
 
+import com.ntmdoors.item.ItemBiometricRelayKey;
 import com.ntmdoors.item.ItemRelayKey;
 import com.ntmdoors.util.ModSounds;
 import com.ntmdoors.util.PrivateKeys;
@@ -56,6 +57,8 @@ public class MessageRelayKeyName implements IMessage {
             EnumHand hand = message.hand == 1 ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND;
             ItemStack stack = player.getHeldItem(hand);
             if (stack.isEmpty() || !(stack.getItem() instanceof ItemRelayKey)) return;
+            // The biometric key collects data instead of generating a key; it never opens this screen.
+            if (stack.getItem() instanceof ItemBiometricRelayKey) return;
             if (!PrivateKeys.isBlank(stack)) return;
 
             String name = PrivateKeys.saniseName(message.name);

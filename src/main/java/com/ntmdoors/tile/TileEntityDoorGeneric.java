@@ -46,6 +46,11 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
     /** Code a keypad has bound to this door; empty when no keypad controls it. Server-only. */
     private String keypadCode = "";
     /**
+     * Security code the controlling scanner set, kept on the door so breaking and replacing the
+     * scanner cannot reset it. Server-only.
+     */
+    private String scannerCode = "";
+    /**
      * Scanners controlling this door. Server-only, and kept when a scanner is broken so a
      * replacement placed in the same spot adopts the door again.
      */
@@ -266,7 +271,16 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
 
     /** Server side: ask the door to open (true) or close (false). Safe to call in any state. */
     public void request(boolean wantOpen) {
+        request(wantOpen, false);
+    }
+
+    /**
+     * The same request, with the option to ignore a scanner lockdown. Only the Creative Keycard
+     * and a scanner with Override Door Locks use the override path; closing always works.
+     */
+    public void request(boolean wantOpen, boolean override) {
         if (world == null || world.isRemote) return;
+        if (wantOpen && !override && isLockedDown()) return;
         DoorDecl d = getDecl();
         if (d == null || !d.linkAdjacent) {
             requestSelf(wantOpen);
@@ -290,6 +304,12 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
     public void toggle() {
         if (state == DoorState.CLOSED) request(true);
         else if (state == DoorState.OPEN) request(false);
+    }
+
+    /** The Creative Keycard's toggle: ignores a scanner lockdown. */
+    public void toggleOverride() {
+        if (state == DoorState.CLOSED) request(true, true);
+        else if (state == DoorState.OPEN) request(false, true);
     }
 
     /** Switches to the next skin texture. Does nothing if this door has no alternates. */
@@ -324,6 +344,18 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         sync();
     }
 
+    /** The scanner security code remembered by this door, or an empty string. */
+    public String getScannerCode() {
+        return scannerCode;
+    }
+
+    /** Remembers a scanner's code so a replacement scanner at this door adopts it instead of resetting. */
+    public void setScannerCode(String code) {
+        if (code == null || code.isEmpty() || code.equals(scannerCode)) return;
+        scannerCode = code;
+        markDirty();
+    }
+
     /** True when at least one scanner controls this door. The binding survives that scanner breaking. */
     public boolean isBoundToScanner() {
         return !boundScanners.isEmpty();
@@ -341,6 +373,23 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         if (boundScanners.contains(scanner)) return;
         boundScanners.add(scanner);
         sync();
+    }
+
+    /**
+     * True while any scanner bound to this door is in Lockdown Mode. The lock is derived from the
+     * scanners rather than stored here, so disabling lockdown, breaking the scanner or unloading
+     * its chunk releases the door without leaving a stale flag behind.
+     */
+    public boolean isLockedDown() {
+        if (world == null || world.isRemote) return false;
+        for (BlockPos scannerPos : boundScanners) {
+            TileEntity te = world.getTileEntity(scannerPos);
+            if (te instanceof TileEntityKeycardScanner
+                    && ((TileEntityKeycardScanner) te).isLockdown()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Makes this door close itself after {@code ticks}, used for scanner-opened doors. */
@@ -428,6 +477,8 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
     /** Called when any part of the door gets a neighbour update. Reacts to redstone edges only. */
     public void checkRedstone() {
         if (world == null || world.isRemote) return;
+        // A lockdown is meant to stay shut, so redstone edges are ignored until it is lifted.
+        if (isLockedDown()) return;
         // Only plain doors are redstone-driven. Locked doors belong to keypads and scanners, and
         // security doors to scanners alone, so neither may be opened by a lever or a plate.
         if (isLockedDoor() || isSecurityDoor()) return;
@@ -443,15 +494,20 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
     public void onPlayerUse(EntityPlayer player) {
         if (getDecl() == null) return;
 
-        // Debug card: bypasses locks, security, keypad bindings and redstone alike.
+        // Debug card: bypasses locks, security, keypad bindings, lockdowns and redstone alike.
         if (ItemCreativeKeycard.isHeldBy(player)) {
             boolean opening = state == DoorState.CLOSED;
-            toggle();
+            toggleOverride();
             if (opening) {
                 TextComponentTranslation text = new TextComponentTranslation("ntmdoors.msg.door_overridden");
                 text.getStyle().setColor(TextFormatting.LIGHT_PURPLE);
                 player.sendStatusMessage(text, true);
             }
+            return;
+        }
+
+        if (isLockedDown()) {
+            reject(player, "ntmdoors.msg.locked_down");
             return;
         }
 
@@ -516,6 +572,7 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         tag.setInteger("queued", queuedOpen == null ? -1 : queuedOpen ? 1 : 0);
         tag.setInteger("skin", skinIndex);
         tag.setString("keypadCode", keypadCode);
+        tag.setString("scannerCode", scannerCode);
         tag.setString("boundScanners", encodeScanners());
         tag.setInteger("autoClose", autoCloseTicks);
         return tag;
@@ -526,6 +583,7 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
     protected NBTTagCompound writeSyncTag(NBTTagCompound tag) {
         writeToNBT(tag);
         tag.removeTag("keypadCode");
+        tag.removeTag("scannerCode");
         tag.removeTag("boundScanners");
         tag.removeTag("autoClose");
         return tag;
@@ -541,6 +599,7 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         queuedOpen = queued < 0 ? null : queued == 1;
         skinIndex = tag.hasKey("skin") ? tag.getInteger("skin") : 0;
         keypadCode = tag.getString("keypadCode");
+        scannerCode = tag.getString("scannerCode");
         autoCloseTicks = tag.getInteger("autoClose");
         boundScanners.clear();
         String scanners = tag.getString("boundScanners");

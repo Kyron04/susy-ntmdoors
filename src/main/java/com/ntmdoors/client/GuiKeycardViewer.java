@@ -1,6 +1,7 @@
 package com.ntmdoors.client;
 
 import com.ntmdoors.item.ItemCreativeKeycard;
+import com.ntmdoors.util.Biometrics;
 import com.ntmdoors.util.PrivateKeys;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
@@ -17,8 +18,9 @@ import java.util.List;
 
 /**
  * Read-only card viewer. Opened by sneak right-clicking an Operator Keycard, a coloured RFID card
- * or the Creative Keycard, it lists every private key stored on the card. Long lists scroll with the
- * wheel, the arrow keys or the scrollbar.
+ * or the Creative Keycard, it lists every private key stored on the card, with the card's
+ * biometric identity first when it carries one. Long lists scroll with the wheel, the arrow keys
+ * or the scrollbar.
  */
 @SideOnly(Side.CLIENT)
 public class GuiKeycardViewer extends GuiScreen {
@@ -38,6 +40,8 @@ public class GuiKeycardViewer extends GuiScreen {
     private final ItemStack card;
     private final List<PrivateKeys.Key> keys;
     private final boolean creative;
+    private final boolean biometric;
+    private final String biometricName;
 
     private int left;
     private int top;
@@ -48,6 +52,8 @@ public class GuiKeycardViewer extends GuiScreen {
         this.card = card.copy();
         this.creative = card.getItem() instanceof ItemCreativeKeycard;
         this.keys = PrivateKeys.get(card);
+        this.biometric = !creative && Biometrics.isBound(card);
+        this.biometricName = biometric ? Biometrics.ownerName(card) : "";
     }
 
     @Override
@@ -62,15 +68,28 @@ public class GuiKeycardViewer extends GuiScreen {
     // ------------------------------------------------------------ content
 
     private int entryCount() {
-        return creative ? 1 : keys.size();
+        if (creative) return 1;
+        return keys.size() + (biometric ? 1 : 0);
     }
 
     private String entryName(int index) {
-        return creative ? CREATIVE_ENTRY : keys.get(index).name;
+        if (creative) return CREATIVE_ENTRY;
+        if (biometric && index == 0) return Biometrics.label(biometricName);
+        return keys.get(keyIndex(index)).name;
     }
 
     private String entrySerial(int index) {
-        return creative ? "" : keys.get(index).serial;
+        if (creative) return "";
+        if (biometric && index == 0) return shortId(Biometrics.ownerUuid(card));
+        return keys.get(keyIndex(index)).serial;
+    }
+
+    private int keyIndex(int index) {
+        return biometric ? index - 1 : index;
+    }
+
+    private static String shortId(String uuid) {
+        return uuid.length() > 8 ? uuid.substring(0, 8) : uuid;
     }
 
     private int maxScroll() {
@@ -175,16 +194,18 @@ public class GuiKeycardViewer extends GuiScreen {
     }
 
     private void drawCount() {
-        if (creative || keys.isEmpty()) return;
-        String count = keys.size() + (keys.size() == 1 ? " key" : " keys");
-        drawString(fontRenderer, count,
-                left + PANEL_WIDTH - 12 - fontRenderer.getStringWidth(count),
+        if (creative) return;
+        int count = entryCount();
+        if (count == 0) return;
+        String label = count + (count == 1 ? " entry" : " entries");
+        drawString(fontRenderer, label,
+                left + PANEL_WIDTH - 12 - fontRenderer.getStringWidth(label),
                 top + 12, MUTED);
     }
 
     private void drawList(int mouseX, int mouseY) {
-        if (!creative && keys.isEmpty()) {
-            drawCenteredString(fontRenderer, "no private keys detected",
+        if (!creative && entryCount() == 0) {
+            drawCenteredString(fontRenderer, "no keys or ID detected",
                     left + PANEL_WIDTH / 2, top + LIST_TOP + 38, MUTED);
             drawCenteredString(fontRenderer, ":(", left + PANEL_WIDTH / 2, top + LIST_TOP + 52, MUTED);
             return;

@@ -1,8 +1,8 @@
 package com.ntmdoors.item;
 
 import com.ntmdoors.util.Biometrics;
+import com.ntmdoors.util.Names;
 import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
@@ -12,8 +12,8 @@ import java.util.List;
 
 /**
  * Biometric Operator Keycard. Everything the Operator Keycard does - privileged card, sneak
- * right-click on a bound scanner to set its security code - plus a recorded owner and a blue
- * name. The owner is carried now so the access check can compare it later.
+ * right-click on a bound scanner to set its security code - plus a biometric identity and a blue
+ * name. The identity is bound onto it by the programmer, never automatically.
  */
 public class ItemBiometricOperatorKeycard extends ItemOperatorKeycard {
 
@@ -27,13 +27,10 @@ public class ItemBiometricOperatorKeycard extends ItemOperatorKeycard {
     }
 
     @Override
-    public void onUpdate(ItemStack stack, World world, Entity entity, int itemSlot, boolean isSelected) {
-        Biometrics.tick(stack, world, entity);
-    }
-
-    @Override
     public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
-        super.addInformation(stack, world, tooltip, flag);
+        Names.addDescription(tooltip,
+                "Does exactly what the normal Operator Keycard does",
+                "while storing your biometric data");
         Biometrics.addOwnerLine(tooltip, stack);
     }
 }

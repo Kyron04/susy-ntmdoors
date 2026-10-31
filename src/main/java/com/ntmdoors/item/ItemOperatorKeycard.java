@@ -2,6 +2,7 @@ package com.ntmdoors.item;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
+import com.ntmdoors.util.Biometrics;
 import com.ntmdoors.util.Names;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
@@ -11,6 +12,7 @@ import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 
@@ -18,12 +20,13 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 /**
- * Operator Keycard. A privileged card produced by the Keycard Programmer; its access rules will be
- * defined later. It shares the RFID card item model and hand display, so it is also recognised by
- * the scanner as a card. Its name is orange and its stored keys are listed in the card viewer.
+ * Operator Keycard. A privileged card produced by the Keycard Programmer. It is recognised by the
+ * scanner as a card, and sneak right-clicking a scanner that is already bound to doors opens its
+ * security code screen, so the card also administers the doors it is assigned to.
  *
- * <p>Sneak right-clicking a scanner that is already bound to doors opens its security code screen.
- * The same action in the air still opens the key viewer.</p>
+ * <p>It shares the RFID card item model and hand display. Its name is orange and its description
+ * explains the scanner screen; stored keys are not listed, since the card is an administrator
+ * tool rather than a read-only viewer.</p>
  */
 public class ItemOperatorKeycard extends ItemRfidCard {
 
@@ -62,6 +65,15 @@ public class ItemOperatorKeycard extends ItemRfidCard {
         TileEntityKeycardScanner scanner = (TileEntityKeycardScanner) te;
         if (!scanner.hasBoundDoors()) return EnumActionResult.PASS;
 
+        // During a lockout only the biometric operator card may reach the code screen.
+        if (scanner.isLockedOut() && !(this instanceof ItemBiometricOperatorKeycard)) {
+            if (world.isRemote) {
+                player.sendStatusMessage(new TextComponentTranslation(
+                        "ntmdoors.msg.scanner_locked_out"), true);
+            }
+            return EnumActionResult.SUCCESS;
+        }
+
         if (world.isRemote) {
             NTMDoors.proxy.openScannerCodeGui(scanner.getPos());
         }
@@ -76,5 +88,6 @@ public class ItemOperatorKeycard extends ItemRfidCard {
                 "to scanners bound to doors",
                 "Sneak + Right Click a bound Scanner to set",
                 "its security code");
+        Biometrics.addOwnerIfBound(tooltip, stack);
     }
 }

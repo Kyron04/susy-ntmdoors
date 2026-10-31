@@ -375,6 +375,8 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
             // A keypad that was configured before its door existed adopts the door on first use.
             if (!door.isKeypadBound()) door.bindKeypadCode(storedCode);
             if (!entered.equals(door.getKeypadCode())) continue;
+            // A scanner lockdown outranks the keypad; report a denial rather than a silent success.
+            if (door.isLockedDown()) continue;
             door.toggle();
             toggled = true;
         }

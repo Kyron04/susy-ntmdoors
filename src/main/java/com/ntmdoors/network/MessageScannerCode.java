@@ -1,5 +1,6 @@
 package com.ntmdoors.network;
 
+import com.ntmdoors.item.ItemBiometricOperatorKeycard;
 import com.ntmdoors.item.ItemOperatorKeycard;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
 import com.ntmdoors.util.ModSounds;
@@ -79,6 +80,14 @@ public class MessageScannerCode implements IMessage {
                 return;
             }
 
+            // A lockout only keeps the reader shut; it never blocks the code screen for the
+            // biometric operator card, because that is how the operator reaches the settings.
+            if (scanner.isLockedOut() && !holdsBiometricOperator(player)) {
+                player.sendStatusMessage(new TextComponentTranslation("ntmdoors.msg.scanner_locked_out"), true);
+                result(player, message.pos, MessageScannerCodeResult.DENIED);
+                return;
+            }
+
             String code = TileEntityKeycardScanner.sanitiseCode(message.code);
             if (code.isEmpty()) {
                 player.world.playSound(null, message.pos, ModSounds.SCANNER_BUTTON8,
@@ -95,6 +104,7 @@ public class MessageScannerCode implements IMessage {
                 player.world.playSound(null, message.pos, ModSounds.SCANNER_BUTTON3,
                         SoundCategory.BLOCKS, 0.8F, 1F);
                 player.sendStatusMessage(new TextComponentTranslation("ntmdoors.msg.scanner_code_set"), true);
+                scanner.resetFailures();
                 scanner.openCodeSession(player);
                 result(player, message.pos, MessageScannerCodeResult.SET);
                 return;
@@ -104,9 +114,11 @@ public class MessageScannerCode implements IMessage {
                 player.world.playSound(null, message.pos, ModSounds.SCANNER_BUTTON3,
                         SoundCategory.BLOCKS, 0.8F, 1F);
                 player.sendStatusMessage(new TextComponentTranslation("ntmdoors.msg.scanner_code_accepted"), true);
+                scanner.resetFailures();
                 scanner.openCodeSession(player);
                 result(player, message.pos, MessageScannerCodeResult.ACCEPTED);
             } else {
+                scanner.recordFailure();
                 player.world.playSound(null, message.pos, ModSounds.SCANNER_BUTTON8,
                         SoundCategory.BLOCKS, 0.8F, 1F);
                 player.sendStatusMessage(new TextComponentTranslation("ntmdoors.msg.scanner_code_denied"), true);
@@ -122,6 +134,12 @@ public class MessageScannerCode implements IMessage {
         private static boolean holdsOperatorKeycard(EntityPlayerMP player) {
             return player.getHeldItemMainhand().getItem() instanceof ItemOperatorKeycard
                     || player.getHeldItemOffhand().getItem() instanceof ItemOperatorKeycard;
+        }
+
+        /** The one card that may still reach the code screen while a lockout is running. */
+        private static boolean holdsBiometricOperator(EntityPlayerMP player) {
+            return player.getHeldItemMainhand().getItem() instanceof ItemBiometricOperatorKeycard
+                    || player.getHeldItemOffhand().getItem() instanceof ItemBiometricOperatorKeycard;
         }
     }
 }

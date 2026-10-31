@@ -2,6 +2,7 @@ package com.ntmdoors.item;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
+import com.ntmdoors.util.Biometrics;
 import com.ntmdoors.util.InteractionGuard;
 import com.ntmdoors.util.Names;
 import com.ntmdoors.util.PrivateKeys;
@@ -14,6 +15,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 
@@ -53,6 +55,14 @@ public class ItemRfidCard extends Item {
         if (this instanceof ItemOperatorKeycard) {
             TileEntityKeycardScanner scanner = scannerInSight(player);
             if (scanner != null && scanner.hasBoundDoors()) {
+                // During a lockout only the biometric operator card may reach the code screen.
+                if (scanner.isLockedOut() && !(this instanceof ItemBiometricOperatorKeycard)) {
+                    if (world.isRemote) {
+                        player.sendStatusMessage(new TextComponentTranslation(
+                                "ntmdoors.msg.scanner_locked_out"), true);
+                    }
+                    return new ActionResult<>(EnumActionResult.SUCCESS, stack);
+                }
                 if (world.isRemote) {
                     NTMDoors.proxy.openScannerCodeGui(scanner.getPos());
                 }
@@ -83,12 +93,12 @@ public class ItemRfidCard extends Item {
             Names.addDescription(tooltip,
                     "Use the Keycard Programmer to assign this card",
                     "a color and private key");
-            return;
+        } else if (!(this instanceof ItemOperatorKeycard)) {
+            for (PrivateKeys.Key key : PrivateKeys.get(stack)) {
+                tooltip.add(TextFormatting.WHITE + key.name);
+                tooltip.add(TextFormatting.WHITE + key.serial);
+            }
         }
-        if (this instanceof ItemOperatorKeycard) return;
-        for (PrivateKeys.Key key : PrivateKeys.get(stack)) {
-            tooltip.add(TextFormatting.WHITE + key.name);
-            tooltip.add(TextFormatting.WHITE + key.serial);
-        }
+        Biometrics.addOwnerIfBound(tooltip, stack);
     }
 }

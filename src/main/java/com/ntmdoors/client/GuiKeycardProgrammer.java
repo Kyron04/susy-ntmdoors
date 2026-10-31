@@ -558,12 +558,18 @@ public class GuiKeycardProgrammer extends GuiContainer {
                 return "Insert a key in both slots";
             case NO_KEY:
                 return "The left key has no private key";
+            case NO_BIOMETRIC:
+                return "No biometric data on the key";
             case INVALID_TARGET:
                 return "Invalid bind target";
             case BLANK_CARD:
                 return "Blank RFID cards cannot be bound";
             case ALREADY_BOUND:
                 return "That key is already on this card";
+            case BIOMETRIC_TAKEN:
+                return "Card bound to someone else";
+            case BIOMETRIC_ALREADY:
+                return "That ID is already on this card";
             default:
                 return "";
         }
@@ -581,8 +587,6 @@ public class GuiKeycardProgrammer extends GuiContainer {
                 return "Left item has no NBT";
             case TARGET_NOT_FRESH:
                 return "Right item must be fresh";
-            case BIOMETRIC:
-                return "Biometric items cannot be copied";
             default:
                 return "";
         }
