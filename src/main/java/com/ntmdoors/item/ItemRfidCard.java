@@ -41,6 +41,8 @@ public class ItemRfidCard extends Item {
         setRegistryName(NTMDoors.MODID, name);
         setTranslationKey(NTMDoors.MODID + "." + name);
         setCreativeTab(NTMDoors.TAB);
+        // A keycard is a personal access token: one card per stack, like a key.
+        setMaxStackSize(1);
     }
 
     @Override

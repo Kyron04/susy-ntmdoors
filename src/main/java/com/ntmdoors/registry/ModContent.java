@@ -15,6 +15,7 @@ import com.ntmdoors.item.ItemBiometricOperatorKeycard;
 import com.ntmdoors.item.ItemBiometricRelayKey;
 import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.item.ItemDoorBlock;
+import com.ntmdoors.item.ItemKeycardHolder;
 import com.ntmdoors.item.ItemNamedRfidCard;
 import com.ntmdoors.item.ItemOperatorKeycard;
 import com.ntmdoors.item.ItemRelayKey;
@@ -87,6 +88,8 @@ public class ModContent {
     public static final ItemBiometricOperatorKeycard BIOMETRIC_OPERATOR_KEYCARD = new ItemBiometricOperatorKeycard();
     /** Relay Key that also records the owner, shown with a blue name. */
     public static final ItemBiometricRelayKey BIOMETRIC_RELAY_KEY = new ItemBiometricRelayKey();
+    /** Carried case for up to twelve keycards, opened with a right-click. */
+    public static final ItemKeycardHolder KEYCARD_HOLDER = new ItemKeycardHolder();
 
     /** The seven cosmetic RFID colours, in the order the programmer's second page shows them. */
     public static final List<ItemRfidCard> COLOUR_CARDS = Collections.unmodifiableList(Arrays.asList(
@@ -142,6 +145,8 @@ public class ModContent {
         for (ItemRfidCard card : RFID_CARDS) {
             if (card instanceof ItemNamedRfidCard) e.getRegistry().register(card);
         }
+        // The holder is new too, so it follows the themed cards and leaves every saved item ID alone.
+        e.getRegistry().register(KEYCARD_HOLDER);
     }
 
     @SubscribeEvent
