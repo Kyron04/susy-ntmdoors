@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Slot;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -40,6 +41,16 @@ public class GuiSafe extends GuiContainer {
     private static final int PILL_HEIGHT = 14;
     private static final int ARROW_SIZE = 16;
     private static final int ARROW_Y = ContainerSafe.GUI_HEIGHT - 20;
+
+    /** The code safe has no owner restriction; the biometric safe keeps its holder check. */
+    private static final int[] CODE_OPTIONS = {
+            MessageSafeOption.LOCKOUT,
+            MessageSafeOption.RESET_CODE
+    };
+    private static final int[] BIOMETRIC_OPTIONS = {
+            MessageSafeOption.MATCH_HOLDER,
+            MessageSafeOption.LOCKOUT
+    };
 
     private final TileEntitySafe tile;
     private final ContainerSafe safeContainer;
@@ -139,18 +150,18 @@ public class GuiSafe extends GuiContainer {
     }
 
     private int optionAt(int mouseX, int mouseY) {
-        int count = optionCount();
-        for (int i = 0; i < count; i++) {
+        int[] options = options();
+        for (int i = 0; i < options.length; i++) {
             int y = OPTION_TOP + i * OPTION_HEIGHT;
             if (mouseX >= 6 && mouseX < xSize - 6 && mouseY >= y - 2 && mouseY < y + OPTION_HEIGHT - 4) {
-                return i;
+                return options[i];
             }
         }
         return -1;
     }
 
-    private int optionCount() {
-        return tile.supportsCode() ? 3 : 2;
+    private int[] options() {
+        return tile.isBiometric() ? BIOMETRIC_OPTIONS : CODE_OPTIONS;
     }
 
     // ------------------------------------------------------------ background
@@ -159,6 +170,8 @@ public class GuiSafe extends GuiContainer {
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         this.drawDefaultBackground();
         super.drawScreen(mouseX, mouseY, partialTicks);
+        // Draw the full item tooltip last, on top of JEI/HEI, exactly like the programmer GUI.
+        drawSlotTooltip(mouseX, mouseY);
     }
 
     @Override
@@ -241,21 +254,23 @@ public class GuiSafe extends GuiContainer {
     }
 
     private void drawOptions(int mouseX, int mouseY) {
-        for (int i = 0; i < optionCount(); i++) {
+        int[] options = options();
+        for (int i = 0; i < options.length; i++) {
+            int option = options[i];
             int y = OPTION_TOP + i * OPTION_HEIGHT;
             boolean hovered = isOptionHovered(i, mouseX, mouseY);
             if (hovered) {
                 drawRect(6, y - 2, xSize - 6, y + OPTION_HEIGHT - 4, HOVER);
             }
 
-            drawString(fontRenderer, optionLabel(i), 12, y + 1, COLOUR);
-            drawString(fontRenderer, optionHint(i), 12, y + 11, MUTED);
-            drawOptionPill(i, y);
+            drawString(fontRenderer, optionLabel(option), 12, y + 1, COLOUR);
+            drawString(fontRenderer, optionHint(option), 12, y + 11, MUTED);
+            drawOptionPill(option, y);
         }
     }
 
-    private boolean isOptionHovered(int option, int mouseX, int mouseY) {
-        int y = OPTION_TOP + option * OPTION_HEIGHT;
+    private boolean isOptionHovered(int row, int mouseX, int mouseY) {
+        int y = OPTION_TOP + row * OPTION_HEIGHT;
         return mouseX >= 6 && mouseX < xSize - 6
                 && mouseY >= y - 2 && mouseY < y + OPTION_HEIGHT - 4;
     }
@@ -276,7 +291,7 @@ public class GuiSafe extends GuiContainer {
     private String optionHint(int option) {
         switch (option) {
             case MessageSafeOption.MATCH_HOLDER:
-                return tile.isBiometric() ? "Owner's card." : "Owner only.";
+                return "Owner's card.";
             case MessageSafeOption.LOCKOUT:
                 return "3 fails = 5 min.";
             case MessageSafeOption.RESET_CODE:
@@ -347,11 +362,34 @@ public class GuiSafe extends GuiContainer {
 
     // ------------------------------------------------------------ tooltips / GL
 
+    /** Vanilla's own hovered-slot pass stays empty so the tooltip is only ever drawn once. */
     @Override
     protected void renderHoveredToolTip(int mouseX, int mouseY) {
-        Slot slot = getSlotUnderMouse();
-        if (slot != null && page != 0 && slot.slotNumber < ContainerSafe.SAFE_SLOT_COUNT) return;
-        super.renderHoveredToolTip(mouseX, mouseY);
+    }
+
+    /** Draws the full stack tooltip, including every NBT line, after the GUI and overlays. */
+    private void drawSlotTooltip(int mouseX, int mouseY) {
+        Slot slot = findSlot(mouseX, mouseY);
+        if (slot == null) return;
+
+        ItemStack stack = slot.getStack();
+        if (stack.isEmpty()) return;
+
+        this.renderToolTip(stack, mouseX, mouseY);
+        resetGuiState();
+    }
+
+    private Slot findSlot(int mouseX, int mouseY) {
+        for (Slot slot : inventorySlots.inventorySlots) {
+            if (!slot.isEnabled()) continue;
+            if (slot.slotNumber < ContainerSafe.SAFE_SLOT_COUNT && page != 0) continue;
+            int x = guiLeft + slot.xPos;
+            int y = guiTop + slot.yPos;
+            if (mouseX >= x && mouseX < x + 16 && mouseY >= y && mouseY < y + 16) {
+                return slot;
+            }
+        }
+        return null;
     }
 
     /** Restores the GL state a container GUI expects after a tooltip has been drawn. */

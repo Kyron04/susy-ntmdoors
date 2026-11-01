@@ -27,9 +27,8 @@ import java.util.UUID;
  * The shared body of both safes: a 27-slot inventory, the two settings toggles, the lockout timer
  * and the short access session that lets a player use the container and its options page.
  *
- * <p>The code safe adds a six digit code and an owner. The biometric safe leaves the code fields
- * unused and overrides its access check. The code digits are never sent to clients; only whether
- * one exists.</p>
+ * <p>The code safe adds a six digit code. The biometric safe leaves the code fields unused and
+ * overrides its access check. The code digits are never sent to clients; only whether one exists.</p>
  */
 public class TileEntitySafe extends TileEntitySynced implements IInventory, ITickable {
 
@@ -49,10 +48,6 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
     private String securityCode = "";
     /** Synced mirror of {@link #securityCode}; the digits themselves never leave the server. */
     private boolean codeSet;
-    /** Server only. The player who set the current code, used by Match user. */
-    @Nullable
-    private UUID owner;
-    private String ownerName = "";
 
     private boolean matchHolder = true;
     private boolean lockoutMode;
@@ -91,15 +86,6 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
         return codeSet;
     }
 
-    /** True once a player has set the current code and is remembered as its owner. */
-    public boolean hasOwner() {
-        return owner != null;
-    }
-
-    public String getOwnerName() {
-        return ownerName;
-    }
-
     /** Digits only, at most {@link #CODE_LENGTH} characters. */
     public static String sanitiseCode(String raw) {
         if (raw == null) return "";
@@ -112,8 +98,8 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
     }
 
     /**
-     * Server side: handles one keypad submission. The first non-empty code becomes the safe's code
-     * and records the player as its owner; later submissions must match.
+     * Server side: handles one keypad submission. The first non-empty code becomes the safe's code;
+     * later submissions must match.
      */
     public int submitCode(EntityPlayer player, String raw) {
         if (world == null || world.isRemote || player == null || !supportsCode()) {
@@ -134,8 +120,6 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
         if (!codeSet) {
             securityCode = code;
             codeSet = true;
-            owner = player.getUniqueID();
-            ownerName = player.getName();
             resetFailures();
             grantAccess(player);
             scheduleOpen(player);
@@ -153,14 +137,6 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
             return MessageSafeResult.DENIED;
         }
 
-        if (matchHolder && owner != null && !owner.equals(player.getUniqueID())) {
-            recordFailure();
-            playFail();
-            msg(player, isLockedOut() ? "ntmdoors.msg.safe_locked_out" : "ntmdoors.msg.safe_code_denied");
-            sync();
-            return MessageSafeResult.DENIED;
-        }
-
         resetFailures();
         grantAccess(player);
         scheduleOpen(player);
@@ -170,13 +146,11 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
         return MessageSafeResult.ACCEPTED;
     }
 
-    /** Server side: forgets the code and its owner so the next entry starts over. */
+    /** Server side: forgets the code so the next entry starts over. */
     public boolean resetCode() {
         if (world == null || world.isRemote || !supportsCode() || !codeSet) return false;
         securityCode = "";
         codeSet = false;
-        owner = null;
-        ownerName = "";
         resetFailures();
         clearLockout();
         sync();
@@ -189,7 +163,7 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
         return matchHolder;
     }
 
-    /** Server side: only the owner may unlock this safe when on. */
+    /** Server side: only the card's owner may open the biometric safe when on. */
     public boolean setMatchHolder(boolean value) {
         if (world == null || world.isRemote || matchHolder == value) return false;
         matchHolder = value;
@@ -258,6 +232,14 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
         pendingOpenTicks = OPEN_DELAY_TICKS;
     }
 
+    /** Server side: opens the container immediately, used by the Creative Keycard. */
+    public void openContainer(EntityPlayer player) {
+        if (world == null || world.isRemote || player == null) return;
+        grantAccess(player);
+        player.openGui(NTMDoors.INSTANCE, GuiHandler.SAFE, world,
+                pos.getX(), pos.getY(), pos.getZ());
+    }
+
     protected void sendResult(EntityPlayer player, int result) {
         if (world == null || world.isRemote || !(player instanceof EntityPlayerMP)) return;
         ModNetwork.INSTANCE.sendTo(new MessageSafeResult(pos, result), (EntityPlayerMP) player);
@@ -290,9 +272,7 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
             if (player != null && player.isEntityAlive()
                     && player.getDistanceSq(pos.getX() + 0.5D, pos.getY() + 0.5D,
                     pos.getZ() + 0.5D) <= 64D) {
-                grantAccess(player);
-                player.openGui(NTMDoors.INSTANCE, GuiHandler.SAFE, world,
-                        pos.getX(), pos.getY(), pos.getZ());
+                openContainer(player);
             }
         }
 
@@ -449,8 +429,6 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
         tag.setTag("Items", list);
         tag.setString("securityCode", securityCode);
         tag.setBoolean("codeSet", codeSet);
-        if (owner != null) tag.setString("owner", owner.toString());
-        tag.setString("ownerName", ownerName);
         writeOptions(tag);
         tag.setInteger("failedAttempts", failedAttempts);
         tag.setInteger("lockoutTicks", lockoutTicks);
@@ -463,7 +441,6 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
         super.writeToNBT(tag);
         tag.setBoolean("codeSet", codeSet);
         tag.setBoolean("biometric", isBiometric());
-        tag.setString("ownerName", ownerName);
         writeOptions(tag);
         return tag;
     }
@@ -484,14 +461,6 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
 
         if (tag.hasKey("securityCode")) securityCode = sanitiseCode(tag.getString("securityCode"));
         codeSet = tag.hasKey("codeSet") ? tag.getBoolean("codeSet") : !securityCode.isEmpty();
-        if (tag.hasKey("owner")) {
-            try {
-                owner = UUID.fromString(tag.getString("owner"));
-            } catch (IllegalArgumentException ignored) {
-                owner = null;
-            }
-        }
-        if (tag.hasKey("ownerName")) ownerName = tag.getString("ownerName");
         readOptions(tag);
         if (tag.hasKey("failedAttempts")) failedAttempts = tag.getInteger("failedAttempts");
         if (tag.hasKey("lockoutTicks")) {

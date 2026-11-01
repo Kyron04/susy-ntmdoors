@@ -1,6 +1,7 @@
 package com.ntmdoors.block;
 
 import com.ntmdoors.NTMDoors;
+import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.tile.TileEntitySafe;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
@@ -121,10 +122,17 @@ public class BlockSafe extends Block {
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player,
                                     EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
         if (world.isRemote) {
-            NTMDoors.proxy.openSafeCodeGui(pos);
+            // The Creative Keycard bypasses the keypad; the server opens the container directly.
+            if (!ItemCreativeKeycard.isHeldBy(player)) {
+                NTMDoors.proxy.openSafeCodeGui(pos);
+            }
         } else {
             // A safe placed before the tile entity existed gets one on first use.
             ensureTileEntity(world, pos, state);
+            TileEntity te = world.getTileEntity(pos);
+            if (te instanceof TileEntitySafe && ItemCreativeKeycard.isHeldBy(player)) {
+                ((TileEntitySafe) te).openContainer(player);
+            }
         }
         return true;
     }

@@ -2,6 +2,7 @@ package com.ntmdoors.block;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.item.ItemBiometricOperatorKeycard;
+import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.tile.TileEntityBiometricSafe;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
@@ -32,7 +33,10 @@ public class BlockBiometricSafe extends BlockSafe {
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player,
                                     EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
         if (world.isRemote) {
-            if (holdsBiometricOperator(player)) NTMDoors.proxy.openSafeBiometricGui(pos);
+            // The Creative Keycard opens the container directly; do not show the scan screen.
+            if (!ItemCreativeKeycard.isHeldBy(player) && holdsBiometricOperator(player)) {
+                NTMDoors.proxy.openSafeBiometricGui(pos);
+            }
             return true;
         }
 
@@ -42,7 +46,12 @@ public class BlockBiometricSafe extends BlockSafe {
             te = world.getTileEntity(pos);
         }
         if (te instanceof TileEntityBiometricSafe) {
-            ((TileEntityBiometricSafe) te).tryBiometricAccess(player);
+            TileEntityBiometricSafe safe = (TileEntityBiometricSafe) te;
+            if (ItemCreativeKeycard.isHeldBy(player)) {
+                safe.openContainer(player);
+            } else {
+                safe.tryBiometricAccess(player);
+            }
         }
         return true;
     }
