@@ -83,7 +83,7 @@ public class ItemRfidCard extends Item {
     /** The keycard scanner under the player's crosshair, or null when looking elsewhere. */
     @Nullable
     private static TileEntityKeycardScanner scannerInSight(EntityPlayer player) {
-        RayTraceResult hit = player.rayTrace(5.0D, 1.0F);
+        RayTraceResult hit = InteractionGuard.rayTrace(player, 5.0D);
         if (hit == null || hit.typeOfHit != RayTraceResult.Type.BLOCK) return null;
         TileEntity te = player.world.getTileEntity(hit.getBlockPos());
         return te instanceof TileEntityKeycardScanner ? (TileEntityKeycardScanner) te : null;

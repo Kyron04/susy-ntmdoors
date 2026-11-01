@@ -37,6 +37,7 @@ import net.minecraft.item.crafting.ShapedRecipes;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -98,7 +99,7 @@ public class ModContent {
     public static final ItemRfidCard SCP_LEVEL_6_KEYCARD =
             new ItemNamedRfidCard("scp_level_6_keycard", "Level 6 clearance");
     public static final ItemRfidCard GOOGA_SECURITY_KEYCARD =
-            new ItemNamedRfidCard("googa_security_keycard", "Security is goog");
+            new ItemNamedRfidCard(TextFormatting.GOLD, "googa_security_keycard", "Security is goog");
     /** Privileged card produced by the programmer; access rules are not defined yet. */
     public static final ItemOperatorKeycard OPERATOR_KEYCARD = new ItemOperatorKeycard();
     /** Debug card that bypasses every door restriction. */
