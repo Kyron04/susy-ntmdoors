@@ -24,6 +24,8 @@ public class ItemSafeBindingKey extends Item {
 
     @Override
     public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
-        Names.addDescription(tooltip, "Binds safes to the security infrastructure to protect your stuff.");
+        Names.addDescription(tooltip,
+                "Binds safes to the security infrastructure",
+                "to protect your stuff.");
     }
 }

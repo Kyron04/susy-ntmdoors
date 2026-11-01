@@ -166,7 +166,8 @@ public class ModContent {
         e.getRegistry().register(new ItemBlockSafe(SAFE,
                 "A heavy door and keypad between you and your stuff.").setRegistryName(SAFE.getRegistryName()));
         e.getRegistry().register(new ItemBlockSafe(BIOMETRIC_SAFE,
-                "A heavy door, scanner, and your own DNA between you and your stuff.")
+                "A heavy door, scanner, and your own DNA",
+                "between you and your stuff.")
                 .setRegistryName(BIOMETRIC_SAFE.getRegistryName()));
     }
 
