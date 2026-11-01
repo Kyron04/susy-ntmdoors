@@ -2,6 +2,7 @@ package com.ntmdoors.gui;
 
 import com.ntmdoors.item.ItemBiometricKeycard;
 import com.ntmdoors.item.ItemCreativeKeycard;
+import com.ntmdoors.item.ItemNamedRfidCard;
 import com.ntmdoors.item.ItemOperatorKeycard;
 import com.ntmdoors.item.ItemRelayKey;
 import com.ntmdoors.item.ItemRfidCard;
@@ -85,10 +86,11 @@ public class ContainerKeycardProgrammer extends Container {
             stack -> stack.getItem() instanceof ItemRfidCard
                     && !(stack.getItem() instanceof ItemOperatorKeycard)
                     && !(stack.getItem() instanceof ItemCreativeKeycard);
-    /** Page two's card slot: the biometric card keeps its fixed yellow identity, so no recolour. */
+    /** Page two's card slot: biometric and themed cards keep their fixed identity, so no recolour. */
     private static final Predicate<ItemStack> RECOLOUR_ONLY =
             stack -> RFID_ONLY.test(stack)
-                    && !(stack.getItem() instanceof ItemBiometricKeycard);
+                    && !(stack.getItem() instanceof ItemBiometricKeycard)
+                    && !(stack.getItem() instanceof ItemNamedRfidCard);
     private static final Predicate<ItemStack> LEGACY_ONLY =
             stack -> stack.getItem() instanceof ItemRelayKey
                     || stack.getItem() instanceof ItemOperatorKeycard;
@@ -174,7 +176,8 @@ public class ContainerKeycardProgrammer extends Container {
                 || !(card.getItem() instanceof ItemRfidCard)
                 || card.getItem() instanceof ItemOperatorKeycard
                 || card.getItem() instanceof ItemCreativeKeycard
-                || card.getItem() instanceof ItemBiometricKeycard) {
+                || card.getItem() instanceof ItemBiometricKeycard
+                || card.getItem() instanceof ItemNamedRfidCard) {
             playButtonClick(player);
             return;
         }

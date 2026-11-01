@@ -344,6 +344,15 @@ public class BlockDoorGeneric extends Block {
 
     // ------------------------------------------------------------ interaction
 
+    /**
+     * The facing is set at placement and must stay put. Wrenches from other mods have no business
+     * re-orienting a door; the right-click guard also refuses the interaction before it gets here.
+     */
+    @Override
+    public boolean rotateBlock(World world, BlockPos pos, EnumFacing axis) {
+        return false;
+    }
+
     @Override
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand,
                                     EnumFacing side, float hitX, float hitY, float hitZ) {
@@ -367,6 +376,7 @@ public class BlockDoorGeneric extends Block {
         if (!world.isRemote) {
             TileEntityDoorGeneric core = getCore(world, pos, state);
             if (core != null && core.beginDismantle()) {
+                core.unbindFromControllers();
                 BlockPos corePos = core.getPos();
                 for (BlockPos off : decl.getCells(state.getValue(FACING))) {
                     BlockPos p = corePos.add(off);

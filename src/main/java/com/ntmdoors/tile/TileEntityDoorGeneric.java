@@ -275,6 +275,22 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
     }
 
     /**
+     * Server side: removes this door from every scanner and keypad that lists it. A door rebuilt in
+     * the same position is a new door, so the old bindings must not follow it.
+     */
+    public void unbindFromControllers() {
+        if (world == null || world.isRemote) return;
+        BlockPos self = pos.toImmutable();
+        for (TileEntity te : new ArrayList<>(world.loadedTileEntityList)) {
+            if (te instanceof TileEntityKeycardScanner) {
+                ((TileEntityKeycardScanner) te).unbindDoor(self);
+            } else if (te instanceof TileEntityDoorKeypad) {
+                ((TileEntityDoorKeypad) te).unbindDoor(self);
+            }
+        }
+    }
+
+    /**
      * The same request, with the option to ignore a scanner lockdown. Only the Creative Keycard
      * and a scanner with Override Door Locks use the override path; closing always works.
      */

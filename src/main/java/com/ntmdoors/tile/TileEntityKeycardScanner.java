@@ -1,5 +1,6 @@
 package com.ntmdoors.tile;
 
+import com.ntmdoors.block.BlockDoorGeneric;
 import com.ntmdoors.client.ScannerLoopSound;
 import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.DoorState;
@@ -140,6 +141,15 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
     /** Server only. The player whose card started the current scan. */
     @Nullable
     private UUID scanningPlayer;
+    /**
+     * Server only. Copies of the cards held when the scan started, so swapping cards during the
+     * one-second read cannot change the result. Empty when no scan is running or the scan was
+     * interrupted by a save.
+     */
+    private ItemStack scanMain = ItemStack.EMPTY;
+    private ItemStack scanOff = ItemStack.EMPTY;
+    /** Snapshot of the creative-card check at scan start, for the same reason. */
+    private boolean scanCreative;
 
     private boolean restorePending;
 
@@ -447,6 +457,17 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         closeBoundDoors();
     }
 
+    /**
+     * Server side: forgets a door that was destroyed, so a door rebuilt in the same position starts
+     * fresh instead of being silently controlled by this scanner again.
+     */
+    public void unbindDoor(BlockPos doorPos) {
+        if (world == null || world.isRemote || doorPos == null) return;
+        if (!boundDoors.remove(doorPos) && !pendingDoors.remove(doorPos)) return;
+        refreshCount();
+        sync();
+    }
+
     /** Server side: true when any bound door is mid-move. */
     public boolean hasMovingDoor() {
         if (world == null) return false;
@@ -473,19 +494,26 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
                 && codeSessionPlayer.equals(player.getUniqueID());
     }
 
-    /** True when either held card carries a key or identity assigned to this scanner. */
+    /** True when either card frozen at the start of the scan carries an entry assigned here. */
     private boolean holdsAssignedKey(EntityPlayer player) {
-        return grantsAccess(player.getHeldItemMainhand(), player)
-                || grantsAccess(player.getHeldItemOffhand(), player);
+        return grantsAccess(scanMain, player) || grantsAccess(scanOff, player);
     }
 
     /**
      * A private key on the card works unless keys are ignored. A biometric identity only works
      * when IDs are enabled, it is enrolled here, and - unless the scanner is configured otherwise -
      * only for the player the identity belongs to.
+     *
+     * <p>A card carrying a biometric identity is personal: with holder matching on, the whole card
+     * is refused for anyone but the identity's owner, including the private keys stored on it. That
+     * is what stops a stolen biometric card from being used through its keys.</p>
      */
     private boolean grantsAccess(ItemStack stack, EntityPlayer player) {
         if (stack.isEmpty() || !(stack.getItem() instanceof ItemRfidCard)) return false;
+        if (matchHolder && !ignoreIds && Biometrics.isBound(stack)
+                && !Biometrics.isOwnedBy(stack, player)) {
+            return false;
+        }
         if (!ignoreKeys) {
             for (PrivateKeys.Key key : PrivateKeys.get(stack)) {
                 if (hasAssignedKey(key.serial)) return true;
@@ -675,10 +703,15 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
 
     // ------------------------------------------------------------ scanning
 
-    /** Server side: starts a scan for the card the player is holding. */
+    /** Server side: starts a scan for the cards the player is holding right now. */
     public void useCard(EntityPlayer player) {
         if (state == State.SCANNING) return;
         scanningPlayer = player.getUniqueID();
+        // Freeze the cards: the one-second read must judge what was held when it started, not
+        // whatever the player swaps into their hand before the result.
+        scanMain = player.getHeldItemMainhand().copy();
+        scanOff = player.getHeldItemOffhand().copy();
+        scanCreative = ItemCreativeKeycard.isHeldBy(player);
         state = State.SCANNING;
         ticks = SCAN_TICKS;
         world.playSound(null, pos, ModSounds.SCANNER_BUTTON3, SoundCategory.BLOCKS, SOUND_VOLUME, 1F);
@@ -687,14 +720,13 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
 
     private void resolveScan() {
         EntityPlayer player = scanningPlayer == null ? null : world.getPlayerEntityByUUID(scanningPlayer);
-        boolean creative = player != null && ItemCreativeKeycard.isHeldBy(player);
         boolean blocked = lockdown || lockedOut;
-        boolean granted = player != null && (creative || (!blocked && holdsAssignedKey(player)));
+        boolean granted = player != null && (scanCreative || (!blocked && holdsAssignedKey(player)));
 
         if (granted) {
             resetFailures();
             world.playSound(null, pos, ModSounds.SCANNER_BUTTON3, SoundCategory.BLOCKS, SOUND_VOLUME, 1F);
-            openBoundDoors(creative);
+            openBoundDoors(scanCreative);
             state = State.GRANTED;
             if (player != null) msg(player, "ntmdoors.msg.scanner_granted");
         } else {
@@ -706,6 +738,9 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         }
         ticks = RESULT_TICKS;
         scanningPlayer = null;
+        scanMain = ItemStack.EMPTY;
+        scanOff = ItemStack.EMPTY;
+        scanCreative = false;
         sync();
     }
 
@@ -734,6 +769,7 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
     private void restoreBindings() {
         if (world == null) return;
         int before = boundDoors.size();
+        pruneStaleDoors();
 
         for (TileEntity te : world.loadedTileEntityList) {
             if (!(te instanceof TileEntityDoorGeneric)) continue;
@@ -757,6 +793,26 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
             state = State.SYNCED;
             ticks = RESULT_TICKS;
             sync();
+        }
+    }
+
+    /**
+     * Drops positions whose door no longer exists, and doors rebuilt in the same spot. A rebuilt
+     * door has no record of this scanner, so keeping the position would let the scanner silently
+     * control it again. Unloaded positions are left alone; they are checked on the next load.
+     */
+    private void pruneStaleDoors() {
+        for (int i = boundDoors.size() - 1; i >= 0; i--) {
+            BlockPos doorPos = boundDoors.get(i);
+            if (!world.isBlockLoaded(doorPos)) continue;
+            TileEntity te = world.getTileEntity(doorPos);
+            if (te instanceof TileEntityDoorGeneric) {
+                if (((TileEntityDoorGeneric) te).isBoundToScanner(pos)) continue;
+            } else if (world.getBlockState(doorPos).getBlock() instanceof BlockDoorGeneric) {
+                // The door cell exists but its tile has not been built yet; check it on the next load.
+                continue;
+            }
+            boundDoors.remove(i);
         }
     }
 

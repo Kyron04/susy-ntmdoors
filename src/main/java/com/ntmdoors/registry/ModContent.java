@@ -15,6 +15,7 @@ import com.ntmdoors.item.ItemBiometricOperatorKeycard;
 import com.ntmdoors.item.ItemBiometricRelayKey;
 import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.item.ItemDoorBlock;
+import com.ntmdoors.item.ItemNamedRfidCard;
 import com.ntmdoors.item.ItemOperatorKeycard;
 import com.ntmdoors.item.ItemRelayKey;
 import com.ntmdoors.item.ItemRfidCard;
@@ -64,6 +65,17 @@ public class ModContent {
     public static final ItemRfidCard BLACK_RFID_CARD = new ItemRfidCard("black_rfid_card");
     public static final ItemRfidCard ORANGE_RFID_CARD = new ItemRfidCard("orange_rfid_card");
     public static final ItemRfidCard YELLOW_RFID_CARD = new ItemRfidCard("yellow_rfid_card");
+    /** Themed cards with a fixed name, sprite and description; otherwise ordinary RFID cards. */
+    public static final ItemRfidCard BLUE_MARKING_CARD =
+            new ItemNamedRfidCard("keycard_blue_marking", "Samitar's office");
+    public static final ItemRfidCard LABYRINTH_KEYCARD =
+            new ItemNamedRfidCard("labyrinth_keycard", "Something is under Shoreline");
+    public static final ItemRfidCard ENGINE_ROOM_KEYCARD =
+            new ItemNamedRfidCard("engine_room_keycard", "let's break the ice");
+    public static final ItemRfidCard TERMINAL_KEYCARD =
+            new ItemNamedRfidCard("terminal_keycard", "Only one way out of Tarkov");
+    public static final ItemRfidCard TERRAGROUP_LABS_KEYCARD =
+            new ItemNamedRfidCard("terragroup_labs_access_keycard", "what are they hiding");
     /** Privileged card produced by the programmer; access rules are not defined yet. */
     public static final ItemOperatorKeycard OPERATOR_KEYCARD = new ItemOperatorKeycard();
     /** Debug card that bypasses every door restriction. */
@@ -81,10 +93,12 @@ public class ModContent {
             RED_RFID_CARD, VIOLET_RFID_CARD, GREEN_RFID_CARD, BLUE_RFID_CARD,
             BLACK_RFID_CARD, ORANGE_RFID_CARD, YELLOW_RFID_CARD));
 
-    /** Blank first, then the colour variants in creative-tab order. */
+    /** Blank first, then the colour variants and the themed cards in creative-tab order. */
     public static final List<ItemRfidCard> RFID_CARDS = Collections.unmodifiableList(Arrays.asList(
             BLANK_RFID_CARD, RED_RFID_CARD, VIOLET_RFID_CARD, GREEN_RFID_CARD,
-            BLUE_RFID_CARD, BLACK_RFID_CARD, ORANGE_RFID_CARD, YELLOW_RFID_CARD));
+            BLUE_RFID_CARD, BLACK_RFID_CARD, ORANGE_RFID_CARD, YELLOW_RFID_CARD,
+            BLUE_MARKING_CARD, LABYRINTH_KEYCARD, ENGINE_ROOM_KEYCARD, TERMINAL_KEYCARD,
+            TERRAGROUP_LABS_KEYCARD));
 
     static {
         for (DoorDecl d : DoorDecls.ALL) NORMAL_DOORS.add(new BlockDoorGeneric(d, BlockDoorGeneric.Variant.NORMAL));
@@ -114,13 +128,20 @@ public class ModContent {
         e.getRegistry().register(new ItemBlockKeycardScanner(KEYCARD_SCANNER).setRegistryName(KEYCARD_SCANNER.getRegistryName()));
         e.getRegistry().register(new ItemBlockKeycardProgrammer(KEYCARD_PROGRAMMER).setRegistryName(KEYCARD_PROGRAMMER.getRegistryName()));
         e.getRegistry().register(SCREWDRIVER);
-        for (ItemRfidCard card : RFID_CARDS) e.getRegistry().register(card);
+        for (ItemRfidCard card : RFID_CARDS) {
+            if (!(card instanceof ItemNamedRfidCard)) e.getRegistry().register(card);
+        }
         e.getRegistry().register(OPERATOR_KEYCARD);
         e.getRegistry().register(CREATIVE_KEYCARD);
         e.getRegistry().register(RELAY_KEY);
         e.getRegistry().register(BIOMETRIC_KEYCARD);
         e.getRegistry().register(BIOMETRIC_OPERATOR_KEYCARD);
         e.getRegistry().register(BIOMETRIC_RELAY_KEY);
+        // New items go last: registering them among the old ones would shift the numeric item IDs
+        // that existing worlds already saved for the cards above.
+        for (ItemRfidCard card : RFID_CARDS) {
+            if (card instanceof ItemNamedRfidCard) e.getRegistry().register(card);
+        }
     }
 
     @SubscribeEvent

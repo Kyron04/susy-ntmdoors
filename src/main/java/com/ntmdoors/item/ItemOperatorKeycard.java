@@ -65,6 +65,18 @@ public class ItemOperatorKeycard extends ItemRfidCard {
         TileEntityKeycardScanner scanner = (TileEntityKeycardScanner) te;
         if (!scanner.hasBoundDoors()) return EnumActionResult.PASS;
 
+        // A biometric operator card is personal: with holder matching on, a stolen card cannot
+        // open the admin screen just because the player knows the code. The server re-checks this,
+        // so the GUI guard is only about not showing a screen that will be refused.
+        ItemStack stack = player.getHeldItem(hand);
+        if (scanner.isMatchHolder() && Biometrics.isBound(stack)
+                && !Biometrics.isOwnedBy(stack, player)) {
+            if (world.isRemote) {
+                player.sendStatusMessage(new TextComponentTranslation("ntmdoors.msg.scanner_denied"), true);
+            }
+            return EnumActionResult.SUCCESS;
+        }
+
         // During a lockout only the biometric operator card may reach the code screen.
         if (scanner.isLockedOut() && !(this instanceof ItemBiometricOperatorKeycard)) {
             if (world.isRemote) {

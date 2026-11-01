@@ -495,7 +495,7 @@ public class GuiScannerKeys extends GuiScreen {
     private static String optionHint(int option) {
         switch (option) {
             case MessageScannerOption.MATCH_HOLDER:
-                return "Biometric IDs only work for their owner.";
+                return "Biometric cards only work for their owner.";
             case MessageScannerOption.LOCKDOWN:
                 return "Locks the doors. Everyone is refused.";
             case MessageScannerOption.LOCKOUT:

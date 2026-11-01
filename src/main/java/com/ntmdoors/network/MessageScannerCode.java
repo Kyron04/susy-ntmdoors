@@ -3,9 +3,11 @@ package com.ntmdoors.network;
 import com.ntmdoors.item.ItemBiometricOperatorKeycard;
 import com.ntmdoors.item.ItemOperatorKeycard;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
+import com.ntmdoors.util.Biometrics;
 import com.ntmdoors.util.ModSounds;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
@@ -57,7 +59,8 @@ public class MessageScannerCode implements IMessage {
 
         private static void submit(EntityPlayerMP player, MessageScannerCode message) {
             if (message.pos == null) return;
-            if (!holdsOperatorKeycard(player)) {
+            ItemStack card = operatorCard(player);
+            if (card.isEmpty()) {
                 result(player, message.pos, MessageScannerCodeResult.DENIED);
                 return;
             }
@@ -80,9 +83,18 @@ public class MessageScannerCode implements IMessage {
                 return;
             }
 
+            // A biometric operator card is personal: with holder matching on, a stolen card cannot
+            // buy its way into the settings with the right code.
+            if (scanner.isMatchHolder() && Biometrics.isBound(card)
+                    && !Biometrics.isOwnedBy(card, player)) {
+                player.sendStatusMessage(new TextComponentTranslation("ntmdoors.msg.scanner_denied"), true);
+                result(player, message.pos, MessageScannerCodeResult.DENIED);
+                return;
+            }
+
             // A lockout only keeps the reader shut; it never blocks the code screen for the
             // biometric operator card, because that is how the operator reaches the settings.
-            if (scanner.isLockedOut() && !holdsBiometricOperator(player)) {
+            if (scanner.isLockedOut() && !holdsBiometricOperator(card)) {
                 player.sendStatusMessage(new TextComponentTranslation("ntmdoors.msg.scanner_locked_out"), true);
                 result(player, message.pos, MessageScannerCodeResult.DENIED);
                 return;
@@ -131,15 +143,16 @@ public class MessageScannerCode implements IMessage {
         }
 
         /** Either hand is fine; the screen is opened with the card that way too. */
-        private static boolean holdsOperatorKeycard(EntityPlayerMP player) {
-            return player.getHeldItemMainhand().getItem() instanceof ItemOperatorKeycard
-                    || player.getHeldItemOffhand().getItem() instanceof ItemOperatorKeycard;
+        private static ItemStack operatorCard(EntityPlayerMP player) {
+            ItemStack main = player.getHeldItemMainhand();
+            if (main.getItem() instanceof ItemOperatorKeycard) return main;
+            ItemStack off = player.getHeldItemOffhand();
+            return off.getItem() instanceof ItemOperatorKeycard ? off : ItemStack.EMPTY;
         }
 
         /** The one card that may still reach the code screen while a lockout is running. */
-        private static boolean holdsBiometricOperator(EntityPlayerMP player) {
-            return player.getHeldItemMainhand().getItem() instanceof ItemBiometricOperatorKeycard
-                    || player.getHeldItemOffhand().getItem() instanceof ItemBiometricOperatorKeycard;
+        private static boolean holdsBiometricOperator(ItemStack card) {
+            return card.getItem() instanceof ItemBiometricOperatorKeycard;
         }
     }
 }

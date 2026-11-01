@@ -140,6 +140,12 @@ public class BlockKeycardProgrammer extends Block {
         return box(state.getValue(FACING));
     }
 
+    /** Fixed at placement; see the right-click guard that stops foreign wrenches. */
+    @Override
+    public boolean rotateBlock(World world, BlockPos pos, EnumFacing axis) {
+        return false;
+    }
+
     @Override
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player,
                                     EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {

@@ -161,6 +161,12 @@ public class BlockKeycardScanner extends Block {
         return EnumPushReaction.BLOCK;
     }
 
+    /** Fixed at placement; see the right-click guard that stops foreign wrenches. */
+    @Override
+    public boolean rotateBlock(World world, BlockPos pos, EnumFacing axis) {
+        return false;
+    }
+
     @Override
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player,
                                     EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {

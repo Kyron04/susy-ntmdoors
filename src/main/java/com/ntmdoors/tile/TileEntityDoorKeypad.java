@@ -666,6 +666,18 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
     }
 
     /**
+     * Server side: forgets a door that was destroyed. A replacement placed in the same position is
+     * a new door and must be linked again instead of inheriting the old link.
+     */
+    public void unbindDoor(BlockPos doorPos) {
+        if (world == null || world.isRemote || doorPos == null) return;
+        if (!boundDoors.remove(doorPos)) return;
+        doorCount = boundDoors.size();
+        if (boundDoors.isEmpty()) pendingConfirm = false;
+        sync();
+    }
+
+    /**
      * Called when a keypad is placed. If the adjacent door is already bound to a code, the new
      * keypad adopts it so both sides of the door work without re-entering the code. Auto-sync is
      * exempt from the confirmation prompt: the code is already known.
