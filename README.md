@@ -152,8 +152,12 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   drops and world saves. Only keycards are accepted, each slot holds one, and shift-click moves
   cards between the player inventory and the holder.
 * Documents Folder (`ntmdoors:documents_folder`): carried folder item drawn as three stacked sheet
-  layers, 3 px deep in total, with only the middle layer's page edge protruding. It is a physical
-  item for now: the twenty-page editor and its saved pages are the next step.
+  layers, 3 px deep in total, with only the middle layer's page edge protruding. Right-clicking opens
+  a twenty-page editor styled as an open manila folder in the item's own tan, grey and dark red
+  palette. There is no signing step: Escape or the Close button both save, the pages live in the
+  stack's NBT, and Enter starts a new line (press it twice for a paragraph gap). Long lines word-wrap
+  inside the sheet, the bottom index tabs jump straight to any page, and the tooltip counts the
+  pages written.
 * The secure access door ships nine skins: red, yellow, green, blue, grey, black (white writing),
   HBM yellow, white (black writing) and orange (white writing). The colour variants are generated
   by recolouring only the red warning paint; all other pixels are unchanged. Base colours: green
@@ -206,4 +210,4 @@ for explicit model-space bounds; `.collisionSplits(n)` tightens rotating parts b
 ## Not included
 Crafting recipes for the doors (the originals need NTM materials), for the keypad, programmer,
 scanner, cards, Keycard Holder and Documents Folder; configs, NEI/JEI, and other NTM items. Only the
-screwdriver has a recipe. The Documents Folder's page editor and stored pages are still to come.
+screwdriver has a recipe.

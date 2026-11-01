@@ -48,4 +48,8 @@ public class CommonProxy {
     /** Client only: open the security code screen for a scanner bound to doors. */
     public void openScannerCodeGui(BlockPos pos) {
     }
+
+    /** Client only: open the twenty-page editor for a held Documents Folder. */
+    public void openDocumentsFolderGui(EnumHand hand) {
+    }
 }

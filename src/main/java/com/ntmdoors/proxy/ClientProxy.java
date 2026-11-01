@@ -1,6 +1,7 @@
 package com.ntmdoors.proxy;
 
 import com.ntmdoors.NTMDoors;
+import com.ntmdoors.client.GuiDocumentsFolder;
 import com.ntmdoors.client.GuiKeycardViewer;
 import com.ntmdoors.client.GuiRelayKeyName;
 import com.ntmdoors.client.GuiScannerCode;
@@ -13,6 +14,7 @@ import com.ntmdoors.client.RenderKeycardScanner;
 import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.DoorDecls;
 import com.ntmdoors.door.ObjBounds;
+import com.ntmdoors.item.ItemDocumentsFolder;
 import com.ntmdoors.tile.TileEntityDoorGeneric;
 import com.ntmdoors.tile.TileEntityDoorKeypad;
 import com.ntmdoors.tile.TileEntityKeycardProgrammer;
@@ -56,6 +58,16 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void openScannerCodeGui(BlockPos pos) {
         Minecraft.getMinecraft().displayGuiScreen(new GuiScannerCode(pos));
+    }
+
+    @Override
+    public void openDocumentsFolderGui(EnumHand hand) {
+        Minecraft mc = Minecraft.getMinecraft();
+        if (mc.player == null) return;
+        ItemStack stack = mc.player.getHeldItem(hand);
+        if (stack.getItem() instanceof ItemDocumentsFolder) {
+            mc.displayGuiScreen(new GuiDocumentsFolder(hand, stack));
+        }
     }
 
     @Override

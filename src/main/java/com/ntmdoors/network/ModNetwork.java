@@ -21,6 +21,8 @@ public final class ModNetwork {
                 Side.SERVER);
         INSTANCE.registerMessage(MessageScannerOption.Handler.class, MessageScannerOption.class, 5,
                 Side.SERVER);
+        INSTANCE.registerMessage(MessageDocumentsFolderPages.Handler.class,
+                MessageDocumentsFolderPages.class, 6, Side.SERVER);
     }
 
     private ModNetwork() {
