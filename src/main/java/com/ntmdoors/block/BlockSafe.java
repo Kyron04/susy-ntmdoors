@@ -11,6 +11,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
 /**
@@ -30,6 +31,7 @@ public class BlockSafe extends Block {
         setResistance(30F);
         setSoundType(SoundType.METAL);
         setHarvestLevel("pickaxe", 2);
+        setLightOpacity(255);
         setDefaultState(blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH));
     }
 
@@ -58,5 +60,31 @@ public class BlockSafe extends Block {
                                             EntityLivingBase placer, EnumHand hand) {
         EnumFacing face = placer == null ? EnumFacing.NORTH : placer.getHorizontalFacing().getOpposite();
         return getDefaultState().withProperty(FACING, face);
+    }
+
+    /**
+     * The front is recessed, so the block must not occlude its neighbours: anything visible through
+     * the shallow door gap should show the block behind it instead of the sky. Light opacity stays
+     * at 255 so the safe still blocks light, and the solid-face overrides keep placement, torches
+     * and redstone behaving as they would on a full block.
+     */
+    @Override
+    public boolean isOpaqueCube(IBlockState state) {
+        return false;
+    }
+
+    @Override
+    public boolean isFullCube(IBlockState state) {
+        return false;
+    }
+
+    @Override
+    public boolean isTopSolid(IBlockState state) {
+        return true;
+    }
+
+    @Override
+    public boolean isSideSolid(IBlockState state, IBlockAccess world, BlockPos pos, EnumFacing side) {
+        return true;
     }
 }
