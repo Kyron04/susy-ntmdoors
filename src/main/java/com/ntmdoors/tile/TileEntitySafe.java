@@ -287,7 +287,8 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
             UUID id = pendingOpenPlayer;
             pendingOpenPlayer = null;
             EntityPlayer player = world.getPlayerEntityByUUID(id);
-            if (player != null && player.getDistanceSq(pos.getX() + 0.5D, pos.getY() + 0.5D,
+            if (player != null && player.isEntityAlive()
+                    && player.getDistanceSq(pos.getX() + 0.5D, pos.getY() + 0.5D,
                     pos.getZ() + 0.5D) <= 64D) {
                 grantAccess(player);
                 player.openGui(NTMDoors.INSTANCE, GuiHandler.SAFE, world,
