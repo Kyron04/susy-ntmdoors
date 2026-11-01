@@ -23,19 +23,12 @@ public class GuiSafeBiometric extends GuiPanelScreen {
     private static final int CYAN_DIM = 0xFF147A70;
     private static final int RED = 0xFFFF5A5A;
 
-    /** The result holds on screen for a little over a second before the GUI closes. */
-    private static final int RESULT_TICKS = 30;
     /** If no result arrives, close instead of leaving a dead screen open. */
     private static final int TIMEOUT_TICKS = 100;
 
     private final BlockPos pos;
 
     private int openTicks;
-    private boolean showingResult;
-    private boolean resultSuccess;
-    private int resultTicks;
-    /** Keeps a successful card up until the container replaces it. */
-    private int holdTicks;
 
     public GuiSafeBiometric(BlockPos pos) {
         this.pos = pos;
@@ -52,6 +45,12 @@ public class GuiSafeBiometric extends GuiPanelScreen {
     }
 
     @Override
+    protected int successHoldTicks() {
+        // The server opens the container on the success path; keep the card until it arrives.
+        return 80;
+    }
+
+    @Override
     public boolean doesGuiPauseGame() {
         return false;
     }
@@ -59,15 +58,7 @@ public class GuiSafeBiometric extends GuiPanelScreen {
     @Override
     public void updateScreen() {
         super.updateScreen();
-        if (showingResult) {
-            if (resultSuccess) {
-                // The server opens the container on the success path; keep the card until it arrives.
-                if (--holdTicks <= 0) mc.displayGuiScreen(null);
-            } else if (--resultTicks <= 0) {
-                mc.displayGuiScreen(null);
-            }
-            return;
-        }
+        if (tickResult()) return;
         if (++openTicks > TIMEOUT_TICKS) mc.displayGuiScreen(null);
     }
 
@@ -79,14 +70,8 @@ public class GuiSafeBiometric extends GuiPanelScreen {
     /** Called by the result packet. */
     public void onSafeResult(BlockPos resultPos, int result) {
         if (resultPos == null || !resultPos.equals(pos)) return;
-        showingResult = true;
-        resultSuccess = result == MessageSafeResult.ACCEPTED
-                || result == MessageSafeResult.SET;
-        if (resultSuccess) {
-            holdTicks = 80;
-        } else {
-            resultTicks = RESULT_TICKS;
-        }
+        showResultCard(result == MessageSafeResult.ACCEPTED
+                || result == MessageSafeResult.SET);
     }
 
     @Override
@@ -100,8 +85,8 @@ public class GuiSafeBiometric extends GuiPanelScreen {
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         drawDefaultBackground();
         drawCase();
-        if (showingResult) {
-            drawResult(resultSuccess);
+        if (isShowingResult()) {
+            drawResult(isResultSuccess());
         } else {
             drawScanning();
         }

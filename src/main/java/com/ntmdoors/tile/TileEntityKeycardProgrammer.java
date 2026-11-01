@@ -4,6 +4,7 @@ import com.ntmdoors.client.BackupLoopSound;
 import com.ntmdoors.item.ItemBiometricKeycard;
 import com.ntmdoors.item.ItemBiometricRelayKey;
 import com.ntmdoors.item.ItemCreativeKeycard;
+import com.ntmdoors.item.ItemNamedRfidCard;
 import com.ntmdoors.item.ItemOperatorKeycard;
 import com.ntmdoors.item.ItemRelayKey;
 import com.ntmdoors.item.ItemRfidCard;
@@ -176,28 +177,48 @@ public class TileEntityKeycardProgrammer extends TileEntitySynced implements IIn
         switch (index) {
             case SLOT_RELAY_ONE:
             case SLOT_RELAY_TWO:
-                return stack.getItem() instanceof ItemRelayKey;
+                return isRelay(stack);
             case SLOT_OPERATOR:
-                return stack.getItem() instanceof ItemOperatorKeycard;
+                return isOperator(stack);
             case SLOT_RFID_PAGE_ONE:
                 return isPlainCard(stack);
             case SLOT_RFID_PAGE_TWO:
-                // The biometric card keeps its fixed identity, so it is not a valid recolour input.
-                return isPlainCard(stack) && !(stack.getItem() instanceof ItemBiometricKeycard);
+                return isRecolourable(stack);
             case SLOT_LEGACY_LEFT:
             case SLOT_LEGACY_RIGHT:
-                return stack.getItem() instanceof ItemRelayKey
-                        || stack.getItem() instanceof ItemOperatorKeycard;
+                return isLegacyInput(stack);
             default:
                 return false;
         }
     }
 
+    /** True for a Relay Key, the only item that can sit in the two Relay slots. */
+    public static boolean isRelay(ItemStack stack) {
+        return stack.getItem() instanceof ItemRelayKey;
+    }
+
+    /** True for an Operator Keycard, including the biometric variant. */
+    public static boolean isOperator(ItemStack stack) {
+        return stack.getItem() instanceof ItemOperatorKeycard;
+    }
+
     /** RFID card that is neither privileged (operator) nor debug (creative). */
-    private static boolean isPlainCard(ItemStack stack) {
+    public static boolean isPlainCard(ItemStack stack) {
         return stack.getItem() instanceof ItemRfidCard
-                && !(stack.getItem() instanceof ItemOperatorKeycard)
+                && !isOperator(stack)
                 && !(stack.getItem() instanceof ItemCreativeKeycard);
+    }
+
+    /** A plain card whose colour may change; biometric and fixed-name cards keep their sprite. */
+    public static boolean isRecolourable(ItemStack stack) {
+        return isPlainCard(stack)
+                && !(stack.getItem() instanceof ItemBiometricKeycard)
+                && !(stack.getItem() instanceof ItemNamedRfidCard);
+    }
+
+    /** Either item accepted by the Legacy Backup Programmer. */
+    public static boolean isLegacyInput(ItemStack stack) {
+        return isRelay(stack) || isOperator(stack);
     }
 
     @Override
@@ -264,7 +285,7 @@ public class TileEntityKeycardProgrammer extends TileEntitySynced implements IIn
         ItemStack relay = slots[row == BIND_OPERATOR ? SLOT_RELAY_ONE : SLOT_RELAY_TWO];
         ItemStack target = slots[row == BIND_OPERATOR ? SLOT_OPERATOR : SLOT_RFID_PAGE_ONE];
         if (relay.isEmpty() || target.isEmpty()) return BindFailure.EMPTY;
-        if (!(relay.getItem() instanceof ItemRelayKey)) return BindFailure.INVALID_TARGET;
+        if (!isRelay(relay)) return BindFailure.INVALID_TARGET;
 
         boolean biometric = Biometrics.isBound(relay);
         List<PrivateKeys.Key> keys = PrivateKeys.get(relay);
@@ -276,13 +297,9 @@ public class TileEntityKeycardProgrammer extends TileEntitySynced implements IIn
         }
 
         if (row == BIND_OPERATOR) {
-            if (!(target.getItem() instanceof ItemOperatorKeycard)) return BindFailure.INVALID_TARGET;
+            if (!isOperator(target)) return BindFailure.INVALID_TARGET;
         } else {
-            if (!(target.getItem() instanceof ItemRfidCard)
-                    || target.getItem() instanceof ItemOperatorKeycard
-                    || target.getItem() instanceof ItemCreativeKeycard) {
-                return BindFailure.INVALID_TARGET;
-            }
+            if (!isPlainCard(target)) return BindFailure.INVALID_TARGET;
             if (target.getItem() == ModContent.BLANK_RFID_CARD) return BindFailure.BLANK_CARD;
         }
 
@@ -345,10 +362,10 @@ public class TileEntityKeycardProgrammer extends TileEntitySynced implements IIn
         ItemStack target = slots[SLOT_LEGACY_RIGHT];
         if (source.isEmpty() || target.isEmpty()) return BackupFailure.EMPTY;
 
-        boolean sourceRelay = source.getItem() instanceof ItemRelayKey;
-        boolean sourceOperator = source.getItem() instanceof ItemOperatorKeycard;
-        boolean targetRelay = target.getItem() instanceof ItemRelayKey;
-        boolean targetOperator = target.getItem() instanceof ItemOperatorKeycard;
+        boolean sourceRelay = isRelay(source);
+        boolean sourceOperator = isOperator(source);
+        boolean targetRelay = isRelay(target);
+        boolean targetOperator = isOperator(target);
         if ((!sourceRelay && !sourceOperator) || (!targetRelay && !targetOperator)) {
             return BackupFailure.INVALID_ITEM;
         }

@@ -31,8 +31,6 @@ abstract class GuiCodePad extends GuiPanelScreen {
     private static final int BUTTON_GAP_Y = 4;
     private static final int GRID_TOP = 64;
 
-    /** A result holds on screen for a little over a second before the GUI closes. */
-    private static final int RESULT_TICKS = 30;
     /** If no response arrives, close instead of leaving a dead screen open. */
     private static final int WAIT_TIMEOUT_TICKS = 100;
 
@@ -52,11 +50,6 @@ abstract class GuiCodePad extends GuiPanelScreen {
     private int statusColour = MUTED;
     private boolean waiting;
     private int waitTicks;
-    private boolean showingResult;
-    private boolean resultSuccess;
-    private int resultTicks;
-    /** Keeps a successful card up until the server replaces the screen; zero means use the timer. */
-    private int holdTicks;
 
     /** Digits accepted by the screen, which is also the length of the empty readout. */
     protected abstract int codeLength();
@@ -68,16 +61,6 @@ abstract class GuiCodePad extends GuiPanelScreen {
     protected abstract void sendCode(String code);
 
     protected abstract boolean isSuccess(int result);
-
-    /** Ticks to hold a successful card before closing; zero keeps the normal result timer. */
-    protected int successHoldTicks() {
-        return 0;
-    }
-
-    /** Called once the result card has run its course. */
-    protected void finishResult(boolean success) {
-        mc.displayGuiScreen(null);
-    }
 
     protected final void showStatus(String text, int colour) {
         status = text;
@@ -92,14 +75,7 @@ abstract class GuiCodePad extends GuiPanelScreen {
     @Override
     public void updateScreen() {
         super.updateScreen();
-        if (showingResult) {
-            if (resultSuccess && holdTicks > 0) {
-                if (--holdTicks <= 0) finishResult(true);
-            } else if (--resultTicks <= 0) {
-                finishResult(resultSuccess);
-            }
-            return;
-        }
+        if (tickResult()) return;
         if (waiting && ++waitTicks > WAIT_TIMEOUT_TICKS) {
             waiting = false;
             mc.displayGuiScreen(null);
@@ -120,7 +96,7 @@ abstract class GuiCodePad extends GuiPanelScreen {
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
-        if (showingResult) return;
+        if (isShowingResult()) return;
         int key = keyAt(mouseX, mouseY);
         if (key >= 0 && mouseButton == 0) {
             press(key);
@@ -135,7 +111,7 @@ abstract class GuiCodePad extends GuiPanelScreen {
             mc.displayGuiScreen(null);
             return;
         }
-        if (waiting || showingResult) return;
+        if (waiting || isShowingResult()) return;
         if (keyCode == Keyboard.KEY_RETURN || keyCode == Keyboard.KEY_NUMPADENTER) {
             submit();
             return;
@@ -160,7 +136,7 @@ abstract class GuiCodePad extends GuiPanelScreen {
         } else if (key == KEY_ENTER) {
             submit();
         } else {
-            append((char) ('0' + (key == KEY_ZERO ? 0 : key + 1)));
+            append(key == KEY_ZERO ? '0' : (char) ('1' + key));
         }
     }
 
@@ -193,10 +169,7 @@ abstract class GuiCodePad extends GuiPanelScreen {
         waiting = false;
         waitTicks = 0;
         entry = "";
-        showingResult = true;
-        resultSuccess = success;
-        resultTicks = RESULT_TICKS;
-        holdTicks = success ? successHoldTicks() : 0;
+        showResultCard(success);
     }
 
     private void clickSound() {
@@ -211,8 +184,8 @@ abstract class GuiCodePad extends GuiPanelScreen {
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         drawDefaultBackground();
         drawCase();
-        if (showingResult) {
-            drawResult(resultSuccess);
+        if (isShowingResult()) {
+            drawResult(isResultSuccess());
         } else {
             drawHeading();
             drawReadout();

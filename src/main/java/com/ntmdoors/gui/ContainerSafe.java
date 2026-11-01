@@ -59,10 +59,6 @@ public class ContainerSafe extends Container {
         return tile;
     }
 
-    public int getPage() {
-        return page;
-    }
-
     public void setPage(int page) {
         this.page = Math.max(0, Math.min(1, page));
     }

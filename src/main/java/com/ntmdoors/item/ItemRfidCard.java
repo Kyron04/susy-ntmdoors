@@ -15,7 +15,6 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
@@ -55,19 +54,12 @@ public class ItemRfidCard extends Item {
         // precedence over the viewer, which deliberately ignores machines.
         if (this instanceof ItemOperatorKeycard) {
             TileEntityKeycardScanner scanner = scannerInSight(player);
-            if (scanner != null && scanner.hasBoundDoors()) {
-                // During a lockout only the biometric operator card may reach the code screen.
-                if (scanner.isLockedOut() && !(this instanceof ItemBiometricOperatorKeycard)) {
-                    if (world.isRemote) {
-                        player.sendStatusMessage(new TextComponentTranslation(
-                                "ntmdoors.msg.scanner_locked_out"), true);
-                    }
-                    return new ActionResult<>(EnumActionResult.SUCCESS, stack);
+            if (scanner != null) {
+                EnumActionResult result = ((ItemOperatorKeycard) this)
+                        .openScannerScreen(player, world, scanner, hand);
+                if (result != EnumActionResult.PASS) {
+                    return new ActionResult<>(result, stack);
                 }
-                if (world.isRemote) {
-                    NTMDoors.proxy.openScannerCodeGui(scanner.getPos());
-                }
-                return new ActionResult<>(EnumActionResult.SUCCESS, stack);
             }
         }
 

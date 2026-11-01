@@ -1,8 +1,32 @@
-HBM DOORS: REFRESHED 1.0.28
+HBM DOORS: REFRESHED 1.0.29
 Minecraft 1.12.2 / Forge 14.23.5.2847
 
+1.0.29
+SAFES
+- Code Safe: a 1x1x1 steel safe with a keypad front. The first accepted 1-6 digit code becomes
+  the safe's code; later entries must match. There is no owner restriction, so anyone who knows
+  the code can open it.
+- The safe container has 27 slots and a second page with Lockout mode and Reset code. Lockout
+  mode stops code entry for five minutes after three wrong codes; Reset code clears the code so
+  the next entry sets a new one.
+- Biometric Safe: the same shell and 27-slot container, opened by a bound Biometric Operator
+  Keycard or the Creative Keycard. Its second page has Match user and Lockout mode.
+- Both safes save their contents and settings, drop their inventory when broken, and show full
+  item names and NBT tooltip lines in the container.
+- The Creative Keycard opens both safes and every scanner directly.
+
+CARDS
+- SCP Level 1-6 access keycards, with Level 1-6 clearance tooltips.
+- Googa security keycard, with the tooltip Security is goog and a gold name.
+- The Biometric Operator Keycard lists its stored private keys in the tooltip.
+
+FIXES
+- The Biometric Relay Key now records the player UUID and name on dedicated servers. The old
+  right-click check called a client-only ray trace and crashed the server.
+- Operator Keycard scanner lookup uses the same server-safe ray trace.
+
 Everything below is new since the 1.0.26 CurseForge release. The 1.0.26 jar contained
-the doors, keypad and screwdriver only; 1.0.28 adds the full keycard access-control layer
+the doors, keypad and screwdriver only; 1.0.28 added the full keycard access-control layer
 and the Documents Folder.
 
 KEYCARD ACCESS CONTROL
@@ -75,4 +99,4 @@ FIXES AND POLISH
 - Halved the programmer backup loop volume.
 - Added keypad success and failure sounds.
 - Added item tooltips and card name colours.
-- Version reset to 1.0.28 for this release (previous CurseForge build: 1.0.26).
+- Version reset to 1.0.28 for the previous release (the CurseForge build before it: 1.0.26).

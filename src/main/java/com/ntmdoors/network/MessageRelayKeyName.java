@@ -62,7 +62,7 @@ public class MessageRelayKeyName implements IMessage {
             if (stack.getItem() instanceof ItemBiometricRelayKey) return;
             if (!PrivateKeys.isBlank(stack)) return;
 
-            String name = PrivateKeys.saniseName(message.name);
+            String name = PrivateKeys.sanitiseName(message.name);
             if (name.isEmpty()) return;
 
             PrivateKeys.add(stack, name, PrivateKeys.createSerial());

@@ -62,7 +62,15 @@ public class ItemOperatorKeycard extends ItemRfidCard {
         TileEntity te = world.getTileEntity(pos);
         if (!(te instanceof TileEntityKeycardScanner)) return EnumActionResult.PASS;
 
-        TileEntityKeycardScanner scanner = (TileEntityKeycardScanner) te;
+        return openScannerScreen(player, world, (TileEntityKeycardScanner) te, hand);
+    }
+
+    /**
+     * Checks and opens the scanner administration screen. Shared by the direct block click and the
+     * crosshair fallback so holder matching and lockout rules cannot drift apart.
+     */
+    EnumActionResult openScannerScreen(EntityPlayer player, World world,
+                                       TileEntityKeycardScanner scanner, EnumHand hand) {
         if (!scanner.hasBoundDoors()) return EnumActionResult.PASS;
 
         // A biometric operator card is personal: with holder matching on, a stolen card cannot

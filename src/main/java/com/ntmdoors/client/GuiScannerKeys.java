@@ -101,11 +101,6 @@ public class GuiScannerKeys extends GuiScreen {
         return te instanceof TileEntityKeycardScanner ? (TileEntityKeycardScanner) te : null;
     }
 
-    private boolean matchHolder() {
-        TileEntityKeycardScanner scanner = scanner();
-        return scanner == null || scanner.isMatchHolder();
-    }
-
     private boolean doorsMoving() {
         TileEntityKeycardScanner scanner = scanner();
         return scanner != null && scanner.isDoorsMoving();

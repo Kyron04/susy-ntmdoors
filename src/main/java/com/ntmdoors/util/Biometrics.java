@@ -75,15 +75,9 @@ public final class Biometrics {
     public static boolean bindIfNeeded(ItemStack stack, EntityPlayer player) {
         if (stack.isEmpty() || isBound(stack)) return false;
 
-        NBTTagCompound tag = stack.getTagCompound();
-        if (tag == null) {
-            tag = new NBTTagCompound();
-            stack.setTagCompound(tag);
-        }
-        NBTTagCompound root = tag.getCompoundTag(ROOT);
+        NBTTagCompound root = rootForWrite(stack);
         root.setString(OWNER, player.getUniqueID().toString());
         root.setString(OWNER_NAME, player.getName());
-        tag.setTag(ROOT, root);
         return true;
     }
 
@@ -97,12 +91,7 @@ public final class Biometrics {
         NBTTagCompound owner = root(source);
         if (owner == null) return false;
 
-        NBTTagCompound tag = target.getTagCompound();
-        if (tag == null) {
-            tag = new NBTTagCompound();
-            target.setTagCompound(tag);
-        }
-        tag.setTag(ROOT, owner.copy());
+        rootForWrite(target).merge(owner);
         return true;
     }
 
@@ -115,6 +104,18 @@ public final class Biometrics {
     /** The identity line for any item that happens to carry one. */
     public static void addOwnerIfBound(List<String> tooltip, ItemStack stack) {
         if (isBound(stack)) addOwnerLine(tooltip, stack);
+    }
+
+    /** The compound that stores the identity, created on the stack if needed. */
+    private static NBTTagCompound rootForWrite(ItemStack stack) {
+        NBTTagCompound tag = stack.getTagCompound();
+        if (tag == null) {
+            tag = new NBTTagCompound();
+            stack.setTagCompound(tag);
+        }
+        NBTTagCompound root = tag.getCompoundTag(ROOT);
+        tag.setTag(ROOT, root);
+        return root;
     }
 
     @Nullable

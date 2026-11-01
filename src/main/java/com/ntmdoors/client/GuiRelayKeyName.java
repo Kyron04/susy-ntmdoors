@@ -86,7 +86,7 @@ public class GuiRelayKeyName extends GuiScreen {
     }
 
     private void confirm() {
-        String name = PrivateKeys.saniseName(field.getText());
+        String name = PrivateKeys.sanitiseName(field.getText());
         if (name.isEmpty()) return;
         ModNetwork.INSTANCE.sendToServer(new MessageRelayKeyName(name, hand));
         mc.displayGuiScreen(null);

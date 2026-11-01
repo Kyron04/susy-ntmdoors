@@ -170,10 +170,6 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         return visibleCount;
     }
 
-    public boolean isBinding() {
-        return bindingPlayer != null;
-    }
-
     public boolean isBindingFor(@Nullable EntityPlayer player) {
         return player != null && bindingPlayer != null && bindingPlayer.equals(player.getUniqueID());
     }
@@ -181,10 +177,6 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
     /** True once at least one door is committed; the Operator Keycard screen only applies then. */
     public boolean hasBoundDoors() {
         return boundDoorCount > 0;
-    }
-
-    public int getBoundDoorCount() {
-        return boundDoorCount;
     }
 
     /** True once an Operator Keycard has set the scanner's security code. */

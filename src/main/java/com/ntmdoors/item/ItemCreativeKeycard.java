@@ -1,5 +1,6 @@
 package com.ntmdoors.item;
 
+import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.Names;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
@@ -33,10 +34,6 @@ public class ItemCreativeKeycard extends ItemRfidCard {
 
     /** True when either hand holds a Creative Keycard. */
     public static boolean isHeldBy(EntityPlayer player) {
-        return isCreativeCard(player.getHeldItemMainhand()) || isCreativeCard(player.getHeldItemOffhand());
-    }
-
-    private static boolean isCreativeCard(ItemStack stack) {
-        return !stack.isEmpty() && stack.getItem() instanceof ItemCreativeKeycard;
+        return HeldItems.holds(player, ItemCreativeKeycard.class);
     }
 }

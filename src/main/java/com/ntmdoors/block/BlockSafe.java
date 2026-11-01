@@ -61,7 +61,7 @@ public class BlockSafe extends Block {
     }
 
     /**
-     * The door faces the player, whatever face of the neighbouring block was clicked. The block is
+     * The safe faces the player, whatever face of the neighbouring block was clicked. The block is
      * a full cube, so it can be placed on the floor, a wall or a ceiling like stone.
      */
     @Override

@@ -12,12 +12,56 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @SideOnly(Side.CLIENT)
 abstract class GuiPanelScreen extends GuiScreen {
 
+    private static final int RESULT_TICKS = 30;
+
     protected int left;
     protected int top;
+
+    private boolean showingResult;
+    private boolean resultSuccess;
+    private int resultTicks;
+    private int holdTicks;
 
     protected abstract int panelWidth();
 
     protected abstract int panelHeight();
+
+    /** Ticks to hold a successful card before closing; zero keeps the normal result timer. */
+    protected int successHoldTicks() {
+        return 0;
+    }
+
+    /** Called once the result card has run its course. */
+    protected void finishResult(boolean success) {
+        mc.displayGuiScreen(null);
+    }
+
+    protected final boolean isShowingResult() {
+        return showingResult;
+    }
+
+    protected final boolean isResultSuccess() {
+        return resultSuccess;
+    }
+
+    /** Starts the full-screen verdict. Subclasses reset their own input state first. */
+    protected final void showResultCard(boolean success) {
+        showingResult = true;
+        resultSuccess = success;
+        resultTicks = RESULT_TICKS;
+        holdTicks = success ? successHoldTicks() : 0;
+    }
+
+    /** Advances the verdict card; true while it still owns the screen. */
+    protected final boolean tickResult() {
+        if (!showingResult) return false;
+        if (resultSuccess && holdTicks > 0) {
+            if (--holdTicks <= 0) finishResult(true);
+        } else if (--resultTicks <= 0) {
+            finishResult(resultSuccess);
+        }
+        return true;
+    }
 
     @Override
     public void initGui() {

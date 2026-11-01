@@ -1,11 +1,5 @@
 package com.ntmdoors.gui;
 
-import com.ntmdoors.item.ItemBiometricKeycard;
-import com.ntmdoors.item.ItemCreativeKeycard;
-import com.ntmdoors.item.ItemNamedRfidCard;
-import com.ntmdoors.item.ItemOperatorKeycard;
-import com.ntmdoors.item.ItemRelayKey;
-import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.registry.ModContent;
 import com.ntmdoors.tile.TileEntityKeycardProgrammer;
 import com.ntmdoors.util.ModSounds;
@@ -79,21 +73,16 @@ public class ContainerKeycardProgrammer extends Container {
     private static final float BUTTON_VOLUME = 0.8F;
 
     private static final Predicate<ItemStack> RELAY_ONLY =
-            stack -> stack.getItem() instanceof ItemRelayKey;
+            TileEntityKeycardProgrammer::isRelay;
     private static final Predicate<ItemStack> OPERATOR_ONLY =
-            stack -> stack.getItem() instanceof ItemOperatorKeycard;
+            TileEntityKeycardProgrammer::isOperator;
     private static final Predicate<ItemStack> RFID_ONLY =
-            stack -> stack.getItem() instanceof ItemRfidCard
-                    && !(stack.getItem() instanceof ItemOperatorKeycard)
-                    && !(stack.getItem() instanceof ItemCreativeKeycard);
-    /** Page two's card slot: biometric and themed cards keep their fixed identity, so no recolour. */
+            TileEntityKeycardProgrammer::isPlainCard;
+    /** Page two's card slot: biometric and fixed-name cards keep their sprite, so no recolour. */
     private static final Predicate<ItemStack> RECOLOUR_ONLY =
-            stack -> RFID_ONLY.test(stack)
-                    && !(stack.getItem() instanceof ItemBiometricKeycard)
-                    && !(stack.getItem() instanceof ItemNamedRfidCard);
+            TileEntityKeycardProgrammer::isRecolourable;
     private static final Predicate<ItemStack> LEGACY_ONLY =
-            stack -> stack.getItem() instanceof ItemRelayKey
-                    || stack.getItem() instanceof ItemOperatorKeycard;
+            TileEntityKeycardProgrammer::isLegacyInput;
 
     private final TileEntityKeycardProgrammer tile;
     /** Backing inventory for the seven display-only colour slots. */
@@ -172,12 +161,7 @@ public class ContainerKeycardProgrammer extends Container {
 
     private void applyColour(int colour, EntityPlayer player) {
         ItemStack card = tile.getStackInSlot(TileEntityKeycardProgrammer.SLOT_RFID_PAGE_TWO);
-        if (card.isEmpty()
-                || !(card.getItem() instanceof ItemRfidCard)
-                || card.getItem() instanceof ItemOperatorKeycard
-                || card.getItem() instanceof ItemCreativeKeycard
-                || card.getItem() instanceof ItemBiometricKeycard
-                || card.getItem() instanceof ItemNamedRfidCard) {
+        if (card.isEmpty() || !TileEntityKeycardProgrammer.isRecolourable(card)) {
             playButtonClick(player);
             return;
         }
@@ -252,11 +236,11 @@ public class ContainerKeycardProgrammer extends Container {
 
         switch (page) {
             case 0:
-                if (stack.getItem() instanceof ItemRelayKey) {
+                if (TileEntityKeycardProgrammer.isRelay(stack)) {
                     return mergeInto(stack, TileEntityKeycardProgrammer.SLOT_RELAY_ONE)
                             || mergeInto(stack, TileEntityKeycardProgrammer.SLOT_RELAY_TWO);
                 }
-                if (stack.getItem() instanceof ItemOperatorKeycard) {
+                if (TileEntityKeycardProgrammer.isOperator(stack)) {
                     return mergeInto(stack, TileEntityKeycardProgrammer.SLOT_OPERATOR);
                 }
                 if (RFID_ONLY.test(stack)) {
@@ -267,8 +251,7 @@ public class ContainerKeycardProgrammer extends Container {
                 return RFID_ONLY.test(stack)
                         && mergeInto(stack, TileEntityKeycardProgrammer.SLOT_RFID_PAGE_TWO);
             case 2:
-                if (stack.getItem() instanceof ItemRelayKey
-                        || stack.getItem() instanceof ItemOperatorKeycard) {
+                if (TileEntityKeycardProgrammer.isLegacyInput(stack)) {
                     return mergeInto(stack, TileEntityKeycardProgrammer.SLOT_LEGACY_LEFT)
                             || mergeInto(stack, TileEntityKeycardProgrammer.SLOT_LEGACY_RIGHT);
                 }

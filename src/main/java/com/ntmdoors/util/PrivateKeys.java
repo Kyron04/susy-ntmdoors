@@ -71,13 +71,15 @@ public final class PrivateKeys {
     /** Writes keys in the standard {@code { Name, Serial }} list shape. */
     public static NBTTagList toList(List<Key> keys) {
         NBTTagList list = new NBTTagList();
-        for (Key key : keys) {
-            NBTTagCompound entry = new NBTTagCompound();
-            entry.setString(NAME, key.name);
-            entry.setString(SERIAL, key.serial);
-            list.appendTag(entry);
-        }
+        for (Key key : keys) list.appendTag(entry(key.name, key.serial));
         return list;
+    }
+
+    private static NBTTagCompound entry(String name, String serial) {
+        NBTTagCompound entry = new NBTTagCompound();
+        entry.setString(NAME, name);
+        entry.setString(SERIAL, serial);
+        return entry;
     }
 
     public static int count(ItemStack stack) {
@@ -106,10 +108,7 @@ public final class PrivateKeys {
             stack.setTagCompound(tag);
         }
         NBTTagList list = tag.getTagList(ROOT, Constants.NBT.TAG_COMPOUND);
-        NBTTagCompound entry = new NBTTagCompound();
-        entry.setString(NAME, name);
-        entry.setString(SERIAL, serial);
-        list.appendTag(entry);
+        list.appendTag(entry(name, serial));
         tag.setTag(ROOT, list);
         return true;
     }
@@ -148,7 +147,7 @@ public final class PrivateKeys {
      * Trims the entered name, drops control characters and section signs so the name cannot break
      * tooltips or colour text, and cuts it to {@link #NAME_LENGTH} characters.
      */
-    public static String saniseName(String name) {
+    public static String sanitiseName(String name) {
         if (name == null) return "";
         StringBuilder clean = new StringBuilder(name.length());
         for (int i = 0; i < name.length() && clean.length() < NAME_LENGTH; i++) {

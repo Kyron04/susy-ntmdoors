@@ -45,16 +45,12 @@ public class BlockKeycardProgrammer extends Block {
     /** Front plate (most negative Z) and back plate of the body. */
     public static final double FRONT_Z = -0.32D;
     public static final double BACK_Z = 0.30D;
-    /** Height of the body underside, above the dark plinth. */
-    public static final double BODY_UNDERSIDE = 0.05D;
     /** The top face is a wedge: lower at the front, higher at the back. */
     public static final double TOP_FRONT_Y = 0.26D;
     public static final double TOP_BACK_Y = 0.46D;
     public static final double TOP_SLOPE = (TOP_BACK_Y - TOP_FRONT_Y) / (BACK_Z - FRONT_Z);
     /** Collision height: the top of the console body. */
     public static final double BODY_HEIGHT = 0.48D;
-    /** Tallest point of the model. */
-    public static final double MODEL_HEIGHT = 0.46D;
 
     /** The recessed screen opening on the sloped top face. */
     public static final double SCREEN_MIN_X = -0.36D;

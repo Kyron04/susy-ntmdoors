@@ -115,10 +115,11 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   16x16 icon derived from the model.
 * Safe (`ntmdoors:safe`): a 1x1x1 steel safe with a keypad front and two small USB ports under
   the pad. Right clicking opens the same keypad screen as the scanner. The first accepted code
-  becomes the safe's code and records that player as its owner; later entries must match. A correct
-  code shows the `SUCCESS!!!` card and then opens a 27-slot container. Page two of the container has
-  `Lockout mode` and `Reset code`; `Lockout mode` locks the keypad for five minutes after three bad
-  codes, and `Reset code` clears the code so the next entry sets a new one. The inventory and the
+  becomes the safe's code; later entries must match. The code safe has no owner restriction, so
+  anyone who knows the code can open it. A correct code shows the `SUCCESS!!!` card and then opens
+  a 27-slot container. Page two of the container has `Lockout mode` and `Reset code`; `Lockout mode`
+  locks the keypad for five minutes after three bad codes, and `Reset code` clears the code so the
+  next entry sets a new one. The inventory and the
   code are saved with the block, and breaking the safe drops its contents. The Creative Keycard
   bypasses the keypad and opens the container immediately.
 * Biometric Safe (`ntmdoors:biometric_safe`): the same shell, inventory and options page, but its
@@ -159,15 +160,15 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   `Match biometric holder` option. The Biometric Operator Keycard also lists its private keys in
   the tooltip. The relay key's right-click check uses server-safe geometry, so collecting an
   identity also works on a dedicated server.
-* Relay Key and Creative Keycard (`ntmdoors:relay_key`, `ntmdoors:creative_keycard`): groundwork for
-  the keycard system. The Creative Keycard is the debug item for testing: its name is purple, and
-  right clicking any door opens or closes it regardless of locked/security variants, keypad codes or
-  redstone, with a purple `Door overridden` status message. It is also the only card the scanner
-  currently accepts. A blank Relay Key creates one private key when the player sneak right-clicks it
-  away from any machine: a naming screen takes up to 32 characters, and confirming it generates a
-  ten digit serial on the server and stores both in the key's NBT. A key can be created once and
-  never reset. Its name is yellow, and its tooltip carries a grey description above the white name
-  and serial of its private key. Page one of the programmer copies
+* Relay Key and Creative Keycard (`ntmdoors:relay_key`, `ntmdoors:creative_keycard`): the Relay Key
+  creates the private keys that scanners check. The Creative Keycard is the debug item for testing:
+  its name is purple, and right clicking any door opens or closes it regardless of locked/security
+  variants, keypad codes or redstone, with a purple `Door overridden` status message. It also
+  bypasses both safes and every scanner. A blank Relay Key creates one private key when the player
+  sneak right-clicks it away from any machine: a naming screen takes up to 32 characters, and
+  confirming it generates a ten digit serial on the server and stores both in the key's NBT. A key
+  can be created once and never reset. Its name is yellow, and its tooltip carries a grey
+  description above the white name and serial of its private key. Page one of the programmer copies
   that private key onto Operator Keycards and coloured RFID cards, while page three can back the
   whole key up onto another Relay Key. Sneak right-clicking the Creative Keycard opens the same
   viewer with the joke entry `THE ENTIRE LIBRARY OF BABEL` under `You have access to EVERYTHING!!!!!`.

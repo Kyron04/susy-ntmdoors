@@ -12,9 +12,10 @@ final class GuiClip {
 
     /** Restricts drawing to the given GUI-space rectangle until {@link #end()}. */
     static void begin(int x, int y, int width, int height) {
-        int scale = new ScaledResolution(Minecraft.getMinecraft()).getScaleFactor();
+        Minecraft mc = Minecraft.getMinecraft();
+        int scale = new ScaledResolution(mc).getScaleFactor();
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
-        GL11.glScissor(x * scale, Minecraft.getMinecraft().displayHeight - (y + height) * scale,
+        GL11.glScissor(x * scale, mc.displayHeight - (y + height) * scale,
                 width * scale, height * scale);
     }
 
