@@ -83,6 +83,14 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   keycard that carries one can open the scanner's doors; the screen stays usable for two minutes
   after the code. Placement and facing match the keypad; the item uses a matching 3D model in
   the inventory and hand.
+* Scanner options: the assignment screen also carries the switches `Match biometric holder`,
+  `Lockdown mode`, `Lockout mode`, `Ignore private keys`, `Ignore biometric IDs`, `Override door
+  locks` and `Force close`. Lockdown is an emergency lock: raising it closes every bound door and
+  keeps them shut, refusing cards, codes, keypads and redstone until it is lifted. Lockout mode
+  locks the reader itself for five minutes after three bad cards or codes, and turning the mode off
+  clears a running lockout. A lockout only shuts the reader; the Biometric Operator Keycard can
+  still reach the code screen during one, and the `Override door locks` and `Force close` actions
+  move the doors regardless of a lockdown.
 * Keycard Programmer (`ntmdoors:keycard_programmer`): a low desk console that sits inside one block
   and rotates to face the player, with a flat OBJ body, a sloped screen recess and no card reader
   tower. The front carries a card slit with an `Insert here` label and two buttons on the player's
@@ -107,14 +115,24 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
 * RFID cards: one blank card plus red, violet, green, blue, black, orange and yellow variants.
   Each colour is a separate item (`ntmdoors:red_rfid_card` and so on) sharing a single item class
   and one hand-display model, so they all sit in the hand identically. The scanner recognises them
-  but denies them until the keycard access rules are added. Sneak right-clicking a coloured card
-  opens the read-only card viewer, which lists every private key stored on it; the blank card has
-  no viewer.
+  and opens its bound doors when one of the card's private keys is assigned to that scanner. Sneak
+  right-clicking a coloured card opens the read-only card viewer, which lists every private key
+  stored on it; the blank card has no viewer.
+* Themed keycards (`ntmdoors:keycard_blue_marking`, `ntmdoors:labyrinth_keycard`,
+  `ntmdoors:engine_room_keycard`, `ntmdoors:terminal_keycard`,
+  `ntmdoors:terragroup_labs_access_keycard`): five fixed-name cards, each with its own 16x16 sprite
+  and a line of flavour text. They behave exactly like the colour cards - the programmer copies
+  private keys onto them and the scanner reads them - but they are not part of the recolour palette.
 * Operator Keycard (`ntmdoors:operator_keycard`): a dark card with an orange stripe and three orange
-  dots, produced by the programmer once its logic is implemented. It shares the RFID hand-display
-  model, and the scanner recognises it as a card; its access rules are not defined yet. The same
-  viewer opens on sneak right-click and scrolls through any number of private keys, while the card
-  itself still shows no key tooltip.
+  dots. It shares the RFID hand-display model and, aimed at a bound scanner, opens that scanner's
+  security code screen; anywhere else sneak right-click opens the same private-key viewer as a
+  colour card.
+* Biometric items (`ntmdoors:biometric_keycard`, `ntmdoors:biometric_operator_keycard`,
+  `ntmdoors:biometric_relay_key`): a Biometric Relay Key collects your identity on sneak right-click
+  instead of creating a private key, and the programmer binds that identity onto a card. Biometric
+  cards keep it next to any private keys, show the owner in the tooltip, turn the name yellow (aqua
+  for the Operator version) and can be restricted to their owner with the scanner's
+  `Match biometric holder` option.
 * Relay Key and Creative Keycard (`ntmdoors:relay_key`, `ntmdoors:creative_keycard`): groundwork for
   the keycard system. The Creative Keycard is the debug item for testing: its name is purple, and
   right clicking any door opens or closes it regardless of locked/security variants, keypad codes or
@@ -129,6 +147,13 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   viewer with the joke entry `THE ENTIRE LIBRARY OF BABEL` under `You have access to EVERYTHING!!!!!`.
   Tools, machines and cards each carry a short grey description tooltip; the Operator Keycard's
   name is orange.
+* Keycard Holder (`ntmdoors:keycard_holder`): a carried 3x4 case for twelve keycards, opened with a
+  right click. The stored cards live in the holder's own NBT, so they survive inventory moves, death
+  drops and world saves. Only keycards are accepted, each slot holds one, and shift-click moves
+  cards between the player inventory and the holder.
+* Documents Folder (`ntmdoors:documents_folder`): carried folder item drawn as three stacked sheet
+  layers, 3 px deep in total, with only the middle layer's page edge protruding. It is a physical
+  item for now: the twenty-page editor and its saved pages are the next step.
 * The secure access door ships nine skins: red, yellow, green, blue, grey, black (white writing),
   HBM yellow, white (black writing) and orange (white writing). The colour variants are generated
   by recolouring only the red warning paint; all other pixels are unchanged. Base colours: green
@@ -141,11 +166,12 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
 Models live under `src/main/resources/assets/ntmdoors/models/doors/`, textures under
 `textures/models/doors/`, and sounds under `sounds/doors/`. Door items do **not** need flat
 `textures/items/<door>.png` icons: the inventory/hand item is rendered from the same OBJ model
-and texture as the placed door. Only the screwdriver, the keypad and the RFID cards use flat icons
-(`textures/items/screwdriver.png`, `textures/items/sliding_blast_door_keypad.png`,
-`textures/items/blank_rfid_card.png`, `textures/items/operator_keycard.png` plus
-`textures/items/rfid_card_<colour>.png`). The keycard
-scanner uses a 3D model in the inventory and hand too, like the doors.
+and texture as the placed door. Only the screwdriver, the keypad, the cards, the Keycard Holder and
+the Documents Folder use flat icons (`textures/items/screwdriver.png`,
+`textures/items/sliding_blast_door_keypad.png`, `textures/items/blank_rfid_card.png`,
+`textures/items/operator_keycard.png`, `textures/items/rfid_card_<colour>.png` plus the themed,
+biometric and folder sprites beside them). The keycard programmer has a flat 16x16 icon derived
+from its model; the scanner uses a 3D model in the inventory and hand too, like the doors.
 
 | door | animated OBJ groups | notes |
 |---|---|---|
@@ -178,5 +204,6 @@ and `.clipZ(...)` where the original HBM renderer used a clip plane. Moving part
 for explicit model-space bounds; `.collisionSplits(n)` tightens rotating parts by slicing their AABB.
 
 ## Not included
-Crafting recipes for the doors (the originals need NTM materials), configs, NEI/JEI, and other
-NTM items.
+Crafting recipes for the doors (the originals need NTM materials), for the keypad, programmer,
+scanner, cards, Keycard Holder and Documents Folder; configs, NEI/JEI, and other NTM items. Only the
+screwdriver has a recipe. The Documents Folder's page editor and stored pages are still to come.

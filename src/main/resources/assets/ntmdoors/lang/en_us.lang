@@ -71,6 +71,7 @@ item.ntmdoors.biometric_operator_keycard.name=Biometric Operator Keycard
 item.ntmdoors.biometric_relay_key.name=Biometric Relay Key
 item.ntmdoors.keycard_holder.name=Keycard Holder
 container.ntmdoors.keycard_holder=Keycard Holder
+item.ntmdoors.documents_folder.name=Documents Folder
 ntmdoors.msg.locked=Locked
 ntmdoors.msg.locked_down=Locked down
 ntmdoors.msg.bind_success=Distance Bound Successful

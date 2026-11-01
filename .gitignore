@@ -1,6 +1,25 @@
+# Gradle / build output
 .gradle/
 build/
 run/
+
+# IDE
 .idea/
 *.iml
 eclipse/
+.vscode/
+
+# Local runtime junk
+logs/
+crash-reports/
+screenshots/
+*.hprof
+*.log
+*.bak
+*.orig
+*.tmp
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
