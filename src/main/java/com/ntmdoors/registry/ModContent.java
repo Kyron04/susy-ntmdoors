@@ -3,6 +3,7 @@ package com.ntmdoors.registry;
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.block.BlockDoorGeneric;
 import com.ntmdoors.block.BlockDoorKeypad;
+import com.ntmdoors.block.BlockBiometricSafe;
 import com.ntmdoors.block.BlockKeycardProgrammer;
 import com.ntmdoors.block.BlockKeycardScanner;
 import com.ntmdoors.block.BlockSafe;
@@ -61,6 +62,7 @@ public class ModContent {
     public static final BlockKeycardScanner KEYCARD_SCANNER = new BlockKeycardScanner();
     public static final BlockKeycardProgrammer KEYCARD_PROGRAMMER = new BlockKeycardProgrammer();
     public static final BlockSafe SAFE = new BlockSafe();
+    public static final BlockBiometricSafe BIOMETRIC_SAFE = new BlockBiometricSafe();
     public static final ItemScrewdriver SCREWDRIVER = new ItemScrewdriver();
     public static final ItemRfidCard BLANK_RFID_CARD = new ItemRfidCard("blank_rfid_card", false);
     public static final ItemRfidCard RED_RFID_CARD = new ItemRfidCard("red_rfid_card");
@@ -129,6 +131,7 @@ public class ModContent {
         e.getRegistry().register(KEYCARD_SCANNER);
         e.getRegistry().register(KEYCARD_PROGRAMMER);
         e.getRegistry().register(SAFE);
+        e.getRegistry().register(BIOMETRIC_SAFE);
     }
 
     @SubscribeEvent
@@ -157,6 +160,7 @@ public class ModContent {
         e.getRegistry().register(DOCUMENTS_FOLDER);
         // New block items go last as well, so every previously saved numeric item ID is untouched.
         e.getRegistry().register(new ItemBlockSafe(SAFE).setRegistryName(SAFE.getRegistryName()));
+        e.getRegistry().register(new ItemBlockSafe(BIOMETRIC_SAFE).setRegistryName(BIOMETRIC_SAFE.getRegistryName()));
     }
 
     @SubscribeEvent

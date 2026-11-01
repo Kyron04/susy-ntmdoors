@@ -23,9 +23,13 @@ public class BlockSafe extends Block {
     public static final PropertyDirection FACING = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
 
     public BlockSafe() {
+        this("safe");
+    }
+
+    protected BlockSafe(String name) {
         super(Material.IRON);
-        setRegistryName(NTMDoors.MODID, "safe");
-        setTranslationKey(NTMDoors.MODID + ".safe");
+        setRegistryName(NTMDoors.MODID, name);
+        setTranslationKey(NTMDoors.MODID + "." + name);
         setCreativeTab(NTMDoors.TAB);
         setHardness(5F);
         setResistance(30F);

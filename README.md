@@ -115,6 +115,9 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
 * Safe (`ntmdoors:safe`): a 1x1x1 steel safe with a keypad front. This first pass places,
   rotates and renders as a normal full block; the code lock, inventory and biometric variant
   are the next step.
+* Biometric Safe (`ntmdoors:biometric_safe`): the same shell with a status screen, two control
+  buttons and a right-hand keycard slot. The model is in place; the identity and screen logic
+  follow in the next pass.
 * RFID cards: one blank card plus red, violet, green, blue, black, orange and yellow variants.
   Each colour is a separate item (`ntmdoors:red_rfid_card` and so on) sharing a single item class
   and one hand-display model, so they all sit in the hand identically. The scanner recognises them
