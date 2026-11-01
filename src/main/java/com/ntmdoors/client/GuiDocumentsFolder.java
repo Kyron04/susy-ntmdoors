@@ -52,6 +52,11 @@ public class GuiDocumentsFolder extends GuiScreen {
     private static final int LINE_HEIGHT = 10;
     private static final int MAX_LINES = (TEXT_BOTTOM - TEXT_Y) / LINE_HEIGHT;
 
+    private static final int BOX_X = TEXT_X - 4;
+    private static final int BOX_Y = TEXT_Y - 4;
+    private static final int BOX_W = TEXT_W + 8;
+    private static final int BOX_H = TEXT_BOTTOM - TEXT_Y + 8;
+
     private static final int TABS_Y = 178;
     private static final int TAB_W = 10;
     private static final int TAB_H = 13;
@@ -159,6 +164,7 @@ public class GuiDocumentsFolder extends GuiScreen {
         drawPageTabs(mouseX, mouseY);
         drawBottomBar(mouseX, mouseY);
         drawHeader(mouseX, mouseY);
+        drawWritingBox();
         drawText();
         drawCaret();
 
@@ -259,7 +265,7 @@ public class GuiDocumentsFolder extends GuiScreen {
         String text = pages[page];
         if (text.isEmpty()) {
             drawString(fontRenderer, "Click here and write", left + TEXT_X, top + TEXT_Y,
-                    0xFF8F8D6B);
+                    0xFF8A8A8A);
             return;
         }
 
@@ -271,12 +277,26 @@ public class GuiDocumentsFolder extends GuiScreen {
         }
     }
 
+    /** White writing sheet with a one-pixel ink border, like a field on the paper. */
+    private void drawWritingBox() {
+        int x = left + BOX_X;
+        int y = top + BOX_Y;
+        int right = x + BOX_W;
+        int bottom = y + BOX_H;
+
+        drawRect(x, y, right, bottom, 0xFFFFFFFF);
+        drawRect(x, y, right, y + 1, INK);
+        drawRect(x, bottom - 1, right, bottom, INK);
+        drawRect(x, y, x + 1, bottom, INK);
+        drawRect(right - 1, y, right, bottom, INK);
+    }
+
     private void drawCaret() {
         if (cursorCounter / 6 % 2 != 0) return;
         int index = Math.min(lineIndexForCaret(), MAX_LINES - 1);
         int x = left + TEXT_X + caretX();
         int y = top + TEXT_Y + index * LINE_HEIGHT;
-        drawRect(x, y - 1, x + 1, y + 9, RED);
+        drawRect(x, y - 1, x + 1, y + 9, INK);
     }
 
     private void drawPageTabs(int mouseX, int mouseY) {
@@ -462,8 +482,8 @@ public class GuiDocumentsFolder extends GuiScreen {
     }
 
     private boolean inText(int mouseX, int mouseY) {
-        return mouseX >= left + TEXT_X - 2 && mouseX < left + TEXT_X + TEXT_W + 2
-                && mouseY >= top + TEXT_Y - 2 && mouseY < top + TEXT_BOTTOM + 2;
+        return mouseX >= left + BOX_X && mouseX < left + BOX_X + BOX_W
+                && mouseY >= top + BOX_Y && mouseY < top + BOX_Y + BOX_H;
     }
 
     private int tabAt(int mouseX, int mouseY) {

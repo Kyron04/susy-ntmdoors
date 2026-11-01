@@ -154,7 +154,8 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
 * Documents Folder (`ntmdoors:documents_folder`): carried folder item drawn as three stacked sheet
   layers, 3 px deep in total, with only the middle layer's page edge protruding. Right-clicking opens
   a twenty-page editor styled as an open manila folder in the item's own tan, grey and dark red
-  palette. There is no signing step: Escape or the Close button both save, the pages live in the
+  palette, with the writing sheet in white behind a thin ink border. There is no signing step:
+  Escape or the Close button both save, the pages live in the
   stack's NBT, and Enter starts a new line (press it twice for a paragraph gap). Long lines word-wrap
   inside the sheet, the bottom index tabs jump straight to any page, the top-right folder name can be
   clicked and renamed, reopening returns to the page you closed on, and the tooltip counts the pages
