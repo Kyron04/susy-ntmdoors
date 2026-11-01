@@ -16,7 +16,6 @@ import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
@@ -26,7 +25,7 @@ import java.util.List;
  * RFID card item. Every colour variant is identical apart from its registry name, which selects
  * the matching texture and model. Cards carry the private keys copied onto them by the programmer;
  * sneak right-clicking one opens the read-only viewer, except on the blank card. The Operator
- * Keycard inherits this item and gets its own key display later.
+ * Keycard inherits this item and replaces the viewer with scanner administration.
  */
 public class ItemRfidCard extends Item {
 
@@ -96,10 +95,7 @@ public class ItemRfidCard extends Item {
                     "Use the Keycard Programmer to assign this card",
                     "a colour and private key.");
         } else if (!(this instanceof ItemOperatorKeycard)) {
-            for (PrivateKeys.Key key : PrivateKeys.get(stack)) {
-                tooltip.add(TextFormatting.WHITE + key.name);
-                tooltip.add(TextFormatting.WHITE + key.serial);
-            }
+            PrivateKeys.addTooltip(tooltip, stack);
         }
         Biometrics.addOwnerIfBound(tooltip, stack);
     }

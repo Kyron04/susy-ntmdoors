@@ -3,7 +3,6 @@ package com.ntmdoors.gui;
 import com.ntmdoors.client.GuiKeycardHolder;
 import com.ntmdoors.client.GuiKeycardProgrammer;
 import com.ntmdoors.client.GuiSafe;
-import com.ntmdoors.gui.ContainerSafe;
 import com.ntmdoors.item.ItemKeycardHolder;
 import com.ntmdoors.tile.TileEntityKeycardProgrammer;
 import com.ntmdoors.tile.TileEntitySafe;

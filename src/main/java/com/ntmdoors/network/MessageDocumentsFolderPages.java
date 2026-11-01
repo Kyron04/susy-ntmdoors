@@ -1,6 +1,7 @@
 package com.ntmdoors.network;
 
 import com.ntmdoors.item.ItemDocumentsFolder;
+import com.ntmdoors.util.HeldItems;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
@@ -79,8 +80,7 @@ public class MessageDocumentsFolderPages implements IMessage {
             ItemDocumentsFolder.setCustomName(stack, message.name);
             ItemDocumentsFolder.setLastPage(stack, pages.isEmpty() ? 0 : message.page);
 
-            player.inventory.markDirty();
-            player.inventoryContainer.detectAndSendChanges();
+            HeldItems.sync(player);
         }
     }
 }

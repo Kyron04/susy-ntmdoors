@@ -1,6 +1,7 @@
 package com.ntmdoors.network;
 
 import com.ntmdoors.tile.TileEntitySafe;
+import com.ntmdoors.util.ModSounds;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.tileentity.TileEntity;
@@ -37,16 +38,14 @@ public class MessageSafeOption implements IMessage {
 
     @Override
     public void fromBytes(ByteBuf buf) {
-        boolean present = buf.readBoolean();
-        pos = present ? BlockPos.fromLong(buf.readLong()) : null;
+        pos = NetworkUtil.readPos(buf);
         option = buf.readByte();
         value = buf.readBoolean();
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
-        buf.writeBoolean(pos != null);
-        if (pos != null) buf.writeLong(pos.toLong());
+        NetworkUtil.writePos(buf, pos);
         buf.writeByte(option);
         buf.writeBoolean(value);
     }
@@ -63,10 +62,7 @@ public class MessageSafeOption implements IMessage {
         private static void apply(EntityPlayerMP player, MessageSafeOption message) {
             if (message.pos == null) return;
             if (message.option < 0 || message.option >= OPTION_COUNT) return;
-            if (player.getDistanceSq(message.pos.getX() + 0.5D, message.pos.getY() + 0.5D,
-                    message.pos.getZ() + 0.5D) > 64D) {
-                return;
-            }
+            if (!NetworkUtil.isWithinReach(player, message.pos)) return;
 
             TileEntity te = player.world.getTileEntity(message.pos);
             if (!(te instanceof TileEntitySafe)) return;
@@ -90,7 +86,7 @@ public class MessageSafeOption implements IMessage {
                     return;
             }
 
-            player.world.playSound(null, safe.getPos(), com.ntmdoors.util.ModSounds.BUTTON9,
+            player.world.playSound(null, safe.getPos(), ModSounds.BUTTON9,
                     SoundCategory.BLOCKS, 0.8F, 1F);
         }
     }

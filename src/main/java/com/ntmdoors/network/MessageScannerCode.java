@@ -4,6 +4,7 @@ import com.ntmdoors.item.ItemBiometricOperatorKeycard;
 import com.ntmdoors.item.ItemOperatorKeycard;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
 import com.ntmdoors.util.Biometrics;
+import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.ModSounds;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -36,15 +37,13 @@ public class MessageScannerCode implements IMessage {
 
     @Override
     public void fromBytes(ByteBuf buf) {
-        boolean present = buf.readBoolean();
-        pos = present ? BlockPos.fromLong(buf.readLong()) : null;
+        pos = NetworkUtil.readPos(buf);
         code = ByteBufUtils.readUTF8String(buf);
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
-        buf.writeBoolean(pos != null);
-        if (pos != null) buf.writeLong(pos.toLong());
+        NetworkUtil.writePos(buf, pos);
         ByteBufUtils.writeUTF8String(buf, code == null ? "" : code);
     }
 
@@ -65,8 +64,7 @@ public class MessageScannerCode implements IMessage {
                 return;
             }
             // Same reach as the screen: a scanner one block away plus some slack.
-            if (player.getDistanceSq(message.pos.getX() + 0.5D, message.pos.getY() + 0.5D,
-                    message.pos.getZ() + 0.5D) > 64D) {
+            if (!NetworkUtil.isWithinReach(player, message.pos)) {
                 result(player, message.pos, MessageScannerCodeResult.DENIED);
                 return;
             }
@@ -144,10 +142,7 @@ public class MessageScannerCode implements IMessage {
 
         /** Either hand is fine; the screen is opened with the card that way too. */
         private static ItemStack operatorCard(EntityPlayerMP player) {
-            ItemStack main = player.getHeldItemMainhand();
-            if (main.getItem() instanceof ItemOperatorKeycard) return main;
-            ItemStack off = player.getHeldItemOffhand();
-            return off.getItem() instanceof ItemOperatorKeycard ? off : ItemStack.EMPTY;
+            return HeldItems.find(player, ItemOperatorKeycard.class);
         }
 
         /** The one card that may still reach the code screen while a lockout is running. */

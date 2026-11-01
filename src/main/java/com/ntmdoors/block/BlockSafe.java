@@ -21,8 +21,8 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
 /**
- * 1x1x1 steel safe. This first pass is the block shell only: it places, rotates and renders like a
- * normal full block. The code lock, inventory, GUI and biometric variant come later.
+ * 1x1x1 steel safe with a keypad. The tile entity owns the 27-slot inventory, the code and the
+ * access session; the biometric variant extends this block and swaps in its own tile entity.
  */
 public class BlockSafe extends Block {
 

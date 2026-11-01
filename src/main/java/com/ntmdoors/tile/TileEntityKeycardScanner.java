@@ -7,6 +7,7 @@ import com.ntmdoors.door.DoorState;
 import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.util.Biometrics;
+import com.ntmdoors.util.Codes;
 import com.ntmdoors.util.ModSounds;
 import com.ntmdoors.util.PrivateKeys;
 import net.minecraft.client.Minecraft;
@@ -278,13 +279,7 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
 
     /** Digits only, at most {@link #CODE_LENGTH} characters. */
     public static String sanitiseCode(String raw) {
-        if (raw == null) return "";
-        StringBuilder out = new StringBuilder();
-        for (int i = 0; i < raw.length() && out.length() < CODE_LENGTH; i++) {
-            char c = raw.charAt(i);
-            if (c >= '0' && c <= '9') out.append(c);
-        }
-        return out.toString();
+        return Codes.sanitise(raw, CODE_LENGTH);
     }
 
     // ------------------------------------------------------------ key assignment

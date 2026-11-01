@@ -24,15 +24,13 @@ public class MessageSafePage implements IMessage {
 
     @Override
     public void fromBytes(ByteBuf buf) {
-        boolean present = buf.readBoolean();
-        pos = present ? BlockPos.fromLong(buf.readLong()) : null;
+        pos = NetworkUtil.readPos(buf);
         page = buf.readByte();
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
-        buf.writeBoolean(pos != null);
-        if (pos != null) buf.writeLong(pos.toLong());
+        NetworkUtil.writePos(buf, pos);
         buf.writeByte(page);
     }
 
@@ -43,10 +41,7 @@ public class MessageSafePage implements IMessage {
             EntityPlayerMP player = ctx.getServerHandler().player;
             player.getServerWorld().addScheduledTask(() -> {
                 if (message.pos == null) return;
-                if (player.getDistanceSq(message.pos.getX() + 0.5D, message.pos.getY() + 0.5D,
-                        message.pos.getZ() + 0.5D) > 64D) {
-                    return;
-                }
+                if (!NetworkUtil.isWithinReach(player, message.pos)) return;
                 if (!(player.openContainer instanceof ContainerSafe)) return;
                 ContainerSafe container = (ContainerSafe) player.openContainer;
                 if (!container.getTile().getPos().equals(message.pos)) return;

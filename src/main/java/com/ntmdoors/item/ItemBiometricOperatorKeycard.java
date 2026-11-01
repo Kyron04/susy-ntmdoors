@@ -35,9 +35,6 @@ public class ItemBiometricOperatorKeycard extends ItemOperatorKeycard {
         Biometrics.addOwnerLine(tooltip, stack);
         // The card can carry private keys just like an RFID card; show them instead of hiding
         // the administrator data behind the sneak-right-click viewer.
-        for (PrivateKeys.Key key : PrivateKeys.get(stack)) {
-            tooltip.add(TextFormatting.WHITE + key.name);
-            tooltip.add(TextFormatting.WHITE + key.serial);
-        }
+        PrivateKeys.addTooltip(tooltip, stack);
     }
 }

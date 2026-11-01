@@ -29,15 +29,13 @@ public class MessageSafeCode implements IMessage {
 
     @Override
     public void fromBytes(ByteBuf buf) {
-        boolean present = buf.readBoolean();
-        pos = present ? BlockPos.fromLong(buf.readLong()) : null;
+        pos = NetworkUtil.readPos(buf);
         code = ByteBufUtils.readUTF8String(buf);
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
-        buf.writeBoolean(pos != null);
-        if (pos != null) buf.writeLong(pos.toLong());
+        NetworkUtil.writePos(buf, pos);
         ByteBufUtils.writeUTF8String(buf, code == null ? "" : code);
     }
 
@@ -52,8 +50,7 @@ public class MessageSafeCode implements IMessage {
 
         private static void submit(EntityPlayerMP player, MessageSafeCode message) {
             if (message.pos == null) return;
-            if (player.getDistanceSq(message.pos.getX() + 0.5D, message.pos.getY() + 0.5D,
-                    message.pos.getZ() + 0.5D) > 64D) {
+            if (!NetworkUtil.isWithinReach(player, message.pos)) {
                 deny(player, message.pos);
                 return;
             }

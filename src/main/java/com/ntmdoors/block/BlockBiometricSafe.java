@@ -4,9 +4,9 @@ import com.ntmdoors.NTMDoors;
 import com.ntmdoors.item.ItemBiometricOperatorKeycard;
 import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.tile.TileEntityBiometricSafe;
+import com.ntmdoors.util.HeldItems;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -34,7 +34,8 @@ public class BlockBiometricSafe extends BlockSafe {
                                     EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
         if (world.isRemote) {
             // The Creative Keycard opens the container directly; do not show the scan screen.
-            if (!ItemCreativeKeycard.isHeldBy(player) && holdsBiometricOperator(player)) {
+            if (!ItemCreativeKeycard.isHeldBy(player)
+                    && HeldItems.holds(player, ItemBiometricOperatorKeycard.class)) {
                 NTMDoors.proxy.openSafeBiometricGui(pos);
             }
             return true;
@@ -54,12 +55,5 @@ public class BlockBiometricSafe extends BlockSafe {
             }
         }
         return true;
-    }
-
-    /** The read screen is shown for either hand; the server performs the actual check. */
-    private static boolean holdsBiometricOperator(EntityPlayer player) {
-        ItemStack main = player.getHeldItemMainhand();
-        if (main.getItem() instanceof ItemBiometricOperatorKeycard) return true;
-        return player.getHeldItemOffhand().getItem() instanceof ItemBiometricOperatorKeycard;
     }
 }

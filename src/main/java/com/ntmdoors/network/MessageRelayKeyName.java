@@ -2,6 +2,7 @@ package com.ntmdoors.network;
 
 import com.ntmdoors.item.ItemBiometricRelayKey;
 import com.ntmdoors.item.ItemRelayKey;
+import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.ModSounds;
 import com.ntmdoors.util.PrivateKeys;
 import io.netty.buffer.ByteBuf;
@@ -65,8 +66,7 @@ public class MessageRelayKeyName implements IMessage {
             if (name.isEmpty()) return;
 
             PrivateKeys.add(stack, name, PrivateKeys.createSerial());
-            player.inventory.markDirty();
-            player.inventoryContainer.detectAndSendChanges();
+            HeldItems.sync(player);
             player.world.playSound(null, player.posX, player.posY, player.posZ,
                     ModSounds.BUTTON9, SoundCategory.PLAYERS, 0.8F, 1F);
             player.sendStatusMessage(new TextComponentTranslation("ntmdoors.msg.key_created", name), true);

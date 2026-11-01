@@ -3,6 +3,7 @@ package com.ntmdoors.tile;
 import com.ntmdoors.item.ItemBiometricOperatorKeycard;
 import com.ntmdoors.network.MessageSafeResult;
 import com.ntmdoors.util.Biometrics;
+import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.ModSounds;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -40,7 +41,7 @@ public class TileEntityBiometricSafe extends TileEntitySafe {
     public void tryBiometricAccess(EntityPlayer player) {
         if (world == null || world.isRemote || player == null) return;
 
-        ItemStack card = heldCard(player);
+        ItemStack card = HeldItems.find(player, ItemBiometricOperatorKeycard.class);
         if (card.isEmpty()) {
             msg(player, "ntmdoors.msg.safe_biometric_required");
             return;
@@ -123,13 +124,5 @@ public class TileEntityBiometricSafe extends TileEntitySafe {
     private boolean bypassesLockout(ItemStack card, EntityPlayer player) {
         if (!Biometrics.isBound(card)) return false;
         return !isMatchHolder() || Biometrics.isOwnedBy(card, player);
-    }
-
-    /** Either hand is accepted, matching the scanner's card handling. */
-    private static ItemStack heldCard(EntityPlayer player) {
-        ItemStack main = player.getHeldItemMainhand();
-        if (main.getItem() instanceof ItemBiometricOperatorKeycard) return main;
-        ItemStack off = player.getHeldItemOffhand();
-        return off.getItem() instanceof ItemBiometricOperatorKeycard ? off : ItemStack.EMPTY;
     }
 }

@@ -7,21 +7,20 @@ import com.ntmdoors.network.ModNetwork;
 import com.ntmdoors.tile.TileEntitySafe;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.io.IOException;
 
 /**
- * Safe screen. Page one is the 3x9 storage grid; page two holds Match user, Lockout mode and - on
- * the code safe only - Reset code. The page arrows live in the footer, and hidden storage slots are
- * parked off-screen so they cannot be hovered or clicked.
+ * Safe screen. Page one is the 3x9 storage grid; page two holds the options that belong to the
+ * variant: Match user and Lockout mode on the biometric safe, Lockout mode and Reset code on the
+ * code safe. The page arrows live in the footer, and hidden storage slots are parked off-screen so
+ * they cannot be hovered or clicked.
  */
 @SideOnly(Side.CLIENT)
 public class GuiSafe extends GuiContainer {
@@ -30,7 +29,6 @@ public class GuiSafe extends GuiContainer {
     private static final int COLOUR = 0xFFE8E8E8;
     private static final int MUTED = 0xFFAFAFAF;
     private static final int DIM = 0xFF8A8A8A;
-    private static final int HEADING = 0xFFDCDCDC;
     private static final int HOVER = 0xFF232326;
     private static final int RULE = 0xFF4A4A4E;
     private static final int DARK_TEXT = 0xFF2B2B2E;
@@ -176,23 +174,13 @@ public class GuiSafe extends GuiContainer {
 
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
-        resetGuiState();
+        GuiContainerStyle.resetGuiState();
 
         GlStateManager.pushMatrix();
         GlStateManager.translate(guiLeft, guiTop, 0F);
         GlStateManager.color(1F, 1F, 1F, 1F);
 
-        // outer shadow and the light metal casing
-        drawRect(0, 0, xSize, ySize, 0xFF101012);
-        drawRect(2, 2, xSize - 2, ySize - 2, 0xFFC8C8C8);
-        drawRect(3, 3, xSize - 3, 4, 0xFFECECEC);
-        drawRect(3, 3, 4, ySize - 3, 0xFFECECEC);
-        drawRect(3, ySize - 4, xSize - 3, ySize - 3, 0xFF8A8A8A);
-        drawRect(xSize - 4, 3, xSize - 3, ySize - 3, 0xFF8A8A8A);
-
-        // title strip
-        drawRect(4, 4, xSize - 4, 20, 0xFFD4D4D4);
-        drawRect(4, 19, xSize - 4, 20, 0xFF9A9A9A);
+        GuiContainerStyle.drawCasing(xSize, ySize);
 
         // dark storage/options face and the player-inventory well below it
         drawRect(4, 20, xSize - 4, 120, 0xFF0B0B0D);
@@ -211,14 +199,8 @@ public class GuiSafe extends GuiContainer {
     private void drawSlotFrames() {
         for (Slot slot : inventorySlots.inventorySlots) {
             if (slot.slotNumber < ContainerSafe.SAFE_SLOT_COUNT && page != 0) continue;
-            drawSlotFrame(slot.xPos, slot.yPos);
+            GuiContainerStyle.drawSlotFrame(slot.xPos, slot.yPos);
         }
-    }
-
-    private static void drawSlotFrame(int x, int y) {
-        drawRect(x - 1, y - 1, x + 17, y + 17, 0xFFB8B8B8);
-        drawRect(x, y, x + 16, y + 16, 0xFF343437);
-        drawRect(x, y, x + 16, y + 1, 0xFF1F1F22);
     }
 
     // ------------------------------------------------------------ foreground
@@ -240,7 +222,8 @@ public class GuiSafe extends GuiContainer {
         String title = tile.isBiometric() ? "Biometric Safe" : "Safe";
         fontRenderer.drawString(title, 8, 7, DARK_TEXT);
         String right = page == 1 && tile.isLockedOut() ? "LOCKED OUT" : "27 slots";
-        drawRightAligned(right, xSize - 8, 7, page == 1 && tile.isLockedOut() ? 0xFF8A3A3A : 0xFF5A5A5A);
+        GuiContainerStyle.drawRightAligned(fontRenderer, right, xSize - 8, 7,
+                page == 1 && tile.isLockedOut() ? 0xFF8A3A3A : 0xFF5A5A5A);
 
         if (page == 0) {
             drawString(fontRenderer, "CONTENTS", 8, 24, COLOUR);
@@ -356,10 +339,6 @@ public class GuiSafe extends GuiContainer {
         }
     }
 
-    private void drawRightAligned(String text, int right, int y, int colour) {
-        fontRenderer.drawString(text, right - fontRenderer.getStringWidth(text), y, colour);
-    }
-
     // ------------------------------------------------------------ tooltips / GL
 
     /** Vanilla's own hovered-slot pass stays empty so the tooltip is only ever drawn once. */
@@ -376,7 +355,7 @@ public class GuiSafe extends GuiContainer {
         if (stack.isEmpty()) return;
 
         this.renderToolTip(stack, mouseX, mouseY);
-        resetGuiState();
+        GuiContainerStyle.resetGuiState();
     }
 
     private Slot findSlot(int mouseX, int mouseY) {
@@ -390,16 +369,5 @@ public class GuiSafe extends GuiContainer {
             }
         }
         return null;
-    }
-
-    /** Restores the GL state a container GUI expects after a tooltip has been drawn. */
-    private static void resetGuiState() {
-        RenderHelper.disableStandardItemLighting();
-        GlStateManager.disableLighting();
-        GlStateManager.disableRescaleNormal();
-        GlStateManager.disableDepth();
-        GlStateManager.enableTexture2D();
-        GlStateManager.enableBlend();
-        GlStateManager.color(1F, 1F, 1F, 1F);
     }
 }

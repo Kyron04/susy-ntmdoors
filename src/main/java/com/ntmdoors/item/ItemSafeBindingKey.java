@@ -11,8 +11,8 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 /**
- * Safe Binding Key. A small USB key that will bind a safe to the security network once the safe
- * logic exists. For now it is a creative-only item with its own sprite and description.
+ * Safe Binding Key. A small creative-only USB key reserved for binding safes to the security
+ * network; it currently carries only its sprite and description.
  */
 public class ItemSafeBindingKey extends Item {
 

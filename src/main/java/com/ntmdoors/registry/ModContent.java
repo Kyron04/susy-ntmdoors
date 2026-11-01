@@ -1,21 +1,21 @@
 package com.ntmdoors.registry;
 
 import com.ntmdoors.NTMDoors;
+import com.ntmdoors.block.BlockBiometricSafe;
 import com.ntmdoors.block.BlockDoorGeneric;
 import com.ntmdoors.block.BlockDoorKeypad;
-import com.ntmdoors.block.BlockBiometricSafe;
 import com.ntmdoors.block.BlockKeycardProgrammer;
 import com.ntmdoors.block.BlockKeycardScanner;
 import com.ntmdoors.block.BlockSafe;
 import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.DoorDecls;
+import com.ntmdoors.item.ItemBiometricKeycard;
+import com.ntmdoors.item.ItemBiometricOperatorKeycard;
+import com.ntmdoors.item.ItemBiometricRelayKey;
 import com.ntmdoors.item.ItemBlockKeycardProgrammer;
 import com.ntmdoors.item.ItemBlockKeycardScanner;
 import com.ntmdoors.item.ItemBlockKeypad;
 import com.ntmdoors.item.ItemBlockSafe;
-import com.ntmdoors.item.ItemBiometricKeycard;
-import com.ntmdoors.item.ItemBiometricOperatorKeycard;
-import com.ntmdoors.item.ItemBiometricRelayKey;
 import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.item.ItemDocumentsFolder;
 import com.ntmdoors.item.ItemDoorBlock;
@@ -100,7 +100,7 @@ public class ModContent {
             new ItemNamedRfidCard("scp_level_6_keycard", "Level 6 clearance");
     public static final ItemRfidCard GOOGA_SECURITY_KEYCARD =
             new ItemNamedRfidCard(TextFormatting.GOLD, "googa_security_keycard", "Security is goog");
-    /** Privileged card produced by the programmer; access rules are not defined yet. */
+    /** Privileged card produced by the programmer and accepted by scanners as an admin card. */
     public static final ItemOperatorKeycard OPERATOR_KEYCARD = new ItemOperatorKeycard();
     /** Debug card that bypasses every door restriction. */
     public static final ItemCreativeKeycard CREATIVE_KEYCARD = new ItemCreativeKeycard();
@@ -113,9 +113,9 @@ public class ModContent {
     public static final ItemBiometricRelayKey BIOMETRIC_RELAY_KEY = new ItemBiometricRelayKey();
     /** Carried case for up to twelve keycards, opened with a right-click. */
     public static final ItemKeycardHolder KEYCARD_HOLDER = new ItemKeycardHolder();
-    /** Carried folder for written notes; page storage will be added later. */
+    /** Carried folder for written notes, with twenty editable pages. */
     public static final ItemDocumentsFolder DOCUMENTS_FOLDER = new ItemDocumentsFolder();
-    /** USB key that will bind a safe to the security network once the safe logic exists. */
+    /** Creative-only security-network key reserved for future safe binding. */
     public static final ItemSafeBindingKey SAFE_BINDING_KEY = new ItemSafeBindingKey();
 
     /** The seven cosmetic RFID colours, in the order the programmer's second page shows them. */

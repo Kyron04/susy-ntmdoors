@@ -1,12 +1,12 @@
 package com.ntmdoors.item;
 
 import com.ntmdoors.util.Biometrics;
+import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.InteractionGuard;
 import com.ntmdoors.util.ModSounds;
 import com.ntmdoors.util.Names;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
@@ -53,7 +53,7 @@ public class ItemBiometricRelayKey extends ItemRelayKey {
             // The identity is written straight into the held stack, which the inventory container
             // does not notice by itself. Without this the server is bound but the client keeps the
             // old stack, so the tooltip and the programmer still see an unbound key until a relog.
-            syncHeldItem(player);
+            HeldItems.sync(player);
             world.playSound(null, player.posX, player.posY, player.posZ,
                     ModSounds.SCANNER_BUTTON3, SoundCategory.PLAYERS, FEEDBACK_VOLUME, 1F);
             player.sendStatusMessage(new TextComponentTranslation("ntmdoors.msg.biometric_collected"), true);
@@ -64,13 +64,6 @@ public class ItemBiometricRelayKey extends ItemRelayKey {
                     Biometrics.ownerName(stack)), true);
         }
         return new ActionResult<>(EnumActionResult.SUCCESS, stack);
-    }
-
-    /** Pushes the changed held stack to the owning client; a no-op on the integrated client. */
-    private static void syncHeldItem(EntityPlayer player) {
-        if (!(player instanceof EntityPlayerMP)) return;
-        player.inventory.markDirty();
-        ((EntityPlayerMP) player).inventoryContainer.detectAndSendChanges();
     }
 
     @Override

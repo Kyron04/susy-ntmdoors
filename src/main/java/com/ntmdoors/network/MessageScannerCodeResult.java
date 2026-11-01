@@ -1,5 +1,6 @@
 package com.ntmdoors.network;
 
+import com.ntmdoors.client.GuiScannerCode;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
@@ -33,15 +34,13 @@ public class MessageScannerCodeResult implements IMessage {
 
     @Override
     public void fromBytes(ByteBuf buf) {
-        boolean present = buf.readBoolean();
-        pos = present ? BlockPos.fromLong(buf.readLong()) : null;
+        pos = NetworkUtil.readPos(buf);
         result = buf.readByte();
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
-        buf.writeBoolean(pos != null);
-        if (pos != null) buf.writeLong(pos.toLong());
+        NetworkUtil.writePos(buf, pos);
         buf.writeByte(result);
     }
 
@@ -51,8 +50,8 @@ public class MessageScannerCodeResult implements IMessage {
         public IMessage onMessage(MessageScannerCodeResult message, MessageContext ctx) {
             Minecraft.getMinecraft().addScheduledTask(() -> {
                 GuiScreen screen = Minecraft.getMinecraft().currentScreen;
-                if (screen instanceof com.ntmdoors.client.GuiScannerCode) {
-                    ((com.ntmdoors.client.GuiScannerCode) screen).onResult(message.pos, message.result);
+                if (screen instanceof GuiScannerCode) {
+                    ((GuiScannerCode) screen).onResult(message.pos, message.result);
                 }
             });
             return null;

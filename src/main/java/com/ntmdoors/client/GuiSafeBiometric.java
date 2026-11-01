@@ -2,8 +2,6 @@ package com.ntmdoors.client;
 
 import com.ntmdoors.network.MessageSafeResult;
 import com.ntmdoors.tile.TileEntitySafe;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
@@ -15,7 +13,7 @@ import org.lwjgl.input.Keyboard;
  * code keypad, but shows the scanning state instead of keys.
  */
 @SideOnly(Side.CLIENT)
-public class GuiSafeBiometric extends GuiScreen {
+public class GuiSafeBiometric extends GuiPanelScreen {
 
     private static final int PANEL_WIDTH = 176;
     private static final int PANEL_HEIGHT = 150;
@@ -32,8 +30,6 @@ public class GuiSafeBiometric extends GuiScreen {
 
     private final BlockPos pos;
 
-    private int left;
-    private int top;
     private int openTicks;
     private boolean showingResult;
     private boolean resultSuccess;
@@ -46,10 +42,13 @@ public class GuiSafeBiometric extends GuiScreen {
     }
 
     @Override
-    public void initGui() {
-        super.initGui();
-        left = (width - PANEL_WIDTH) / 2;
-        top = (height - PANEL_HEIGHT) / 2;
+    protected int panelWidth() {
+        return PANEL_WIDTH;
+    }
+
+    @Override
+    protected int panelHeight() {
+        return PANEL_HEIGHT;
     }
 
     @Override
@@ -102,7 +101,7 @@ public class GuiSafeBiometric extends GuiScreen {
         drawDefaultBackground();
         drawCase();
         if (showingResult) {
-            drawResult();
+            drawResult(resultSuccess);
         } else {
             drawScanning();
         }
@@ -132,42 +131,5 @@ public class GuiSafeBiometric extends GuiScreen {
                 left + PANEL_WIDTH / 2, top + 95, MUTED);
         drawCenteredString(fontRenderer, "ESC to cancel", left + PANEL_WIDTH / 2,
                 top + PANEL_HEIGHT - 16, 0xFF6A6A6A);
-    }
-
-    private void drawResult() {
-        String text = resultSuccess ? "SUCCESS!!!" : "FAILED!!!";
-        int fill = resultSuccess ? 0xFF75FF82 : 0xFFFF7777;
-        int glow = resultSuccess ? 0x6620FF46 : 0x66FF2525;
-        int stroke = resultSuccess ? 0xFF173D1C : 0xFF4A1111;
-        int cx = left + PANEL_WIDTH / 2;
-        int cy = top + PANEL_HEIGHT / 2;
-
-        drawBigText(text, cx, cy, 2.15F, 0, 0, glow);
-        drawBigText(text, cx, cy, 2F, -1, 0, stroke);
-        drawBigText(text, cx, cy, 2F, 1, 0, stroke);
-        drawBigText(text, cx, cy, 2F, 0, -1, stroke);
-        drawBigText(text, cx, cy, 2F, 0, 1, stroke);
-        drawBigText(text, cx, cy, 2F, 0, 0, fill);
-    }
-
-    private void drawBigText(String text, int cx, int cy, float scale, int dx, int dy, int colour) {
-        GlStateManager.pushMatrix();
-        GlStateManager.translate(cx + dx, cy + dy, 0F);
-        GlStateManager.scale(scale, scale, 1F);
-        fontRenderer.drawString(text, -fontRenderer.getStringWidth(text) / 2, -4, colour);
-        GlStateManager.popMatrix();
-    }
-
-    private void drawCase() {
-        drawRect(left - 2, top - 2, left + PANEL_WIDTH + 2, top + PANEL_HEIGHT + 2, 0xFF555555);
-        drawRect(left - 1, top - 1, left + PANEL_WIDTH + 1, top + PANEL_HEIGHT + 1, 0xFF777777);
-        drawRect(left, top, left + PANEL_WIDTH, top + PANEL_HEIGHT, 0xFFC8C8C8);
-        drawRect(left + 1, top + 1, left + PANEL_WIDTH - 1, top + 2, 0xFFF1F1F1);
-        drawRect(left + 1, top + 1, left + 2, top + PANEL_HEIGHT - 1, 0xFFF1F1F1);
-        drawRect(left + 1, top + PANEL_HEIGHT - 2, left + PANEL_WIDTH - 1, top + PANEL_HEIGHT - 1, 0xFF8A8A8A);
-        drawRect(left + PANEL_WIDTH - 2, top + 1, left + PANEL_WIDTH - 1, top + PANEL_HEIGHT - 1, 0xFF8A8A8A);
-
-        drawRect(left + 4, top + 4, left + PANEL_WIDTH - 4, top + PANEL_HEIGHT - 4, 0xFFF1F1F1);
-        drawRect(left + 5, top + 5, left + PANEL_WIDTH - 5, top + PANEL_HEIGHT - 5, 0xFF090909);
     }
 }

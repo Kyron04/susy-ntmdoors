@@ -7,10 +7,9 @@ import com.ntmdoors.network.ModNetwork;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
 import com.ntmdoors.tile.TileEntityKeycardScanner.BiometricId;
 import com.ntmdoors.util.Biometrics;
+import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.PrivateKeys;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
@@ -18,7 +17,6 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -178,11 +176,7 @@ public class GuiScannerKeys extends GuiScreen {
     }
 
     private ItemStack operatorCard() {
-        if (mc.player == null) return ItemStack.EMPTY;
-        ItemStack main = mc.player.getHeldItemMainhand();
-        if (main.getItem() instanceof ItemOperatorKeycard) return main;
-        ItemStack off = mc.player.getHeldItemOffhand();
-        return off.getItem() instanceof ItemOperatorKeycard ? off : ItemStack.EMPTY;
+        return HeldItems.find(mc.player, ItemOperatorKeycard.class);
     }
 
     // ------------------------------------------------------------ input
@@ -368,13 +362,13 @@ public class GuiScannerKeys extends GuiScreen {
         drawRect(left + 12, top + 40, left + PANEL_WIDTH - 12, top + 41, RULE);
 
         scrollOptions = clampOptionsScroll(scrollOptions);
-        beginClip(left + 8, top + OPTION_TOP, PANEL_WIDTH - 16, OPTION_AREA);
+        GuiClip.begin(left + 8, top + OPTION_TOP, PANEL_WIDTH - 16, OPTION_AREA);
         for (int i = 0; i < MessageScannerOption.OPTION_COUNT; i++) {
             int y = top + OPTION_TOP + i * OPTION_HEIGHT - scrollOptions;
             if (y + OPTION_HEIGHT < top + OPTION_TOP || y > top + OPTION_TOP + OPTION_AREA) continue;
             drawOption(i, y, mouseX, mouseY);
         }
-        endClip();
+        GuiClip.end();
         drawScrollbar(left + PANEL_WIDTH - 8, top + OPTION_TOP, OPTION_AREA,
                 MessageScannerOption.OPTION_COUNT, OPTION_HEIGHT, scrollOptions);
     }
@@ -407,7 +401,7 @@ public class GuiScannerKeys extends GuiScreen {
             return;
         }
 
-        beginClip(x, y, LIST_WIDTH, LIST_HEIGHT);
+        GuiClip.begin(x, y, LIST_WIDTH, LIST_HEIGHT);
         for (int i = 0; i < entries.size(); i++) {
             int rowY = y + i * ROW_HEIGHT - scroll;
             if (rowY + ROW_HEIGHT < y || rowY > y + LIST_HEIGHT) continue;
@@ -423,7 +417,7 @@ public class GuiScannerKeys extends GuiScreen {
                     hovered ? 0xFFFFFFFF : COLOUR);
             drawString(fontRenderer, entry.detail, x + 4, rowY + 13, MUTED);
         }
-        endClip();
+        GuiClip.end();
     }
 
     /** One settings row: label and hint on the left, an ON/OFF pill on the right. */
@@ -585,17 +579,6 @@ public class GuiScannerKeys extends GuiScreen {
             int dx = right ? 4 - i : i - 4;
             drawRect(centreX + dx, centreY - i, centreX + dx + 1, centreY + 1 + i, COLOUR);
         }
-    }
-
-    /** Restricts drawing of a scrolling list to its own box. */
-    private void beginClip(int x, int y, int width, int height) {
-        int scale = new ScaledResolution(Minecraft.getMinecraft()).getScaleFactor();
-        GL11.glEnable(GL11.GL_SCISSOR_TEST);
-        GL11.glScissor(x * scale, mc.displayHeight - (y + height) * scale, width * scale, height * scale);
-    }
-
-    private void endClip() {
-        GL11.glDisable(GL11.GL_SCISSOR_TEST);
     }
 
     /** One row: a private key or a biometric identity. */

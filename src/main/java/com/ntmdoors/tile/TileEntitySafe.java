@@ -5,6 +5,7 @@ import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.gui.GuiHandler;
 import com.ntmdoors.network.MessageSafeResult;
 import com.ntmdoors.network.ModNetwork;
+import com.ntmdoors.util.Codes;
 import com.ntmdoors.util.ModSounds;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -51,7 +52,7 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
 
     private boolean matchHolder = true;
     private boolean lockoutMode;
-    /** Synced mirror of {@link #lockoutTicks > 0}. */
+    /** Synced mirror of whether the lockout timer is currently running. */
     private boolean lockedOut;
 
     /** Server only. */
@@ -88,13 +89,7 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
 
     /** Digits only, at most {@link #CODE_LENGTH} characters. */
     public static String sanitiseCode(String raw) {
-        if (raw == null) return "";
-        StringBuilder out = new StringBuilder();
-        for (int i = 0; i < raw.length() && out.length() < CODE_LENGTH; i++) {
-            char c = raw.charAt(i);
-            if (c >= '0' && c <= '9') out.append(c);
-        }
-        return out.toString();
+        return Codes.sanitise(raw, CODE_LENGTH);
     }
 
     /**

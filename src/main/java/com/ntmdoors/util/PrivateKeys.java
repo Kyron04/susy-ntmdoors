@@ -3,6 +3,7 @@ package com.ntmdoors.util;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.common.util.Constants;
 
 import java.security.SecureRandom;
@@ -111,6 +112,14 @@ public final class PrivateKeys {
         list.appendTag(entry);
         tag.setTag(ROOT, list);
         return true;
+    }
+
+    /** Adds the standard white name/serial pairs to an item tooltip. */
+    public static void addTooltip(List<String> tooltip, ItemStack stack) {
+        for (Key key : get(stack)) {
+            tooltip.add(TextFormatting.WHITE + key.name);
+            tooltip.add(TextFormatting.WHITE + key.serial);
+        }
     }
 
     /** Copies every key that the target does not already have; returns how many were added. */

@@ -6,10 +6,10 @@ import com.ntmdoors.util.InteractionGuard;
 import com.ntmdoors.util.ModSounds;
 import com.ntmdoors.util.Names;
 import com.ntmdoors.util.PrivateKeys;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
@@ -77,10 +77,7 @@ public class ItemRelayKey extends Item {
         Names.addDescription(tooltip,
                 "Used to generate private keys via",
                 "Sneak + Right Click.");
-        for (PrivateKeys.Key key : PrivateKeys.get(stack)) {
-            tooltip.add(TextFormatting.WHITE + key.name);
-            tooltip.add(TextFormatting.WHITE + key.serial);
-        }
+        PrivateKeys.addTooltip(tooltip, stack);
         Biometrics.addOwnerIfBound(tooltip, stack);
     }
 }

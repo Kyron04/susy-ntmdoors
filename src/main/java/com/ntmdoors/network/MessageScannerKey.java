@@ -3,6 +3,7 @@ package com.ntmdoors.network;
 import com.ntmdoors.item.ItemOperatorKeycard;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
 import com.ntmdoors.util.Biometrics;
+import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.PrivateKeys;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -38,8 +39,7 @@ public class MessageScannerKey implements IMessage {
 
     @Override
     public void fromBytes(ByteBuf buf) {
-        boolean present = buf.readBoolean();
-        pos = present ? BlockPos.fromLong(buf.readLong()) : null;
+        pos = NetworkUtil.readPos(buf);
         value = ByteBufUtils.readUTF8String(buf);
         assign = buf.readBoolean();
         biometric = buf.readBoolean();
@@ -47,8 +47,7 @@ public class MessageScannerKey implements IMessage {
 
     @Override
     public void toBytes(ByteBuf buf) {
-        buf.writeBoolean(pos != null);
-        if (pos != null) buf.writeLong(pos.toLong());
+        NetworkUtil.writePos(buf, pos);
         ByteBufUtils.writeUTF8String(buf, value == null ? "" : value);
         buf.writeBoolean(assign);
         buf.writeBoolean(biometric);
@@ -65,10 +64,7 @@ public class MessageScannerKey implements IMessage {
 
         private static void apply(EntityPlayerMP player, MessageScannerKey message) {
             if (message.pos == null || message.value == null || message.value.isEmpty()) return;
-            if (player.getDistanceSq(message.pos.getX() + 0.5D, message.pos.getY() + 0.5D,
-                    message.pos.getZ() + 0.5D) > 64D) {
-                return;
-            }
+            if (!NetworkUtil.isWithinReach(player, message.pos)) return;
 
             TileEntity te = player.world.getTileEntity(message.pos);
             if (!(te instanceof TileEntityKeycardScanner)) return;
@@ -103,10 +99,7 @@ public class MessageScannerKey implements IMessage {
 
         /** Either hand is fine, matching the screen's available-entry list. */
         private static ItemStack operatorCard(EntityPlayerMP player) {
-            ItemStack main = player.getHeldItemMainhand();
-            if (main.getItem() instanceof ItemOperatorKeycard) return main;
-            ItemStack off = player.getHeldItemOffhand();
-            return off.getItem() instanceof ItemOperatorKeycard ? off : ItemStack.EMPTY;
+            return HeldItems.find(player, ItemOperatorKeycard.class);
         }
     }
 }

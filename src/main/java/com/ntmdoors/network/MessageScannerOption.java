@@ -42,16 +42,14 @@ public class MessageScannerOption implements IMessage {
 
     @Override
     public void fromBytes(ByteBuf buf) {
-        boolean present = buf.readBoolean();
-        pos = present ? BlockPos.fromLong(buf.readLong()) : null;
+        pos = NetworkUtil.readPos(buf);
         option = buf.readByte();
         value = buf.readBoolean();
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
-        buf.writeBoolean(pos != null);
-        if (pos != null) buf.writeLong(pos.toLong());
+        NetworkUtil.writePos(buf, pos);
         buf.writeByte(option);
         buf.writeBoolean(value);
     }
@@ -68,10 +66,7 @@ public class MessageScannerOption implements IMessage {
         private static void apply(EntityPlayerMP player, MessageScannerOption message) {
             if (message.pos == null) return;
             if (message.option < 0 || message.option >= OPTION_COUNT) return;
-            if (player.getDistanceSq(message.pos.getX() + 0.5D, message.pos.getY() + 0.5D,
-                    message.pos.getZ() + 0.5D) > 64D) {
-                return;
-            }
+            if (!NetworkUtil.isWithinReach(player, message.pos)) return;
 
             TileEntity te = player.world.getTileEntity(message.pos);
             if (!(te instanceof TileEntityKeycardScanner)) return;

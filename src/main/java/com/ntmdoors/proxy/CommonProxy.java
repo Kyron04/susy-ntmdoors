@@ -8,14 +8,15 @@ import com.ntmdoors.network.ModNetwork;
 import com.ntmdoors.tile.TileEntityDoorGeneric;
 import com.ntmdoors.tile.TileEntityDoorKeypad;
 import com.ntmdoors.tile.TileEntityDoorPart;
+import com.ntmdoors.tile.TileEntityBiometricSafe;
 import com.ntmdoors.tile.TileEntityKeycardProgrammer;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
-import com.ntmdoors.tile.TileEntityBiometricSafe;
 import com.ntmdoors.tile.TileEntitySafe;
+import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
@@ -25,16 +26,20 @@ public class CommonProxy {
 
     public void preInit(FMLPreInitializationEvent event) {
         ModNetwork.register();
-        GameRegistry.registerTileEntity(TileEntityDoorGeneric.class, new ResourceLocation(NTMDoors.MODID, "door_core"));
-        GameRegistry.registerTileEntity(TileEntityDoorPart.class, new ResourceLocation(NTMDoors.MODID, "door_part"));
-        GameRegistry.registerTileEntity(TileEntityDoorKeypad.class, new ResourceLocation(NTMDoors.MODID, "door_keypad"));
-        GameRegistry.registerTileEntity(TileEntityKeycardScanner.class, new ResourceLocation(NTMDoors.MODID, "keycard_scanner"));
-        GameRegistry.registerTileEntity(TileEntityKeycardProgrammer.class, new ResourceLocation(NTMDoors.MODID, "keycard_programmer"));
-        GameRegistry.registerTileEntity(TileEntitySafe.class, new ResourceLocation(NTMDoors.MODID, "safe"));
-        GameRegistry.registerTileEntity(TileEntityBiometricSafe.class, new ResourceLocation(NTMDoors.MODID, "biometric_safe"));
+        registerTileEntity(TileEntityDoorGeneric.class, "door_core");
+        registerTileEntity(TileEntityDoorPart.class, "door_part");
+        registerTileEntity(TileEntityDoorKeypad.class, "door_keypad");
+        registerTileEntity(TileEntityKeycardScanner.class, "keycard_scanner");
+        registerTileEntity(TileEntityKeycardProgrammer.class, "keycard_programmer");
+        registerTileEntity(TileEntitySafe.class, "safe");
+        registerTileEntity(TileEntityBiometricSafe.class, "biometric_safe");
         // Read the OBJ group bounds used by moving collision boxes now, so the first collision
         // query on a door never has to touch the filesystem.
         for (DoorDecl d : DoorDecls.ALL) d.prepareGeometry();
+    }
+
+    private static void registerTileEntity(Class<? extends TileEntity> type, String name) {
+        GameRegistry.registerTileEntity(type, new ResourceLocation(NTMDoors.MODID, name));
     }
 
     public void init(FMLInitializationEvent event) {

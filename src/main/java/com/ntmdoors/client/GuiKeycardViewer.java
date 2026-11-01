@@ -3,15 +3,12 @@ package com.ntmdoors.client;
 import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.util.Biometrics;
 import com.ntmdoors.util.PrivateKeys;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
 import java.util.List;
@@ -211,7 +208,7 @@ public class GuiKeycardViewer extends GuiScreen {
             return;
         }
 
-        beginClip(left + 8, top + LIST_TOP, PANEL_WIDTH - 16, LIST_HEIGHT);
+        GuiClip.begin(left + 8, top + LIST_TOP, PANEL_WIDTH - 16, LIST_HEIGHT);
         for (int i = 0; i < entryCount(); i++) {
             int y = top + LIST_TOP + i * ROW_HEIGHT - scroll;
             if (y + ROW_HEIGHT < top + LIST_TOP || y > top + LIST_TOP + LIST_HEIGHT) continue;
@@ -222,7 +219,7 @@ public class GuiKeycardViewer extends GuiScreen {
                 drawString(fontRenderer, serial, left + 14, y + 13, 0xFFFFFFFF);
             }
         }
-        endClip();
+        GuiClip.end();
     }
 
     private void drawScrollbar() {
@@ -236,16 +233,5 @@ public class GuiKeycardViewer extends GuiScreen {
         int travel = LIST_HEIGHT - thumb;
         int offset = maxScroll() == 0 ? 0 : (int) ((long) scroll * travel / maxScroll());
         drawRect(x, y + offset, x + SCROLLBAR_WIDTH, y + offset + thumb, 0xFFB4B4B4);
-    }
-
-    /** Restricts drawing of the scrolling list to its own box. */
-    private void beginClip(int x, int y, int width, int height) {
-        int scale = new ScaledResolution(Minecraft.getMinecraft()).getScaleFactor();
-        GL11.glEnable(GL11.GL_SCISSOR_TEST);
-        GL11.glScissor(x * scale, mc.displayHeight - (y + height) * scale, width * scale, height * scale);
-    }
-
-    private void endClip() {
-        GL11.glDisable(GL11.GL_SCISSOR_TEST);
     }
 }

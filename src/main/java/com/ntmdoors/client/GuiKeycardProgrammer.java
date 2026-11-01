@@ -8,7 +8,6 @@ import com.ntmdoors.tile.TileEntityKeycardProgrammer;
 import com.ntmdoors.util.ModSounds;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Slot;
@@ -114,7 +113,7 @@ public class GuiKeycardProgrammer extends GuiContainer {
         // A tooltip drawn last frame (ours or JEI's) leaves lighting and rescale-normal enabled,
         // and GuiContainer draws this layer before it clears them. Reset first so the casing and
         // the buttons are never lit by the world light rig.
-        resetGuiState();
+        GuiContainerStyle.resetGuiState();
 
         // GuiContainer calls this before it applies the guiLeft/guiTop translation, so the
         // background has to enter GUI space itself or it lands in the screen's top-left corner.
@@ -122,17 +121,7 @@ public class GuiKeycardProgrammer extends GuiContainer {
         GlStateManager.translate(guiLeft, guiTop, 0F);
         GlStateManager.color(1F, 1F, 1F, 1F);
 
-        // outer shadow and the light metal casing
-        drawRect(0, 0, xSize, ySize, 0xFF101012);
-        drawRect(2, 2, xSize - 2, ySize - 2, 0xFFC8C8C8);
-        drawRect(3, 3, xSize - 3, 4, 0xFFECECEC);
-        drawRect(3, 3, 4, ySize - 3, 0xFFECECEC);
-        drawRect(3, ySize - 4, xSize - 3, ySize - 3, 0xFF8A8A8A);
-        drawRect(xSize - 4, 3, xSize - 3, ySize - 3, 0xFF8A8A8A);
-
-        // title strip
-        drawRect(4, 4, xSize - 4, 20, 0xFFD4D4D4);
-        drawRect(4, 19, xSize - 4, 20, 0xFF9A9A9A);
+        GuiContainerStyle.drawCasing(xSize, ySize);
 
         // dark machine face and the player-inventory well below it
         drawRect(4, 20, xSize - 4, 138, 0xFF0B0B0D);
@@ -159,14 +148,8 @@ public class GuiKeycardProgrammer extends GuiContainer {
     private void drawSlotFrames() {
         for (Slot slot : this.inventorySlots.inventorySlots) {
             if (!isSlotVisible(slot)) continue;
-            drawSlotFrame(slot.xPos, slot.yPos);
+            GuiContainerStyle.drawSlotFrame(slot.xPos, slot.yPos);
         }
-    }
-
-    private static void drawSlotFrame(int x, int y) {
-        drawRect(x - 1, y - 1, x + 17, y + 17, 0xFFB8B8B8);
-        drawRect(x, y, x + 16, y + 16, 0xFF343437);
-        drawRect(x, y, x + 16, y + 1, 0xFF1F1F22);
     }
 
     private void drawPageOne(int mouseX, int mouseY) {
@@ -242,7 +225,7 @@ public class GuiKeycardProgrammer extends GuiContainer {
         if (page == 0) {
             fontRenderer.drawString("Relay Key", 12, 27, COLOUR);
             // Same font size as the other labels; right-align it so the full name still fits.
-            drawRightAligned("Operator Keycard", 168, 27, COLOUR);
+            GuiContainerStyle.drawRightAligned(fontRenderer, "Operator Keycard", 168, 27, COLOUR);
             fontRenderer.drawString("Relay Key", 12, 67, COLOUR);
             fontRenderer.drawString("RFID Card", 94, 67, COLOUR);
 
@@ -286,68 +269,20 @@ public class GuiKeycardProgrammer extends GuiContainer {
             // depth, rescale-normal and the world light rig switched on. Vanilla can ignore that
             // because a tooltip is the last thing it draws in a frame; we cannot, or the next
             // frame's casing, buttons and item counts are drawn lit and go flat and grey.
-            resetGuiState();
+            GuiContainerStyle.resetGuiState();
             return;
         }
 
         String name = ghostNameFor(slot.slotNumber);
         if (name != null) {
-            drawSimpleTooltip(Collections.singletonList(name), mouseX, mouseY);
+            GuiContainerStyle.drawSimpleTooltip(fontRenderer, Collections.singletonList(name),
+                    mouseX, mouseY, width, height);
         }
-    }
-
-    /**
-     * Restores the GL state a container GUI expects after a tooltip has been drawn. Mirrors what
-     * GuiUtils.drawHoveringText switches on but never switches back off.
-     */
-    private static void resetGuiState() {
-        RenderHelper.disableStandardItemLighting();
-        GlStateManager.disableLighting();
-        GlStateManager.disableRescaleNormal();
-        GlStateManager.disableDepth();
-        GlStateManager.enableTexture2D();
-        GlStateManager.enableBlend();
-        GlStateManager.color(1F, 1F, 1F, 1F);
     }
 
     /** Vanilla's own hovered-slot pass stays empty so the tooltip is only ever drawn once. */
     @Override
     protected void renderHoveredToolTip(int mouseX, int mouseY) {
-    }
-
-    /**
-     * Flat tooltip used for the empty "ghost" slots, which have no ItemStack to hand to the
-     * vanilla renderer. Real items go through {@link #renderToolTip}.
-     */
-    private void drawSimpleTooltip(List<String> lines, int mouseX, int mouseY) {
-        if (lines.isEmpty()) return;
-
-        int textWidth = 0;
-        for (String line : lines) {
-            textWidth = Math.max(textWidth, fontRenderer.getStringWidth(line));
-        }
-        int boxWidth = textWidth + 4;
-        int boxHeight = lines.size() * 10 + 4;
-
-        int x = mouseX + 8;
-        int y = mouseY - 8;
-        // Prefer the left side near the screen edge. This keeps the tooltip off JEI/HEI's panel
-        // instead of clamping it against the right edge where their item list sits.
-        if (x + boxWidth + 4 > width) {
-            x = mouseX - boxWidth - 8;
-        }
-        x = Math.max(2, x);
-        if (x + boxWidth + 4 > width) x = width - boxWidth - 4;
-        if (y + boxHeight + 4 > height) y = height - boxHeight - 4;
-        y = Math.max(2, y);
-
-        drawRect(x - 1, y - 1, x + boxWidth + 1, y + boxHeight + 1, 0xFF08080A);
-        drawRect(x, y, x + boxWidth, y + boxHeight, 0xFF1B1B1E);
-        drawRect(x, y, x + boxWidth, y + 1, 0xFF4A4A4E);
-
-        for (int i = 0; i < lines.size(); i++) {
-            fontRenderer.drawStringWithShadow(lines.get(i), x + 2, y + 2 + i * 10, 0xFFE8E8E8);
-        }
     }
 
     private Slot findSlot(int mouseX, int mouseY) {
@@ -428,34 +363,7 @@ public class GuiKeycardProgrammer extends GuiContainer {
     private void drawGhostIfEmpty(int index, int[] pixels, int x, int y) {
         if (index < 0 || index >= inventorySlots.inventorySlots.size()) return;
         if (inventorySlots.inventorySlots.get(index).getStack().isEmpty()) {
-            drawGhostPixels(pixels, x, y);
-        }
-    }
-
-    /** Draws the pre-greyed silhouette as flat rectangles, with no texture or item renderer. */
-    private static void drawGhostPixels(int[] pixels, int x, int y) {
-        for (int row = 0; row < 16; row++) {
-            int runStart = -1;
-            int runColour = 0;
-            for (int col = 0; col < 16; col++) {
-                int colour = pixels[row * 16 + col];
-                if (colour == 0) {
-                    if (runStart >= 0) {
-                        drawRect(x + runStart, y + row, x + col, y + row + 1, runColour);
-                        runStart = -1;
-                    }
-                } else if (runStart < 0) {
-                    runStart = col;
-                    runColour = colour;
-                } else if (colour != runColour) {
-                    drawRect(x + runStart, y + row, x + col, y + row + 1, runColour);
-                    runStart = col;
-                    runColour = colour;
-                }
-            }
-            if (runStart >= 0) {
-                drawRect(x + runStart, y + row, x + 16, y + row + 1, runColour);
-            }
+            GuiContainerStyle.drawGhostPixels(pixels, x, y);
         }
     }
 
@@ -621,10 +529,6 @@ public class GuiKeycardProgrammer extends GuiContainer {
 
     private void drawButtonLabel(String text, int x, int y, int width, int height) {
         drawCenteredString(fontRenderer, text, x + width / 2, y + (height - fontRenderer.FONT_HEIGHT) / 2, COLOUR);
-    }
-
-    private void drawRightAligned(String text, int right, int y, int colour) {
-        fontRenderer.drawString(text, right - fontRenderer.getStringWidth(text), y, colour);
     }
 
     private static void drawArrow(int x1, int y, int x2) {
