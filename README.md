@@ -112,12 +112,15 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   is dropped into a hidden page. The GUI darkens the world like a normal container GUI and draws
   item tooltips above JEI/HEI. There is no recipe; it is in the NTM Doors creative tab with a flat
   16x16 icon derived from the model.
-* Safe (`ntmdoors:safe`): a 1x1x1 steel safe with a keypad front. This first pass places,
-  rotates and renders as a normal full block; the code lock, inventory and biometric variant
-  are the next step.
-* Biometric Safe (`ntmdoors:biometric_safe`): the same shell with a status screen, two control
-  buttons and a right-hand keycard slot. The model is in place; the identity and screen logic
-  follow in the next pass.
+* Safe (`ntmdoors:safe`): a 1x1x1 steel safe with a keypad front and two small USB ports under
+  the pad. This pass places, rotates and renders as a normal full block; the code lock, inventory
+  and binding logic are the next step.
+* Biometric Safe (`ntmdoors:biometric_safe`): the same shell and USB ports with a status screen,
+  two control buttons and a right-hand keycard slot. The model is in place; the identity and
+  screen logic follow in the next pass.
+* Safe Binding Key (`ntmdoors:safe_binding_key`): a small green USB key, currently creative-only.
+  Its description reads `Bound safes to security infostructure to protect your stuff`; it will
+  plug into the safes' USB ports when the binding logic is added.
 * RFID cards: one blank card plus red, violet, green, blue, black, orange and yellow variants.
   Each colour is a separate item (`ntmdoors:red_rfid_card` and so on) sharing a single item class
   and one hand-display model, so they all sit in the hand identically. The scanner recognises them

@@ -6,7 +6,8 @@
     "body": "ntmdoors:blocks/safe_body",
     "door": "ntmdoors:blocks/safe_door",
     "trim": "ntmdoors:blocks/safe_trim",
-    "keypad": "ntmdoors:blocks/safe_keypad"
+    "keypad": "ntmdoors:blocks/safe_keypad",
+    "usb": "ntmdoors:blocks/safe_usb_port"
   },
   "elements": [
     {
@@ -86,6 +87,30 @@
       "to": [11, 11, 0.49],
       "faces": {
         "north": { "texture": "#keypad", "uv": [0, 0, 16, 16] },
+        "south": { "texture": "#trim", "uv": [0, 0, 16, 16] },
+        "east": { "texture": "#trim", "uv": [0, 0, 16, 16] },
+        "west": { "texture": "#trim", "uv": [0, 0, 16, 16] },
+        "up": { "texture": "#trim", "uv": [0, 0, 16, 16] },
+        "down": { "texture": "#trim", "uv": [0, 0, 16, 16] }
+      }
+    },
+    {
+      "from": [6.3, 2.4, 0.25],
+      "to": [7.9, 3.5, 0.49],
+      "faces": {
+        "north": { "texture": "#usb", "uv": [0, 0, 16, 11] },
+        "south": { "texture": "#trim", "uv": [0, 0, 16, 16] },
+        "east": { "texture": "#trim", "uv": [0, 0, 16, 16] },
+        "west": { "texture": "#trim", "uv": [0, 0, 16, 16] },
+        "up": { "texture": "#trim", "uv": [0, 0, 16, 16] },
+        "down": { "texture": "#trim", "uv": [0, 0, 16, 16] }
+      }
+    },
+    {
+      "from": [8.1, 2.4, 0.25],
+      "to": [9.7, 3.5, 0.49],
+      "faces": {
+        "north": { "texture": "#usb", "uv": [0, 0, 16, 11] },
         "south": { "texture": "#trim", "uv": [0, 0, 16, 16] },
         "east": { "texture": "#trim", "uv": [0, 0, 16, 16] },
         "west": { "texture": "#trim", "uv": [0, 0, 16, 16] },

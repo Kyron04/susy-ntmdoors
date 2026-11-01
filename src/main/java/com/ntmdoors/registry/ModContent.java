@@ -24,6 +24,7 @@ import com.ntmdoors.item.ItemNamedRfidCard;
 import com.ntmdoors.item.ItemOperatorKeycard;
 import com.ntmdoors.item.ItemRelayKey;
 import com.ntmdoors.item.ItemRfidCard;
+import com.ntmdoors.item.ItemSafeBindingKey;
 import com.ntmdoors.item.ItemScrewdriver;
 import com.ntmdoors.util.ModSounds;
 import net.minecraft.block.Block;
@@ -98,6 +99,8 @@ public class ModContent {
     public static final ItemKeycardHolder KEYCARD_HOLDER = new ItemKeycardHolder();
     /** Carried folder for written notes; page storage will be added later. */
     public static final ItemDocumentsFolder DOCUMENTS_FOLDER = new ItemDocumentsFolder();
+    /** USB key that will bind a safe to the security network once the safe logic exists. */
+    public static final ItemSafeBindingKey SAFE_BINDING_KEY = new ItemSafeBindingKey();
 
     /** The seven cosmetic RFID colours, in the order the programmer's second page shows them. */
     public static final List<ItemRfidCard> COLOUR_CARDS = Collections.unmodifiableList(Arrays.asList(
@@ -158,9 +161,13 @@ public class ModContent {
         // The holder is new too, so it follows the themed cards and leaves every saved item ID alone.
         e.getRegistry().register(KEYCARD_HOLDER);
         e.getRegistry().register(DOCUMENTS_FOLDER);
+        e.getRegistry().register(SAFE_BINDING_KEY);
         // New block items go last as well, so every previously saved numeric item ID is untouched.
-        e.getRegistry().register(new ItemBlockSafe(SAFE).setRegistryName(SAFE.getRegistryName()));
-        e.getRegistry().register(new ItemBlockSafe(BIOMETRIC_SAFE).setRegistryName(BIOMETRIC_SAFE.getRegistryName()));
+        e.getRegistry().register(new ItemBlockSafe(SAFE,
+                "A heavy door, and keypad between you, and your stuff").setRegistryName(SAFE.getRegistryName()));
+        e.getRegistry().register(new ItemBlockSafe(BIOMETRIC_SAFE,
+                "A heavy door, scanner, and your own DNA between you, and your stuff")
+                .setRegistryName(BIOMETRIC_SAFE.getRegistryName()));
     }
 
     @SubscribeEvent

@@ -17,8 +17,11 @@ import java.util.List;
  */
 public class ItemBlockSafe extends ItemBlock {
 
-    public ItemBlockSafe(Block block) {
+    private final String[] description;
+
+    public ItemBlockSafe(Block block, String... description) {
         super(block);
+        this.description = description;
         setMaxStackSize(1);
         setCreativeTab(NTMDoors.TAB);
     }
@@ -30,6 +33,6 @@ public class ItemBlockSafe extends ItemBlock {
 
     @Override
     public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
-        Names.addDescription(tooltip, "A heavy steel safe");
+        if (description.length > 0) Names.addDescription(tooltip, description);
     }
 }

@@ -61,6 +61,7 @@ public class NTMDoors {
             items.add(new ItemStack(ModContent.BIOMETRIC_RELAY_KEY));
             items.add(new ItemStack(ModContent.KEYCARD_HOLDER));
             items.add(new ItemStack(ModContent.DOCUMENTS_FOLDER));
+            items.add(new ItemStack(ModContent.SAFE_BINDING_KEY));
         }
 
         @Override

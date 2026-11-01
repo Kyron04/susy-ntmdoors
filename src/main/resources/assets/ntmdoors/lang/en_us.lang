@@ -110,3 +110,4 @@ ntmdoors.msg.biometric_collected=Biometric data collected
 ntmdoors.msg.biometric_already=Already bound to %s
 tile.ntmdoors.safe.name=Safe
 tile.ntmdoors.biometric_safe.name=Biometric Safe
+item.ntmdoors.safe_binding_key.name=Safe Binding Key
