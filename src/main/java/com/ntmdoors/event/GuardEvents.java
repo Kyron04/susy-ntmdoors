@@ -8,6 +8,7 @@ import com.ntmdoors.block.BlockKeycardScanner;
 import com.ntmdoors.item.ItemKeycardHolder;
 import com.ntmdoors.item.ItemRelayKey;
 import com.ntmdoors.item.ItemRfidCard;
+import com.ntmdoors.item.ItemSafeBindingKey;
 import com.ntmdoors.item.ItemScrewdriver;
 import com.ntmdoors.tile.TileEntityDoorGeneric;
 import net.minecraft.block.Block;
@@ -53,6 +54,7 @@ public final class GuardEvents {
         if (item instanceof ItemScrewdriver
                 || item instanceof ItemRfidCard
                 || item instanceof ItemRelayKey
+                || item instanceof ItemSafeBindingKey
                 || item instanceof ItemKeycardHolder
                 || item instanceof ItemBlock) {
             return;

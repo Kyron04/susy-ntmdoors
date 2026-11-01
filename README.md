@@ -117,9 +117,10 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   the pad. Right clicking opens the same keypad screen as the scanner. The first accepted code
   becomes the safe's code; later entries must match. The code safe has no owner restriction, so
   anyone who knows the code can open it. A correct code shows the `SUCCESS!!!` card and then opens
-  a 27-slot container. Page two of the container has `Lockout mode` and `Reset code`; `Lockout mode`
-  locks the keypad for five minutes after three bad codes, and `Reset code` clears the code so the
-  next entry sets a new one. The inventory and the
+  a 27-slot container. Page two of the container has `Binding Activities`, `Lockout mode`, and
+  `Reset code`; `Binding Activities` enables door linking and the lockout-door response, `Lockout
+  mode` locks the keypad for five minutes after three bad codes, and `Reset code` clears the code so
+  the next entry sets a new one. The inventory and the
   code are saved with the block, and breaking the safe drops its contents. The Creative Keycard
   bypasses the keypad and opens the container immediately.
 * Biometric Safe (`ntmdoors:biometric_safe`): the same shell, inventory and options page, but its
@@ -129,9 +130,11 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   it off, any bound Biometric Operator Keycard opens the safe. `Lockout mode` works like the
   scanner's, and the card's owner can still bypass a lockout to turn it off. The normal Biometric
   Keycard and the plain Operator Keycard are refused; the Creative Keycard opens it directly.
-* Safe Binding Key (`ntmdoors:safe_binding_key`): a small green USB key, currently creative-only.
-  Its description reads `Binds safes to the security infrastructure to protect your stuff.`; it will
-  plug into the safes' USB ports when the binding logic is added.
+* Safe Binding Key (`ntmdoors:safe_binding_key`): a small green USB key with a green name. Sneak
+  right-click a safe to start or finish a binding session, then sneak right-click closed doors to
+  link or unlink them. A door can belong to one safe, but a door already controlled by a keypad or
+  scanner keeps that binding and can still be linked to a safe. With `Binding Activities` on, the
+  safe's lockout closes every linked door once. Breaking the safe clears the links.
 * RFID cards: one blank card plus red, violet, green, blue, black, orange and yellow variants.
   Each colour is a separate item (`ntmdoors:red_rfid_card` and so on) sharing a single item class
   and one hand-display model, so they all sit in the hand identically. The scanner recognises them

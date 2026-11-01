@@ -2,9 +2,11 @@ package com.ntmdoors.tile;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.door.DoorDecl;
+import com.ntmdoors.door.DoorState;
 import com.ntmdoors.gui.GuiHandler;
 import com.ntmdoors.network.MessageSafeResult;
 import com.ntmdoors.network.ModNetwork;
+import com.ntmdoors.util.BlockPositions;
 import com.ntmdoors.util.Codes;
 import com.ntmdoors.util.ModSounds;
 import net.minecraft.entity.player.EntityPlayer;
@@ -13,14 +15,19 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -38,8 +45,12 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
     public static final int LOCKOUT_FAILURES = 3;
     public static final int LOCKOUT_TICKS = 20 * 60 * 5;
     public static final int ACCESS_SESSION_TICKS = 20 * 60 * 10;
+    /** Safe-to-door distance allowed while linking. */
+    public static final double MAX_BIND_DISTANCE = 32D;
     /** The success card stays on screen this long before the container opens. */
     public static final int OPEN_DELAY_TICKS = 25;
+    /** A door-binding session the player walks away from expires after a minute. */
+    private static final int BINDING_TICKS = 20 * 60;
 
     private static final float SOUND_VOLUME = 0.8F;
 
@@ -52,6 +63,8 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
 
     private boolean matchHolder = true;
     private boolean lockoutMode;
+    /** When on, the safe can link doors and close them on lockout. Synced to clients. */
+    private boolean bindingActivities = true;
     /** Synced mirror of whether the lockout timer is currently running. */
     private boolean lockedOut;
 
@@ -66,6 +79,13 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
     @Nullable
     private UUID pendingOpenPlayer;
     private int pendingOpenTicks;
+
+    /** Server only. Doors closed when this safe enters a lockout. */
+    private final List<BlockPos> boundDoors = new ArrayList<>();
+    /** Server only. The player currently linking doors to this safe, and the session clock. */
+    @Nullable
+    private UUID bindingPlayer;
+    private int bindingTicks;
 
     public TileEntitySafe() {
         Arrays.fill(items, ItemStack.EMPTY);
@@ -195,6 +215,7 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
                     SoundCategory.BLOCKS, 1F, 1F);
         }
         sync();
+        if (bindingActivities) closeBoundDoors();
     }
 
     public void resetFailures() {
@@ -205,6 +226,178 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
         lockoutTicks = 0;
         lockedOut = false;
         failedAttempts = 0;
+    }
+
+    // ------------------------------------------------------------ door binding
+
+    public boolean isBindingActivities() {
+        return bindingActivities;
+    }
+
+    /** Server side: arms or disarms linking and the lockout-door response. */
+    public boolean setBindingActivities(boolean value) {
+        if (world == null || world.isRemote || bindingActivities == value) return false;
+        bindingActivities = value;
+        if (!value) stopBinding(null);
+        sync();
+        if (value && lockedOut) closeBoundDoors();
+        return true;
+    }
+
+    public boolean isBindingFor(@Nullable EntityPlayer player) {
+        return player != null && bindingPlayer != null && bindingPlayer.equals(player.getUniqueID());
+    }
+
+    /** Server side: starts or finishes the door-linking session for this player. */
+    public void toggleBinding(EntityPlayer player) {
+        if (world == null || world.isRemote || player == null) return;
+        if (!bindingActivities) {
+            msg(player, "ntmdoors.msg.safe_binding_disabled");
+            return;
+        }
+        if (isBindingFor(player)) {
+            stopBinding(player);
+            return;
+        }
+        if (bindingPlayer != null) {
+            msg(player, "ntmdoors.msg.safe_binding_busy");
+            return;
+        }
+
+        cancelOtherSessions(world, player);
+        bindingPlayer = player.getUniqueID();
+        bindingTicks = BINDING_TICKS;
+        msg(player, "ntmdoors.msg.safe_binding_on");
+    }
+
+    public void stopBinding(@Nullable EntityPlayer player) {
+        if (bindingPlayer == null) return;
+        bindingPlayer = null;
+        bindingTicks = 0;
+        if (player != null) msg(player, "ntmdoors.msg.safe_binding_off");
+    }
+
+    /** Server side: links or unlinks one closed door for the active binding session. */
+    public boolean bindDoor(EntityPlayer player, TileEntityDoorGeneric door) {
+        if (world == null || world.isRemote || player == null || door == null) return false;
+        if (!isBindingFor(player)) {
+            msg(player, "ntmdoors.msg.safe_binding_required");
+            return false;
+        }
+        if (door.getWorld() != world) return false;
+        if (door.getState() != DoorState.CLOSED) {
+            msg(player, "ntmdoors.msg.bind_open");
+            return false;
+        }
+        if (pos.distanceSq(door.getPos()) > MAX_BIND_DISTANCE * MAX_BIND_DISTANCE) {
+            msg(player, "ntmdoors.msg.safe_bind_far");
+            return false;
+        }
+
+        BlockPos doorPos = door.getPos().toImmutable();
+        if (door.isBoundToSafe(pos)) {
+            door.unbindFromSafe(pos);
+            if (boundDoors.remove(doorPos)) markDirty();
+            msg(player, "ntmdoors.msg.safe_unbound_door");
+            world.playSound(null, doorPos, ModSounds.BUTTON9, SoundCategory.BLOCKS, 0.8F, 1F);
+            return true;
+        }
+
+        BlockPos current = door.getBoundSafe();
+        if (current != null) {
+            if (!world.isBlockLoaded(current)) {
+                msg(player, "ntmdoors.msg.safe_binding_other");
+                return false;
+            }
+            TileEntity owner = world.getTileEntity(current);
+            if (owner instanceof TileEntitySafe && ((TileEntitySafe) owner).isDoorLinked(doorPos)) {
+                msg(player, "ntmdoors.msg.safe_binding_other");
+                return false;
+            }
+            // The owning safe is gone, or no longer lists this door: drop the stale link.
+            door.unbindFromSafe(current);
+        }
+
+        if (!door.bindToSafe(pos)) return false;
+        if (!boundDoors.contains(doorPos)) {
+            boundDoors.add(doorPos);
+            markDirty();
+        }
+        msg(player, "ntmdoors.msg.safe_bound_door");
+        world.playSound(null, doorPos, ModSounds.SCANNER_BUTTON3, SoundCategory.BLOCKS, 0.8F, 1F);
+        return true;
+    }
+
+    /** True when this safe still lists {@code doorPos} as one of its linked doors. */
+    public boolean isDoorLinked(BlockPos doorPos) {
+        return doorPos != null && boundDoors.contains(doorPos);
+    }
+
+    /** Called by a broken door: forget its link without touching the door. */
+    public void unbindDoor(BlockPos doorPos) {
+        if (doorPos != null && boundDoors.remove(doorPos)) markDirty();
+    }
+
+    /** Called when this safe is broken: clear the reciprocal link on every loaded door. */
+    public void unbindAllDoors() {
+        if (world == null || world.isRemote) return;
+        for (BlockPos doorPos : new ArrayList<>(boundDoors)) {
+            TileEntity te = world.getTileEntity(doorPos);
+            if (te instanceof TileEntityDoorGeneric) {
+                ((TileEntityDoorGeneric) te).unbindFromSafe(pos);
+            }
+        }
+        boundDoors.clear();
+        markDirty();
+    }
+
+    /** Closes every linked door once, when a lockout starts. */
+    private void closeBoundDoors() {
+        if (world == null || world.isRemote || boundDoors.isEmpty()) return;
+        boolean changed = false;
+        Iterator<BlockPos> it = boundDoors.iterator();
+        while (it.hasNext()) {
+            BlockPos doorPos = it.next();
+            if (!world.isBlockLoaded(doorPos)) continue;
+            TileEntity te = world.getTileEntity(doorPos);
+            if (te instanceof TileEntityDoorGeneric) {
+                TileEntityDoorGeneric door = (TileEntityDoorGeneric) te;
+                if (door.isBoundToSafe(pos)) {
+                    door.request(false);
+                } else {
+                    it.remove();
+                    changed = true;
+                }
+            } else {
+                it.remove();
+                changed = true;
+            }
+        }
+        if (changed) markDirty();
+    }
+
+    /** A player may only hold one binding session at a time; starting a new one clears the old. */
+    private static void cancelOtherSessions(World world, EntityPlayer player) {
+        for (TileEntity te : world.loadedTileEntityList) {
+            if (!(te instanceof TileEntitySafe)) continue;
+            TileEntitySafe safe = (TileEntitySafe) te;
+            if (safe.isBindingFor(player)) {
+                safe.bindingPlayer = null;
+                safe.bindingTicks = 0;
+            }
+        }
+    }
+
+    /** The safe the player is currently linking doors from, or null. */
+    @Nullable
+    public static TileEntitySafe findBindingSafe(World world, EntityPlayer player) {
+        if (world == null || player == null) return null;
+        for (TileEntity te : world.loadedTileEntityList) {
+            if (te instanceof TileEntitySafe && ((TileEntitySafe) te).isBindingFor(player)) {
+                return (TileEntitySafe) te;
+            }
+        }
+        return null;
     }
 
     // ------------------------------------------------------------ access session
@@ -287,6 +480,11 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
                     entry.setValue(ticks);
                 }
             }
+        }
+
+        if (bindingPlayer != null) {
+            EntityPlayer player = world.getPlayerEntityByUUID(bindingPlayer);
+            if (player == null || --bindingTicks <= 0) stopBinding(null);
         }
     }
 
@@ -400,12 +598,14 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
     private void writeOptions(NBTTagCompound tag) {
         tag.setBoolean("matchHolder", matchHolder);
         tag.setBoolean("lockoutMode", lockoutMode);
+        tag.setBoolean("bindingActivities", bindingActivities);
         tag.setBoolean("lockedOut", lockedOut);
     }
 
     private void readOptions(NBTTagCompound tag) {
-        // Holder matching defaults on, so a safe saved before this option existed keeps it.
+        // Holder matching and binding default on, so safes saved before these options keep working.
         matchHolder = !tag.hasKey("matchHolder") || tag.getBoolean("matchHolder");
+        bindingActivities = !tag.hasKey("bindingActivities") || tag.getBoolean("bindingActivities");
         lockoutMode = tag.getBoolean("lockoutMode");
         lockedOut = tag.getBoolean("lockedOut");
     }
@@ -424,6 +624,7 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
         tag.setTag("Items", list);
         tag.setString("securityCode", securityCode);
         tag.setBoolean("codeSet", codeSet);
+        tag.setString("boundDoors", BlockPositions.encodeList(boundDoors));
         writeOptions(tag);
         tag.setInteger("failedAttempts", failedAttempts);
         tag.setInteger("lockoutTicks", lockoutTicks);
@@ -456,6 +657,10 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
 
         if (tag.hasKey("securityCode")) securityCode = sanitiseCode(tag.getString("securityCode"));
         codeSet = tag.hasKey("codeSet") ? tag.getBoolean("codeSet") : !securityCode.isEmpty();
+        if (tag.hasKey("boundDoors")) {
+            boundDoors.clear();
+            boundDoors.addAll(BlockPositions.decodeList(tag.getString("boundDoors")));
+        }
         readOptions(tag);
         if (tag.hasKey("failedAttempts")) failedAttempts = tag.getInteger("failedAttempts");
         if (tag.hasKey("lockoutTicks")) {

@@ -1,5 +1,16 @@
-HBM DOORS: REFRESHED 1.0.29
+HBM DOORS: REFRESHED 1.0.30
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.30
+SAFE BINDING
+- The Safe Binding Key now has a green name and lists its sneak + right-click controls in the
+  tooltip. Sneak right-click a safe to start or finish a binding session, then sneak right-click
+  closed doors to link or unlink them.
+- A safe can link several doors. A door belongs to at most one safe, and can still be controlled
+  by its keypad or scanner; those bindings are left untouched.
+- Both safes have a Binding Activities toggle on the options page. When on, the safe's lockout
+  closes every linked door once. Turning it off pauses linking and the lockout-door response
+  without deleting existing links. Breaking a safe or door clears the link.
 
 1.0.29
 SAFES

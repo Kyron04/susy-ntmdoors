@@ -148,6 +148,7 @@ public class BlockSafe extends Block {
     public void breakBlock(World world, BlockPos pos, IBlockState state) {
         TileEntity te = world.getTileEntity(pos);
         if (te instanceof TileEntitySafe) {
+            ((TileEntitySafe) te).unbindAllDoors();
             InventoryHelper.dropInventoryItems(world, pos, (TileEntitySafe) te);
         }
         super.breakBlock(world, pos, state);

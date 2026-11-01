@@ -42,11 +42,13 @@ public class GuiSafe extends GuiContainer {
 
     /** The code safe has no owner restriction; the biometric safe keeps its holder check. */
     private static final int[] CODE_OPTIONS = {
+            MessageSafeOption.BINDING_ACTIVITIES,
             MessageSafeOption.LOCKOUT,
             MessageSafeOption.RESET_CODE
     };
     private static final int[] BIOMETRIC_OPTIONS = {
             MessageSafeOption.MATCH_HOLDER,
+            MessageSafeOption.BINDING_ACTIVITIES,
             MessageSafeOption.LOCKOUT
     };
 
@@ -127,6 +129,8 @@ public class GuiSafe extends GuiContainer {
             value = !tile.isMatchHolder();
         } else if (option == MessageSafeOption.LOCKOUT) {
             value = !tile.isLockoutMode();
+        } else if (option == MessageSafeOption.BINDING_ACTIVITIES) {
+            value = !tile.isBindingActivities();
         } else {
             value = true;
         }
@@ -264,6 +268,8 @@ public class GuiSafe extends GuiContainer {
                 return "Match user";
             case MessageSafeOption.LOCKOUT:
                 return "Lockout mode";
+            case MessageSafeOption.BINDING_ACTIVITIES:
+                return "Binding Activities";
             case MessageSafeOption.RESET_CODE:
                 return "Reset code";
             default:
@@ -277,6 +283,8 @@ public class GuiSafe extends GuiContainer {
                 return "Owner's card.";
             case MessageSafeOption.LOCKOUT:
                 return "3 fails = 5 min.";
+            case MessageSafeOption.BINDING_ACTIVITIES:
+                return "Linking + lockout.";
             case MessageSafeOption.RESET_CODE:
                 return "Clears the code.";
             default:
@@ -286,8 +294,14 @@ public class GuiSafe extends GuiContainer {
 
     private void drawOptionPill(int option, int y) {
         boolean reset = option == MessageSafeOption.RESET_CODE;
-        boolean on = option == MessageSafeOption.MATCH_HOLDER ? tile.isMatchHolder()
-                : option == MessageSafeOption.LOCKOUT && tile.isLockoutMode();
+        boolean on = false;
+        if (option == MessageSafeOption.MATCH_HOLDER) {
+            on = tile.isMatchHolder();
+        } else if (option == MessageSafeOption.LOCKOUT) {
+            on = tile.isLockoutMode();
+        } else if (option == MessageSafeOption.BINDING_ACTIVITIES) {
+            on = tile.isBindingActivities();
+        }
 
         int fill;
         int edge;

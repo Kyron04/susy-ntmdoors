@@ -21,7 +21,8 @@ public class MessageSafeOption implements IMessage {
     public static final int MATCH_HOLDER = 0;
     public static final int LOCKOUT = 1;
     public static final int RESET_CODE = 2;
-    public static final int OPTION_COUNT = 3;
+    public static final int BINDING_ACTIVITIES = 3;
+    public static final int OPTION_COUNT = 4;
 
     private BlockPos pos;
     private int option;
@@ -75,6 +76,9 @@ public class MessageSafeOption implements IMessage {
                     break;
                 case LOCKOUT:
                     safe.setLockoutMode(message.value);
+                    break;
+                case BINDING_ACTIVITIES:
+                    safe.setBindingActivities(message.value);
                     break;
                 case RESET_CODE:
                     if (safe.resetCode()) {

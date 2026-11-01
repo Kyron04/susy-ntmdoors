@@ -5,6 +5,7 @@ import com.ntmdoors.client.DoorLoopSound;
 import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.DoorState;
 import com.ntmdoors.item.ItemCreativeKeycard;
+import com.ntmdoors.util.BlockPositions;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -55,6 +56,9 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
      * replacement placed in the same spot adopts the door again.
      */
     private final List<BlockPos> boundScanners = new ArrayList<>();
+    /** Safe that closes this door on lockout; null when unlinked. Server-only. */
+    @Nullable
+    private BlockPos boundSafe;
     /** Ticks until a scanner-opened door closes itself; 0 when no timer is running. */
     private int autoCloseTicks;
 
@@ -288,6 +292,11 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
                 ((TileEntityDoorKeypad) te).unbindDoor(self);
             }
         }
+        if (boundSafe != null) {
+            TileEntity te = world.getTileEntity(boundSafe);
+            if (te instanceof TileEntitySafe) ((TileEntitySafe) te).unbindDoor(self);
+            boundSafe = null;
+        }
     }
 
     /**
@@ -396,6 +405,37 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         if (boundScanners.contains(scanner)) return;
         boundScanners.add(scanner);
         sync();
+    }
+
+    /** The safe that closes this door on lockout, or null when unlinked. */
+    @Nullable
+    public BlockPos getBoundSafe() {
+        return boundSafe;
+    }
+
+    /** True when a safe is responsible for closing this door on lockout. */
+    public boolean isBoundToSafe() {
+        return boundSafe != null;
+    }
+
+    /** True when {@code safePos} is the safe linked to this door. */
+    public boolean isBoundToSafe(BlockPos safePos) {
+        return safePos != null && safePos.equals(boundSafe);
+    }
+
+    /** Links this door to one safe. A door can only belong to one safe at a time. */
+    public boolean bindToSafe(BlockPos safePos) {
+        if (safePos == null || boundSafe != null) return false;
+        boundSafe = safePos.toImmutable();
+        markDirty();
+        return true;
+    }
+
+    /** Clears the link if it still points at {@code safePos}; null clears any link. */
+    public void unbindFromSafe(@Nullable BlockPos safePos) {
+        if (boundSafe == null || (safePos != null && !boundSafe.equals(safePos))) return;
+        boundSafe = null;
+        markDirty();
     }
 
     /**
@@ -596,7 +636,8 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         tag.setInteger("skin", skinIndex);
         tag.setString("keypadCode", keypadCode);
         tag.setString("scannerCode", scannerCode);
-        tag.setString("boundScanners", encodeScanners());
+        tag.setString("boundScanners", BlockPositions.encodeList(boundScanners));
+        tag.setString("boundSafe", BlockPositions.encode(boundSafe));
         tag.setInteger("autoClose", autoCloseTicks);
         return tag;
     }
@@ -608,6 +649,7 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         tag.removeTag("keypadCode");
         tag.removeTag("scannerCode");
         tag.removeTag("boundScanners");
+        tag.removeTag("boundSafe");
         tag.removeTag("autoClose");
         return tag;
     }
@@ -625,25 +667,8 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         scannerCode = tag.getString("scannerCode");
         autoCloseTicks = tag.getInteger("autoClose");
         boundScanners.clear();
-        String scanners = tag.getString("boundScanners");
-        if (!scanners.isEmpty()) {
-            for (String part : scanners.split(";")) {
-                String[] xyz = part.split(",");
-                if (xyz.length != 3) continue;
-                boundScanners.add(new BlockPos(Integer.parseInt(xyz[0]), Integer.parseInt(xyz[1]),
-                        Integer.parseInt(xyz[2])));
-            }
-        }
-    }
-
-    /** Scanner positions are stored as "x,y,z;x,y,z". */
-    private String encodeScanners() {
-        StringBuilder out = new StringBuilder();
-        for (BlockPos scanner : boundScanners) {
-            if (out.length() > 0) out.append(';');
-            out.append(scanner.getX()).append(',').append(scanner.getY()).append(',').append(scanner.getZ());
-        }
-        return out.toString();
+        boundScanners.addAll(BlockPositions.decodeList(tag.getString("boundScanners")));
+        boundSafe = BlockPositions.decode(tag.getString("boundSafe"));
     }
 
     /**

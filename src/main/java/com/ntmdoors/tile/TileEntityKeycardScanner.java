@@ -7,6 +7,7 @@ import com.ntmdoors.door.DoorState;
 import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.util.Biometrics;
+import com.ntmdoors.util.BlockPositions;
 import com.ntmdoors.util.Codes;
 import com.ntmdoors.util.ModSounds;
 import com.ntmdoors.util.PrivateKeys;
@@ -866,16 +867,6 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         visibleCount = boundDoorCount + pendingDoors.size();
     }
 
-    /** Doors are stored as "x,y,z;x,y,z" so the format never depends on NBT list helpers. */
-    private String encodeDoors() {
-        StringBuilder out = new StringBuilder();
-        for (BlockPos doorPos : boundDoors) {
-            if (out.length() > 0) out.append(';');
-            out.append(doorPos.getX()).append(',').append(doorPos.getY()).append(',').append(doorPos.getZ());
-        }
-        return out.toString();
-    }
-
     private static void msg(EntityPlayer player, String key) {
         player.sendStatusMessage(new TextComponentTranslation(key), true);
     }
@@ -937,7 +928,7 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
-        tag.setString("boundDoors", encodeDoors());
+        tag.setString("boundDoors", BlockPositions.encodeList(boundDoors));
         tag.setByte("scanState", (byte) state.ordinal());
         tag.setInteger("scanTicks", ticks);
         tag.setInteger("visibleCount", visibleCount);
@@ -978,15 +969,7 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
 
         if (tag.hasKey("boundDoors")) {
             boundDoors.clear();
-            String raw = tag.getString("boundDoors");
-            if (!raw.isEmpty()) {
-                for (String part : raw.split(";")) {
-                    String[] xyz = part.split(",");
-                    if (xyz.length != 3) continue;
-                    boundDoors.add(new BlockPos(Integer.parseInt(xyz[0]), Integer.parseInt(xyz[1]),
-                            Integer.parseInt(xyz[2])));
-                }
-            }
+            boundDoors.addAll(BlockPositions.decodeList(tag.getString("boundDoors")));
             boundDoorCount = boundDoors.size();
         } else if (tag.hasKey("boundDoorCount")) {
             // Client sync tag: only the number of committed doors is sent.
