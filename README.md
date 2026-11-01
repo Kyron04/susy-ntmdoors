@@ -112,6 +112,9 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   is dropped into a hidden page. The GUI darkens the world like a normal container GUI and draws
   item tooltips above JEI/HEI. There is no recipe; it is in the NTM Doors creative tab with a flat
   16x16 icon derived from the model.
+* Safe (`ntmdoors:safe`): a 1x1x1 steel safe with a keypad front. This first pass places,
+  rotates and renders as a normal full block; the code lock, inventory and biometric variant
+  are the next step.
 * RFID cards: one blank card plus red, violet, green, blue, black, orange and yellow variants.
   Each colour is a separate item (`ntmdoors:red_rfid_card` and so on) sharing a single item class
   and one hand-display model, so they all sit in the hand identically. The scanner recognises them

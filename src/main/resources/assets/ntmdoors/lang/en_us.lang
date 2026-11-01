@@ -108,3 +108,4 @@ ntmdoors.msg.key_exists=This Relay Key already has a private key
 ntmdoors.msg.key_created=%s key created
 ntmdoors.msg.biometric_collected=Biometric data collected
 ntmdoors.msg.biometric_already=Already bound to %s
+tile.ntmdoors.safe.name=Safe

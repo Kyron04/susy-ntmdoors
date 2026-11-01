@@ -5,11 +5,13 @@ import com.ntmdoors.block.BlockDoorGeneric;
 import com.ntmdoors.block.BlockDoorKeypad;
 import com.ntmdoors.block.BlockKeycardProgrammer;
 import com.ntmdoors.block.BlockKeycardScanner;
+import com.ntmdoors.block.BlockSafe;
 import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.DoorDecls;
 import com.ntmdoors.item.ItemBlockKeycardProgrammer;
 import com.ntmdoors.item.ItemBlockKeycardScanner;
 import com.ntmdoors.item.ItemBlockKeypad;
+import com.ntmdoors.item.ItemBlockSafe;
 import com.ntmdoors.item.ItemBiometricKeycard;
 import com.ntmdoors.item.ItemBiometricOperatorKeycard;
 import com.ntmdoors.item.ItemBiometricRelayKey;
@@ -58,6 +60,7 @@ public class ModContent {
     public static final BlockDoorKeypad KEYPAD = new BlockDoorKeypad();
     public static final BlockKeycardScanner KEYCARD_SCANNER = new BlockKeycardScanner();
     public static final BlockKeycardProgrammer KEYCARD_PROGRAMMER = new BlockKeycardProgrammer();
+    public static final BlockSafe SAFE = new BlockSafe();
     public static final ItemScrewdriver SCREWDRIVER = new ItemScrewdriver();
     public static final ItemRfidCard BLANK_RFID_CARD = new ItemRfidCard("blank_rfid_card", false);
     public static final ItemRfidCard RED_RFID_CARD = new ItemRfidCard("red_rfid_card");
@@ -125,6 +128,7 @@ public class ModContent {
         e.getRegistry().register(KEYPAD);
         e.getRegistry().register(KEYCARD_SCANNER);
         e.getRegistry().register(KEYCARD_PROGRAMMER);
+        e.getRegistry().register(SAFE);
     }
 
     @SubscribeEvent
@@ -151,6 +155,8 @@ public class ModContent {
         // The holder is new too, so it follows the themed cards and leaves every saved item ID alone.
         e.getRegistry().register(KEYCARD_HOLDER);
         e.getRegistry().register(DOCUMENTS_FOLDER);
+        // New block items go last as well, so every previously saved numeric item ID is untouched.
+        e.getRegistry().register(new ItemBlockSafe(SAFE).setRegistryName(SAFE.getRegistryName()));
     }
 
     @SubscribeEvent

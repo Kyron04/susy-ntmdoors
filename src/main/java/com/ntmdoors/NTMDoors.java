@@ -50,6 +50,7 @@ public class NTMDoors {
             items.add(new ItemStack(ModContent.KEYPAD));
             items.add(new ItemStack(ModContent.KEYCARD_SCANNER));
             items.add(new ItemStack(ModContent.KEYCARD_PROGRAMMER));
+            items.add(new ItemStack(ModContent.SAFE));
             for (ItemRfidCard card : ModContent.RFID_CARDS) items.add(new ItemStack(card));
             items.add(new ItemStack(ModContent.BIOMETRIC_KEYCARD));
             items.add(new ItemStack(ModContent.OPERATOR_KEYCARD));
