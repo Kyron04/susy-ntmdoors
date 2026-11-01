@@ -61,6 +61,8 @@ public class GuiSafeCode extends GuiScreen {
     private boolean showingResult;
     private boolean resultSuccess;
     private int resultTicks;
+    /** Keeps a successful card up until the server opens the container; fallback close if it never does. */
+    private int holdTicks;
 
     public GuiSafeCode(BlockPos pos) {
         this.pos = pos;
@@ -85,8 +87,13 @@ public class GuiSafeCode extends GuiScreen {
     @Override
     public void updateScreen() {
         super.updateScreen();
-        if (showingResult && --resultTicks <= 0) {
-            mc.displayGuiScreen(null);
+        if (showingResult) {
+            if (resultSuccess) {
+                // The container packet replaces this screen; only close if it never arrives.
+                if (--holdTicks <= 0) mc.displayGuiScreen(null);
+            } else if (--resultTicks <= 0) {
+                mc.displayGuiScreen(null);
+            }
             return;
         }
         if (waiting && ++waitTicks > 100) {
@@ -193,7 +200,11 @@ public class GuiSafeCode extends GuiScreen {
         showingResult = true;
         resultSuccess = result == MessageSafeResult.ACCEPTED
                 || result == MessageSafeResult.SET;
-        resultTicks = RESULT_TICKS;
+        if (resultSuccess) {
+            holdTicks = 80;
+        } else {
+            resultTicks = RESULT_TICKS;
+        }
     }
 
     private void clickSound() {

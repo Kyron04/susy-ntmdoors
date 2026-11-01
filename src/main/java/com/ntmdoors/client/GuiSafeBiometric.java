@@ -38,6 +38,8 @@ public class GuiSafeBiometric extends GuiScreen {
     private boolean showingResult;
     private boolean resultSuccess;
     private int resultTicks;
+    /** Keeps a successful card up until the container replaces it. */
+    private int holdTicks;
 
     public GuiSafeBiometric(BlockPos pos) {
         this.pos = pos;
@@ -59,7 +61,12 @@ public class GuiSafeBiometric extends GuiScreen {
     public void updateScreen() {
         super.updateScreen();
         if (showingResult) {
-            if (--resultTicks <= 0) mc.displayGuiScreen(null);
+            if (resultSuccess) {
+                // The server opens the container on the success path; keep the card until it arrives.
+                if (--holdTicks <= 0) mc.displayGuiScreen(null);
+            } else if (--resultTicks <= 0) {
+                mc.displayGuiScreen(null);
+            }
             return;
         }
         if (++openTicks > TIMEOUT_TICKS) mc.displayGuiScreen(null);
@@ -76,7 +83,11 @@ public class GuiSafeBiometric extends GuiScreen {
         showingResult = true;
         resultSuccess = result == MessageSafeResult.ACCEPTED
                 || result == MessageSafeResult.SET;
-        resultTicks = RESULT_TICKS;
+        if (resultSuccess) {
+            holdTicks = 80;
+        } else {
+            resultTicks = RESULT_TICKS;
+        }
     }
 
     @Override

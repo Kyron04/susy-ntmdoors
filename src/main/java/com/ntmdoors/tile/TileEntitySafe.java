@@ -38,7 +38,7 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
     public static final int LOCKOUT_TICKS = 20 * 60 * 5;
     public static final int ACCESS_SESSION_TICKS = 20 * 60 * 10;
     /** The success card stays on screen this long before the container opens. */
-    public static final int OPEN_DELAY_TICKS = 40;
+    public static final int OPEN_DELAY_TICKS = 25;
 
     private static final float SOUND_VOLUME = 0.8F;
 
