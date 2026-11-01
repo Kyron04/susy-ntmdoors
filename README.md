@@ -156,8 +156,9 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   a twenty-page editor styled as an open manila folder in the item's own tan, grey and dark red
   palette. There is no signing step: Escape or the Close button both save, the pages live in the
   stack's NBT, and Enter starts a new line (press it twice for a paragraph gap). Long lines word-wrap
-  inside the sheet, the bottom index tabs jump straight to any page, and the tooltip counts the
-  pages written.
+  inside the sheet, the bottom index tabs jump straight to any page, the top-right folder name can be
+  clicked and renamed, reopening returns to the page you closed on, and the tooltip counts the pages
+  written.
 * The secure access door ships nine skins: red, yellow, green, blue, grey, black (white writing),
   HBM yellow, white (black writing) and orange (white writing). The colour variants are generated
   by recolouring only the red warning paint; all other pixels are unchanged. Base colours: green

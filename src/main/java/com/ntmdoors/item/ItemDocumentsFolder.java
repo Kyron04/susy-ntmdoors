@@ -23,7 +23,8 @@ import java.util.List;
 /**
  * Carried document folder. Right-clicking opens a twenty-page editor; the pages live in the stack's
  * own NBT, so they survive inventory moves, death drops and world saves. The editor saves whenever
- * it closes, and there is no signing step: a folder stays writable for its whole life.
+ * it closes, remembers the page and the custom name, and there is no signing step: a folder stays
+ * writable for its whole life.
  */
 public class ItemDocumentsFolder extends Item {
 
@@ -33,7 +34,11 @@ public class ItemDocumentsFolder extends Item {
     /** Hard cap per page, shared by the editor and the network message. */
     public static final int MAX_PAGE_LENGTH = 1024;
 
+    /** Longest editable folder name. */
+    public static final int MAX_NAME_LENGTH = 24;
+
     private static final String TAG_PAGES = "pages";
+    private static final String TAG_PAGE = "lastPage";
 
     public ItemDocumentsFolder() {
         setRegistryName(NTMDoors.MODID, "documents_folder");
@@ -130,5 +135,68 @@ public class ItemDocumentsFolder extends Item {
             if (!page.isEmpty()) count++;
         }
         return count;
+    }
+
+    // ------------------------------------------------------------ page marker
+
+    /** The page the folder was last closed on, clamped to a real page. */
+    public static int getLastPage(ItemStack stack) {
+        if (stack.isEmpty() || !stack.hasTagCompound()) return 0;
+        return Math.max(0, Math.min(PAGE_COUNT - 1, stack.getTagCompound().getInteger(TAG_PAGE)));
+    }
+
+    /** Remembers the current page; page zero is the default, so it removes the tag instead. */
+    public static void setLastPage(ItemStack stack, int page) {
+        if (stack.isEmpty()) return;
+
+        int value = Math.max(0, Math.min(PAGE_COUNT - 1, page));
+        NBTTagCompound tag = stack.getTagCompound();
+        if (value == 0) {
+            if (tag != null) {
+                tag.removeTag(TAG_PAGE);
+                if (tag.isEmpty()) stack.setTagCompound(null);
+            }
+            return;
+        }
+
+        if (tag == null) {
+            tag = new NBTTagCompound();
+            stack.setTagCompound(tag);
+        }
+        tag.setInteger(TAG_PAGE, value);
+    }
+
+    // ------------------------------------------------------------ name
+
+    /** The custom folder name, or an empty string when the default item name is in use. */
+    public static String getCustomName(ItemStack stack) {
+        if (stack.isEmpty() || !stack.hasDisplayName()) return "";
+        return cleanName(stack.getDisplayName());
+    }
+
+    /** Sets the custom folder name; an empty name restores the default item name. */
+    public static void setCustomName(ItemStack stack, String name) {
+        if (stack.isEmpty()) return;
+
+        String clean = cleanName(name);
+        if (clean.isEmpty()) {
+            stack.clearCustomName();
+        } else {
+            stack.setStackDisplayName(clean);
+        }
+    }
+
+    /** Strips formatting and control characters and enforces the name limit. */
+    public static String cleanName(String name) {
+        if (name == null) return "";
+        String text = TextFormatting.getTextWithoutFormattingCodes(name);
+        if (text == null) return "";
+
+        StringBuilder out = new StringBuilder();
+        for (int i = 0; i < text.length() && out.length() < MAX_NAME_LENGTH; i++) {
+            char c = text.charAt(i);
+            if (c >= ' ' && c != 127 && c != 167) out.append(c);
+        }
+        return out.toString().trim();
     }
 }

@@ -5,6 +5,7 @@ import com.ntmdoors.network.MessageDocumentsFolderPages;
 import com.ntmdoors.network.ModNetwork;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ChatAllowedCharacters;
 import net.minecraft.util.EnumHand;
@@ -15,6 +16,7 @@ import org.lwjgl.input.Mouse;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -38,6 +40,10 @@ public class GuiDocumentsFolder extends GuiScreen {
     private static final int PAPER_W = 206;
     private static final int PAPER_H = 154;
     private static final int PAPER_BOTTOM = PAPER_Y + PAPER_H;
+
+    private static final int NAME_Y = PAPER_Y + 6;
+    private static final int PAGE_Y = PAPER_Y + 17;
+    private static final int RULE_Y = PAPER_Y + 25;
 
     private static final int TEXT_X = 24;
     private static final int TEXT_Y = 52;
@@ -72,6 +78,12 @@ public class GuiDocumentsFolder extends GuiScreen {
     private final EnumHand hand;
     private final String[] pages = new String[ItemDocumentsFolder.PAGE_COUNT];
 
+    private String folderName = "";
+    private boolean renaming;
+    private String renameText = "";
+    private int renameCaret;
+    private boolean renameSelectAll;
+
     private int page;
     private int caret;
     private int desiredX;
@@ -86,16 +98,9 @@ public class GuiDocumentsFolder extends GuiScreen {
         for (int i = 0; i < pages.length; i++) {
             pages[i] = i < saved.size() ? saved.get(i) : "";
         }
-        this.page = firstEmptyPage();
+        this.folderName = ItemDocumentsFolder.getCustomName(stack);
+        this.page = ItemDocumentsFolder.getLastPage(stack);
         this.caret = pages[page].length();
-    }
-
-    /** Reopening a folder lands on the next page to write, not back at the cover. */
-    private int firstEmptyPage() {
-        for (int i = 0; i < pages.length; i++) {
-            if (pages[i].isEmpty()) return i;
-        }
-        return pages.length - 1;
     }
 
     @Override
@@ -122,7 +127,7 @@ public class GuiDocumentsFolder extends GuiScreen {
 
     // ------------------------------------------------------------ saving
 
-    /** Writes the pages locally and sends the same list to the server, like the vanilla book. */
+    /** Writes the pages, name and page marker locally, then sends the same data to the server. */
     private void save() {
         if (mc == null || mc.player == null) return;
         ItemStack stack = mc.player.getHeldItem(hand);
@@ -131,10 +136,14 @@ public class GuiDocumentsFolder extends GuiScreen {
         List<String> written = new ArrayList<>();
         for (String pageText : pages) written.add(pageText == null ? "" : pageText);
         List<String> clean = ItemDocumentsFolder.clean(written);
+        int storedPage = clean.isEmpty() ? 0 : page;
 
+        ItemDocumentsFolder.setCustomName(stack, folderName);
         ItemDocumentsFolder.setPages(stack, clean);
+        ItemDocumentsFolder.setLastPage(stack, storedPage);
         if (mc.getConnection() != null) {
-            ModNetwork.INSTANCE.sendToServer(new MessageDocumentsFolderPages(hand, clean));
+            ModNetwork.INSTANCE.sendToServer(
+                    new MessageDocumentsFolderPages(hand, storedPage, folderName, clean));
         }
     }
 
@@ -149,11 +158,15 @@ public class GuiDocumentsFolder extends GuiScreen {
         drawPaper();
         drawPageTabs(mouseX, mouseY);
         drawBottomBar(mouseX, mouseY);
-        drawHeader();
+        drawHeader(mouseX, mouseY);
         drawText();
         drawCaret();
 
         super.drawScreen(mouseX, mouseY, partialTicks);
+
+        if (!renaming && inName(mouseX, mouseY)) {
+            drawHoveringText(Collections.singletonList("Click to rename"), mouseX, mouseY);
+        }
     }
 
     private void drawFolder() {
@@ -194,18 +207,52 @@ public class GuiDocumentsFolder extends GuiScreen {
         drawRect(paperLeft, paperBottom - 1, paperRight, paperBottom, 0xFFB8B598);
     }
 
-    private void drawHeader() {
+    private void drawHeader(int mouseX, int mouseY) {
         int x = left + PAPER_X + 10;
-        int y = top + PAPER_Y + 8;
+        int width = PAPER_W - 20;
+        int nameY = top + NAME_Y;
+
+        if (renaming) {
+            drawRect(x, nameY - 1, x + width, nameY + 10, PAPER_LIGHT);
+            drawRect(x, nameY + 10, x + width, nameY + 11, RED);
+            if (renameText.isEmpty()) {
+                drawString(fontRenderer, defaultName(), x + 2, nameY + 2, 0xFF8F8D6B);
+            } else {
+                if (renameSelectAll) {
+                    drawRect(x + 2, nameY + 1, x + 2 + fontRenderer.getStringWidth(renameText),
+                            nameY + 9, 0xFFB8B598);
+                }
+                drawString(fontRenderer, renameText, x + 2, nameY + 2, INK);
+            }
+            if (!renameSelectAll) {
+                int caret = x + 2 + fontRenderer.getStringWidth(
+                        renameText.substring(0, Math.min(renameCaret, renameText.length())));
+                caret = Math.min(caret, x + width - 2);
+                drawRect(caret, nameY + 1, caret + 1, nameY + 10, RED);
+            }
+        } else {
+            String shown = folderName.isEmpty() ? defaultName() : folderName;
+            int colour = folderName.isEmpty() ? MUTED : INK;
+            if (fontRenderer.getStringWidth(shown) > width) {
+                shown = fontRenderer.trimStringToWidth(shown,
+                        width - fontRenderer.getStringWidth("...")) + "...";
+            }
+            int textX = x + width - fontRenderer.getStringWidth(shown);
+            if (inName(mouseX, mouseY)) {
+                drawRect(x, nameY - 1, x + width, nameY + 9, PAPER_LIGHT);
+                drawRect(x, nameY + 9, x + width, nameY + 10, RED);
+            }
+            drawString(fontRenderer, shown, textX, nameY, colour);
+        }
+
+        int pageY = top + PAGE_Y;
         String count = "PAGE " + (page + 1) + " / " + ItemDocumentsFolder.PAGE_COUNT;
-        drawString(fontRenderer, count, x, y, RED);
+        drawString(fontRenderer, count, x, pageY, RED);
+        if (wrap(pages[page]).size() >= MAX_LINES) {
+            drawString(fontRenderer, "PAGE FULL", x + fontRenderer.getStringWidth(count) + 10, pageY, RED);
+        }
 
-        boolean full = wrap(pages[page]).size() >= MAX_LINES;
-        String title = full ? "PAGE FULL" : "DOCUMENT FOLDER";
-        drawString(fontRenderer, title, left + PAPER_X + PAPER_W - 10 - fontRenderer.getStringWidth(title),
-                y, full ? RED : MUTED);
-
-        drawRect(x, y + 12, left + PAPER_X + PAPER_W - 10, y + 13, RED);
+        drawRect(x, top + RULE_Y, x + width, top + RULE_Y + 1, RED);
     }
 
     private void drawText() {
@@ -268,7 +315,8 @@ public class GuiDocumentsFolder extends GuiScreen {
         drawButton(left + 24, top + BUTTON_Y, 14, 12, ">", mouseX, mouseY);
         drawButton(left + PANEL_WIDTH - 52, top + BUTTON_Y, 44, 12, "Close", mouseX, mouseY);
 
-        drawString(fontRenderer, "Esc also saves", left + 44, top + BUTTON_Y + 2, MUTED);
+        String hint = renaming ? "Enter saves - Esc cancels" : "Esc also saves";
+        drawString(fontRenderer, hint, left + 44, top + BUTTON_Y + 2, MUTED);
     }
 
     private void drawButton(int x, int y, int w, int h, String label, int mouseX, int mouseY) {
@@ -284,6 +332,18 @@ public class GuiDocumentsFolder extends GuiScreen {
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
         if (mouseButton == 0) {
+            if (inName(mouseX, mouseY)) {
+                if (!renaming) {
+                    startRename();
+                } else if (renameSelectAll) {
+                    renameSelectAll = false;
+                    renameCaret = renameText.length();
+                }
+                return;
+            }
+            if (renaming) {
+                commitRename();
+            }
             int tab = tabAt(mouseX, mouseY);
             if (tab >= 0) {
                 switchPage(tab);
@@ -313,6 +373,7 @@ public class GuiDocumentsFolder extends GuiScreen {
     public void handleMouseInput() throws IOException {
         super.handleMouseInput();
         int wheel = Mouse.getEventDWheel();
+        if (renaming) return;
         if (wheel > 0) {
             switchPage(page - 1);
         } else if (wheel < 0) {
@@ -322,6 +383,11 @@ public class GuiDocumentsFolder extends GuiScreen {
 
     @Override
     protected void keyTyped(char typedChar, int keyCode) throws IOException {
+        if (renaming) {
+            if (handleRenameKey(typedChar, keyCode)) return;
+            super.keyTyped(typedChar, keyCode);
+            return;
+        }
         if (keyCode == Keyboard.KEY_ESCAPE) {
             mc.displayGuiScreen(null);
             return;
@@ -378,7 +444,7 @@ public class GuiDocumentsFolder extends GuiScreen {
             switchPage(page + 1);
             return;
         }
-        if (GuiScreen.isCtrlKeyDown() && keyCode == Keyboard.KEY_V) {
+        if (GuiScreen.isKeyComboCtrlV(keyCode)) {
             paste();
             return;
         }
@@ -497,6 +563,138 @@ public class GuiDocumentsFolder extends GuiScreen {
             if (c == '\n' || ChatAllowedCharacters.isAllowedCharacter(c)) clean.append(c);
         }
         insert(clean.toString());
+    }
+
+    // ------------------------------------------------------------ folder name
+
+    private void startRename() {
+        renaming = true;
+        renameText = folderName;
+        renameCaret = renameText.length();
+        renameSelectAll = !renameText.isEmpty();
+    }
+
+    private void commitRename() {
+        folderName = ItemDocumentsFolder.cleanName(renameText);
+        renaming = false;
+        renameText = "";
+        renameCaret = 0;
+        renameSelectAll = false;
+
+        // Apply immediately so the item tooltip is already correct when the screen closes.
+        if (mc != null && mc.player != null) {
+            ItemStack stack = mc.player.getHeldItem(hand);
+            if (!stack.isEmpty() && stack.getItem() instanceof ItemDocumentsFolder) {
+                ItemDocumentsFolder.setCustomName(stack, folderName);
+            }
+        }
+    }
+
+    private void cancelRename() {
+        renaming = false;
+        renameText = "";
+        renameCaret = 0;
+        renameSelectAll = false;
+    }
+
+    private boolean handleRenameKey(char typedChar, int keyCode) {
+        if (keyCode == Keyboard.KEY_ESCAPE) {
+            cancelRename();
+            return true;
+        }
+        if (keyCode == Keyboard.KEY_RETURN || keyCode == Keyboard.KEY_NUMPADENTER) {
+            commitRename();
+            return true;
+        }
+        if (keyCode == Keyboard.KEY_BACK) {
+            if (renameSelectAll) {
+                renameText = "";
+                renameCaret = 0;
+                renameSelectAll = false;
+            } else if (renameCaret > 0) {
+                renameText = renameText.substring(0, renameCaret - 1) + renameText.substring(renameCaret);
+                renameCaret--;
+            }
+            return true;
+        }
+        if (keyCode == Keyboard.KEY_DELETE) {
+            if (renameSelectAll) {
+                renameText = "";
+                renameCaret = 0;
+                renameSelectAll = false;
+            } else if (renameCaret < renameText.length()) {
+                renameText = renameText.substring(0, renameCaret) + renameText.substring(renameCaret + 1);
+            }
+            return true;
+        }
+        if (keyCode == Keyboard.KEY_LEFT) {
+            renameSelectAll = false;
+            renameCaret = Math.max(0, renameCaret - 1);
+            return true;
+        }
+        if (keyCode == Keyboard.KEY_RIGHT) {
+            renameSelectAll = false;
+            renameCaret = Math.min(renameText.length(), renameCaret + 1);
+            return true;
+        }
+        if (keyCode == Keyboard.KEY_HOME) {
+            renameSelectAll = false;
+            renameCaret = 0;
+            return true;
+        }
+        if (keyCode == Keyboard.KEY_END) {
+            renameSelectAll = false;
+            renameCaret = renameText.length();
+            return true;
+        }
+        if (GuiScreen.isKeyComboCtrlV(keyCode)) {
+            renamePaste();
+            return true;
+        }
+        if (typedChar >= ' ' && typedChar != 167 && ChatAllowedCharacters.isAllowedCharacter(typedChar)) {
+            renameInsert(String.valueOf(typedChar));
+            return true;
+        }
+        return false;
+    }
+
+    /** Inserts a single-line name, replacing a selected name on the first typed character. */
+    private void renameInsert(String text) {
+        if (text.isEmpty()) return;
+        if (renameSelectAll) {
+            renameText = "";
+            renameCaret = 0;
+            renameSelectAll = false;
+        }
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c < ' ' || c == 127 || c == 167) continue;
+            if (renameText.length() >= ItemDocumentsFolder.MAX_NAME_LENGTH) break;
+            int at = Math.min(renameCaret, renameText.length());
+            renameText = renameText.substring(0, at) + c + renameText.substring(at);
+            renameCaret = at + 1;
+        }
+    }
+
+    private void renamePaste() {
+        String clip = GuiScreen.getClipboardString();
+        if (clip == null || clip.isEmpty()) return;
+        StringBuilder clean = new StringBuilder();
+        for (int i = 0; i < clip.length(); i++) {
+            char c = clip.charAt(i);
+            if (c == '\r' || c == '\n') continue;
+            if (c >= ' ' && c != 127 && c != 167) clean.append(c);
+        }
+        renameInsert(clean.toString());
+    }
+
+    private String defaultName() {
+        return I18n.format("item.ntmdoors.documents_folder.name");
+    }
+
+    private boolean inName(int mouseX, int mouseY) {
+        return mouseX >= left + PAPER_X + 10 && mouseX < left + PAPER_X + PAPER_W - 10
+                && mouseY >= top + NAME_Y - 2 && mouseY < top + NAME_Y + 10;
     }
 
     private boolean fits(String text) {
