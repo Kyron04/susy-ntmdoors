@@ -34,6 +34,7 @@ public class GuiDocumentsFolder extends GuiScreen {
 
     private static final int PANEL_WIDTH = 240;
     private static final int PANEL_HEIGHT = 212;
+    private static final float GUI_SCALE = 1.5F;
 
     private static final int PAPER_X = 14;
     private static final int PAPER_Y = 22;
@@ -94,6 +95,9 @@ public class GuiDocumentsFolder extends GuiScreen {
     private int desiredX;
     private int caretLineHint = -1;
     private int cursorCounter;
+    private float guiScale = 1F;
+    private int screenLeft;
+    private int screenTop;
     private int left;
     private int top;
 
@@ -111,8 +115,14 @@ public class GuiDocumentsFolder extends GuiScreen {
     @Override
     public void initGui() {
         super.initGui();
-        left = (width - PANEL_WIDTH) / 2;
-        top = (height - PANEL_HEIGHT) / 2;
+        // Scale the whole screen by 1.5x, but never past the available window; the drawing code
+        // stays in its original 240x212 space and the matrix places it on screen.
+        guiScale = Math.max(0.5F, Math.min(GUI_SCALE,
+                Math.min((width - 8F) / PANEL_WIDTH, (height - 8F) / PANEL_HEIGHT)));
+        screenLeft = (width - Math.round(PANEL_WIDTH * guiScale)) / 2;
+        screenTop = (height - Math.round(PANEL_HEIGHT * guiScale)) / 2;
+        left = 0;
+        top = 0;
         Keyboard.enableRepeatEvents(true);
         desiredX = caretX();
     }
@@ -128,6 +138,14 @@ public class GuiDocumentsFolder extends GuiScreen {
     public void updateScreen() {
         super.updateScreen();
         cursorCounter++;
+    }
+
+    private int toLocalX(int screenX) {
+        return (int) Math.floor((screenX - screenLeft) / guiScale);
+    }
+
+    private int toLocalY(int screenY) {
+        return (int) Math.floor((screenY - screenTop) / guiScale);
     }
 
     // ------------------------------------------------------------ saving
@@ -157,20 +175,27 @@ public class GuiDocumentsFolder extends GuiScreen {
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         drawDefaultBackground();
+        int localX = toLocalX(mouseX);
+        int localY = toLocalY(mouseY);
+
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(screenLeft, screenTop, 0F);
+        GlStateManager.scale(guiScale, guiScale, 1F);
         GlStateManager.color(1F, 1F, 1F, 1F);
 
         drawFolder();
         drawPaper();
-        drawPageTabs(mouseX, mouseY);
-        drawBottomBar(mouseX, mouseY);
-        drawHeader(mouseX, mouseY);
+        drawPageTabs(localX, localY);
+        drawBottomBar(localX, localY);
+        drawHeader(localX, localY);
         drawWritingBox();
         drawText();
         drawCaret();
 
-        super.drawScreen(mouseX, mouseY, partialTicks);
+        super.drawScreen(localX, localY, partialTicks);
+        GlStateManager.popMatrix();
 
-        if (!renaming && inName(mouseX, mouseY)) {
+        if (!renaming && inName(localX, localY)) {
             drawHoveringText(Collections.singletonList("Click to rename"), mouseX, mouseY);
         }
     }
@@ -351,8 +376,10 @@ public class GuiDocumentsFolder extends GuiScreen {
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+        int localX = toLocalX(mouseX);
+        int localY = toLocalY(mouseY);
         if (mouseButton == 0) {
-            if (inName(mouseX, mouseY)) {
+            if (inName(localX, localY)) {
                 if (!renaming) {
                     startRename();
                 } else if (renameSelectAll) {
@@ -364,25 +391,25 @@ public class GuiDocumentsFolder extends GuiScreen {
             if (renaming) {
                 commitRename();
             }
-            int tab = tabAt(mouseX, mouseY);
+            int tab = tabAt(localX, localY);
             if (tab >= 0) {
                 switchPage(tab);
                 return;
             }
-            if (hit(mouseX, mouseY, left + 8, top + BUTTON_Y, 14, 12)) {
+            if (hit(localX, localY, left + 8, top + BUTTON_Y, 14, 12)) {
                 switchPage(page - 1);
                 return;
             }
-            if (hit(mouseX, mouseY, left + 24, top + BUTTON_Y, 14, 12)) {
+            if (hit(localX, localY, left + 24, top + BUTTON_Y, 14, 12)) {
                 switchPage(page + 1);
                 return;
             }
-            if (hit(mouseX, mouseY, left + PANEL_WIDTH - 52, top + BUTTON_Y, 44, 12)) {
+            if (hit(localX, localY, left + PANEL_WIDTH - 52, top + BUTTON_Y, 44, 12)) {
                 mc.displayGuiScreen(null);
                 return;
             }
-            if (inText(mouseX, mouseY)) {
-                placeCaret(mouseX, mouseY);
+            if (inText(localX, localY)) {
+                placeCaret(localX, localY);
                 return;
             }
         }
