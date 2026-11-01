@@ -60,8 +60,7 @@ DOCUMENTS FOLDER
 - Reopens on the page you closed on.
 - Top-right title is editable: click to rename, Enter saves, Esc cancels, clearing
   restores the default name.
-- White writing sheet with a thin ink border; the whole screen is scaled up 1.5x with a
-  fit guard for smaller windows.
+- The editor screen is scaled up 1.5x, with a fit guard for smaller windows.
 - Tooltip shows the number of pages written.
 
 FIXES AND POLISH
