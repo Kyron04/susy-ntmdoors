@@ -84,6 +84,21 @@ public class ModContent {
             new ItemNamedRfidCard("terminal_keycard", "Only one way out of Tarkov.");
     public static final ItemRfidCard TERRAGROUP_LABS_KEYCARD =
             new ItemNamedRfidCard("terragroup_labs_access_keycard", "What are they hiding?");
+    /** SCP clearance cards and the Googa joke card; fixed sprites, otherwise ordinary RFID cards. */
+    public static final ItemRfidCard SCP_LEVEL_1_KEYCARD =
+            new ItemNamedRfidCard("scp_level_1_keycard", "Level 1 clearance");
+    public static final ItemRfidCard SCP_LEVEL_2_KEYCARD =
+            new ItemNamedRfidCard("scp_level_2_keycard", "Level 2 clearance");
+    public static final ItemRfidCard SCP_LEVEL_3_KEYCARD =
+            new ItemNamedRfidCard("scp_level_3_keycard", "Level 3 clearance");
+    public static final ItemRfidCard SCP_LEVEL_4_KEYCARD =
+            new ItemNamedRfidCard("scp_level_4_keycard", "Level 4 clearance");
+    public static final ItemRfidCard SCP_LEVEL_5_KEYCARD =
+            new ItemNamedRfidCard("scp_level_5_keycard", "Level 5 clearance");
+    public static final ItemRfidCard SCP_LEVEL_6_KEYCARD =
+            new ItemNamedRfidCard("scp_level_6_keycard", "Level 6 clearance");
+    public static final ItemRfidCard GOOGA_SECURITY_KEYCARD =
+            new ItemNamedRfidCard("googa_security_keycard", "Security is goog");
     /** Privileged card produced by the programmer; access rules are not defined yet. */
     public static final ItemOperatorKeycard OPERATOR_KEYCARD = new ItemOperatorKeycard();
     /** Debug card that bypasses every door restriction. */
@@ -113,6 +128,12 @@ public class ModContent {
             BLUE_RFID_CARD, BLACK_RFID_CARD, ORANGE_RFID_CARD, YELLOW_RFID_CARD,
             BLUE_MARKING_CARD, LABYRINTH_KEYCARD, ENGINE_ROOM_KEYCARD, TERMINAL_KEYCARD,
             TERRAGROUP_LABS_KEYCARD));
+
+    /** New cards registered after every existing item, so saved numeric item IDs are untouched. */
+    public static final List<ItemRfidCard> SCP_CARDS = Collections.unmodifiableList(Arrays.asList(
+            SCP_LEVEL_1_KEYCARD, SCP_LEVEL_2_KEYCARD, SCP_LEVEL_3_KEYCARD,
+            SCP_LEVEL_4_KEYCARD, SCP_LEVEL_5_KEYCARD, SCP_LEVEL_6_KEYCARD,
+            GOOGA_SECURITY_KEYCARD));
 
     static {
         for (DoorDecl d : DoorDecls.ALL) NORMAL_DOORS.add(new BlockDoorGeneric(d, BlockDoorGeneric.Variant.NORMAL));
@@ -169,6 +190,8 @@ public class ModContent {
                 "A heavy door, scanner, and your own DNA",
                 "between you and your stuff.")
                 .setRegistryName(BIOMETRIC_SAFE.getRegistryName()));
+        // Newest cards go after every existing item, so saved numeric item IDs do not shift.
+        for (ItemRfidCard card : SCP_CARDS) e.getRegistry().register(card);
     }
 
     @SubscribeEvent

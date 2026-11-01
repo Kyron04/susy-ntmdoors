@@ -142,6 +142,11 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   `ntmdoors:terragroup_labs_access_keycard`): five fixed-name cards, each with its own 16x16 sprite
   and a line of flavour text. They behave exactly like the colour cards - the programmer copies
   private keys onto them and the scanner reads them - but they are not part of the recolour palette.
+* SCP access cards (`ntmdoors:scp_level_1_keycard` through `ntmdoors:scp_level_6_keycard`): six
+  fixed-clearance cards in grey, yellow, amber, orange, dark orange and red, with `Level 1` to
+  `Level 6 clearance` tooltips. Also included is `ntmdoors:googa_security_keycard`, whose tooltip
+  reads `Security is goog`. They use the same private-key storage, programmer binding, holder and
+  scanner behaviour as the other cards, and are not recolourable.
 * Operator Keycard (`ntmdoors:operator_keycard`): a dark card with an orange stripe and three orange
   dots. It shares the RFID hand-display model and, aimed at a bound scanner, opens that scanner's
   security code screen; anywhere else sneak right-click opens the same private-key viewer as a
@@ -151,7 +156,8 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   instead of creating a private key, and the programmer binds that identity onto a card. Biometric
   cards keep it next to any private keys, show the owner in the tooltip, turn the name yellow (aqua
   for the Operator version) and can be restricted to their owner with the scanner's
-  `Match biometric holder` option.
+  `Match biometric holder` option. The Biometric Operator Keycard also lists its private keys in
+  the tooltip.
 * Relay Key and Creative Keycard (`ntmdoors:relay_key`, `ntmdoors:creative_keycard`): groundwork for
   the keycard system. The Creative Keycard is the debug item for testing: its name is purple, and
   right clicking any door opens or closes it regardless of locked/security variants, keypad codes or
