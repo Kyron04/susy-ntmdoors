@@ -4,6 +4,8 @@ Standalone port of the HBM's Nuclear Tech Mod door system to Minecraft 1.12.2.
 The implementation and the included door models, textures and sounds are used under the
 LGPL-3.0. See `LICENSE.LESSER` and `NOTICE` for attribution and source information.
 
+Current release: **1.0.30**
+
 Source design reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
 
 ## Build
