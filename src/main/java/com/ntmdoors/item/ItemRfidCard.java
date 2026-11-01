@@ -94,7 +94,7 @@ public class ItemRfidCard extends Item {
         if (!keyViewer) {
             Names.addDescription(tooltip,
                     "Use the Keycard Programmer to assign this card",
-                    "a color and private key");
+                    "a colour and private key.");
         } else if (!(this instanceof ItemOperatorKeycard)) {
             for (PrivateKeys.Key key : PrivateKeys.get(stack)) {
                 tooltip.add(TextFormatting.WHITE + key.name);

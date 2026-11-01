@@ -57,8 +57,8 @@ public class ItemKeycardHolder extends Item {
     @Override
     public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
         Names.addDescription(tooltip,
-                "Stores up to 12 keycards",
-                "Right-click to open");
+                "Stores up to 12 keycards.",
+                "Right-click to open.");
         int stored = count(stack);
         if (stored > 0) {
             tooltip.add(TextFormatting.GRAY + "Cards stored: " + stored + " / " + SLOT_COUNT);

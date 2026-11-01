@@ -97,9 +97,9 @@ public class ItemOperatorKeycard extends ItemRfidCard {
         Names.addDescription(tooltip,
                 "The master keycard of your security network.",
                 "Holds several private keys that can be assigned",
-                "to scanners bound to doors",
-                "Sneak + Right Click a bound Scanner to set",
-                "its security code");
+                "to scanners bound to doors.",
+                "Sneak + Right Click a bound scanner to set",
+                "its security code.");
         Biometrics.addOwnerIfBound(tooltip, stack);
     }
 }

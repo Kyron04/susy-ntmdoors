@@ -30,7 +30,7 @@ public class ItemBiometricOperatorKeycard extends ItemOperatorKeycard {
     public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
         Names.addDescription(tooltip,
                 "Does exactly what the normal Operator Keycard does",
-                "while storing your biometric data");
+                "while storing your biometric data.");
         Biometrics.addOwnerLine(tooltip, stack);
     }
 }

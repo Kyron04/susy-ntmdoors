@@ -76,8 +76,8 @@ public class ItemBiometricRelayKey extends ItemRelayKey {
     @Override
     public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
         Names.addDescription(tooltip,
-                "Collects biometric data from the player.",
-                "Sneak + Right Click");
+                "Collects biometric data from the player via",
+                "Sneak + Right Click.");
         Biometrics.addOwnerLine(tooltip, stack);
     }
 }

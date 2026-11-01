@@ -119,7 +119,7 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   two control buttons and a right-hand keycard slot. The model is in place; the identity and
   screen logic follow in the next pass.
 * Safe Binding Key (`ntmdoors:safe_binding_key`): a small green USB key, currently creative-only.
-  Its description reads `Bound safes to security infostructure to protect your stuff`; it will
+  Its description reads `Binds safes to the security infrastructure to protect your stuff.`; it will
   plug into the safes' USB ports when the binding logic is added.
 * RFID cards: one blank card plus red, violet, green, blue, black, orange and yellow variants.
   Each colour is a separate item (`ntmdoors:red_rfid_card` and so on) sharing a single item class

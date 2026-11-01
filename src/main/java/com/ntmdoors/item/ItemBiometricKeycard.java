@@ -33,7 +33,7 @@ public class ItemBiometricKeycard extends ItemRfidCard {
     public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
         Names.addDescription(tooltip,
                 "Holds the biometric data of the player",
-                "alongside the private key");
+                "alongside the private key.");
         // The base card lists the private keys and then the identity line when one exists. An
         // unbound card is still worth labelling, so add the empty state here.
         super.addInformation(stack, world, tooltip, flag);

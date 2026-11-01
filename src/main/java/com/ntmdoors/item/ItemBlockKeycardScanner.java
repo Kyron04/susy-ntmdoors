@@ -28,7 +28,7 @@ public class ItemBlockKeycardScanner extends ItemBlock {
     @Override
     public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
         Names.addDescription(tooltip,
-                "Scan Keycards, annnnnnnnnnnd opeeeen!!!!!",
-                "Can be bound via Screwdriver");
+                "Scans keycards and opens doors.",
+                "Can be bound with a Screwdriver.");
     }
 }

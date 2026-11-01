@@ -154,8 +154,8 @@ public class ItemScrewdriver extends Item {
     @Override
     public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
         Names.addDescription(tooltip,
-                "For establishing connections to doors from Keypads",
-                "and Keycard Scanners via Sneak + Right Click");
+                "For establishing connections to doors from keypads",
+                "and keycard scanners via Sneak + Right Click.");
     }
 
     private static TileEntityDoorGeneric findCore(World world, BlockPos pos) {

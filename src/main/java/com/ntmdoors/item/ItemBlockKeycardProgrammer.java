@@ -28,7 +28,7 @@ public class ItemBlockKeycardProgrammer extends ItemBlock {
     @Override
     public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
         Names.addDescription(tooltip,
-                "This machine is able to bind keycards, backup",
-                "private keys, and give keycards colors");
+                "This machine can bind keycards, back up",
+                "private keys, and change keycard colours.");
     }
 }

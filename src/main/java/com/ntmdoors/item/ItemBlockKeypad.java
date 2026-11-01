@@ -28,8 +28,8 @@ public class ItemBlockKeypad extends ItemBlock {
     @Override
     public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
         Names.addDescription(tooltip,
-                "Set codes on doors to secure access to whatever",
-                "the door is protecting",
-                "Can be bound via Screwdriver");
+                "Sets codes on doors to secure access to whatever",
+                "the door is protecting.",
+                "Can be bound with a Screwdriver.");
     }
 }

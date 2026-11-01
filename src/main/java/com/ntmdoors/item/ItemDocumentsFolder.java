@@ -60,8 +60,8 @@ public class ItemDocumentsFolder extends Item {
     @Override
     public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
         Names.addDescription(tooltip,
-                "Effectively a glorified book with a cooler aesthetic",
-                "Right-click to open and write");
+                "Effectively a glorified book with a cooler aesthetic.",
+                "Right-click to open and write.");
         int written = writtenPageCount(stack);
         if (written > 0) {
             tooltip.add(TextFormatting.GRAY + "Pages written: " + written + " / " + PAGE_COUNT);

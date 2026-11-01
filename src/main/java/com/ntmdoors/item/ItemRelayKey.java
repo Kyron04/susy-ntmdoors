@@ -76,7 +76,7 @@ public class ItemRelayKey extends Item {
     public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
         Names.addDescription(tooltip,
                 "Used to generate private keys via",
-                "Sneak + Right Click");
+                "Sneak + Right Click.");
         for (PrivateKeys.Key key : PrivateKeys.get(stack)) {
             tooltip.add(TextFormatting.WHITE + key.name);
             tooltip.add(TextFormatting.WHITE + key.serial);

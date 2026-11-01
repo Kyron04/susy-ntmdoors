@@ -28,7 +28,7 @@ public class ItemCreativeKeycard extends ItemRfidCard {
     public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
         Names.addDescription(tooltip,
                 "Overrides everything regardless of door type,",
-                "binding state, etc");
+                "binding state, etc.");
     }
 
     /** True when either hand holds a Creative Keycard. */

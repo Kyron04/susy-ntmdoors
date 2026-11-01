@@ -75,15 +75,15 @@ public class ModContent {
     public static final ItemRfidCard YELLOW_RFID_CARD = new ItemRfidCard("yellow_rfid_card");
     /** Themed cards with a fixed name, sprite and description; otherwise ordinary RFID cards. */
     public static final ItemRfidCard BLUE_MARKING_CARD =
-            new ItemNamedRfidCard("keycard_blue_marking", "Samitar's office");
+            new ItemNamedRfidCard("keycard_blue_marking", "Samitar's office.");
     public static final ItemRfidCard LABYRINTH_KEYCARD =
-            new ItemNamedRfidCard("labyrinth_keycard", "Something is under Shoreline");
+            new ItemNamedRfidCard("labyrinth_keycard", "Something is under Shoreline.");
     public static final ItemRfidCard ENGINE_ROOM_KEYCARD =
-            new ItemNamedRfidCard("engine_room_keycard", "let's break the ice");
+            new ItemNamedRfidCard("engine_room_keycard", "Let's break the ice.");
     public static final ItemRfidCard TERMINAL_KEYCARD =
-            new ItemNamedRfidCard("terminal_keycard", "Only one way out of Tarkov");
+            new ItemNamedRfidCard("terminal_keycard", "Only one way out of Tarkov.");
     public static final ItemRfidCard TERRAGROUP_LABS_KEYCARD =
-            new ItemNamedRfidCard("terragroup_labs_access_keycard", "what are they hiding");
+            new ItemNamedRfidCard("terragroup_labs_access_keycard", "What are they hiding?");
     /** Privileged card produced by the programmer; access rules are not defined yet. */
     public static final ItemOperatorKeycard OPERATOR_KEYCARD = new ItemOperatorKeycard();
     /** Debug card that bypasses every door restriction. */
@@ -164,9 +164,9 @@ public class ModContent {
         e.getRegistry().register(SAFE_BINDING_KEY);
         // New block items go last as well, so every previously saved numeric item ID is untouched.
         e.getRegistry().register(new ItemBlockSafe(SAFE,
-                "A heavy door, and keypad between you, and your stuff").setRegistryName(SAFE.getRegistryName()));
+                "A heavy door and keypad between you and your stuff.").setRegistryName(SAFE.getRegistryName()));
         e.getRegistry().register(new ItemBlockSafe(BIOMETRIC_SAFE,
-                "A heavy door, scanner, and your own DNA between you, and your stuff")
+                "A heavy door, scanner, and your own DNA between you and your stuff.")
                 .setRegistryName(BIOMETRIC_SAFE.getRegistryName()));
     }
 
