@@ -85,12 +85,13 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   the inventory and hand.
 * Scanner options: the assignment screen also carries the switches `Match biometric holder`,
   `Lockdown mode`, `Lockout mode`, `Ignore private keys`, `Ignore biometric IDs`, `Override door
-  locks` and `Force close`. Lockdown is an emergency lock: raising it closes every bound door and
-  keeps them shut, refusing cards, codes, keypads and redstone until it is lifted. Lockout mode
-  locks the reader itself for five minutes after three bad cards or codes, and turning the mode off
-  clears a running lockout. A lockout only shuts the reader; the Biometric Operator Keycard can
-  still reach the code screen during one, and the `Override door locks` and `Force close` actions
-  move the doors regardless of a lockdown.
+  locks`, `Force close` and `Reset security code`. Lockdown is an emergency lock: raising it closes
+  every bound door and keeps them shut, refusing cards, codes, keypads and redstone until it is
+  lifted. Lockout mode locks the reader itself for five minutes after three bad cards or codes, and
+  turning the mode off clears a running lockout. A lockout only shuts the reader; the Biometric
+  Operator Keycard can still reach the code screen during one, and the `Override door locks` and
+  `Force close` actions move the doors regardless of a lockdown. `Reset security code` clears the
+  code on the scanner and its bound doors, so the next Operator Keycard visit sets a new one.
 * Keycard Programmer (`ntmdoors:keycard_programmer`): a low desk console that sits inside one block
   and rotates to face the player, with a flat OBJ body, a sloped screen recess and no card reader
   tower. The front carries a card slit with an `Insert here` label and two buttons on the player's
@@ -113,11 +114,20 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   item tooltips above JEI/HEI. There is no recipe; it is in the NTM Doors creative tab with a flat
   16x16 icon derived from the model.
 * Safe (`ntmdoors:safe`): a 1x1x1 steel safe with a keypad front and two small USB ports under
-  the pad. This pass places, rotates and renders as a normal full block; the code lock, inventory
-  and binding logic are the next step.
-* Biometric Safe (`ntmdoors:biometric_safe`): the same shell and USB ports with a status screen,
-  two control buttons and a right-hand keycard slot. The model is in place; the identity and
-  screen logic follow in the next pass.
+  the pad. Right clicking opens the same keypad screen as the scanner. The first accepted code
+  becomes the safe's code and records that player as its owner; later entries must match. A correct
+  code shows the `SUCCESS!!!` card and then opens a 27-slot container. Page two of the container has
+  `Match user`, `Lockout mode` and `Reset code`; `Match user` restricts unlocking to the owner,
+  `Lockout mode` locks the keypad for five minutes after three bad codes, and `Reset code` clears
+  the code so the next entry sets a new one. The inventory and the code are saved with the block,
+  and breaking the safe drops its contents.
+* Biometric Safe (`ntmdoors:biometric_safe`): the same shell, inventory and options page, but its
+  reader accepts only the Biometric Operator Keycard. Right clicking with a bound card shows a short
+  `SCANNING...` screen, then the same `SUCCESS!!!` / `FAILED!!!` card before opening the container.
+  `Match user` limits the card to the identity it carries; with it off, any bound Biometric Operator
+  Keycard opens the safe. `Lockout mode` works like the scanner's, and the card's owner can still
+  bypass a lockout to turn it off. The normal Biometric Keycard, the plain Operator Keycard and the
+  Creative Keycard are all refused.
 * Safe Binding Key (`ntmdoors:safe_binding_key`): a small green USB key, currently creative-only.
   Its description reads `Binds safes to the security infrastructure to protect your stuff.`; it will
   plug into the safes' USB ports when the binding logic is added.

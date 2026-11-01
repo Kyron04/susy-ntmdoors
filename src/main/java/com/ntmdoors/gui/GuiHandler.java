@@ -2,8 +2,11 @@ package com.ntmdoors.gui;
 
 import com.ntmdoors.client.GuiKeycardHolder;
 import com.ntmdoors.client.GuiKeycardProgrammer;
+import com.ntmdoors.client.GuiSafe;
+import com.ntmdoors.gui.ContainerSafe;
 import com.ntmdoors.item.ItemKeycardHolder;
 import com.ntmdoors.tile.TileEntityKeycardProgrammer;
+import com.ntmdoors.tile.TileEntitySafe;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -22,6 +25,7 @@ public class GuiHandler implements IGuiHandler {
 
     public static final int KEYCARD_PROGRAMMER = 0;
     public static final int KEYCARD_HOLDER = 2;
+    public static final int SAFE = 3;
 
     @Nullable
     @Override
@@ -37,6 +41,11 @@ public class GuiHandler implements IGuiHandler {
             ItemStack held = player.getHeldItem(hand);
             if (!(held.getItem() instanceof ItemKeycardHolder)) return null;
             return new ContainerKeycardHolder(player.inventory, player, held, hand);
+        }
+        if (id == SAFE) {
+            TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
+            if (!(te instanceof TileEntitySafe)) return null;
+            return new ContainerSafe(player.inventory, (TileEntitySafe) te);
         }
         return null;
     }
@@ -55,6 +64,11 @@ public class GuiHandler implements IGuiHandler {
             ItemStack held = player.getHeldItem(hand);
             if (!(held.getItem() instanceof ItemKeycardHolder)) return null;
             return new GuiKeycardHolder(player.inventory, player, held, hand);
+        }
+        if (id == SAFE) {
+            TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
+            if (!(te instanceof TileEntitySafe)) return null;
+            return new GuiSafe(player.inventory, (TileEntitySafe) te);
         }
         return null;
     }

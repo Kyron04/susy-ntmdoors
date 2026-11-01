@@ -5,6 +5,7 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -23,7 +24,8 @@ public class MessageScannerOption implements IMessage {
     public static final int IGNORE_IDS = 4;
     public static final int FORCE_OPEN = 5;
     public static final int FORCE_CLOSE = 6;
-    public static final int OPTION_COUNT = 7;
+    public static final int RESET_CODE = 7;
+    public static final int OPTION_COUNT = 8;
 
     private BlockPos pos;
     private int option;
@@ -100,6 +102,12 @@ public class MessageScannerOption implements IMessage {
                     break;
                 case FORCE_CLOSE:
                     scanner.forceCloseDoors();
+                    break;
+                case RESET_CODE:
+                    if (scanner.resetSecurityCode()) {
+                        player.sendStatusMessage(new TextComponentTranslation(
+                                "ntmdoors.msg.scanner_code_reset"), true);
+                    }
                     break;
                 default:
                     break;

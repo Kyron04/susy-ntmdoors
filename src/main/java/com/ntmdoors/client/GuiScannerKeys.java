@@ -138,7 +138,8 @@ public class GuiScannerKeys extends GuiScreen {
 
     private static boolean optionIsAction(int option) {
         return option == MessageScannerOption.FORCE_OPEN
-                || option == MessageScannerOption.FORCE_CLOSE;
+                || option == MessageScannerOption.FORCE_CLOSE
+                || option == MessageScannerOption.RESET_CODE;
     }
 
     private List<Entry> assigned() {
@@ -449,6 +450,10 @@ public class GuiScannerKeys extends GuiScreen {
             fill = 0xFF2A2A2A;
             edge = 0xFF4A4A4A;
             text = 0xFF777777;
+        } else if (option == MessageScannerOption.RESET_CODE) {
+            fill = 0xFF3A3030;
+            edge = 0xFF8A6A6A;
+            text = 0xFFE6C8C8;
         } else if (action) {
             fill = 0xFF2E3136;
             edge = 0xFF8A8A90;
@@ -465,8 +470,10 @@ public class GuiScannerKeys extends GuiScreen {
         drawRect(x, pillY, x + PILL_WIDTH, pillY + PILL_HEIGHT, fill);
         drawRect(x, pillY, x + PILL_WIDTH, pillY + 1, edge);
         drawRect(x, pillY + PILL_HEIGHT - 1, x + PILL_WIDTH, pillY + PILL_HEIGHT,
-                !enabled ? 0xFF1A1A1A : action ? 0xFF1D1F22 : on ? 0xFF223022 : 0xFF241C1C);
-        String state = action ? (option == MessageScannerOption.FORCE_OPEN ? "OPEN" : "CLOSE")
+                !enabled ? 0xFF1A1A1A : option == MessageScannerOption.RESET_CODE
+                        ? 0xFF241C1C : action ? 0xFF1D1F22 : on ? 0xFF223022 : 0xFF241C1C);
+        String state = option == MessageScannerOption.RESET_CODE ? "RESET"
+                : action ? (option == MessageScannerOption.FORCE_OPEN ? "OPEN" : "CLOSE")
                 : on ? "ON" : "OFF";
         drawCenteredString(fontRenderer, state, x + PILL_WIDTH / 2, pillY + 3, text);
     }
@@ -487,6 +494,8 @@ public class GuiScannerKeys extends GuiScreen {
                 return "Override door locks";
             case MessageScannerOption.FORCE_CLOSE:
                 return "Force close";
+            case MessageScannerOption.RESET_CODE:
+                return "Reset security code";
             default:
                 return "";
         }
@@ -508,6 +517,8 @@ public class GuiScannerKeys extends GuiScreen {
                 return "Force open, ignoring locks and keys.";
             case MessageScannerOption.FORCE_CLOSE:
                 return "Closes bound doors.";
+            case MessageScannerOption.RESET_CODE:
+                return "Clears the code; the next entry sets a new one.";
             default:
                 return "";
         }
@@ -549,7 +560,7 @@ public class GuiScannerKeys extends GuiScreen {
             hint = "Doors are moving - wait";
             colour = WARNING;
         } else {
-            hint = "Changes apply to this scanner only";
+            hint = "Changes apply to this scanner and its doors";
         }
         drawCenteredString(fontRenderer, hint, left + PANEL_WIDTH / 2, top + 164, colour);
         drawCenteredString(fontRenderer, (page + 1) + "/" + PAGE_COUNT,

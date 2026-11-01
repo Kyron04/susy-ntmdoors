@@ -23,6 +23,13 @@ public final class ModNetwork {
                 Side.SERVER);
         INSTANCE.registerMessage(MessageDocumentsFolderPages.Handler.class,
                 MessageDocumentsFolderPages.class, 6, Side.SERVER);
+        INSTANCE.registerMessage(MessageSafeCode.Handler.class, MessageSafeCode.class, 7, Side.SERVER);
+        INSTANCE.registerMessage(MessageSafeResult.Handler.class, MessageSafeResult.class, 8,
+                Side.CLIENT);
+        INSTANCE.registerMessage(MessageSafeOption.Handler.class, MessageSafeOption.class, 9,
+                Side.SERVER);
+        INSTANCE.registerMessage(MessageSafePage.Handler.class, MessageSafePage.class, 10,
+                Side.SERVER);
     }
 
     private ModNetwork() {

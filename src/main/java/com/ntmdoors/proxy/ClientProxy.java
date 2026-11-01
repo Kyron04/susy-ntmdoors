@@ -4,6 +4,8 @@ import com.ntmdoors.NTMDoors;
 import com.ntmdoors.client.GuiDocumentsFolder;
 import com.ntmdoors.client.GuiKeycardViewer;
 import com.ntmdoors.client.GuiRelayKeyName;
+import com.ntmdoors.client.GuiSafeBiometric;
+import com.ntmdoors.client.GuiSafeCode;
 import com.ntmdoors.client.GuiScannerCode;
 import com.ntmdoors.client.KeyframeAnimation;
 import com.ntmdoors.client.ObjModel;
@@ -68,6 +70,16 @@ public class ClientProxy extends CommonProxy {
         if (stack.getItem() instanceof ItemDocumentsFolder) {
             mc.displayGuiScreen(new GuiDocumentsFolder(hand, stack));
         }
+    }
+
+    @Override
+    public void openSafeCodeGui(BlockPos pos) {
+        Minecraft.getMinecraft().displayGuiScreen(new GuiSafeCode(pos));
+    }
+
+    @Override
+    public void openSafeBiometricGui(BlockPos pos) {
+        Minecraft.getMinecraft().displayGuiScreen(new GuiSafeBiometric(pos));
     }
 
     @Override

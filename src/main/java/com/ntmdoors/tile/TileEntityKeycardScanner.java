@@ -99,6 +99,8 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
      * sent to clients, only whether one exists.
      */
     private String securityCode = "";
+    /** True after the settings page cleared the code; stops a door from donating the old one back. */
+    private boolean codeCleared;
 
     /** Private keys that may open this scanner's doors. Synced so the assignment screen sees them. */
     private final List<PrivateKeys.Key> assignedKeys = new ArrayList<>();
@@ -190,8 +192,8 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
     }
 
     /**
-     * Server side: stores the code chosen on the first Operator Keycard visit. A scanner can only
-     * ever be given one code; breaking it is the only way to start over.
+     * Server side: stores the code chosen on the first Operator Keycard visit. A scanner has one
+     * code at a time; the settings page can clear it and start over.
      */
     public boolean setSecurityCode(String raw) {
         if (world == null || world.isRemote || hasSecurityCode()) return false;
@@ -199,6 +201,7 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         if (code.isEmpty()) return false;
         securityCode = code;
         codeSet = true;
+        codeCleared = false;
         // The door keeps a copy so breaking the scanner cannot reset the code.
         for (BlockPos doorPos : boundDoors) {
             TileEntity te = world.getTileEntity(doorPos);
@@ -216,7 +219,15 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
     private boolean syncSecurityCode() {
         if (world == null) return false;
         boolean adopted = false;
-        if (!hasSecurityCode()) {
+        if (!hasSecurityCode() && codeCleared) {
+            // A reset must not be undone by an unloaded door still carrying the old digits.
+            for (BlockPos doorPos : boundDoors) {
+                TileEntity te = world.getTileEntity(doorPos);
+                if (te instanceof TileEntityDoorGeneric) {
+                    ((TileEntityDoorGeneric) te).clearScannerCode();
+                }
+            }
+        } else if (!hasSecurityCode()) {
             for (BlockPos doorPos : boundDoors) {
                 TileEntity te = world.getTileEntity(doorPos);
                 if (!(te instanceof TileEntityDoorGeneric)) continue;
@@ -242,6 +253,27 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
     /** True when the supplied digits match the stored code. */
     public boolean checkSecurityCode(String raw) {
         return hasSecurityCode() && securityCode.equals(sanitiseCode(raw));
+    }
+
+    /**
+     * Server side: forgets the code on the scanner and on every bound door, so the next code entry
+     * starts a fresh one. The caller's edit session is deliberately left open.
+     */
+    public boolean resetSecurityCode() {
+        if (world == null || world.isRemote || !hasSecurityCode()) return false;
+        securityCode = "";
+        codeSet = false;
+        codeCleared = true;
+        failedAttempts = 0;
+        clearLockout();
+        for (BlockPos doorPos : boundDoors) {
+            TileEntity te = world.getTileEntity(doorPos);
+            if (te instanceof TileEntityDoorGeneric) {
+                ((TileEntityDoorGeneric) te).clearScannerCode();
+            }
+        }
+        sync();
+        return true;
     }
 
     /** Digits only, at most {@link #CODE_LENGTH} characters. */
@@ -925,6 +957,7 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         tag.setInteger("bindingTicks", bindingTicks);
         tag.setString("securityCode", securityCode);
         tag.setBoolean("codeSet", codeSet);
+        tag.setBoolean("codeCleared", codeCleared);
         tag.setInteger("boundDoorCount", boundDoorCount);
         tag.setTag("assignedKeys", PrivateKeys.toList(assignedKeys));
         tag.setTag("assignedIds", encodeIds());
@@ -976,6 +1009,7 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
             securityCode = sanitiseCode(tag.getString("securityCode"));
         }
         codeSet = tag.hasKey("codeSet") ? tag.getBoolean("codeSet") : !securityCode.isEmpty();
+        codeCleared = tag.getBoolean("codeCleared");
         if (tag.hasKey("assignedKeys", Constants.NBT.TAG_LIST)) {
             assignedKeys.clear();
             assignedKeys.addAll(PrivateKeys.fromList(

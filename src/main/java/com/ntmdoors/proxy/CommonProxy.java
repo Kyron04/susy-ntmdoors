@@ -10,6 +10,8 @@ import com.ntmdoors.tile.TileEntityDoorKeypad;
 import com.ntmdoors.tile.TileEntityDoorPart;
 import com.ntmdoors.tile.TileEntityKeycardProgrammer;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
+import com.ntmdoors.tile.TileEntityBiometricSafe;
+import com.ntmdoors.tile.TileEntitySafe;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
@@ -28,6 +30,8 @@ public class CommonProxy {
         GameRegistry.registerTileEntity(TileEntityDoorKeypad.class, new ResourceLocation(NTMDoors.MODID, "door_keypad"));
         GameRegistry.registerTileEntity(TileEntityKeycardScanner.class, new ResourceLocation(NTMDoors.MODID, "keycard_scanner"));
         GameRegistry.registerTileEntity(TileEntityKeycardProgrammer.class, new ResourceLocation(NTMDoors.MODID, "keycard_programmer"));
+        GameRegistry.registerTileEntity(TileEntitySafe.class, new ResourceLocation(NTMDoors.MODID, "safe"));
+        GameRegistry.registerTileEntity(TileEntityBiometricSafe.class, new ResourceLocation(NTMDoors.MODID, "biometric_safe"));
         // Read the OBJ group bounds used by moving collision boxes now, so the first collision
         // query on a door never has to touch the filesystem.
         for (DoorDecl d : DoorDecls.ALL) d.prepareGeometry();
@@ -51,5 +55,13 @@ public class CommonProxy {
 
     /** Client only: open the twenty-page editor for a held Documents Folder. */
     public void openDocumentsFolderGui(EnumHand hand) {
+    }
+
+    /** Client only: open the Code Safe keypad. */
+    public void openSafeCodeGui(BlockPos pos) {
+    }
+
+    /** Client only: open the Biometric Safe card-read screen. */
+    public void openSafeBiometricGui(BlockPos pos) {
     }
 }

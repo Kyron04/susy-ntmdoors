@@ -1,0 +1,97 @@
+package com.ntmdoors.network;
+
+import com.ntmdoors.tile.TileEntitySafe;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+
+/**
+ * Client to server: one row on the safe's options page. Only a player with a live access session
+ * may change the toggles or clear the code.
+ */
+public class MessageSafeOption implements IMessage {
+
+    public static final int MATCH_HOLDER = 0;
+    public static final int LOCKOUT = 1;
+    public static final int RESET_CODE = 2;
+    public static final int OPTION_COUNT = 3;
+
+    private BlockPos pos;
+    private int option;
+    private boolean value;
+
+    public MessageSafeOption() {
+    }
+
+    public MessageSafeOption(BlockPos pos, int option, boolean value) {
+        this.pos = pos;
+        this.option = option;
+        this.value = value;
+    }
+
+    @Override
+    public void fromBytes(ByteBuf buf) {
+        boolean present = buf.readBoolean();
+        pos = present ? BlockPos.fromLong(buf.readLong()) : null;
+        option = buf.readByte();
+        value = buf.readBoolean();
+    }
+
+    @Override
+    public void toBytes(ByteBuf buf) {
+        buf.writeBoolean(pos != null);
+        if (pos != null) buf.writeLong(pos.toLong());
+        buf.writeByte(option);
+        buf.writeBoolean(value);
+    }
+
+    public static class Handler implements IMessageHandler<MessageSafeOption, IMessage> {
+
+        @Override
+        public IMessage onMessage(MessageSafeOption message, MessageContext ctx) {
+            EntityPlayerMP player = ctx.getServerHandler().player;
+            player.getServerWorld().addScheduledTask(() -> apply(player, message));
+            return null;
+        }
+
+        private static void apply(EntityPlayerMP player, MessageSafeOption message) {
+            if (message.pos == null) return;
+            if (message.option < 0 || message.option >= OPTION_COUNT) return;
+            if (player.getDistanceSq(message.pos.getX() + 0.5D, message.pos.getY() + 0.5D,
+                    message.pos.getZ() + 0.5D) > 64D) {
+                return;
+            }
+
+            TileEntity te = player.world.getTileEntity(message.pos);
+            if (!(te instanceof TileEntitySafe)) return;
+            TileEntitySafe safe = (TileEntitySafe) te;
+            if (!safe.hasAccessSessionFor(player)) return;
+
+            switch (message.option) {
+                case MATCH_HOLDER:
+                    safe.setMatchHolder(message.value);
+                    break;
+                case LOCKOUT:
+                    safe.setLockoutMode(message.value);
+                    break;
+                case RESET_CODE:
+                    if (safe.resetCode()) {
+                        player.sendStatusMessage(new TextComponentTranslation(
+                                "ntmdoors.msg.safe_code_reset"), true);
+                    }
+                    break;
+                default:
+                    return;
+            }
+
+            player.world.playSound(null, safe.getPos(), com.ntmdoors.util.ModSounds.BUTTON9,
+                    SoundCategory.BLOCKS, 0.8F, 1F);
+        }
+    }
+}

@@ -372,6 +372,13 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         markDirty();
     }
 
+    /** Called by a confirmed scanner reset; a new code can then be set. */
+    public void clearScannerCode() {
+        if (scannerCode.isEmpty()) return;
+        scannerCode = "";
+        sync();
+    }
+
     /** True when at least one scanner controls this door. The binding survives that scanner breaking. */
     public boolean isBoundToScanner() {
         return !boundScanners.isEmpty();

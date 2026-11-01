@@ -1,13 +1,18 @@
 package com.ntmdoors.block;
 
 import com.ntmdoors.NTMDoors;
+import com.ntmdoors.tile.TileEntitySafe;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
+import net.minecraft.block.material.EnumPushReaction;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.InventoryHelper;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
@@ -90,5 +95,53 @@ public class BlockSafe extends Block {
     @Override
     public boolean isSideSolid(IBlockState state, IBlockAccess world, BlockPos pos, EnumFacing side) {
         return true;
+    }
+
+    @Override
+    public boolean hasTileEntity(IBlockState state) {
+        return true;
+    }
+
+    @Override
+    public TileEntity createTileEntity(World world, IBlockState state) {
+        return new TileEntitySafe();
+    }
+
+    /** A loaded safe must not be pushed away from its inventory. */
+    @Override
+    public EnumPushReaction getPushReaction(IBlockState state) {
+        return EnumPushReaction.BLOCK;
+    }
+
+    /**
+     * The code safe opens its keypad on the client. The first accepted code becomes its code; a
+     * correct later code opens the storage container from the server side.
+     */
+    @Override
+    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player,
+                                    EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
+        if (world.isRemote) {
+            NTMDoors.proxy.openSafeCodeGui(pos);
+        } else {
+            // A safe placed before the tile entity existed gets one on first use.
+            ensureTileEntity(world, pos, state);
+        }
+        return true;
+    }
+
+    /** Adds the tile entity to a legacy placed safe that predates the inventory. */
+    protected void ensureTileEntity(World world, BlockPos pos, IBlockState state) {
+        if (world.isRemote || world.getTileEntity(pos) instanceof TileEntitySafe) return;
+        TileEntity tile = createTileEntity(world, state);
+        if (tile != null) world.setTileEntity(pos, tile);
+    }
+
+    @Override
+    public void breakBlock(World world, BlockPos pos, IBlockState state) {
+        TileEntity te = world.getTileEntity(pos);
+        if (te instanceof TileEntitySafe) {
+            InventoryHelper.dropInventoryItems(world, pos, (TileEntitySafe) te);
+        }
+        super.breakBlock(world, pos, state);
     }
 }
