@@ -1,7 +1,6 @@
 package com.ntmdoors.block;
 
 import com.ntmdoors.NTMDoors;
-import com.ntmdoors.item.ItemRedstoneRelayKey;
 import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
 import com.ntmdoors.util.Facings;
@@ -171,22 +170,12 @@ public class BlockKeycardScanner extends Block {
     @Override
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player,
                                     EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
-        ItemStack held = player.getHeldItem(hand);
-        if (player.isSneaking() && held.getItem() instanceof ItemRedstoneRelayKey) {
-            if (!world.isRemote) {
-                TileEntity te = world.getTileEntity(pos);
-                if (te instanceof TileEntityKeycardScanner) {
-                    ((TileEntityKeycardScanner) te).getRedstoneBinding().toggle(player);
-                }
-            }
-            return true;
-        }
-
         if (world.isRemote) return true;
         TileEntity te = world.getTileEntity(pos);
         if (!(te instanceof TileEntityKeycardScanner)) return false;
 
         TileEntityKeycardScanner scanner = (TileEntityKeycardScanner) te;
+        ItemStack held = player.getHeldItem(hand);
         if (held.getItem() instanceof ItemRfidCard) {
             scanner.useCard(player);
             return true;

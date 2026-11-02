@@ -1,5 +1,11 @@
-HBM DOORS: REFRESHED 1.0.32
+HBM DOORS: REFRESHED 1.0.33
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.33
+FIX
+- Fixed the Redstone Relay Key not starting a binding session on sneak + right-click. Vanilla
+  skips block activation while sneaking, so the Redstone binding now runs from the key's
+  item-use path, matching the Safe Binding Key.
 
 1.0.32
 REDSTONE NETWORK
