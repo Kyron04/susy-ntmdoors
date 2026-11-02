@@ -542,9 +542,9 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         if (world == null || world.isRemote) return;
         // A lockdown is meant to stay shut, so redstone edges are ignored until it is lifted.
         if (isLockedDown()) return;
-        // Only plain doors are redstone-driven. Locked doors belong to keypads and scanners, and
-        // security doors to scanners alone, so neither may be opened by a lever or a plate.
-        if (isLockedDoor() || isSecurityDoor()) return;
+        // Normal and locked doors are redstone-driven. Security doors belong to scanners alone, so
+        // they still refuse a lever or a plate.
+        if (isSecurityDoor()) return;
         boolean p = isGroupReceivingPower();
         if (p == powered) return;
         powered = p;
@@ -595,8 +595,8 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
     }
 
     /**
-     * True for the {@code _locked} twins: hand clicks and redstone are refused, while keypads and
-     * scanners open them.
+     * True for the {@code _locked} twins: hand clicks are refused, while keypads, scanners and
+     * redstone open them.
      */
     public boolean isLockedDoor() {
         Block block = getBlockType();

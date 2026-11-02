@@ -6,6 +6,7 @@ import com.ntmdoors.block.BlockDoorGeneric;
 import com.ntmdoors.block.BlockDoorKeypad;
 import com.ntmdoors.block.BlockKeycardProgrammer;
 import com.ntmdoors.block.BlockKeycardScanner;
+import com.ntmdoors.block.BlockRedstoneGate;
 import com.ntmdoors.block.BlockSafe;
 import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.DoorDecls;
@@ -15,6 +16,7 @@ import com.ntmdoors.item.ItemBiometricRelayKey;
 import com.ntmdoors.item.ItemBlockKeycardProgrammer;
 import com.ntmdoors.item.ItemBlockKeycardScanner;
 import com.ntmdoors.item.ItemBlockKeypad;
+import com.ntmdoors.item.ItemBlockRedstoneGate;
 import com.ntmdoors.item.ItemBlockSafe;
 import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.item.ItemDocumentsFolder;
@@ -22,6 +24,7 @@ import com.ntmdoors.item.ItemDoorBlock;
 import com.ntmdoors.item.ItemKeycardHolder;
 import com.ntmdoors.item.ItemNamedRfidCard;
 import com.ntmdoors.item.ItemOperatorKeycard;
+import com.ntmdoors.item.ItemRedstoneRelayKey;
 import com.ntmdoors.item.ItemRelayKey;
 import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.item.ItemSafeBindingKey;
@@ -65,6 +68,7 @@ public class ModContent {
     public static final BlockKeycardProgrammer KEYCARD_PROGRAMMER = new BlockKeycardProgrammer();
     public static final BlockSafe SAFE = new BlockSafe();
     public static final BlockBiometricSafe BIOMETRIC_SAFE = new BlockBiometricSafe();
+    public static final BlockRedstoneGate REDSTONE_GATE = new BlockRedstoneGate();
     public static final ItemScrewdriver SCREWDRIVER = new ItemScrewdriver();
     public static final ItemRfidCard BLANK_RFID_CARD = new ItemRfidCard("blank_rfid_card", false);
     public static final ItemRfidCard RED_RFID_CARD = new ItemRfidCard("red_rfid_card");
@@ -117,6 +121,8 @@ public class ModContent {
     public static final ItemDocumentsFolder DOCUMENTS_FOLDER = new ItemDocumentsFolder();
     /** Creative-only security-network key reserved for future safe binding. */
     public static final ItemSafeBindingKey SAFE_BINDING_KEY = new ItemSafeBindingKey();
+    /** Redstone-network key reserved for binding keypads, scanners and safes to a gate. */
+    public static final ItemRedstoneRelayKey REDSTONE_RELAY_KEY = new ItemRedstoneRelayKey();
 
     /** The seven cosmetic RFID colours, in the order the programmer's second page shows them. */
     public static final List<ItemRfidCard> COLOUR_CARDS = Collections.unmodifiableList(Arrays.asList(
@@ -157,6 +163,7 @@ public class ModContent {
         e.getRegistry().register(KEYCARD_PROGRAMMER);
         e.getRegistry().register(SAFE);
         e.getRegistry().register(BIOMETRIC_SAFE);
+        e.getRegistry().register(REDSTONE_GATE);
     }
 
     @SubscribeEvent
@@ -193,6 +200,10 @@ public class ModContent {
                 .setRegistryName(BIOMETRIC_SAFE.getRegistryName()));
         // Newest cards go after every existing item, so saved numeric item IDs do not shift.
         for (ItemRfidCard card : SCP_CARDS) e.getRegistry().register(card);
+        // Redstone-network items are newest of all, for the same reason.
+        e.getRegistry().register(REDSTONE_RELAY_KEY);
+        e.getRegistry().register(new ItemBlockRedstoneGate(REDSTONE_GATE)
+                .setRegistryName(REDSTONE_GATE.getRegistryName()));
     }
 
     @SubscribeEvent

@@ -4,7 +4,7 @@ Standalone port of the HBM's Nuclear Tech Mod door system to Minecraft 1.12.2.
 The implementation and the included door models, textures and sounds are used under the
 LGPL-3.0. See `LICENSE.LESSER` and `NOTICE` for attribution and source information.
 
-Current release: **1.0.30**
+Current release: **1.0.31**
 
 Source design reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
 
@@ -24,11 +24,11 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
 * Multiblock doors of any footprint, placed in one click, rotate with the player, removed as one piece
 * Core tile entity with state machine CLOSED / OPENING / OPEN / CLOSING, synced to clients
 * Redstone from any cell of the door (edge triggered), right click toggle
-* Every door is also registered as a locked, redstone-only copy named `<door>_locked`, and as a
-  `<door>_security` copy that only a keycard scanner (or the Creative Keycard directly) can open:
-  keypads in every binding mode, redstone and hand clicks never move it. The two silo hatches have
-  no security variant. Keypads may bind and drive locked doors exactly like normal ones (a bound
-  door is then code-driven rather than redstone-driven); security doors are off limits to keypads.
+* Every door is also registered as a locked copy named `<door>_locked`, and as a `<door>_security`
+  copy that only a keycard scanner (or the Creative Keycard directly) can open. Normal and locked
+  doors respond to redstone; security doors refuse it, as do hand clicks. The two silo hatches have
+  no security variant. Keypads may bind and drive locked doors exactly like normal ones; security
+  doors are off limits to keypads.
 * State dependent collision and selection boxes that follow the door animation continuously
   (walk through when open, click-through gaps)
 * OBJ renderer (TESR) with per-group translate/rotate animations, X/Y/Z clipping and sounds
@@ -137,6 +137,13 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   link or unlink them. A door can belong to one safe, but a door already controlled by a keypad or
   scanner keeps that binding and can still be linked to a safe. With `Binding Activities` on, the
   safe's lockout closes every linked door once. Breaking the safe clears the links.
+* Redstone Gate (`ntmdoors:redstone_gate`): a full-cube redstone component with separate off and on
+  textures. It starts off, turns on while it receives redstone power, and emits a full-strength
+  signal while on. It has a red menu name and the tooltip `Bound activities from Keypads, Keycard
+  Scanners, and Safes will emit a redstone signal`. The bound-activity logic is not implemented yet.
+* Redstone Relay Key (`ntmdoors:redstone_relay_key`): a red-named creative key with the tooltip
+  `Allows Keypads, Keycard Scanners, and Safes to be bound to the Redstone Gate`. It has no binding
+  behaviour yet.
 * RFID cards: one blank card plus red, violet, green, blue, black, orange and yellow variants.
   Each colour is a separate item (`ntmdoors:red_rfid_card` and so on) sharing a single item class
   and one hand-display model, so they all sit in the hand identically. The scanner recognises them

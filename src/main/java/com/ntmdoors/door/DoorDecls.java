@@ -9,8 +9,8 @@ import java.util.List;
 
 /**
  * All door types. Adding a door = adding one more entry here (plus a lang line and assets).
- * Every entry is exposed as two blocks by ModContent: the normal door and a redstone-only
- * {@code <name>_locked} twin.
+ * Every entry is exposed as several blocks by ModContent: the normal door, a {@code <name>_locked}
+ * twin that refuses hand clicks, and (for most doors) a scanner-only {@code <name>_security} twin.
  *
  * Footprints, collision boxes, animations and sounds follow the original HBM definitions. The OBJ
  * models and textures in assets/ntmdoors are the HBM assets, used with the LGPL-3.0 licence
