@@ -1,0 +1,10 @@
+{
+    "variants": {
+        "half=bottom,variant=default": {
+            "model": "ntmdoors:half_slab_concrete_colored_ext_slab_hazard_red"
+        },
+        "half=top,variant=default": {
+            "model": "ntmdoors:upper_slab_concrete_colored_ext_slab_hazard_red"
+        }
+    }
+}

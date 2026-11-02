@@ -1,0 +1,8 @@
+{
+    "parent": "block/half_slab",
+    "textures": {
+        "bottom": "ntmdoors:blocks/concrete_colored_ext.hazard_green",
+        "top": "ntmdoors:blocks/concrete_colored_ext.hazard_green",
+        "side": "ntmdoors:blocks/concrete_colored_ext.hazard_green"
+    }
+}
