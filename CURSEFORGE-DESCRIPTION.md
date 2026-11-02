@@ -4,7 +4,7 @@
 
 NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system from HBM's Nuclear Tech Mod. No NTM installation is required. Every model, texture and sound is bundled.
 
-**Current version: 1.0.33**
+**Current version: 1.0.34**
 
 ## 16 multiblock doors
 
@@ -90,7 +90,7 @@ Screwdriver + sneak + right-click cycles door skins:
 
 - **Code Safe** — a 1x1x1 steel safe with a keypad. The first accepted 1–6 digit code becomes its code; later entries must match. There is no owner restriction, so anyone who knows the code can open it. A correct code shows the `SUCCESS!!!` card and then opens a 27-slot container.
 - **Biometric Safe** — the same shell and 27-slot container, opened by a bound Biometric Operator Keycard or the Creative Keycard. `Match user` restricts access to the card's enrolled holder; with it off, any bound biometric operator card opens the safe.
-- Both safes save their contents and settings, drop their inventory when broken, and show full item names and NBT tooltip lines in the container.
+- Both safes save their contents and settings, drop their inventory when broken, and show full item names and NBT tooltip lines in the container. Their slots are not exposed to hoppers or logistics automation; only the opened container can access them.
 - Each safe has a second options page:
   - Code Safe: Binding Activities, Lockout mode and Reset code.
   - Biometric Safe: Match user, Binding Activities and Lockout mode.

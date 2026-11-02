@@ -4,7 +4,7 @@ Standalone port of the HBM's Nuclear Tech Mod door system to Minecraft 1.12.2.
 The implementation and the included door models, textures and sounds are used under the
 LGPL-3.0. See `LICENSE.LESSER` and `NOTICE` for attribution and source information.
 
-Current release: **1.0.33**
+Current release: **1.0.34**
 
 Source design reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
 
@@ -122,9 +122,10 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   a 27-slot container. Page two of the container has `Binding Activities`, `Lockout mode`, and
   `Reset code`; `Binding Activities` enables door linking and the lockout-door response, `Lockout
   mode` locks the keypad for five minutes after three bad codes, and `Reset code` clears the code so
-  the next entry sets a new one. The inventory and the
-  code are saved with the block, and breaking the safe drops its contents. The Creative Keycard
-  bypasses the keypad and opens the container immediately.
+  the next entry sets a new one. The inventory and the code are saved with the block, and breaking
+  the safe drops its contents. Neither safe exposes its slots to hoppers or logistics automation;
+  only the opened container can access them. The Creative Keycard bypasses the keypad and opens the
+  container immediately.
 * Biometric Safe (`ntmdoors:biometric_safe`): the same shell, inventory and options page, but its
   reader accepts the Biometric Operator Keycard, or the Creative Keycard. Right clicking with a
   bound biometric card shows a short `SCANNING...` screen, then the same `SUCCESS!!!` / `FAILED!!!`

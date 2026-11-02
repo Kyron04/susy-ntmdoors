@@ -1,5 +1,12 @@
-HBM DOORS: REFRESHED 1.0.33
+HBM DOORS: REFRESHED 1.0.34
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.34
+FIXES
+- Fixed Redstone Relay Key binding on Keycard Scanners. The scanner right-click guard
+  canceled any held item except its allow-list, and the Redstone Relay Key was missing.
+- Safes no longer expose their slots to hoppers or logistics automation. Their sided
+  inventory is empty and their item-handler capability exposes zero slots.
 
 1.0.33
 FIX

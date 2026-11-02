@@ -12,15 +12,21 @@ import com.ntmdoors.util.ModSounds;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemStackHandler;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -38,9 +44,13 @@ import java.util.UUID;
  * <p>The code safe adds a six digit code. The biometric safe leaves the code fields unused and
  * overrides its access check. The code digits are never sent to clients; only whether one exists.</p>
  */
-public class TileEntitySafe extends TileEntitySynced implements IInventory, ITickable, RedstoneBindingHost {
+public class TileEntitySafe extends TileEntitySynced implements IInventory, ISidedInventory, ITickable, RedstoneBindingHost {
 
     public static final int SLOT_COUNT = 27;
+    /** Sided access never exposes the safe's slots to hoppers or logistics pipes. */
+    private static final int[] NO_SIDES = new int[0];
+    /** An empty item handler stops capability-based logistics from treating the safe as storage. */
+    private static final IItemHandler NO_AUTOMATION = new ItemStackHandler(0);
     public static final int CODE_LENGTH = 6;
     public static final int LOCKOUT_FAILURES = 3;
     public static final int LOCKOUT_TICKS = 20 * 60 * 5;
@@ -620,9 +630,33 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
     public void closeInventory(EntityPlayer player) {
     }
 
+    /** Player slots bypass this; automation is refused on every side. */
     @Override
     public boolean isItemValidForSlot(int index, ItemStack stack) {
-        return !stack.isEmpty();
+        return false;
+    }
+
+    @Override
+    public int[] getSlotsForFace(EnumFacing side) {
+        return NO_SIDES;
+    }
+
+    @Override
+    public boolean canInsertItem(int index, ItemStack stack, EnumFacing direction) {
+        return false;
+    }
+
+    @Override
+    public boolean canExtractItem(int index, ItemStack stack, EnumFacing direction) {
+        return false;
+    }
+
+    @Override
+    public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
+        if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+            return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(NO_AUTOMATION);
+        }
+        return super.getCapability(capability, facing);
     }
 
     @Override

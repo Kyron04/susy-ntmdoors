@@ -6,6 +6,7 @@ import com.ntmdoors.block.BlockDoorKeypad;
 import com.ntmdoors.block.BlockKeycardProgrammer;
 import com.ntmdoors.block.BlockKeycardScanner;
 import com.ntmdoors.item.ItemKeycardHolder;
+import com.ntmdoors.item.ItemRedstoneRelayKey;
 import com.ntmdoors.item.ItemRelayKey;
 import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.item.ItemSafeBindingKey;
@@ -55,6 +56,7 @@ public final class GuardEvents {
                 || item instanceof ItemRfidCard
                 || item instanceof ItemRelayKey
                 || item instanceof ItemSafeBindingKey
+                || item instanceof ItemRedstoneRelayKey
                 || item instanceof ItemKeycardHolder
                 || item instanceof ItemBlock) {
             return;
