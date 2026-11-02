@@ -19,5 +19,13 @@ Block definitions, crate stacking and shift-scroll cycling in com.ntmdoors.hlblo
 same source.
 License: GNU Lesser General Public License v3.0.
 
+Speaker alarm sounds:
+
+  * assets/ntmdoors/sounds/speaker/facility.ogg is derived from "Sirens and Alarm Noise"
+    by aquinn (OpenGameArt, CC0 1.0).
+  * assets/ntmdoors/sounds/speaker/air_raid.ogg, industrial.ogg and eas.ogg are derived
+    from audio supplied by the project owner. The supplied filenames credit jeremayjimenez
+    and 8footdino_on_scratch.
+
 The Java implementation in com.ntmdoors is a standalone 1.12.2 port and keeps the original
 door behaviour and asset layout where practical.
