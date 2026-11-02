@@ -40,6 +40,8 @@ public final class ModNetwork {
                 MessageKeypadSecurityCodeResult.class, 14, Side.CLIENT);
         INSTANCE.registerMessage(MessageGateOption.Handler.class, MessageGateOption.class, 15,
                 Side.SERVER);
+        INSTANCE.registerMessage(MessageSpeakerOption.Handler.class, MessageSpeakerOption.class, 16,
+                Side.SERVER);
     }
 
     private ModNetwork() {

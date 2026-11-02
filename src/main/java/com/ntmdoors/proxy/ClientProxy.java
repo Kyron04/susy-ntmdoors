@@ -10,6 +10,7 @@ import com.ntmdoors.client.GuiSafeBiometric;
 import com.ntmdoors.client.GuiSafeCode;
 import com.ntmdoors.client.GuiScannerCode;
 import com.ntmdoors.client.GuiScannerKeys;
+import com.ntmdoors.client.GuiSpeaker;
 import com.ntmdoors.client.KeyframeAnimation;
 import com.ntmdoors.client.ObjModel;
 import com.ntmdoors.client.RenderDoor;
@@ -99,6 +100,11 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void openSafeBiometricGui(BlockPos pos) {
         Minecraft.getMinecraft().displayGuiScreen(new GuiSafeBiometric(pos));
+    }
+
+    @Override
+    public void openSpeakerGui(BlockPos pos) {
+        Minecraft.getMinecraft().displayGuiScreen(new GuiSpeaker(pos));
     }
 
     @Override

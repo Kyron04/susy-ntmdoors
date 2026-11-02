@@ -1,5 +1,12 @@
-HBM DOORS: REFRESHED 1.0.42
+HBM DOORS: REFRESHED 1.0.43
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.43
+FEATURES
+- The Speaker is now functional. Shift-right-click (any held item or empty hand) opens a
+  safe-style toggle screen with Enabled and Sound; anyone may use it. While enabled and receiving
+  redstone power, it loops the existing lockout alarm until the signal or Enabled is removed.
+  The alarm is the first placeholder sound; the selected sound is saved with the block.
 
 1.0.42
 FIXES

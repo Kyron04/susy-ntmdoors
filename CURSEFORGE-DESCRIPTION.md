@@ -4,7 +4,7 @@
 
 NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system from HBM's Nuclear Tech Mod. No NTM installation is required. Every model, texture and sound is bundled.
 
-**Current version: 1.0.42**
+**Current version: 1.0.43**
 
 ## 16 multiblock doors
 
@@ -102,7 +102,7 @@ Screwdriver + sneak + right-click cycles door skins:
 
 ## Decorative blocks
 
-- **Speaker** - a 1x1x1 black-ash cabinet with a woofer, tweeter and bass reflex port. It faces the player when placed and currently has no tile entity or behaviour.
+- **Speaker** - a 1x1x1 black-ash cabinet with a woofer, tweeter and bass reflex port. Shift-right-click (with any item or an empty hand) opens a safe-style toggle screen with **Enabled** and **Sound**; anyone may use it. While enabled and receiving redstone power, it loops the existing lockout alarm until the signal or **Enabled** is removed. The alarm is the first placeholder sound, and the selection is saved with the block.
 
 ## Redstone
 

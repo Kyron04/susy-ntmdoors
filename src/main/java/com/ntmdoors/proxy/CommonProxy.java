@@ -13,6 +13,7 @@ import com.ntmdoors.tile.TileEntityKeycardProgrammer;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
 import com.ntmdoors.tile.TileEntityRedstoneGate;
 import com.ntmdoors.tile.TileEntitySafe;
+import com.ntmdoors.tile.TileEntitySpeaker;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumHand;
@@ -35,6 +36,7 @@ public class CommonProxy {
         registerTileEntity(TileEntitySafe.class, "safe");
         registerTileEntity(TileEntityBiometricSafe.class, "biometric_safe");
         registerTileEntity(TileEntityRedstoneGate.class, "redstone_gate");
+        registerTileEntity(TileEntitySpeaker.class, "speaker");
         // Read the OBJ group bounds used by moving collision boxes now, so the first collision
         // query on a door never has to touch the filesystem.
         for (DoorDecl d : DoorDecls.ALL) d.prepareGeometry();
@@ -82,5 +84,9 @@ public class CommonProxy {
 
     /** Client only: open the Biometric Safe card-read screen. */
     public void openSafeBiometricGui(BlockPos pos) {
+    }
+
+    /** Client only: open the Speaker toggle screen. */
+    public void openSpeakerGui(BlockPos pos) {
     }
 }
