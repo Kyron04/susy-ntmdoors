@@ -2,6 +2,9 @@ package com.ntmdoors.client;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.block.BlockDoorGeneric;
+import com.ntmdoors.hlblocks.ItemBlockGroup;
+import com.ntmdoors.item.ItemBlockConcreteVariant;
+import com.ntmdoors.item.ItemBlockConcreteVariant;
 import com.ntmdoors.registry.ModContent;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -39,7 +42,37 @@ public class ClientModels {
         // anything added later, and an unregistered item renders as a magenta checkerboard.
         for (Item item : Item.REGISTRY) {
             ResourceLocation name = item.getRegistryName();
-            if (name != null && NTMDoors.MODID.equals(name.getNamespace())) inventory(item);
+            if (name != null && NTMDoors.MODID.equals(name.getNamespace())) {
+                if (item instanceof ItemBlockGroup) {
+                    hlGroup((ItemBlockGroup) item);
+                } else if (item instanceof ItemBlockConcreteVariant) {
+            if (name != null && NTMDoors.MODID.equals(name.getNamespace())) {
+                if (item instanceof ItemBlockConcreteVariant) {
+                    variants((ItemBlockConcreteVariant) item);
+                } else {
+                    inventory(item);
+                }
+            }
+        }
+    }
+
+    /**
+     * Metadata concrete blocks use one item model per variant. The model path comes from the
+     * block, because Über Concrete reuses five models across its sixteen stages.
+     */
+    private static void variants(ItemBlockConcreteVariant item) {
+        for (int meta = 0; meta < item.variantCount(); meta++) {
+            ModelLoader.setCustomModelResourceLocation(item, meta, new ModelResourceLocation(
+                    new ResourceLocation(NTMDoors.MODID, item.modelName(meta)), "inventory"));
+        }
+    }
+
+    /** HL group items point at their blockstate variant, so the inventory icon is the 3D block. */
+    private static void hlGroup(ItemBlockGroup item) {
+        for (int meta = 0; meta < item.getVariantCount(); meta++) {
+            ModelLoader.setCustomModelResourceLocation(item, meta,
+                    new ModelResourceLocation(item.getRegistryName(),
+                            "variant=" + item.getVariantName(meta)));
         }
     }
 

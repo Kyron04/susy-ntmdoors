@@ -1,0 +1,7 @@
+{
+    "parent": "block/cube_column",
+    "textures": {
+        "end": "ntmdoors:blocks/concrete_pillar_top",
+        "side": "ntmdoors:blocks/concrete_pillar_side"
+    }
+}

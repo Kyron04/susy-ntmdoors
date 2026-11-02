@@ -34,10 +34,9 @@ public final class ConcreteSet {
             "silver", "cyan", "purple", "blue", "brown", "green", "red", "black"
     };
 
-    /** Builder's Choice order: CE's eight types, then the hazard colour variants. */
+    /** Builder's Choice order from CE's {@code EnumConcreteType}. */
     public static final String[] EXT_TYPES = {
-            "machine", "machine_stripe", "indigo", "purple", "pink", "hazard", "sand", "bronze",
-            "hazard_red", "hazard_green", "hazard_blue", "hazard_white", "hazard_purple"
+            "machine", "machine_stripe", "indigo", "purple", "pink", "hazard", "sand", "bronze"
     };
 
     public static final CreativeTabs TAB = new CreativeTabs(NTMDoors.MODID + ".concrete") {
@@ -131,13 +130,6 @@ public final class ConcreteSet {
         for (String dye : DYES) {
             addSlab("concrete_" + dye + "_slab", 15F, 70F);
         }
-        // Hazard stripe is the only Builder's Choice family with slabs; add yellow + the five
-        // colour variants. These are new ids, so no existing slab id moves.
-        for (String type : EXT_TYPES) {
-            if (isHazard(type)) {
-                addSlab("concrete_colored_ext_slab_" + type, 15F, 70F);
-            }
-        }
     }
 
     private ConcreteSet() {
@@ -161,11 +153,6 @@ public final class ConcreteSet {
     /** Single slab block by registry path, or null; used by {@link ConcreteRecipes}. */
     public static Block slab(String name) {
         return SLABS.get(name);
-    }
-
-    /** True for the yellow hazard stripe and its five colour variants. */
-    public static boolean isHazard(String type) {
-        return "hazard".equals(type) || type.startsWith("hazard_");
     }
 
     /** Every stair block, in registration order; used by the ore dictionary registration. */

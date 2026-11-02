@@ -46,12 +46,7 @@ public final class ConcreteRecipes {
             {"dyePink", "dyeRed"},       // pink
             {"dyeYellow", "dyeBlack"},   // hazard
             {"dyeYellow", "dyeGray"},    // sand
-            {"dyeOrange", "dyeBrown"},   // bronze
-            {"dyeRed", "dyeBlack"},      // hazard_red
-            {"dyeGreen", "dyeBlack"},    // hazard_green
-            {"dyeBlue", "dyeBlack"},     // hazard_blue
-            {"dyeWhite", "dyeBlack"},    // hazard_white
-            {"dyePurple", "dyeBlack"}    // hazard_purple
+            {"dyeOrange", "dyeBrown"}    // bronze
     };
 
     private ConcreteRecipes() {
@@ -161,14 +156,6 @@ public final class ConcreteRecipes {
             ItemStack block = new ItemStack(ConcreteSet.CONCRETE_COLORED_EXT, 1, meta);
             shaped(e, "ext_stairs_" + type, new ItemStack(stairs, 8),
                     "#  ", "## ", "###", '#', block);
-
-            if (ConcreteSet.isHazard(type)) {
-                Block slab = ConcreteSet.slab("concrete_colored_ext_slab_" + type);
-                if (slab == null) {
-                    throw new IllegalStateException("Missing Builder's Choice slab for " + type);
-                }
-                shaped(e, "ext_slab_" + type, new ItemStack(slab, 6), "###", '#', block);
-            }
         }
     }
 

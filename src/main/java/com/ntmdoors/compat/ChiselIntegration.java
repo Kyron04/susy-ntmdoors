@@ -67,11 +67,6 @@ public final class ChiselIntegration {
         for (String dye : ConcreteSet.DYES) {
             addAllStates(states, ConcreteSet.slab("concrete_" + dye + "_slab"));
         }
-        for (String type : ConcreteSet.EXT_TYPES) {
-            if (ConcreteSet.isHazard(type)) {
-                addAllStates(states, ConcreteSet.slab("concrete_colored_ext_slab_" + type));
-            }
-        }
         group(registry, "concrete_colored_slabs", states);
 
         states = new ArrayList<>();
