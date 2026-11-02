@@ -4,7 +4,7 @@
 
 NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system from HBM's Nuclear Tech Mod. No NTM installation is required. Every model, texture and sound is bundled.
 
-**Current version: 1.0.31**
+**Current version: 1.0.32**
 
 ## 16 multiblock doors
 
@@ -98,9 +98,14 @@ Screwdriver + sneak + right-click cycles door skins:
 
 ## Redstone
 
-- Normal and locked doors now both respond to redstone. Security doors still require a keycard scanner or the Creative Keycard, and lockdown still blocks redstone edges.
-- **Redstone Gate** — a full-cube redstone component with separate off and on textures. It starts off, turns on while it receives redstone power, and emits a full-strength signal while on. The bound-activity logic is not implemented yet.
-- **Redstone Relay Key** — a red-named creative key for future binding of keypads, scanners and safes to a Redstone Gate. The binding logic is not implemented yet.
+- Normal and locked doors respond to redstone. Security doors still require a keycard scanner or the Creative Keycard, and lockdown still blocks redstone edges.
+- **Redstone Gate** - a full-cube redstone component with separate off and on textures. It starts off, turns on while it receives redstone power or a wireless pulse, and emits a full-strength signal while on.
+- **Redstone Relay Key** - a red-named creative key. Sneak + right-click a safe or keycard scanner to start/finish a wireless binding session, then sneak + right-click a Redstone Gate to link or unlink it. Devices and gates can be linked many-to-many in the same dimension.
+- Both safes and the keycard scanner have a third **Redstone** page with a red panel tint and scrolling. Event toggles start off and pulse every linked gate for 20 ticks when enabled:
+  - Code Safe: Code fail, Code success, Binding activities, Lockout.
+  - Biometric Safe: Scan fail, Scan success, Match holder fail, Match holder success, Lockout.
+  - Keycard Scanner: Scan fail, Scan success, Match holder fail, Match holder success, Private key fail, Private key success, Biometric fail, Biometric success, Lockout.
+- Safe-to-door, scanner-to-door, keypad and safe-binding links are untouched. Breaking a safe, scanner or gate clears its reciprocal wireless links.
 
 ## Safe-to-door binding
 

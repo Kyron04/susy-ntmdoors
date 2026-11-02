@@ -22,7 +22,15 @@ public class MessageSafeOption implements IMessage {
     public static final int LOCKOUT = 1;
     public static final int RESET_CODE = 2;
     public static final int BINDING_ACTIVITIES = 3;
-    public static final int OPTION_COUNT = 4;
+    public static final int REDSTONE_CODE_FAIL = 4;
+    public static final int REDSTONE_CODE_SUCCESS = 5;
+    public static final int REDSTONE_BINDING = 6;
+    public static final int REDSTONE_LOCKOUT = 7;
+    public static final int REDSTONE_SCAN_FAIL = 8;
+    public static final int REDSTONE_SCAN_SUCCESS = 9;
+    public static final int REDSTONE_MATCH_FAIL = 10;
+    public static final int REDSTONE_MATCH_SUCCESS = 11;
+    public static final int OPTION_COUNT = 12;
 
     private BlockPos pos;
     private int option;
@@ -79,6 +87,30 @@ public class MessageSafeOption implements IMessage {
                     break;
                 case BINDING_ACTIVITIES:
                     safe.setBindingActivities(message.value);
+                    break;
+                case REDSTONE_CODE_FAIL:
+                    safe.setRedstoneEvent(TileEntitySafe.RS_CODE_FAIL, message.value);
+                    break;
+                case REDSTONE_CODE_SUCCESS:
+                    safe.setRedstoneEvent(TileEntitySafe.RS_CODE_SUCCESS, message.value);
+                    break;
+                case REDSTONE_BINDING:
+                    safe.setRedstoneEvent(TileEntitySafe.RS_BINDING, message.value);
+                    break;
+                case REDSTONE_LOCKOUT:
+                    safe.setRedstoneEvent(TileEntitySafe.RS_LOCKOUT, message.value);
+                    break;
+                case REDSTONE_SCAN_FAIL:
+                    safe.setRedstoneEvent(TileEntitySafe.RS_SCAN_FAIL, message.value);
+                    break;
+                case REDSTONE_SCAN_SUCCESS:
+                    safe.setRedstoneEvent(TileEntitySafe.RS_SCAN_SUCCESS, message.value);
+                    break;
+                case REDSTONE_MATCH_FAIL:
+                    safe.setRedstoneEvent(TileEntitySafe.RS_MATCH_FAIL, message.value);
+                    break;
+                case REDSTONE_MATCH_SUCCESS:
+                    safe.setRedstoneEvent(TileEntitySafe.RS_MATCH_SUCCESS, message.value);
                     break;
                 case RESET_CODE:
                     if (safe.resetCode()) {

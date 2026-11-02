@@ -38,7 +38,7 @@ import java.util.UUID;
  * <p>The code safe adds a six digit code. The biometric safe leaves the code fields unused and
  * overrides its access check. The code digits are never sent to clients; only whether one exists.</p>
  */
-public class TileEntitySafe extends TileEntitySynced implements IInventory, ITickable {
+public class TileEntitySafe extends TileEntitySynced implements IInventory, ITickable, RedstoneBindingHost {
 
     public static final int SLOT_COUNT = 27;
     public static final int CODE_LENGTH = 6;
@@ -52,9 +52,21 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
     /** A door-binding session the player walks away from expires after a minute. */
     private static final int BINDING_TICKS = 20 * 60;
 
+    public static final int RS_CODE_FAIL = 0;
+    public static final int RS_CODE_SUCCESS = 1;
+    public static final int RS_BINDING = 2;
+    public static final int RS_LOCKOUT = 3;
+    public static final int RS_SCAN_FAIL = 4;
+    public static final int RS_SCAN_SUCCESS = 5;
+    public static final int RS_MATCH_FAIL = 6;
+    public static final int RS_MATCH_SUCCESS = 7;
+    public static final int RS_EVENT_COUNT = 8;
+
     private static final float SOUND_VOLUME = 0.8F;
 
     private final ItemStack[] items = new ItemStack[SLOT_COUNT];
+    private final boolean[] redstoneEvents = new boolean[RS_EVENT_COUNT];
+    private final RedstoneBinding redstoneBinding = new RedstoneBinding(this);
 
     /** Server only. Empty until the first code is entered. */
     private String securityCode = "";
@@ -139,12 +151,14 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
             grantAccess(player);
             scheduleOpen(player);
             playSuccess();
+            fireRedstoneEvent(RS_CODE_SUCCESS);
             msg(player, "ntmdoors.msg.safe_code_set");
             sync();
             return MessageSafeResult.SET;
         }
 
         if (!securityCode.equals(code)) {
+            fireRedstoneEvent(RS_CODE_FAIL);
             recordFailure();
             playFail();
             msg(player, isLockedOut() ? "ntmdoors.msg.safe_locked_out" : "ntmdoors.msg.safe_code_denied");
@@ -156,6 +170,7 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
         grantAccess(player);
         scheduleOpen(player);
         playSuccess();
+        fireRedstoneEvent(RS_CODE_SUCCESS);
         msg(player, "ntmdoors.msg.safe_code_accepted");
         sync();
         return MessageSafeResult.ACCEPTED;
@@ -215,6 +230,7 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
                     SoundCategory.BLOCKS, 1F, 1F);
         }
         sync();
+        fireRedstoneEvent(RS_LOCKOUT);
         if (bindingActivities) closeBoundDoors();
     }
 
@@ -226,6 +242,49 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
         lockoutTicks = 0;
         lockedOut = false;
         failedAttempts = 0;
+    }
+
+    // ------------------------------------------------------------ redstone events / gate links
+
+    public boolean isRedstoneEvent(int event) {
+        return event >= 0 && event < RS_EVENT_COUNT && redstoneEvents[event];
+    }
+
+    /** Server side: arms or disarms one event output. */
+    public boolean setRedstoneEvent(int event, boolean value) {
+        if (world == null || world.isRemote || event < 0 || event >= RS_EVENT_COUNT
+                || redstoneEvents[event] == value) {
+            return false;
+        }
+        redstoneEvents[event] = value;
+        sync();
+        return true;
+    }
+
+    /** Server side: pulses every bound gate when this event is enabled. */
+    public void fireRedstoneEvent(int event) {
+        if (isRedstoneEvent(event)) redstoneBinding.fire();
+    }
+
+    @Override
+    public RedstoneBinding getRedstoneBinding() {
+        return redstoneBinding;
+    }
+
+    @Override
+    public void syncRedstoneState() {
+        sync();
+    }
+
+    @Override
+    public void onRedstoneBindingChanged() {
+        // A gate link counts as a binding activity, alongside safe-to-door links.
+        fireRedstoneEvent(RS_BINDING);
+    }
+
+    @Override
+    public void sendRedstoneMessage(EntityPlayer player, String key) {
+        msg(player, key);
     }
 
     // ------------------------------------------------------------ door binding
@@ -298,6 +357,7 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
         if (door.isBoundToSafe(pos)) {
             door.unbindFromSafe(pos);
             if (boundDoors.remove(doorPos)) markDirty();
+            fireRedstoneEvent(RS_BINDING);
             msg(player, "ntmdoors.msg.safe_unbound_door");
             world.playSound(null, doorPos, ModSounds.BUTTON9, SoundCategory.BLOCKS, 0.8F, 1F);
             return true;
@@ -323,6 +383,7 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
             boundDoors.add(doorPos);
             markDirty();
         }
+        fireRedstoneEvent(RS_BINDING);
         msg(player, "ntmdoors.msg.safe_bound_door");
         world.playSound(null, doorPos, ModSounds.SCANNER_BUTTON3, SoundCategory.BLOCKS, 0.8F, 1F);
         return true;
@@ -486,6 +547,7 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
             EntityPlayer player = world.getPlayerEntityByUUID(bindingPlayer);
             if (player == null || --bindingTicks <= 0) stopBinding(null);
         }
+        redstoneBinding.update();
     }
 
     // ------------------------------------------------------------ inventory
@@ -600,6 +662,7 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
         tag.setBoolean("lockoutMode", lockoutMode);
         tag.setBoolean("bindingActivities", bindingActivities);
         tag.setBoolean("lockedOut", lockedOut);
+        tag.setByteArray("redstoneEvents", encodeEvents());
     }
 
     private void readOptions(NBTTagCompound tag) {
@@ -608,6 +671,21 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
         bindingActivities = !tag.hasKey("bindingActivities") || tag.getBoolean("bindingActivities");
         lockoutMode = tag.getBoolean("lockoutMode");
         lockedOut = tag.getBoolean("lockedOut");
+        readEvents(tag);
+    }
+
+    private byte[] encodeEvents() {
+        byte[] out = new byte[RS_EVENT_COUNT];
+        for (int i = 0; i < RS_EVENT_COUNT; i++) out[i] = (byte) (redstoneEvents[i] ? 1 : 0);
+        return out;
+    }
+
+    private void readEvents(NBTTagCompound tag) {
+        Arrays.fill(redstoneEvents, false);
+        byte[] saved = tag.getByteArray("redstoneEvents");
+        for (int i = 0; i < Math.min(saved.length, RS_EVENT_COUNT); i++) {
+            redstoneEvents[i] = saved[i] != 0;
+        }
     }
 
     @Override
@@ -625,6 +703,7 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
         tag.setString("securityCode", securityCode);
         tag.setBoolean("codeSet", codeSet);
         tag.setString("boundDoors", BlockPositions.encodeList(boundDoors));
+        redstoneBinding.writeToNBT(tag);
         writeOptions(tag);
         tag.setInteger("failedAttempts", failedAttempts);
         tag.setInteger("lockoutTicks", lockoutTicks);
@@ -637,6 +716,7 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
         super.writeToNBT(tag);
         tag.setBoolean("codeSet", codeSet);
         tag.setBoolean("biometric", isBiometric());
+        redstoneBinding.writeSyncTag(tag);
         writeOptions(tag);
         return tag;
     }
@@ -661,6 +741,7 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ITic
             boundDoors.clear();
             boundDoors.addAll(BlockPositions.decodeList(tag.getString("boundDoors")));
         }
+        redstoneBinding.readFromNBT(tag);
         readOptions(tag);
         if (tag.hasKey("failedAttempts")) failedAttempts = tag.getInteger("failedAttempts");
         if (tag.hasKey("lockoutTicks")) {

@@ -25,7 +25,16 @@ public class MessageScannerOption implements IMessage {
     public static final int FORCE_OPEN = 5;
     public static final int FORCE_CLOSE = 6;
     public static final int RESET_CODE = 7;
-    public static final int OPTION_COUNT = 8;
+    public static final int REDSTONE_SCAN_FAIL = 8;
+    public static final int REDSTONE_SCAN_SUCCESS = 9;
+    public static final int REDSTONE_MATCH_FAIL = 10;
+    public static final int REDSTONE_MATCH_SUCCESS = 11;
+    public static final int REDSTONE_KEY_FAIL = 12;
+    public static final int REDSTONE_KEY_SUCCESS = 13;
+    public static final int REDSTONE_BIOMETRIC_FAIL = 14;
+    public static final int REDSTONE_BIOMETRIC_SUCCESS = 15;
+    public static final int REDSTONE_LOCKOUT = 16;
+    public static final int OPTION_COUNT = 17;
 
     private BlockPos pos;
     private int option;
@@ -72,8 +81,10 @@ public class MessageScannerOption implements IMessage {
             if (!(te instanceof TileEntityKeycardScanner)) return;
             TileEntityKeycardScanner scanner = (TileEntityKeycardScanner) te;
             if (!scanner.hasBoundDoors() || !scanner.hasCodeSessionFor(player)) return;
-            // Raising lockdown mid-stroke would fight the door, so options wait for a still door.
-            if (scanner.hasMovingDoor()) return;
+            // Raising lockdown mid-stroke would fight the door, so settings wait for a still door.
+            // The Redstone event switches do not touch a door, so they stay editable.
+            boolean redstone = message.option >= REDSTONE_SCAN_FAIL;
+            if (!redstone && scanner.hasMovingDoor()) return;
 
             switch (message.option) {
                 case MATCH_HOLDER:
@@ -103,6 +114,33 @@ public class MessageScannerOption implements IMessage {
                         player.sendStatusMessage(new TextComponentTranslation(
                                 "ntmdoors.msg.scanner_code_reset"), true);
                     }
+                    break;
+                case REDSTONE_SCAN_FAIL:
+                    scanner.setRedstoneEvent(TileEntityKeycardScanner.RS_SCAN_FAIL, message.value);
+                    break;
+                case REDSTONE_SCAN_SUCCESS:
+                    scanner.setRedstoneEvent(TileEntityKeycardScanner.RS_SCAN_SUCCESS, message.value);
+                    break;
+                case REDSTONE_MATCH_FAIL:
+                    scanner.setRedstoneEvent(TileEntityKeycardScanner.RS_MATCH_FAIL, message.value);
+                    break;
+                case REDSTONE_MATCH_SUCCESS:
+                    scanner.setRedstoneEvent(TileEntityKeycardScanner.RS_MATCH_SUCCESS, message.value);
+                    break;
+                case REDSTONE_KEY_FAIL:
+                    scanner.setRedstoneEvent(TileEntityKeycardScanner.RS_KEY_FAIL, message.value);
+                    break;
+                case REDSTONE_KEY_SUCCESS:
+                    scanner.setRedstoneEvent(TileEntityKeycardScanner.RS_KEY_SUCCESS, message.value);
+                    break;
+                case REDSTONE_BIOMETRIC_FAIL:
+                    scanner.setRedstoneEvent(TileEntityKeycardScanner.RS_BIOMETRIC_FAIL, message.value);
+                    break;
+                case REDSTONE_BIOMETRIC_SUCCESS:
+                    scanner.setRedstoneEvent(TileEntityKeycardScanner.RS_BIOMETRIC_SUCCESS, message.value);
+                    break;
+                case REDSTONE_LOCKOUT:
+                    scanner.setRedstoneEvent(TileEntityKeycardScanner.RS_LOCKOUT, message.value);
                     break;
                 default:
                     break;

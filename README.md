@@ -4,7 +4,7 @@ Standalone port of the HBM's Nuclear Tech Mod door system to Minecraft 1.12.2.
 The implementation and the included door models, textures and sounds are used under the
 LGPL-3.0. See `LICENSE.LESSER` and `NOTICE` for attribution and source information.
 
-Current release: **1.0.31**
+Current release: **1.0.32**
 
 Source design reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
 
@@ -138,12 +138,21 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   scanner keeps that binding and can still be linked to a safe. With `Binding Activities` on, the
   safe's lockout closes every linked door once. Breaking the safe clears the links.
 * Redstone Gate (`ntmdoors:redstone_gate`): a full-cube redstone component with separate off and on
-  textures. It starts off, turns on while it receives redstone power, and emits a full-strength
-  signal while on. It has a red menu name and the tooltip `Bound activities from Keypads, Keycard
-  Scanners, and Safes will emit a redstone signal`. The bound-activity logic is not implemented yet.
+  textures. It starts off, turns on while it receives redstone power or a wireless pulse, and emits
+  a full-strength signal while on. It has a red menu name and the tooltip `Bound activities from
+  Keypads, Keycard Scanners, and Safes will emit a redstone signal`.
 * Redstone Relay Key (`ntmdoors:redstone_relay_key`): a red-named creative key with the tooltip
-  `Allows Keypads, Keycard Scanners, and Safes to be bound to the Redstone Gate`. It has no binding
-  behaviour yet.
+  `Allows Keypads, Keycard Scanners, and Safes to be bound to the Redstone Gate`. Sneak + right-click
+  a safe or scanner to start/finish a wireless binding session, then sneak + right-click a gate to
+  link or unlink it. Devices and gates can be linked many-to-many in the same dimension.
+* Both safes and the keycard scanner have a third `Redstone` page with a red panel tint and
+  scrolling. Its event toggles start off; enabling one pulses every linked gate for 20 ticks.
+  - Code Safe: Code fail, Code success, Binding activities, Lockout.
+  - Biometric Safe: Scan fail, Scan success, Match holder fail, Match holder success, Lockout.
+  - Keycard Scanner: Scan fail, Scan success, Match holder fail, Match holder success, Private key
+    fail, Private key success, Biometric fail, Biometric success, Lockout.
+  The safe's Redstone page does not show the player inventory. Breaking a safe, scanner or gate
+  clears the reciprocal wireless links; door/keypad/scanner bindings are untouched.
 * RFID cards: one blank card plus red, violet, green, blue, black, orange and yellow variants.
   Each colour is a separate item (`ntmdoors:red_rfid_card` and so on) sharing a single item class
   and one hand-display model, so they all sit in the hand identically. The scanner recognises them

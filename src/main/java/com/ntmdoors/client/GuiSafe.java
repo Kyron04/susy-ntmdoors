@@ -13,28 +13,33 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.input.Mouse;
 
 import java.io.IOException;
 
 /**
- * Safe screen. Page one is the 3x9 storage grid; page two holds the options that belong to the
- * variant: Match user and Lockout mode on the biometric safe, Lockout mode and Reset code on the
- * code safe. The page arrows live in the footer, and hidden storage slots are parked off-screen so
- * they cannot be hovered or clicked.
+ * Safe screen. Page one is the 3x9 storage grid, page two holds the variant's normal options, and
+ * page three is the red-tinted Redstone event page. The page arrows live in the footer, and hidden
+ * slots are parked off-screen so they cannot be hovered or clicked.
  */
 @SideOnly(Side.CLIENT)
 public class GuiSafe extends GuiContainer {
 
-    private static final int PAGE_COUNT = 2;
+    private static final int PAGE_COUNT = 3;
     private static final int COLOUR = 0xFFE8E8E8;
     private static final int MUTED = 0xFFAFAFAF;
     private static final int DIM = 0xFF8A8A8A;
     private static final int HOVER = 0xFF232326;
     private static final int RULE = 0xFF4A4A4E;
     private static final int DARK_TEXT = 0xFF2B2B2E;
+    private static final int RED_PANEL = 0xFF1A0B0D;
+    private static final int RED_INNER = 0xFF2A1013;
+    private static final int RED_RULE = 0xFF6A2A2A;
+    private static final int RED_HOVER = 0xFF3A1418;
 
     private static final int OPTION_TOP = 36;
     private static final int OPTION_HEIGHT = 27;
+    private static final int REDSTONE_AREA = 180;
     private static final int PILL_WIDTH = 54;
     private static final int PILL_HEIGHT = 14;
     private static final int ARROW_SIZE = 16;
@@ -51,6 +56,19 @@ public class GuiSafe extends GuiContainer {
             MessageSafeOption.BINDING_ACTIVITIES,
             MessageSafeOption.LOCKOUT
     };
+    private static final int[] CODE_REDSTONE = {
+            MessageSafeOption.REDSTONE_CODE_FAIL,
+            MessageSafeOption.REDSTONE_CODE_SUCCESS,
+            MessageSafeOption.REDSTONE_BINDING,
+            MessageSafeOption.REDSTONE_LOCKOUT
+    };
+    private static final int[] BIOMETRIC_REDSTONE = {
+            MessageSafeOption.REDSTONE_SCAN_FAIL,
+            MessageSafeOption.REDSTONE_SCAN_SUCCESS,
+            MessageSafeOption.REDSTONE_MATCH_FAIL,
+            MessageSafeOption.REDSTONE_MATCH_SUCCESS,
+            MessageSafeOption.REDSTONE_LOCKOUT
+    };
 
     private final TileEntitySafe tile;
     private final ContainerSafe safeContainer;
@@ -58,6 +76,9 @@ public class GuiSafe extends GuiContainer {
     private final int[] originalY;
 
     private int page;
+    private int scrollRedstone;
+    private int lastMouseX;
+    private int lastMouseY;
 
     public GuiSafe(InventoryPlayer playerInventory, TileEntitySafe tile) {
         super(new ContainerSafe(playerInventory, tile));
@@ -76,12 +97,13 @@ public class GuiSafe extends GuiContainer {
         updateSlotPositions();
     }
 
-    /** Hidden storage slots are parked outside the screen; the player inventory never moves. */
+    /** Page two hides the storage grid; page three hides the whole inventory. */
     private void updateSlotPositions() {
         for (Slot slot : inventorySlots.inventorySlots) {
             int index = slot.slotNumber;
             if (index < 0 || index >= originalX.length) continue;
-            if (index < ContainerSafe.SAFE_SLOT_COUNT && page != 0) {
+            boolean hide = page == 2 || (page == 1 && index < ContainerSafe.SAFE_SLOT_COUNT);
+            if (hide) {
                 slot.xPos = -10000 - index;
                 slot.yPos = -10000;
             } else {
@@ -106,7 +128,7 @@ public class GuiSafe extends GuiContainer {
                 changePage(1);
                 return;
             }
-            if (page == 1) {
+            if (page == 1 || page == 2) {
                 int option = optionAt(localX, localY);
                 if (option >= 0) {
                     sendOption(option);
@@ -118,14 +140,29 @@ public class GuiSafe extends GuiContainer {
     }
 
     @Override
+    public void handleMouseInput() throws IOException {
+        super.handleMouseInput();
+        int wheel = Mouse.getEventDWheel();
+        if (wheel == 0 || page != 2) return;
+        int x = lastMouseX - guiLeft;
+        int y = lastMouseY - guiTop;
+        if (x < 6 || x >= xSize - 6 || y < OPTION_TOP || y >= OPTION_TOP + REDSTONE_AREA) return;
+        scrollRedstone = clampRedstoneScroll(scrollRedstone + (wheel > 0 ? -OPTION_HEIGHT : OPTION_HEIGHT));
+    }
+
+    @Override
     protected void handleMouseClick(Slot slot, int slotId, int mouseButton, ClickType type) {
+        if (page == 2) return;
         if (page != 0 && slot != null && slot.slotNumber < ContainerSafe.SAFE_SLOT_COUNT) return;
         super.handleMouseClick(slot, slotId, mouseButton, type);
     }
 
     private void sendOption(int option) {
         boolean value;
-        if (option == MessageSafeOption.MATCH_HOLDER) {
+        int event = redstoneEvent(option);
+        if (event >= 0) {
+            value = !tile.isRedstoneEvent(event);
+        } else if (option == MessageSafeOption.MATCH_HOLDER) {
             value = !tile.isMatchHolder();
         } else if (option == MessageSafeOption.LOCKOUT) {
             value = !tile.isLockoutMode();
@@ -136,6 +173,29 @@ public class GuiSafe extends GuiContainer {
         }
         ModNetwork.INSTANCE.sendToServer(
                 new MessageSafeOption(tile.getPos(), option, value));
+    }
+
+    private static int redstoneEvent(int option) {
+        switch (option) {
+            case MessageSafeOption.REDSTONE_CODE_FAIL: return TileEntitySafe.RS_CODE_FAIL;
+            case MessageSafeOption.REDSTONE_CODE_SUCCESS: return TileEntitySafe.RS_CODE_SUCCESS;
+            case MessageSafeOption.REDSTONE_BINDING: return TileEntitySafe.RS_BINDING;
+            case MessageSafeOption.REDSTONE_LOCKOUT: return TileEntitySafe.RS_LOCKOUT;
+            case MessageSafeOption.REDSTONE_SCAN_FAIL: return TileEntitySafe.RS_SCAN_FAIL;
+            case MessageSafeOption.REDSTONE_SCAN_SUCCESS: return TileEntitySafe.RS_SCAN_SUCCESS;
+            case MessageSafeOption.REDSTONE_MATCH_FAIL: return TileEntitySafe.RS_MATCH_FAIL;
+            case MessageSafeOption.REDSTONE_MATCH_SUCCESS: return TileEntitySafe.RS_MATCH_SUCCESS;
+            default: return -1;
+        }
+    }
+
+    private static int clampRedstoneScroll(int value) {
+        int max = Math.max(0, maxRedstoneRows() * OPTION_HEIGHT - REDSTONE_AREA);
+        return Math.max(0, Math.min(max, value));
+    }
+
+    private static int maxRedstoneRows() {
+        return 5;
     }
 
     private void changePage(int delta) {
@@ -153,8 +213,9 @@ public class GuiSafe extends GuiContainer {
 
     private int optionAt(int mouseX, int mouseY) {
         int[] options = options();
+        int scroll = page == 2 ? scrollRedstone : 0;
         for (int i = 0; i < options.length; i++) {
-            int y = OPTION_TOP + i * OPTION_HEIGHT;
+            int y = OPTION_TOP + i * OPTION_HEIGHT - scroll;
             if (mouseX >= 6 && mouseX < xSize - 6 && mouseY >= y - 2 && mouseY < y + OPTION_HEIGHT - 4) {
                 return options[i];
             }
@@ -163,6 +224,7 @@ public class GuiSafe extends GuiContainer {
     }
 
     private int[] options() {
+        if (page == 2) return tile.isBiometric() ? BIOMETRIC_REDSTONE : CODE_REDSTONE;
         return tile.isBiometric() ? BIOMETRIC_OPTIONS : CODE_OPTIONS;
     }
 
@@ -170,6 +232,8 @@ public class GuiSafe extends GuiContainer {
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+        lastMouseX = mouseX;
+        lastMouseY = mouseY;
         this.drawDefaultBackground();
         super.drawScreen(mouseX, mouseY, partialTicks);
         // Draw the full item tooltip last, on top of JEI/HEI, exactly like the programmer GUI.
@@ -186,21 +250,28 @@ public class GuiSafe extends GuiContainer {
 
         GuiContainerStyle.drawCasing(xSize, ySize);
 
-        // dark storage/options face and the player-inventory well below it
-        drawRect(4, 20, xSize - 4, 120, 0xFF0B0B0D);
-        drawRect(5, 21, xSize - 5, 119, 0xFF1B1B1E);
-        drawRect(4, 122, xSize - 4, 212, 0xFF0B0B0D);
-        drawRect(5, 123, xSize - 5, 211, 0xFF1B1B1E);
+        if (page == 2) {
+            // The Redstone page uses the full panel; there is no player inventory on it.
+            drawRect(4, 20, xSize - 4, 212, RED_PANEL);
+            drawRect(5, 21, xSize - 5, 211, RED_INNER);
+        } else {
+            // dark storage/options face and the player-inventory well below it
+            drawRect(4, 20, xSize - 4, 120, 0xFF0B0B0D);
+            drawRect(5, 21, xSize - 5, 119, 0xFF1B1B1E);
+            drawRect(4, 122, xSize - 4, 212, 0xFF0B0B0D);
+            drawRect(5, 123, xSize - 5, 211, 0xFF1B1B1E);
+        }
 
         // footer well holding the page arrows
         drawRect(4, 212, xSize - 4, 228, 0xFF2B2B2E);
-        drawRect(4, 212, xSize - 4, 213, 0xFF4A4A4E);
+        drawRect(4, 212, xSize - 4, 213, page == 2 ? RED_RULE : RULE);
 
         drawSlotFrames();
         GlStateManager.popMatrix();
     }
 
     private void drawSlotFrames() {
+        if (page == 2) return;
         for (Slot slot : inventorySlots.inventorySlots) {
             if (slot.slotNumber < ContainerSafe.SAFE_SLOT_COUNT && page != 0) continue;
             GuiContainerStyle.drawSlotFrame(slot.xPos, slot.yPos);
@@ -225,15 +296,19 @@ public class GuiSafe extends GuiContainer {
 
         String title = tile.isBiometric() ? "Biometric Safe" : "Safe";
         fontRenderer.drawString(title, 8, 7, DARK_TEXT);
-        String right = page == 1 && tile.isLockedOut() ? "LOCKED OUT" : "27 slots";
+        String right = page == 2 ? "REDSTONE"
+                : page == 1 && tile.isLockedOut() ? "LOCKED OUT" : "27 slots";
         GuiContainerStyle.drawRightAligned(fontRenderer, right, xSize - 8, 7,
                 page == 1 && tile.isLockedOut() ? 0xFF8A3A3A : 0xFF5A5A5A);
 
         if (page == 0) {
             drawString(fontRenderer, "CONTENTS", 8, 24, COLOUR);
-        } else {
+        } else if (page == 1) {
             drawString(fontRenderer, "OPTIONS", 8, 24, COLOUR);
             drawOptions(mouseX - guiLeft, mouseY - guiTop);
+        } else {
+            drawString(fontRenderer, "REDSTONE", 8, 24, 0xFFF0C0C0);
+            drawRedstoneOptions(mouseX - guiLeft, mouseY - guiTop);
         }
 
         drawFooter(mouseX - guiLeft, mouseY - guiTop);
@@ -262,6 +337,36 @@ public class GuiSafe extends GuiContainer {
                 && mouseY >= y - 2 && mouseY < y + OPTION_HEIGHT - 4;
     }
 
+    private void drawRedstoneOptions(int mouseX, int mouseY) {
+        int[] options = options();
+        scrollRedstone = clampRedstoneScroll(scrollRedstone);
+        GuiClip.begin(guiLeft + 6, guiTop + OPTION_TOP - 2, xSize - 12, REDSTONE_AREA);
+        for (int i = 0; i < options.length; i++) {
+            int option = options[i];
+            int y = OPTION_TOP + i * OPTION_HEIGHT - scrollRedstone;
+            boolean hovered = mouseX >= 6 && mouseX < xSize - 6
+                    && mouseY >= y - 2 && mouseY < y + OPTION_HEIGHT - 4;
+            if (hovered) drawRect(6, y - 2, xSize - 6, y + OPTION_HEIGHT - 4, RED_HOVER);
+
+            drawString(fontRenderer, optionLabel(option), 12, y + 1, COLOUR);
+            drawString(fontRenderer, optionHint(option), 12, y + 11, MUTED);
+            drawOptionPill(option, y);
+        }
+        GuiClip.end();
+        drawScrollbar(xSize - 8, OPTION_TOP, REDSTONE_AREA,
+                options.length, OPTION_HEIGHT, scrollRedstone);
+    }
+
+    private void drawScrollbar(int x, int y, int height, int count, int rowHeight, int scroll) {
+        int max = Math.max(0, count * rowHeight - height);
+        if (max <= 0) return;
+        drawRect(x, y, x + 3, y + height, 0xFF1B0B0D);
+        int thumb = Math.max(14, height * height / (count * rowHeight));
+        int travel = height - thumb;
+        int offset = (int) ((long) scroll * travel / max);
+        drawRect(x, y + offset, x + 3, y + offset + thumb, 0xFFB46A6A);
+    }
+
     private String optionLabel(int option) {
         switch (option) {
             case MessageSafeOption.MATCH_HOLDER:
@@ -272,6 +377,22 @@ public class GuiSafe extends GuiContainer {
                 return "Binding Activities";
             case MessageSafeOption.RESET_CODE:
                 return "Reset code";
+            case MessageSafeOption.REDSTONE_CODE_FAIL:
+                return "Code fail";
+            case MessageSafeOption.REDSTONE_CODE_SUCCESS:
+                return "Code success";
+            case MessageSafeOption.REDSTONE_BINDING:
+                return "Binding activities";
+            case MessageSafeOption.REDSTONE_LOCKOUT:
+                return "Lockout";
+            case MessageSafeOption.REDSTONE_SCAN_FAIL:
+                return "Scan fail";
+            case MessageSafeOption.REDSTONE_SCAN_SUCCESS:
+                return "Scan success";
+            case MessageSafeOption.REDSTONE_MATCH_FAIL:
+                return "Match holder fail";
+            case MessageSafeOption.REDSTONE_MATCH_SUCCESS:
+                return "Match holder success";
             default:
                 return "";
         }
@@ -287,6 +408,22 @@ public class GuiSafe extends GuiContainer {
                 return "Linking + lockout.";
             case MessageSafeOption.RESET_CODE:
                 return "Clears the code.";
+            case MessageSafeOption.REDSTONE_CODE_FAIL:
+                return "Wrong code.";
+            case MessageSafeOption.REDSTONE_CODE_SUCCESS:
+                return "Correct code.";
+            case MessageSafeOption.REDSTONE_BINDING:
+                return "Door or gate link.";
+            case MessageSafeOption.REDSTONE_LOCKOUT:
+                return "Lockout starts.";
+            case MessageSafeOption.REDSTONE_SCAN_FAIL:
+                return "Card or person refused.";
+            case MessageSafeOption.REDSTONE_SCAN_SUCCESS:
+                return "Access granted.";
+            case MessageSafeOption.REDSTONE_MATCH_FAIL:
+                return "Wrong holder.";
+            case MessageSafeOption.REDSTONE_MATCH_SUCCESS:
+                return "Holder matched.";
             default:
                 return "";
         }
@@ -301,6 +438,9 @@ public class GuiSafe extends GuiContainer {
             on = tile.isLockoutMode();
         } else if (option == MessageSafeOption.BINDING_ACTIVITIES) {
             on = tile.isBindingActivities();
+        } else {
+            int event = redstoneEvent(option);
+            if (event >= 0) on = tile.isRedstoneEvent(event);
         }
 
         int fill;
@@ -373,6 +513,7 @@ public class GuiSafe extends GuiContainer {
     }
 
     private Slot findSlot(int mouseX, int mouseY) {
+        if (page == 2) return null;
         for (Slot slot : inventorySlots.inventorySlots) {
             if (!slot.isEnabled()) continue;
             if (slot.slotNumber < ContainerSafe.SAFE_SLOT_COUNT && page != 0) continue;

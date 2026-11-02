@@ -28,6 +28,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -40,7 +41,7 @@ import java.util.UUID;
  * recorded on each door, so destroying the scanner leaves the doors bound; a replacement scanner
  * placed in the same spot adopts them again on its first tick.</p>
  */
-public class TileEntityKeycardScanner extends TileEntitySynced implements ITickable {
+public class TileEntityKeycardScanner extends TileEntitySynced implements ITickable, RedstoneBindingHost {
 
     public enum State {
         IDLE, BINDING, SCANNING, GRANTED, DENIED, SYNCED
@@ -71,6 +72,20 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
     public static final int LOCKOUT_FAILURES = 3;
     /** Five minutes of lockout, in ticks. */
     public static final int LOCKOUT_TICKS = 20 * 60 * 5;
+
+    public static final int RS_SCAN_FAIL = 0;
+    public static final int RS_SCAN_SUCCESS = 1;
+    public static final int RS_MATCH_FAIL = 2;
+    public static final int RS_MATCH_SUCCESS = 3;
+    public static final int RS_KEY_FAIL = 4;
+    public static final int RS_KEY_SUCCESS = 5;
+    public static final int RS_BIOMETRIC_FAIL = 6;
+    public static final int RS_BIOMETRIC_SUCCESS = 7;
+    public static final int RS_LOCKOUT = 8;
+    public static final int RS_EVENT_COUNT = 9;
+
+    private final boolean[] redstoneEvents = new boolean[RS_EVENT_COUNT];
+    private final RedstoneBinding redstoneBinding = new RedstoneBinding(this);
 
     /** Ticks the "Scanning" text stays up before the result is shown. */
     private static final int SCAN_TICKS = 20;
@@ -435,6 +450,7 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
                     SoundCategory.BLOCKS, 1F, 1F);
         }
         sync();
+        fireRedstoneEvent(RS_LOCKOUT);
     }
 
     /** Server side: a good code or a granted scan clears the failure streak. */
@@ -544,6 +560,48 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         return !matchHolder || Biometrics.isOwnedBy(stack, player);
     }
 
+    // ------------------------------------------------------------ redstone events / gate links
+
+    public boolean isRedstoneEvent(int event) {
+        return event >= 0 && event < RS_EVENT_COUNT && redstoneEvents[event];
+    }
+
+    /** Server side: arms or disarms one event output. */
+    public boolean setRedstoneEvent(int event, boolean value) {
+        if (world == null || world.isRemote || event < 0 || event >= RS_EVENT_COUNT
+                || redstoneEvents[event] == value) {
+            return false;
+        }
+        redstoneEvents[event] = value;
+        sync();
+        return true;
+    }
+
+    /** Server side: pulses every bound gate when this event is enabled. */
+    public void fireRedstoneEvent(int event) {
+        if (isRedstoneEvent(event)) redstoneBinding.fire();
+    }
+
+    @Override
+    public RedstoneBinding getRedstoneBinding() {
+        return redstoneBinding;
+    }
+
+    @Override
+    public void syncRedstoneState() {
+        sync();
+    }
+
+    @Override
+    public void onRedstoneBindingChanged() {
+        // Scanners do not have a Binding Activities event; the link itself is enough.
+    }
+
+    @Override
+    public void sendRedstoneMessage(EntityPlayer player, String key) {
+        msg(player, key);
+    }
+
     // ------------------------------------------------------------ ticking
 
     @Override
@@ -590,6 +648,8 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
             lockedOut = false;
             sync();
         }
+
+        redstoneBinding.update();
 
         // The GUI only needs to know whether to lock its toggle rows; sync the edge, not the value.
         boolean moving = hasMovingDoor();
@@ -748,13 +808,20 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
             world.playSound(null, pos, ModSounds.SCANNER_BUTTON3, SoundCategory.BLOCKS, SOUND_VOLUME, 1F);
             openBoundDoors(scanCreative);
             state = State.GRANTED;
+            fireRedstoneEvent(RS_SCAN_SUCCESS);
             if (player != null) msg(player, "ntmdoors.msg.scanner_granted");
         } else {
             // A lockdown or lockout is not an invalid card, so it must not extend the failure run.
             if (!blocked && player != null) recordFailure();
             world.playSound(null, pos, ModSounds.SCANNER_BUTTON8, SoundCategory.BLOCKS, SOUND_VOLUME, 1F);
             state = State.DENIED;
+            fireRedstoneEvent(RS_SCAN_FAIL);
             if (player != null) msg(player, "ntmdoors.msg.scanner_denied");
+        }
+        if (!scanCreative) {
+            fireMatchEvents(player);
+            firePrivateKeyEvents();
+            fireBiometricEvents();
         }
         ticks = RESULT_TICKS;
         scanningPlayer = null;
@@ -762,6 +829,44 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         scanOff = ItemStack.EMPTY;
         scanCreative = false;
         sync();
+    }
+
+    private void fireMatchEvents(@Nullable EntityPlayer player) {
+        if (!matchHolder || ignoreIds || player == null) return;
+        boolean success = false;
+        boolean fail = false;
+        for (ItemStack card : new ItemStack[]{scanMain, scanOff}) {
+            if (!Biometrics.isBound(card)) continue;
+            if (Biometrics.isOwnedBy(card, player)) success = true;
+            else fail = true;
+        }
+        if (success) fireRedstoneEvent(RS_MATCH_SUCCESS);
+        if (fail) fireRedstoneEvent(RS_MATCH_FAIL);
+    }
+
+    private void firePrivateKeyEvents() {
+        if (ignoreKeys) return;
+        boolean success = cardHasAssignedKey(scanMain) || cardHasAssignedKey(scanOff);
+        fireRedstoneEvent(success ? RS_KEY_SUCCESS : RS_KEY_FAIL);
+    }
+
+    private void fireBiometricEvents() {
+        if (ignoreIds) return;
+        boolean sawBiometric = false;
+        boolean success = false;
+        for (ItemStack card : new ItemStack[]{scanMain, scanOff}) {
+            if (!Biometrics.isBound(card)) continue;
+            sawBiometric = true;
+            if (hasAssignedId(Biometrics.ownerUuid(card))) success = true;
+        }
+        if (sawBiometric) fireRedstoneEvent(success ? RS_BIOMETRIC_SUCCESS : RS_BIOMETRIC_FAIL);
+    }
+
+    private boolean cardHasAssignedKey(ItemStack stack) {
+        for (PrivateKeys.Key key : PrivateKeys.get(stack)) {
+            if (hasAssignedKey(key.serial)) return true;
+        }
+        return false;
     }
 
     private void openBoundDoors(boolean override) {
@@ -912,6 +1017,7 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         tag.setBoolean("ignoreIds", ignoreIds);
         tag.setBoolean("lockedOut", lockedOut);
         tag.setBoolean("doorsMoving", doorsMoving);
+        tag.setByteArray("redstoneEvents", encodeEvents());
     }
 
     private void readOptions(NBTTagCompound tag) {
@@ -923,6 +1029,21 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         ignoreIds = tag.getBoolean("ignoreIds");
         lockedOut = tag.getBoolean("lockedOut");
         doorsMoving = tag.getBoolean("doorsMoving");
+        readEvents(tag);
+    }
+
+    private byte[] encodeEvents() {
+        byte[] out = new byte[RS_EVENT_COUNT];
+        for (int i = 0; i < RS_EVENT_COUNT; i++) out[i] = (byte) (redstoneEvents[i] ? 1 : 0);
+        return out;
+    }
+
+    private void readEvents(NBTTagCompound tag) {
+        Arrays.fill(redstoneEvents, false);
+        byte[] saved = tag.getByteArray("redstoneEvents");
+        for (int i = 0; i < Math.min(saved.length, RS_EVENT_COUNT); i++) {
+            redstoneEvents[i] = saved[i] != 0;
+        }
     }
 
     @Override
@@ -939,6 +1060,7 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         tag.setInteger("boundDoorCount", boundDoorCount);
         tag.setTag("assignedKeys", PrivateKeys.toList(assignedKeys));
         tag.setTag("assignedIds", encodeIds());
+        redstoneBinding.writeToNBT(tag);
         writeOptions(tag);
         tag.setInteger("failedAttempts", failedAttempts);
         tag.setInteger("lockoutTicks", lockoutTicks);
@@ -959,6 +1081,7 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         tag.setInteger("boundDoorCount", boundDoorCount);
         tag.setTag("assignedKeys", PrivateKeys.toList(assignedKeys));
         tag.setTag("assignedIds", encodeIds());
+        redstoneBinding.writeSyncTag(tag);
         writeOptions(tag);
         return tag;
     }
@@ -986,6 +1109,7 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
                     tag.getTagList("assignedKeys", Constants.NBT.TAG_COMPOUND)));
         }
         readIds(tag);
+        redstoneBinding.readFromNBT(tag);
         readOptions(tag);
         if (tag.hasKey("failedAttempts")) failedAttempts = tag.getInteger("failedAttempts");
         if (tag.hasKey("lockoutTicks")) {

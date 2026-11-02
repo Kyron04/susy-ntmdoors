@@ -27,7 +27,7 @@ import java.util.List;
  * Scanner console, reached after a correct security code. Page one transfers access entries: the
  * left column lists the private keys and biometric identities that currently open the scanner's
  * doors, the right column lists the entries on the held Operator Keycard that are not assigned
- * yet. Page two is the scanner's settings, one row per toggle, with room to grow.
+ * yet. Page two is the scanner's settings; page three is the red-tinted Redstone event page.
  */
 @SideOnly(Side.CLIENT)
 public class GuiScannerKeys extends GuiScreen {
@@ -35,7 +35,7 @@ public class GuiScannerKeys extends GuiScreen {
     private static final int PANEL_WIDTH = 344;
     private static final int PANEL_HEIGHT = 196;
 
-    private static final int PAGE_COUNT = 2;
+    private static final int PAGE_COUNT = 3;
 
     private static final int LIST_TOP = 46;
     private static final int LIST_HEIGHT = 102;
@@ -55,6 +55,32 @@ public class GuiScannerKeys extends GuiScreen {
     private static final int ARROW_SIZE = 18;
     private static final int ARROW_Y = 159;
 
+    private static final int[] SETTINGS_OPTIONS = {
+            MessageScannerOption.MATCH_HOLDER,
+            MessageScannerOption.LOCKDOWN,
+            MessageScannerOption.LOCKOUT,
+            MessageScannerOption.IGNORE_KEYS,
+            MessageScannerOption.IGNORE_IDS,
+            MessageScannerOption.FORCE_OPEN,
+            MessageScannerOption.FORCE_CLOSE,
+            MessageScannerOption.RESET_CODE
+    };
+    private static final int[] REDSTONE_OPTIONS = {
+            MessageScannerOption.REDSTONE_SCAN_FAIL,
+            MessageScannerOption.REDSTONE_SCAN_SUCCESS,
+            MessageScannerOption.REDSTONE_MATCH_FAIL,
+            MessageScannerOption.REDSTONE_MATCH_SUCCESS,
+            MessageScannerOption.REDSTONE_KEY_FAIL,
+            MessageScannerOption.REDSTONE_KEY_SUCCESS,
+            MessageScannerOption.REDSTONE_BIOMETRIC_FAIL,
+            MessageScannerOption.REDSTONE_BIOMETRIC_SUCCESS,
+            MessageScannerOption.REDSTONE_LOCKOUT
+    };
+
+    private static final int RED_PANEL = 0xFF2A0F12;
+    private static final int RED_RULE = 0xFF6A2A2A;
+    private static final int RED_HOVER = 0xFF3A1418;
+
     private static final int COLOUR = 0xFFE8E8E8;
     private static final int MUTED = 0xFFAFAFAF;
     private static final int DIM = 0xFF8A8A8A;
@@ -71,6 +97,7 @@ public class GuiScannerKeys extends GuiScreen {
     private int scrollLeft;
     private int scrollRight;
     private int scrollOptions;
+    private int scrollRedstone;
     private int lastMouseX;
     private int lastMouseY;
 
@@ -87,6 +114,7 @@ public class GuiScannerKeys extends GuiScreen {
         scrollLeft = 0;
         scrollRight = 0;
         scrollOptions = 0;
+        scrollRedstone = 0;
     }
 
     @Override
@@ -124,6 +152,24 @@ public class GuiScannerKeys extends GuiScreen {
                 return scanner != null && scanner.isIgnoreKeys();
             case MessageScannerOption.IGNORE_IDS:
                 return scanner != null && scanner.isIgnoreIds();
+            case MessageScannerOption.REDSTONE_SCAN_FAIL:
+                return scanner != null && scanner.isRedstoneEvent(TileEntityKeycardScanner.RS_SCAN_FAIL);
+            case MessageScannerOption.REDSTONE_SCAN_SUCCESS:
+                return scanner != null && scanner.isRedstoneEvent(TileEntityKeycardScanner.RS_SCAN_SUCCESS);
+            case MessageScannerOption.REDSTONE_MATCH_FAIL:
+                return scanner != null && scanner.isRedstoneEvent(TileEntityKeycardScanner.RS_MATCH_FAIL);
+            case MessageScannerOption.REDSTONE_MATCH_SUCCESS:
+                return scanner != null && scanner.isRedstoneEvent(TileEntityKeycardScanner.RS_MATCH_SUCCESS);
+            case MessageScannerOption.REDSTONE_KEY_FAIL:
+                return scanner != null && scanner.isRedstoneEvent(TileEntityKeycardScanner.RS_KEY_FAIL);
+            case MessageScannerOption.REDSTONE_KEY_SUCCESS:
+                return scanner != null && scanner.isRedstoneEvent(TileEntityKeycardScanner.RS_KEY_SUCCESS);
+            case MessageScannerOption.REDSTONE_BIOMETRIC_FAIL:
+                return scanner != null && scanner.isRedstoneEvent(TileEntityKeycardScanner.RS_BIOMETRIC_FAIL);
+            case MessageScannerOption.REDSTONE_BIOMETRIC_SUCCESS:
+                return scanner != null && scanner.isRedstoneEvent(TileEntityKeycardScanner.RS_BIOMETRIC_SUCCESS);
+            case MessageScannerOption.REDSTONE_LOCKOUT:
+                return scanner != null && scanner.isRedstoneEvent(TileEntityKeycardScanner.RS_LOCKOUT);
             default:
                 return false;
         }
@@ -190,9 +236,11 @@ public class GuiScannerKeys extends GuiScreen {
                 scrollRight = clampScroll(scrollRight + (wheel > 0 ? -ROW_HEIGHT : ROW_HEIGHT),
                         available().size(), LIST_HEIGHT);
             }
-        } else if (inOptionsArea(lastMouseX, lastMouseY)) {
+        } else if (page == 1 && inOptionsArea(lastMouseX, lastMouseY)) {
             // Unclamped here: the draw call clamps against the real option count.
             scrollOptions += wheel > 0 ? -OPTION_HEIGHT : OPTION_HEIGHT;
+        } else if (page == 2 && inOptionsArea(lastMouseX, lastMouseY)) {
+            scrollRedstone += wheel > 0 ? -OPTION_HEIGHT : OPTION_HEIGHT;
         }
     }
 
@@ -222,12 +270,19 @@ public class GuiScannerKeys extends GuiScreen {
                     send(available.get(rightRow), true);
                     return;
                 }
-            } else if (!doorsMoving()) {
-                int option = optionAt(mouseX, mouseY);
+            } else if (page == 1 && !doorsMoving()) {
+                int option = settingsOptionAt(mouseX, mouseY);
                 if (option >= 0) {
                     boolean action = optionIsAction(option);
                     ModNetwork.INSTANCE.sendToServer(
                             new MessageScannerOption(pos, option, action || !optionValue(option)));
+                    return;
+                }
+            } else if (page == 2) {
+                int option = redstoneOptionAt(mouseX, mouseY);
+                if (option >= 0) {
+                    ModNetwork.INSTANCE.sendToServer(
+                            new MessageScannerOption(pos, option, !optionValue(option)));
                     return;
                 }
             }
@@ -279,16 +334,23 @@ public class GuiScannerKeys extends GuiScreen {
                 && mouseY >= top + OPTION_TOP && mouseY < top + OPTION_TOP + OPTION_AREA;
     }
 
-    private int optionAt(int mouseX, int mouseY) {
+    private int settingsOptionAt(int mouseX, int mouseY) {
         if (!inOptionsArea(mouseX, mouseY)) return -1;
-        int clamped = clampOptionsScroll(scrollOptions);
+        int clamped = clampScroll(scrollOptions, SETTINGS_OPTIONS.length, OPTION_AREA);
         int row = (mouseY - (top + OPTION_TOP) + clamped) / OPTION_HEIGHT;
-        return row >= 0 && row < MessageScannerOption.OPTION_COUNT ? row : -1;
+        return row >= 0 && row < SETTINGS_OPTIONS.length ? SETTINGS_OPTIONS[row] : -1;
     }
 
-    private boolean inOption(int index, int mouseX, int mouseY) {
+    private int redstoneOptionAt(int mouseX, int mouseY) {
+        if (!inOptionsArea(mouseX, mouseY)) return -1;
+        int clamped = clampScroll(scrollRedstone, REDSTONE_OPTIONS.length, OPTION_AREA);
+        int row = (mouseY - (top + OPTION_TOP) + clamped) / OPTION_HEIGHT;
+        return row >= 0 && row < REDSTONE_OPTIONS.length ? REDSTONE_OPTIONS[row] : -1;
+    }
+
+    private boolean inOption(int index, int mouseX, int mouseY, int scroll, int count) {
         if (!inOptionsArea(mouseX, mouseY)) return false;
-        int y = top + OPTION_TOP + index * OPTION_HEIGHT - clampOptionsScroll(scrollOptions);
+        int y = top + OPTION_TOP + index * OPTION_HEIGHT - clampScroll(scroll, count, OPTION_AREA);
         return mouseY >= y && mouseY < y + OPTION_HEIGHT - 2;
     }
 
@@ -307,8 +369,7 @@ public class GuiScannerKeys extends GuiScreen {
     }
 
     private static int clampOptionsScroll(int scroll) {
-        int max = Math.max(0, MessageScannerOption.OPTION_COUNT * OPTION_HEIGHT - OPTION_AREA);
-        return Math.max(0, Math.min(max, scroll));
+        return clampScroll(scroll, SETTINGS_OPTIONS.length, OPTION_AREA);
     }
 
     // ------------------------------------------------------------ drawing
@@ -324,9 +385,13 @@ public class GuiScannerKeys extends GuiScreen {
         drawRect(left, top, left + PANEL_WIDTH, top + PANEL_HEIGHT, 0xFF111111);
         drawRect(left + 1, top + 1, left + PANEL_WIDTH - 1, top + PANEL_HEIGHT - 1, 0xFF2B2B2E);
         drawRect(left + 1, top + 1, left + PANEL_WIDTH - 1, top + 2, 0xFF3C3C40);
+        if (page == 2) {
+            drawRect(left + 1, top + 1, left + PANEL_WIDTH - 1, top + PANEL_HEIGHT - 1, RED_PANEL);
+        }
 
         if (page == 0) drawKeysPage(mouseX, mouseY);
-        else drawOptionsPage(mouseX, mouseY);
+        else if (page == 1) drawOptionsPage(mouseX, mouseY);
+        else drawRedstonePage(mouseX, mouseY);
 
         drawFooter(mouseX, mouseY);
         super.drawScreen(mouseX, mouseY, partialTicks);
@@ -358,14 +423,33 @@ public class GuiScannerKeys extends GuiScreen {
 
         scrollOptions = clampOptionsScroll(scrollOptions);
         GuiClip.begin(left + 8, top + OPTION_TOP, PANEL_WIDTH - 16, OPTION_AREA);
-        for (int i = 0; i < MessageScannerOption.OPTION_COUNT; i++) {
+        for (int i = 0; i < SETTINGS_OPTIONS.length; i++) {
             int y = top + OPTION_TOP + i * OPTION_HEIGHT - scrollOptions;
             if (y + OPTION_HEIGHT < top + OPTION_TOP || y > top + OPTION_TOP + OPTION_AREA) continue;
-            drawOption(i, y, mouseX, mouseY);
+            drawOption(SETTINGS_OPTIONS[i], i, y, mouseX, mouseY, scrollOptions, SETTINGS_OPTIONS.length,
+                    !doorsMoving());
         }
         GuiClip.end();
         drawScrollbar(left + PANEL_WIDTH - 8, top + OPTION_TOP, OPTION_AREA,
-                MessageScannerOption.OPTION_COUNT, OPTION_HEIGHT, scrollOptions);
+                SETTINGS_OPTIONS.length, OPTION_HEIGHT, scrollOptions);
+    }
+
+    private void drawRedstonePage(int mouseX, int mouseY) {
+        drawTitle("REDSTONE");
+        drawString(fontRenderer, "EVENT OUTPUTS", left + 12, top + 29, 0xFFF0C0C0);
+        drawRect(left + 12, top + 40, left + PANEL_WIDTH - 12, top + 41, RED_RULE);
+
+        scrollRedstone = clampScroll(scrollRedstone, REDSTONE_OPTIONS.length, OPTION_AREA);
+        GuiClip.begin(left + 8, top + OPTION_TOP, PANEL_WIDTH - 16, OPTION_AREA);
+        for (int i = 0; i < REDSTONE_OPTIONS.length; i++) {
+            int y = top + OPTION_TOP + i * OPTION_HEIGHT - scrollRedstone;
+            if (y + OPTION_HEIGHT < top + OPTION_TOP || y > top + OPTION_TOP + OPTION_AREA) continue;
+            drawOption(REDSTONE_OPTIONS[i], i, y, mouseX, mouseY, scrollRedstone, REDSTONE_OPTIONS.length,
+                    true);
+        }
+        GuiClip.end();
+        drawScrollbar(left + PANEL_WIDTH - 8, top + OPTION_TOP, OPTION_AREA,
+                REDSTONE_OPTIONS.length, OPTION_HEIGHT, scrollRedstone);
     }
 
     private void drawTitle(String rightLabel) {
@@ -416,12 +500,13 @@ public class GuiScannerKeys extends GuiScreen {
     }
 
     /** One settings row: label and hint on the left, an ON/OFF pill on the right. */
-    private void drawOption(int option, int y, int mouseX, int mouseY) {
-        boolean enabled = !doorsMoving();
+    private void drawOption(int option, int index, int y, int mouseX, int mouseY,
+                            int scroll, int count, boolean enabled) {
         boolean on = optionValue(option);
-        boolean hovered = enabled && inOption(option, mouseX, mouseY);
+        boolean hovered = enabled && inOption(index, mouseX, mouseY, scroll, count);
         if (hovered) {
-            drawRect(left + 8, y - 3, left + PANEL_WIDTH - 8, y + OPTION_HEIGHT - 5, 0xFF232326);
+            drawRect(left + 8, y - 3, left + PANEL_WIDTH - 8, y + OPTION_HEIGHT - 5,
+                    page == 2 ? RED_HOVER : 0xFF232326);
         }
 
         int textColour = enabled ? COLOUR : DIM;
@@ -485,6 +570,24 @@ public class GuiScannerKeys extends GuiScreen {
                 return "Force close";
             case MessageScannerOption.RESET_CODE:
                 return "Reset security code";
+            case MessageScannerOption.REDSTONE_SCAN_FAIL:
+                return "Scan fail";
+            case MessageScannerOption.REDSTONE_SCAN_SUCCESS:
+                return "Scan success";
+            case MessageScannerOption.REDSTONE_MATCH_FAIL:
+                return "Match holder fail";
+            case MessageScannerOption.REDSTONE_MATCH_SUCCESS:
+                return "Match holder success";
+            case MessageScannerOption.REDSTONE_KEY_FAIL:
+                return "Private key fail";
+            case MessageScannerOption.REDSTONE_KEY_SUCCESS:
+                return "Private key success";
+            case MessageScannerOption.REDSTONE_BIOMETRIC_FAIL:
+                return "Biometric fail";
+            case MessageScannerOption.REDSTONE_BIOMETRIC_SUCCESS:
+                return "Biometric success";
+            case MessageScannerOption.REDSTONE_LOCKOUT:
+                return "Lockout";
             default:
                 return "";
         }
@@ -508,6 +611,24 @@ public class GuiScannerKeys extends GuiScreen {
                 return "Closes bound doors.";
             case MessageScannerOption.RESET_CODE:
                 return "Clears the code; the next entry sets a new one.";
+            case MessageScannerOption.REDSTONE_SCAN_FAIL:
+                return "Card refused.";
+            case MessageScannerOption.REDSTONE_SCAN_SUCCESS:
+                return "Access granted.";
+            case MessageScannerOption.REDSTONE_MATCH_FAIL:
+                return "Wrong holder.";
+            case MessageScannerOption.REDSTONE_MATCH_SUCCESS:
+                return "Holder matched.";
+            case MessageScannerOption.REDSTONE_KEY_FAIL:
+                return "No assigned key.";
+            case MessageScannerOption.REDSTONE_KEY_SUCCESS:
+                return "Assigned key found.";
+            case MessageScannerOption.REDSTONE_BIOMETRIC_FAIL:
+                return "No assigned ID.";
+            case MessageScannerOption.REDSTONE_BIOMETRIC_SUCCESS:
+                return "Assigned ID found.";
+            case MessageScannerOption.REDSTONE_LOCKOUT:
+                return "Lockout starts.";
             default:
                 return "";
         }
@@ -542,6 +663,8 @@ public class GuiScannerKeys extends GuiScreen {
         int colour = MUTED;
         if (page == 0) {
             hint = "Click a key or ID to move it - ESC to close";
+        } else if (page == 2) {
+            hint = "Each ON event pulses every bound Redstone Gate";
         } else if (lockedOut()) {
             hint = "Lockout active - disable Lockout mode";
             colour = WARNING;

@@ -55,6 +55,7 @@ public class TileEntityBiometricSafe extends TileEntitySafe {
             return;
         }
         if (!Biometrics.isBound(card)) {
+            fireRedstoneEvent(RS_SCAN_FAIL);
             recordFailure();
             playFail();
             sendResult(player, MessageSafeResult.DENIED);
@@ -62,18 +63,22 @@ public class TileEntityBiometricSafe extends TileEntitySafe {
             return;
         }
         if (isLockedOut() && !bypassesLockout(card, player)) {
+            fireRedstoneEvent(RS_SCAN_FAIL);
             playFail();
             sendResult(player, MessageSafeResult.LOCKED_OUT);
             msg(player, "ntmdoors.msg.safe_locked_out");
             return;
         }
         if (isMatchHolder() && !Biometrics.isOwnedBy(card, player)) {
+            fireRedstoneEvent(RS_MATCH_FAIL);
+            fireRedstoneEvent(RS_SCAN_FAIL);
             recordFailure();
             playFail();
             sendResult(player, MessageSafeResult.DENIED);
             msg(player, "ntmdoors.msg.safe_biometric_denied");
             return;
         }
+        if (isMatchHolder()) fireRedstoneEvent(RS_MATCH_SUCCESS);
 
         scanPlayer = player.getUniqueID();
         scanTicks = SCAN_TICKS;
@@ -108,9 +113,11 @@ public class TileEntityBiometricSafe extends TileEntitySafe {
             grantAccess(player);
             scheduleOpen(player);
             playSuccess();
+            fireRedstoneEvent(RS_SCAN_SUCCESS);
             sendResult(player, MessageSafeResult.ACCEPTED);
             msg(player, "ntmdoors.msg.safe_biometric_granted");
         } else {
+            fireRedstoneEvent(RS_SCAN_FAIL);
             recordFailure();
             playFail();
             sendResult(player, MessageSafeResult.DENIED);

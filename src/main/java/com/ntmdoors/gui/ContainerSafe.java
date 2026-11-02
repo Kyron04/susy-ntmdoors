@@ -10,7 +10,8 @@ import net.minecraft.item.ItemStack;
 
 /**
  * Container for both safes: a 3x9 storage grid and the player inventory. Page two only shows the
- * settings, so the server refuses clicks that would move items into or out of the hidden grid.
+ * settings, and page three hides the whole inventory, so the server refuses clicks that would move
+ * items into or out of a hidden slot.
  */
 public class ContainerSafe extends Container {
 
@@ -60,7 +61,7 @@ public class ContainerSafe extends Container {
     }
 
     public void setPage(int page) {
-        this.page = Math.max(0, Math.min(1, page));
+        this.page = Math.max(0, Math.min(2, page));
     }
 
     @Override
@@ -70,7 +71,9 @@ public class ContainerSafe extends Container {
 
     @Override
     public ItemStack slotClick(int slotId, int dragType, ClickType clickTypeIn, EntityPlayer player) {
-        // Page two hides the storage grid; never let a click move an item into a slot nobody can see.
+        // Page three hides the whole inventory, so no slot may receive a click there.
+        if (page == 2) return player.inventory.getItemStack();
+        // Page two hides the storage grid; never let a click move an item into a hidden slot.
         if (page != 0 && slotId >= 0 && slotId < SAFE_SLOT_COUNT) {
             return player.inventory.getItemStack();
         }
@@ -79,6 +82,7 @@ public class ContainerSafe extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
+        if (page == 2) return ItemStack.EMPTY;
         Slot slot = inventorySlots.get(index);
         if (slot == null || !slot.getHasStack()) return ItemStack.EMPTY;
 

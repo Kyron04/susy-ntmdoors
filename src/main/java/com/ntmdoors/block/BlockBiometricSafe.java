@@ -32,6 +32,8 @@ public class BlockBiometricSafe extends BlockSafe {
     @Override
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player,
                                     EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
+        if (handleRedstoneRelayKey(world, pos, player, hand)) return true;
+
         if (world.isRemote) {
             // The Creative Keycard opens the container directly; do not show the scan screen.
             if (!ItemCreativeKeycard.isHeldBy(player)

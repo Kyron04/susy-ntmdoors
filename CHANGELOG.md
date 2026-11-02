@@ -1,5 +1,22 @@
-HBM DOORS: REFRESHED 1.0.31
+HBM DOORS: REFRESHED 1.0.32
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.32
+REDSTONE NETWORK
+- Both safes and the keycard scanner have a third Redstone page with scrolling and a red
+  panel tint. The safe page does not show the player inventory.
+- Safe event toggles: Code fail, Code success, Binding activities and Lockout on the code
+  safe; Scan fail, Scan success, Match holder fail, Match holder success and Lockout on the
+  biometric safe.
+- Scanner event toggles: Scan fail, Scan success, Match holder fail, Match holder success,
+  Private key fail, Private key success, Biometric fail, Biometric success and Lockout.
+- Event toggles are off by default. Enabled events pulse every linked Redstone Gate for 20
+  ticks.
+- Sneak + right-click a safe or scanner with the Redstone Relay Key to start/finish binding,
+  then sneak + right-click a Redstone Gate to link or unlink it. Devices and gates can be
+  linked many-to-many, in the same dimension, with no range limit.
+- Breaking a safe, scanner or gate clears its reciprocal links. Existing safe-door,
+  scanner-door, keypad and safe-binding links are untouched.
 
 1.0.31
 REDSTONE

@@ -2,6 +2,7 @@ package com.ntmdoors.block;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.item.ItemCreativeKeycard;
+import com.ntmdoors.item.ItemRedstoneRelayKey;
 import com.ntmdoors.tile.TileEntitySafe;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
@@ -13,6 +14,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.InventoryHelper;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -121,6 +123,8 @@ public class BlockSafe extends Block {
     @Override
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player,
                                     EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
+        if (handleRedstoneRelayKey(world, pos, player, hand)) return true;
+
         if (world.isRemote) {
             // The Creative Keycard bypasses the keypad; the server opens the container directly.
             if (!ItemCreativeKeycard.isHeldBy(player)) {
@@ -132,6 +136,19 @@ public class BlockSafe extends Block {
             TileEntity te = world.getTileEntity(pos);
             if (te instanceof TileEntitySafe && ItemCreativeKeycard.isHeldBy(player)) {
                 ((TileEntitySafe) te).openContainer(player);
+            }
+        }
+        return true;
+    }
+
+    /** Starts or finishes the wireless Redstone Gate session without opening the safe screen. */
+    protected boolean handleRedstoneRelayKey(World world, BlockPos pos, EntityPlayer player, EnumHand hand) {
+        ItemStack held = player.getHeldItem(hand);
+        if (!player.isSneaking() || !(held.getItem() instanceof ItemRedstoneRelayKey)) return false;
+        if (!world.isRemote) {
+            TileEntity te = world.getTileEntity(pos);
+            if (te instanceof TileEntitySafe) {
+                ((TileEntitySafe) te).getRedstoneBinding().toggle(player);
             }
         }
         return true;
@@ -149,6 +166,7 @@ public class BlockSafe extends Block {
         TileEntity te = world.getTileEntity(pos);
         if (te instanceof TileEntitySafe) {
             ((TileEntitySafe) te).unbindAllDoors();
+            ((TileEntitySafe) te).getRedstoneBinding().clearGates();
             InventoryHelper.dropInventoryItems(world, pos, (TileEntitySafe) te);
         }
         super.breakBlock(world, pos, state);
