@@ -3,6 +3,7 @@ package com.ntmdoors.proxy;
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.client.GuiDocumentsFolder;
 import com.ntmdoors.client.GuiKeycardViewer;
+import com.ntmdoors.client.GuiKeypad;
 import com.ntmdoors.client.GuiRedstoneGate;
 import com.ntmdoors.client.GuiRelayKeyName;
 import com.ntmdoors.client.GuiSafeBiometric;
@@ -72,6 +73,11 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void openRedstoneGateGui(BlockPos pos) {
         Minecraft.getMinecraft().displayGuiScreen(new GuiRedstoneGate(pos));
+    }
+
+    @Override
+    public void openKeypadGui(BlockPos pos) {
+        Minecraft.getMinecraft().displayGuiScreen(new GuiKeypad(pos));
     }
 
     @Override

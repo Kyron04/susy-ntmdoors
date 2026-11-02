@@ -48,9 +48,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Mod.EventBusSubscriber(modid = NTMDoors.MODID)
 public class ModContent {
@@ -60,9 +58,6 @@ public class ModContent {
     public static final List<BlockDoorGeneric> SECURITY_DOORS = new ArrayList<>();
     /** Normal doors first, then their locked and security twins; used for registration and rendering setup. */
     public static final List<BlockDoorGeneric> DOORS = new ArrayList<>();
-    /** The two silo hatches stay single-variant. */
-    private static final Set<String> NO_SECURITY_VARIANT = new HashSet<>(Arrays.asList(
-            "silo_hatch", "silo_hatch_large"));
     public static final BlockDoorKeypad KEYPAD = new BlockDoorKeypad();
     public static final BlockKeycardScanner KEYCARD_SCANNER = new BlockKeycardScanner();
     public static final BlockKeycardProgrammer KEYCARD_PROGRAMMER = new BlockKeycardProgrammer();
@@ -146,9 +141,7 @@ public class ModContent {
         for (DoorDecl d : DoorDecls.ALL) NORMAL_DOORS.add(new BlockDoorGeneric(d, BlockDoorGeneric.Variant.NORMAL));
         for (DoorDecl d : DoorDecls.ALL) LOCKED_DOORS.add(new BlockDoorGeneric(d, BlockDoorGeneric.Variant.LOCKED));
         for (DoorDecl d : DoorDecls.ALL) {
-            if (!NO_SECURITY_VARIANT.contains(d.name)) {
-                SECURITY_DOORS.add(new BlockDoorGeneric(d, BlockDoorGeneric.Variant.SECURITY));
-            }
+            SECURITY_DOORS.add(new BlockDoorGeneric(d, BlockDoorGeneric.Variant.SECURITY));
         }
         DOORS.addAll(NORMAL_DOORS);
         DOORS.addAll(LOCKED_DOORS);

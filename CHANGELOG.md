@@ -1,5 +1,16 @@
-HBM DOORS: REFRESHED 1.0.37
+HBM DOORS: REFRESHED 1.0.38
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.38
+FEATURES
+- Keypads now work with the Redstone Relay Key. A normal click starts/finishes the wireless gate
+  session; sneak + right-click opens a two-page keypad screen. Page one sets the first code, and
+  page two has the On fail / On success gate toggles plus Reset Code, Override Door Locks and Force
+  Close actions.
+- Added security variants for both silo hatches. All 16 doors now have a `_security` form.
+- Safes and security doors now take three real hours of continuous mining with any tool to break,
+  and their blast resistance is raised so explosions cannot shortcut that.
+- Normal and locked doors keep their existing break times.
 
 1.0.37
 FIX

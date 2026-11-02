@@ -2,6 +2,7 @@ package com.ntmdoors.tile;
 
 import com.ntmdoors.block.BlockDoorKeypad;
 import com.ntmdoors.door.DoorState;
+import com.ntmdoors.util.Codes;
 import com.ntmdoors.util.Facings;
 import com.ntmdoors.util.ModSounds;
 import net.minecraft.block.state.IBlockState;
@@ -40,9 +41,13 @@ import java.util.List;
  * asks to confirm the links before accepting the code. Once the pad has a code or a linked door
  * the mode is fixed and the screwdriver can only reset it.</p>
  */
-public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable {
+public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable, RedstoneBindingHost {
 
     public static final int CODE_LENGTH = 6;
+    /** Keypad event outputs: a refused code and an accepted code. */
+    public static final int RS_FAIL = 0;
+    public static final int RS_SUCCESS = 1;
+    private static final int RS_EVENT_COUNT = 2;
     public static final int BUTTONS = 12;
     /** Ticks a key stays visually pressed, and the guard against a double click on the same key. */
     private static final int BUTTON_COOLDOWN_TICKS = 4;
@@ -153,6 +158,11 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
     /** Synced link count so clients can draw the confirmation without receiving positions. */
     private int doorCount;
 
+    /** Wireless gate link, shared with safes and scanners. */
+    private final RedstoneBinding redstoneBinding = new RedstoneBinding(this);
+    /** Event outputs for a refused or accepted keypad code. Off by default. */
+    private final boolean[] redstoneEvents = new boolean[RS_EVENT_COUNT];
+
     // ------------------------------------------------------------ state queries
 
     public Mode getMode() {
@@ -204,6 +214,106 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
     /** True once the pad has a code or at least one linked door. Locks the binding mode. */
     public boolean isBound() {
         return hasStoredCode() || doorCount > 0;
+    }
+
+    // ------------------------------------------------------------ redstone events / gate links
+
+    public boolean isRedstoneEvent(int event) {
+        return event >= 0 && event < RS_EVENT_COUNT && redstoneEvents[event];
+    }
+
+    /** Server side: arms or disarms one event output. */
+    public boolean setRedstoneEvent(int event, boolean value) {
+        if (world == null || world.isRemote || event < 0 || event >= RS_EVENT_COUNT
+                || redstoneEvents[event] == value) {
+            return false;
+        }
+        redstoneEvents[event] = value;
+        sync();
+        return true;
+    }
+
+    public boolean isOnFail() {
+        return redstoneEvents[RS_FAIL];
+    }
+
+    public boolean isOnSuccess() {
+        return redstoneEvents[RS_SUCCESS];
+    }
+
+    /** Server side: pulses every bound gate when the matching event is enabled. */
+    private void fireRedstoneEvent(boolean success) {
+        if (isRedstoneEvent(success ? RS_SUCCESS : RS_FAIL)) redstoneBinding.fire();
+    }
+
+    @Override
+    public RedstoneBinding getRedstoneBinding() {
+        return redstoneBinding;
+    }
+
+    @Override
+    public void syncRedstoneState() {
+        sync();
+    }
+
+    @Override
+    public void onRedstoneBindingChanged() {
+        // The keypad has no separate binding-activities event.
+    }
+
+    @Override
+    public void sendRedstoneMessage(EntityPlayer player, String key) {
+        msg(player, key);
+    }
+
+    // ------------------------------------------------------------ GUI actions
+
+    /**
+     * Server side: sets the keypad's first code from the Redstone Relay Key screen. Existing codes
+     * are deliberately left alone; the GUI has a separate Reset Code action.
+     */
+    public boolean setFirstCode(String raw) {
+        if (world == null || world.isRemote || hasStoredCode()) return false;
+        String code = Codes.sanitise(raw, CODE_LENGTH);
+        if (code.isEmpty()) return false;
+
+        storedCode = code;
+        entry = "";
+        linking = false;
+        mode = Mode.ENTER_CODE;
+        pendingConfirm = false;
+        for (TileEntityDoorGeneric door : controlDoors()) {
+            if (!door.isKeypadBound()) door.bindKeypadCode(code);
+        }
+        showFeedback(Feedback.CODE_SET);
+        sync();
+        return true;
+    }
+
+    /** Server side: clears this keypad's code and links without asking for the old code. */
+    public boolean resetCodeFromGui() {
+        if (world == null || world.isRemote) return false;
+        if (!hasStoredCode() && doorCount == 0) return false;
+        resetCodes(controlDoors());
+        sync();
+        return true;
+    }
+
+    /** Server side: opens every controlled door through a scanner lockdown. */
+    public void forceOpenDoors() {
+        if (world == null || world.isRemote) return;
+        for (TileEntityDoorGeneric door : controlDoors()) {
+            door.request(true, true);
+            door.closeAfter(0);
+        }
+    }
+
+    /** Server side: closes every controlled door. */
+    public void forceCloseDoors() {
+        if (world == null || world.isRemote) return;
+        for (TileEntityDoorGeneric door : controlDoors()) {
+            door.request(false);
+        }
     }
 
     // ------------------------------------------------------------ ticking
@@ -520,6 +630,8 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
         feedbackTicks = value == Feedback.NONE ? 0 : value == Feedback.UNABLE ? 60 : 20;
         blackScreenTicks = 0;
         playFeedbackSound(value);
+        if (value == Feedback.SUCCESS) fireRedstoneEvent(true);
+        else if (value == Feedback.DENIED) fireRedstoneEvent(false);
     }
 
     /**
@@ -806,6 +918,9 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
         tag.setBoolean("linking", linking);
         tag.setBoolean("pendingConfirm", pendingConfirm);
         tag.setInteger("doorCount", doorCount);
+        tag.setBoolean("onFail", redstoneEvents[RS_FAIL]);
+        tag.setBoolean("onSuccess", redstoneEvents[RS_SUCCESS]);
+        redstoneBinding.writeToNBT(tag);
 
         NBTTagList links = new NBTTagList();
         for (BlockPos p : boundDoors) {
@@ -866,6 +981,9 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable 
             boundDoors.add(new BlockPos(link.getInteger("x"), link.getInteger("y"), link.getInteger("z")));
         }
         doorCount = tag.hasKey("doorCount") ? tag.getInteger("doorCount") : boundDoors.size();
+        redstoneEvents[RS_FAIL] = tag.getBoolean("onFail");
+        redstoneEvents[RS_SUCCESS] = tag.getBoolean("onSuccess");
+        redstoneBinding.readFromNBT(tag);
 
         byte[] cd = tag.getByteArray("cooldowns");
         if (cd.length == BUTTONS) {

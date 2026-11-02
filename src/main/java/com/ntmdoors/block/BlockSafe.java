@@ -27,6 +27,8 @@ import net.minecraft.world.World;
 public class BlockSafe extends Block {
 
     public static final PropertyDirection FACING = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
+    /** Three real hours of continuous mining at 20 ticks per second, regardless of the tool. */
+    private static final float BREAK_DAMAGE_PER_TICK = 1F / (3F * 60F * 60F * 20F);
 
     public BlockSafe() {
         this("safe");
@@ -37,8 +39,8 @@ public class BlockSafe extends Block {
         setRegistryName(NTMDoors.MODID, name);
         setTranslationKey(NTMDoors.MODID + "." + name);
         setCreativeTab(NTMDoors.TAB);
-        setHardness(5F);
-        setResistance(30F);
+        setHardness(216000F);
+        setResistance(6000000F);
         setSoundType(SoundType.METAL);
         setHarvestLevel("pickaxe", 2);
         setLightOpacity(255);
@@ -112,6 +114,12 @@ public class BlockSafe extends Block {
     @Override
     public EnumPushReaction getPushReaction(IBlockState state) {
         return EnumPushReaction.BLOCK;
+    }
+
+    /** Safe cracking takes three real hours with any tool. */
+    @Override
+    public float getPlayerRelativeBlockHardness(IBlockState state, EntityPlayer player, World world, BlockPos pos) {
+        return BREAK_DAMAGE_PER_TICK;
     }
 
     /**

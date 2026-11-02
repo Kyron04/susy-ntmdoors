@@ -2,9 +2,11 @@ package com.ntmdoors.item;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.tile.RedstoneBinding;
+import com.ntmdoors.tile.TileEntityDoorKeypad;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
 import com.ntmdoors.tile.TileEntityRedstoneGate;
 import com.ntmdoors.tile.TileEntitySafe;
+import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.Names;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
@@ -45,29 +47,40 @@ public class ItemRedstoneRelayKey extends Item {
         // Vanilla skips Block.onBlockActivated for a sneaking player, so the item owns this action.
         if (!player.isSneaking()) return EnumActionResult.PASS;
 
-        if (!world.isRemote) {
-            TileEntity te = world.getTileEntity(pos);
-            if (te instanceof TileEntitySafe) {
-                ((TileEntitySafe) te).getRedstoneBinding().toggle(player);
-            } else if (te instanceof TileEntityKeycardScanner) {
-                ((TileEntityKeycardScanner) te).getRedstoneBinding().toggle(player);
-            } else if (te instanceof TileEntityRedstoneGate) {
-                RedstoneBinding binding = RedstoneBinding.findSession(world, player);
-                if (binding == null) {
-                    player.sendStatusMessage(new TextComponentTranslation(
-                            "ntmdoors.msg.redstone_binding_required"), true);
-                } else {
-                    binding.link(player, (TileEntityRedstoneGate) te);
-                }
+        TileEntity te = world.getTileEntity(pos);
+        if (world.isRemote) {
+            // Sneak-clicking a keypad opens its configuration screen. Gate binding uses a normal
+            // click on the keypad, handled by BlockDoorKeypad.
+            if (te instanceof TileEntityDoorKeypad) NTMDoors.proxy.openKeypadGui(pos);
+            return EnumActionResult.SUCCESS;
+        }
+
+        if (te instanceof TileEntitySafe) {
+            ((TileEntitySafe) te).getRedstoneBinding().toggle(player);
+        } else if (te instanceof TileEntityKeycardScanner) {
+            ((TileEntityKeycardScanner) te).getRedstoneBinding().toggle(player);
+        } else if (te instanceof TileEntityRedstoneGate) {
+            RedstoneBinding binding = RedstoneBinding.findSession(world, player);
+            if (binding == null) {
+                player.sendStatusMessage(new TextComponentTranslation(
+                        "ntmdoors.msg.redstone_binding_required"), true);
+            } else {
+                binding.link(player, (TileEntityRedstoneGate) te);
             }
         }
         return EnumActionResult.SUCCESS;
+    }
+
+    /** True when either hand holds a Redstone Relay Key. */
+    public static boolean isHeldBy(EntityPlayer player) {
+        return HeldItems.holds(player, ItemRedstoneRelayKey.class);
     }
 
     @Override
     public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
         Names.addDescription(tooltip,
                 "Allows Keypads, Keycard Scanners, and Safes",
-                "to be bound to the Redstone Gate");
+                "to be bound to the Redstone Gate.",
+                "Sneak + Right Click a Keypad to configure it.");
     }
 }

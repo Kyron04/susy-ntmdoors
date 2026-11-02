@@ -95,6 +95,9 @@ public class BlockDoorGeneric extends Block {
     /** Locked twins refuse hand clicks; keypads, scanners and redstone drive them. */
     public final boolean locked;
 
+    /** Three real hours of continuous mining at 20 ticks per second, regardless of the tool. */
+    private static final float SECURITY_BREAK_DAMAGE_PER_TICK = 1F / (3F * 60F * 60F * 20F);
+
     /** True for the {@code _security} form: scanners and the Creative Keycard, nothing else. */
     public boolean isSecurity() {
         return variant == Variant.SECURITY;
@@ -109,12 +112,19 @@ public class BlockDoorGeneric extends Block {
         setRegistryName(NTMDoors.MODID, name);
         setTranslationKey(NTMDoors.MODID + "." + name);
         setCreativeTab(NTMDoors.TAB);
-        setHardness(decl.hardness);
-        setResistance(decl.resistance);
+        setHardness(isSecurity() ? 216000F : decl.hardness);
+        setResistance(isSecurity() ? 6000000F : decl.resistance);
         setSoundType(SoundType.METAL);
         setHarvestLevel("pickaxe", 0);
         setDefaultState(blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH)
                 .withProperty(PART, Part.CORE).withProperty(PASS, false));
+    }
+
+    /** Security doors take three real hours to break; normal and locked doors keep their old speed. */
+    @Override
+    public float getPlayerRelativeBlockHardness(IBlockState state, EntityPlayer player, World world, BlockPos pos) {
+        if (isSecurity()) return SECURITY_BREAK_DAMAGE_PER_TICK;
+        return super.getPlayerRelativeBlockHardness(state, player, world, pos);
     }
 
     // ------------------------------------------------------------ block state

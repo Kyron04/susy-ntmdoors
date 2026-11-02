@@ -4,7 +4,7 @@
 
 NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system from HBM's Nuclear Tech Mod. No NTM installation is required. Every model, texture and sound is bundled.
 
-**Current version: 1.0.37**
+**Current version: 1.0.38**
 
 ## 16 multiblock doors
 
@@ -32,7 +32,8 @@ Every door:
 - has state-dependent collision and selection boxes — walk through when open, click-through gaps
 - responds to redstone from any cell (edge-triggered) and right-click
 - is also registered as a redstone-only `<door>_locked` twin for adventure maps
-- has a `<door>_security` variant (fourteen doors) that only a keycard scanner or the Creative Keycard can open
+- has a `<door>_security` variant (all sixteen doors, including both silo hatches) that only a keycard scanner or the Creative Keycard can open
+- security doors take three real hours of continuous mining with any tool and resist explosions; normal and locked doors keep their original break times
 
 ## Keypad
 
@@ -48,6 +49,8 @@ A wall-mounted code panel that binds to the door it touches:
   - **Multi** — link up to 9 doors, adjacent or remote, all on one shared code
 - after linking, `Confirm Door Bounding?` is shown and `E` accepts; the pad then shows `Input code` / `Input multi code`
 - once a pad has a code or any link, its mode is locked and the screwdriver can only reset it
+- Redstone Relay Key: normal right-click starts/finishes a wireless gate-binding session
+- Redstone Relay Key: sneak + right-click opens a two-page screen. Page one sets the first code; page two has `On fail` / `On success` gate outputs plus `Reset Code`, `Override Door Locks` and `Force Close`
 
 Keypads can bind and drive locked doors. Security doors stay off limits, and a door is never driven by both a keypad and a scanner.
 
@@ -88,7 +91,7 @@ Screwdriver + sneak + right-click cycles door skins:
 
 ## Safes
 
-- **Code Safe** — a 1x1x1 steel safe with a keypad. The first accepted 1–6 digit code becomes its code; later entries must match. There is no owner restriction, so anyone who knows the code can open it. A correct code shows the `SUCCESS!!!` card and then opens a 27-slot container.
+- **Code Safe** - a 1x1x1 steel safe with a keypad. The first accepted 1-6 digit code becomes its code; later entries must match. There is no owner restriction, so anyone who knows the code can open it. A correct code shows the `SUCCESS!!!` card and then opens a 27-slot container. Safes take three real hours of continuous mining with any tool and resist explosions.
 - **Biometric Safe** — the same shell and 27-slot container, opened by a bound Biometric Operator Keycard or the Creative Keycard. `Match user` restricts access to the card's enrolled holder; with it off, any bound biometric operator card opens the safe.
 - Both safes save their contents and settings, drop their inventory when broken, and show full item names and NBT tooltip lines in the container. Their slots are not exposed to hoppers or logistics automation; only the opened container can access them.
 - Each safe has a second options page:
@@ -100,12 +103,13 @@ Screwdriver + sneak + right-click cycles door skins:
 
 - Normal and locked doors respond to redstone. Security doors still require a keycard scanner or the Creative Keycard, and lockdown still blocks redstone edges.
 - **Redstone Gate** - a full-cube redstone component with separate off and on textures. It starts off, turns on while it receives redstone power or a wireless pulse, and emits a full-strength signal while on. A wireless event powers it for a full 20 ticks, and another event extends the pulse. Sneak + right-click with a Biometric Operator Keycard or the Creative Keycard to open its screen.
-- **Redstone Relay Key** - a red-named creative key. Sneak + right-click a safe or keycard scanner to start/finish a wireless binding session, then sneak + right-click a Redstone Gate to link or unlink it. Devices and gates can be linked many-to-many in the same dimension.
+- **Redstone Relay Key** - a red-named creative key. Sneak + right-click a safe or keycard scanner to start/finish a wireless binding session, then sneak + right-click a Redstone Gate to link or unlink it. On a keypad, a normal right-click starts/finishes the session and sneak + right-click opens the keypad screen. Devices and gates can be linked many-to-many in the same dimension.
 - Both safes and the keycard scanner have a third **Redstone** page with a red panel tint and scrolling. Event toggles start off and pulse every linked gate for 20 ticks when enabled:
   - Code Safe: Code fail, Code success, Binding activities, Lockout.
   - Biometric Safe: Scan fail, Scan success, Match holder fail, Match holder success, Lockout.
   - Keycard Scanner: Scan fail, Scan success, Match holder fail, Match holder success, Private key fail, Private key success, Biometric fail, Biometric success, Lockout.
-- Safe-to-door, scanner-to-door, keypad and safe-binding links are untouched. Breaking a safe, scanner or gate clears its reciprocal wireless links.
+  - Keypad (Redstone Relay Key screen): On fail, On success.
+- Safe-to-door, scanner-to-door, keypad and safe-binding links are untouched. Breaking a safe, scanner, keypad or gate clears its reciprocal wireless links.
 
 ## Safe-to-door binding
 

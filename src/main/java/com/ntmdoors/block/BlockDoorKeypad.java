@@ -1,6 +1,7 @@
 package com.ntmdoors.block;
 
 import com.ntmdoors.NTMDoors;
+import com.ntmdoors.item.ItemRedstoneRelayKey;
 import com.ntmdoors.tile.TileEntityDoorKeypad;
 import com.ntmdoors.util.Facings;
 import net.minecraft.block.Block;
@@ -179,14 +180,31 @@ public class BlockDoorKeypad extends Block {
     @Override
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player,
                                     EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
-        if (!world.isRemote) {
-            TileEntity te = world.getTileEntity(pos);
-            if (te instanceof TileEntityDoorKeypad) {
-                TileEntityDoorKeypad keypad = (TileEntityDoorKeypad) te;
-                int button = keypad.buttonAt(hitX, hitY, hitZ);
-                if (button >= 0) keypad.pressButton(button);
-            }
+        if (world.isRemote) return true;
+        TileEntity te = world.getTileEntity(pos);
+        if (!(te instanceof TileEntityDoorKeypad)) return false;
+        TileEntityDoorKeypad keypad = (TileEntityDoorKeypad) te;
+
+        // The Redstone Relay Key owns a normal click: it starts or finishes the wireless gate
+        // session instead of pressing a keypad button. Sneak + right click is handled by the item
+        // and opens the keypad screen.
+        ItemStack held = player.getHeldItem(hand);
+        if (held.getItem() instanceof ItemRedstoneRelayKey) {
+            keypad.getRedstoneBinding().toggle(player);
+            return true;
         }
+
+        int button = keypad.buttonAt(hitX, hitY, hitZ);
+        if (button >= 0) keypad.pressButton(button);
         return true;
+    }
+
+    @Override
+    public void breakBlock(World world, BlockPos pos, IBlockState state) {
+        TileEntity te = world.getTileEntity(pos);
+        if (te instanceof TileEntityDoorKeypad) {
+            ((TileEntityDoorKeypad) te).getRedstoneBinding().clearGates();
+        }
+        super.breakBlock(world, pos, state);
     }
 }

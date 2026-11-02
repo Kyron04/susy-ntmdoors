@@ -4,7 +4,7 @@ Standalone port of the HBM's Nuclear Tech Mod door system to Minecraft 1.12.2.
 The implementation and the included door models, textures and sounds are used under the
 LGPL-3.0. See `LICENSE.LESSER` and `NOTICE` for attribution and source information.
 
-Current release: **1.0.37**
+Current release: **1.0.38**
 
 Source design reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
 
@@ -26,9 +26,10 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
 * Redstone from any cell of the door (edge triggered), right click toggle
 * Every door is also registered as a locked copy named `<door>_locked`, and as a `<door>_security`
   copy that only a keycard scanner (or the Creative Keycard directly) can open. Normal and locked
-  doors respond to redstone; security doors refuse it, as do hand clicks. The two silo hatches have
-  no security variant. Keypads may bind and drive locked doors exactly like normal ones; security
-  doors are off limits to keypads.
+  doors respond to redstone; security doors refuse it, as do hand clicks. All 16 doors, including
+  both silo hatches, now have a security variant. Security doors take three real hours to mine with
+  any tool, and keypads may bind and drive locked doors exactly like normal ones; security doors
+  are off limits to keypads.
 * State dependent collision and selection boxes that follow the door animation continuously
   (walk through when open, click-through gaps)
 * OBJ renderer (TESR) with per-group translate/rotate animations, X/Y/Z clipping and sounds
@@ -62,7 +63,11 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   pad, which clears every link and code. A keypad placed next to an already-bound door auto-syncs
   its code and skips the confirmation. A keypad never binds or drives a security door: placing one
   against a security door shows `Unable to bound` in red on the LCD. A door is also driven by
-  keypads or keycard scanners, never both, so a pad refuses a door a scanner already controls
+  keypads or keycard scanners, never both, so a pad refuses a door a scanner already controls.
+  Sneak + right click a keypad with the Redstone Relay Key to open its screen: set the first code,
+  toggle `On fail` / `On success` Redstone Gate outputs, reset the code, override door locks, or
+  force-close its doors. A normal click with the Redstone Relay Key starts/finishes its wireless
+  gate binding session.
 * Keycard Scanner (`ntmdoors:keycard_scanner`): wall-mounted card reader with a black display, a
   blue security stripe and green / yellow / red indicator lenses. Sneak + right click it with the
   screwdriver to start a binding session, sneak + right click up to nine closed doors within 32
@@ -123,9 +128,9 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   `Reset code`; `Binding Activities` enables door linking and the lockout-door response, `Lockout
   mode` locks the keypad for five minutes after three bad codes, and `Reset code` clears the code so
   the next entry sets a new one. The inventory and the code are saved with the block, and breaking
-  the safe drops its contents. Neither safe exposes its slots to hoppers or logistics automation;
-  only the opened container can access them. The Creative Keycard bypasses the keypad and opens the
-  container immediately.
+  the safe drops its contents. A safe takes three real hours of continuous mining with any tool.
+  Neither safe exposes its slots to hoppers or logistics automation; only the opened container can
+  access them. The Creative Keycard bypasses the keypad and opens the container immediately.
 * Biometric Safe (`ntmdoors:biometric_safe`): the same shell, inventory and options page, but its
   reader accepts the Biometric Operator Keycard, or the Creative Keycard. Right clicking with a
   bound biometric card shows a short `SCANNING...` screen, then the same `SUCCESS!!!` / `FAILED!!!`
@@ -148,15 +153,18 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
 * Redstone Relay Key (`ntmdoors:redstone_relay_key`): a red-named creative key with the tooltip
   `Allows Keypads, Keycard Scanners, and Safes to be bound to the Redstone Gate`. Sneak + right-click
   a safe or scanner to start/finish a wireless binding session, then sneak + right-click a gate to
-  link or unlink it. Devices and gates can be linked many-to-many in the same dimension.
+  link or unlink it. On a keypad, a normal right-click starts/finishes the binding session and
+  sneak + right-click opens its configuration screen. Devices and gates can be linked many-to-many
+  in the same dimension.
 * Both safes and the keycard scanner have a third `Redstone` page with a red panel tint and
   scrolling. Its event toggles start off; enabling one pulses every linked gate for 20 ticks.
   - Code Safe: Code fail, Code success, Binding activities, Lockout.
   - Biometric Safe: Scan fail, Scan success, Match holder fail, Match holder success, Lockout.
   - Keycard Scanner: Scan fail, Scan success, Match holder fail, Match holder success, Private key
     fail, Private key success, Biometric fail, Biometric success, Lockout.
-  The safe's Redstone page does not show the player inventory. Breaking a safe, scanner or gate
-  clears the reciprocal wireless links; door/keypad/scanner bindings are untouched.
+  - Keypad (Redstone Relay Key screen): On fail, On success.
+  The safe's Redstone page does not show the player inventory. Breaking a safe, scanner, keypad or
+  gate clears the reciprocal wireless links; door/keypad/scanner bindings are untouched.
 * RFID cards: one blank card plus red, violet, green, blue, black, orange and yellow variants.
   Each colour is a separate item (`ntmdoors:red_rfid_card` and so on) sharing a single item class
   and one hand-display model, so they all sit in the hand identically. The scanner recognises them
