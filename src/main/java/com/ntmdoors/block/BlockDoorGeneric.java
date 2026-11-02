@@ -47,10 +47,10 @@ import java.util.List;
  * block. Rendering is done by a TESR on the core, so the block itself is invisible.
  *
  * <p>Each {@link DoorDecl} is registered as the normal door, a {@code _locked} twin that is driven
- * by keypads and scanners, and a {@code _security} variant that only a bound Keycard Scanner (or
- * the Creative Keycard) opens. All variants share the same declaration; the variant only affects
- * the registry name and the access rules, so they can never drift out of sync with the door
- * definition.</p>
+ * by redstone, keypads and scanners, and a {@code _security} variant that only a bound Keycard
+ * Scanner (or the Creative Keycard) opens. All variants share the same declaration; the variant
+ * only affects the registry name and the access rules, so they can never drift out of sync with
+ * the door definition.</p>
  */
 public class BlockDoorGeneric extends Block {
 
@@ -92,7 +92,7 @@ public class BlockDoorGeneric extends Block {
 
     public final DoorDecl decl;
     public final Variant variant;
-    /** Locked twins refuse hand clicks and redstone; keypads and scanners drive them. */
+    /** Locked twins refuse hand clicks; keypads, scanners and redstone drive them. */
     public final boolean locked;
 
     /** True for the {@code _security} form: scanners and the Creative Keycard, nothing else. */

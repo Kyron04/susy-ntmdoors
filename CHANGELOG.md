@@ -1,5 +1,16 @@
-HBM DOORS: REFRESHED 1.0.30
+HBM DOORS: REFRESHED 1.0.31
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.31
+REDSTONE
+- Normal and locked doors now both respond to redstone. Security doors still require a
+  keycard scanner or the Creative Keycard, and lockdown still blocks redstone edges.
+- Added the Redstone Relay Key. It has a red menu name and the tooltip "Allows Keypads,
+  Keycard Scanners, and Safes to be bound to the Redstone Gate". The binding logic is not
+  implemented yet.
+- Added the Redstone Gate. It has a red menu name, starts off, switches to its on texture
+  while receiving redstone, and emits a full-strength signal while on. The bound-activity
+  logic is not implemented yet.
 
 1.0.30
 SAFE BINDING

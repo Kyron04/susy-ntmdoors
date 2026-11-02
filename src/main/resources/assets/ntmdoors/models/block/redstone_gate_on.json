@@ -1,0 +1,6 @@
+{
+  "parent": "block/cube_all",
+  "textures": {
+    "all": "ntmdoors:blocks/redstone_gate_on"
+  }
+}
