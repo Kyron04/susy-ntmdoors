@@ -4,7 +4,7 @@ Standalone port of the HBM's Nuclear Tech Mod door system to Minecraft 1.12.2.
 The implementation and the included door models, textures and sounds are used under the
 LGPL-3.0. See `LICENSE.LESSER` and `NOTICE` for attribution and source information.
 
-Current release: **1.0.43**
+Current release: **1.0.44**
 
 Source design reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
 
@@ -146,9 +146,11 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   safe's lockout closes every linked door once. Breaking the safe clears the links.
 * Speaker (`ntmdoors:speaker`): a 1x1x1 black-ash cabinet with a woofer, tweeter and bass reflex
   port. Shift-right-click (with any item or an empty hand) opens a safe-style toggle screen with
-  `Enabled` and `Sound`; anyone may use it. While enabled and receiving redstone power, it loops
-  the existing lockout alarm until the signal or `Enabled` is removed. The alarm is the first
-  placeholder sound, and the selection is saved with the block.
+  `Enabled`, `Sound`, and a 1-64 block range slider; anyone may use it. While enabled and receiving
+  redstone power, it loops the existing lockout alarm until the signal or `Enabled` is removed.
+  The alarm is the first placeholder sound; the sound, range and enabled state are saved with the
+  block. A normal right-click with the Redstone Relay Key starts/finishes a wireless binding
+  session, and starting the alarm pulses every linked Redstone Gate.
 * Redstone Gate (`ntmdoors:redstone_gate`): a full-cube redstone component with separate off and on
   textures. It starts off, turns on while it receives redstone power or a wireless pulse, and emits
   a full-strength signal while on. A wireless event keeps it powered for its configured duration;
@@ -159,11 +161,12 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   +1/+5/+10/+20 second and matching subtract buttons. It has a red menu name and the tooltip
   `Bound activities from Keypads, Keycard Scanners, and Safes will emit a redstone signal`.
 * Redstone Relay Key (`ntmdoors:redstone_relay_key`): a red-named creative key with the tooltip
-  `Allows Keypads, Keycard Scanners, and Safes to be bound to the Redstone Gate`. Sneak + right-click
-  a safe or scanner to start/finish a wireless binding session, then sneak + right-click a gate to
-  link or unlink it. On a keypad, a normal right-click starts/finishes the binding session and
-  sneak + right-click opens its configuration screen. Devices and gates can be linked many-to-many
-  in the same dimension.
+  `Allows Keypads, Keycard Scanners, Safes, and Speakers to be bound to the Redstone Gate`. Sneak +
+  right-click a safe or scanner to start/finish a wireless binding session, then sneak + right-click
+  a gate to link or unlink it. On a keypad or speaker, a normal right-click starts/finishes the
+  binding session; sneak + right-click opens the keypad configuration screen, while the speaker
+  uses shift-right-click for its own screen. Devices and gates can be linked many-to-many in the
+  same dimension.
 * Both safes and the keycard scanner have a third `Redstone` page with a red panel tint and
   scrolling. Its event toggles start off; enabling one pulses every linked gate for that gate's
   configured activation duration.

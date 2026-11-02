@@ -4,7 +4,7 @@
 
 NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system from HBM's Nuclear Tech Mod. No NTM installation is required. Every model, texture and sound is bundled.
 
-**Current version: 1.0.43**
+**Current version: 1.0.44**
 
 ## 16 multiblock doors
 
@@ -102,13 +102,13 @@ Screwdriver + sneak + right-click cycles door skins:
 
 ## Decorative blocks
 
-- **Speaker** - a 1x1x1 black-ash cabinet with a woofer, tweeter and bass reflex port. Shift-right-click (with any item or an empty hand) opens a safe-style toggle screen with **Enabled** and **Sound**; anyone may use it. While enabled and receiving redstone power, it loops the existing lockout alarm until the signal or **Enabled** is removed. The alarm is the first placeholder sound, and the selection is saved with the block.
+- **Speaker** - a 1x1x1 black-ash cabinet with a woofer, tweeter and bass reflex port. Shift-right-click (with any item or an empty hand) opens a safe-style toggle screen with **Enabled**, **Sound**, and a 1-64 block range slider; anyone may use it. While enabled and receiving redstone power, it loops the existing lockout alarm until the signal or **Enabled** is removed. The alarm is the first placeholder sound; the sound, range and enabled state are saved with the block. A normal right-click with the Redstone Relay Key starts/finishes a wireless binding session, and starting the alarm pulses every linked Redstone Gate.
 
 ## Redstone
 
 - Normal and locked doors respond to redstone. Security doors still require a keycard scanner or the Creative Keycard, and lockdown still blocks redstone edges.
 - **Redstone Gate** - a full-cube redstone component with separate off and on textures. It starts off, turns on while it receives redstone power or a wireless pulse, and emits a full-strength signal while on. A wireless event powers it for the gate's configured duration, and another event extends the pulse. Both Operator Keycards and the Creative Keycard open its settings screen: `Stay active after signal`, `Invert operation`, and +1/+5/+10/+20 second activation duration controls with matching subtract buttons.
-- **Redstone Relay Key** - a red-named creative key. Sneak + right-click a safe or keycard scanner to start/finish a wireless binding session, then sneak + right-click a Redstone Gate to link or unlink it. On a keypad, a normal right-click starts/finishes the session and sneak + right-click opens the keypad screen. Devices and gates can be linked many-to-many in the same dimension.
+- **Redstone Relay Key** - a red-named creative key. Sneak + right-click a safe or keycard scanner to start/finish a wireless binding session, then sneak + right-click a Redstone Gate to link or unlink it. On a keypad or speaker, a normal right-click starts/finishes the session; sneak + right-click opens the keypad screen, while the speaker uses shift-right-click for its own screen. Devices and gates can be linked many-to-many in the same dimension.
 - Both safes and the keycard scanner have a third **Redstone** page with a red panel tint and scrolling. Event toggles start off and pulse every linked gate for that gate's configured activation duration when enabled:
   - Code Safe: Code fail, Code success, Binding activities, Lockout.
   - Biometric Safe: Scan fail, Scan success, Match holder fail, Match holder success, Lockout.

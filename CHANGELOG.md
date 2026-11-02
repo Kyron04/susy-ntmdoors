@@ -1,5 +1,13 @@
-HBM DOORS: REFRESHED 1.0.43
+HBM DOORS: REFRESHED 1.0.44
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.44
+FEATURES
+- Added a 1-64 block range slider to the Speaker screen, defaulting to 32. The range controls how
+  far the alarm is heard; the value is saved with the block.
+- Speakers can now join the Redstone Gate network. A normal right-click with the Redstone Relay Key
+  starts/finishes the speaker's binding session, then gates are linked as usual. Starting the alarm
+  pulses every linked gate.
 
 1.0.43
 FEATURES

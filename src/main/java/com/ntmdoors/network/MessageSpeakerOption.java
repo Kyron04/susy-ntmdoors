@@ -14,7 +14,8 @@ public class MessageSpeakerOption implements IMessage {
 
     public static final int ENABLED = 0;
     public static final int SOUND = 1;
-    public static final int OPTION_COUNT = 2;
+    public static final int RANGE = 2;
+    public static final int OPTION_COUNT = 3;
 
     private BlockPos pos;
     private int option;
@@ -67,6 +68,9 @@ public class MessageSpeakerOption implements IMessage {
                     break;
                 case SOUND:
                     speaker.setSound(message.value);
+                    break;
+                case RANGE:
+                    speaker.setRange(message.value);
                     break;
                 default:
                     break;

@@ -6,6 +6,7 @@ import com.ntmdoors.tile.TileEntityDoorKeypad;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
 import com.ntmdoors.tile.TileEntityRedstoneGate;
 import com.ntmdoors.tile.TileEntitySafe;
+import com.ntmdoors.tile.TileEntitySpeaker;
 import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.Names;
 import net.minecraft.client.util.ITooltipFlag;
@@ -25,8 +26,8 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 /**
- * Redstone Relay Key. Sneak right-click a safe or scanner to start or finish a wireless binding
- * session, then sneak right-click any Redstone Gate to link or unlink it.
+ * Redstone Relay Key. Sneak right-click a safe or scanner (or normal-click a speaker) to start or
+ * finish a wireless binding session, then sneak right-click any Redstone Gate to link or unlink it.
  */
 public class ItemRedstoneRelayKey extends Item {
 
@@ -44,10 +45,20 @@ public class ItemRedstoneRelayKey extends Item {
     @Override
     public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand,
                                       EnumFacing facing, float hitX, float hitY, float hitZ) {
-        // Vanilla skips Block.onBlockActivated for a sneaking player, so the item owns this action.
-        if (!player.isSneaking()) return EnumActionResult.PASS;
-
         TileEntity te = world.getTileEntity(pos);
+
+        // The speaker uses a normal click for binding because shift-right-click is its GUI gesture.
+        if (!player.isSneaking()) {
+            if (te instanceof TileEntitySpeaker) {
+                if (!world.isRemote) {
+                    ((TileEntitySpeaker) te).getRedstoneBinding().toggle(player);
+                }
+                return EnumActionResult.SUCCESS;
+            }
+            return EnumActionResult.PASS;
+        }
+
+        // Vanilla skips Block.onBlockActivated for a sneaking player, so the item owns this action.
         if (world.isRemote) {
             // Sneak-clicking a keypad opens its security-code screen, then the configuration GUI.
             // Gate binding uses a normal click on the keypad, handled by BlockDoorKeypad.
@@ -59,6 +70,8 @@ public class ItemRedstoneRelayKey extends Item {
             ((TileEntitySafe) te).getRedstoneBinding().toggle(player);
         } else if (te instanceof TileEntityKeycardScanner) {
             ((TileEntityKeycardScanner) te).getRedstoneBinding().toggle(player);
+        } else if (te instanceof TileEntitySpeaker) {
+            ((TileEntitySpeaker) te).getRedstoneBinding().toggle(player);
         } else if (te instanceof TileEntityRedstoneGate) {
             RedstoneBinding binding = RedstoneBinding.findSession(world, player);
             if (binding == null) {
@@ -79,8 +92,9 @@ public class ItemRedstoneRelayKey extends Item {
     @Override
     public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
         Names.addDescription(tooltip,
-                "Allows Keypads, Keycard Scanners, and Safes",
-                "to be bound to the Redstone Gate.",
+                "Allows Keypads, Keycard Scanners, Safes,",
+                "and Speakers to be bound to the Redstone Gate.",
+                "Normal Right Click a Speaker to bind it.",
                 "Sneak + Right Click a Keypad to configure it.");
     }
 }

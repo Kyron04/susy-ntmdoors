@@ -95,6 +95,15 @@ public class BlockSpeaker extends Block {
         if (te instanceof TileEntitySpeaker) ((TileEntitySpeaker) te).onNeighborChanged();
     }
 
+    @Override
+    public void breakBlock(World world, BlockPos pos, IBlockState state) {
+        TileEntity te = world.getTileEntity(pos);
+        if (te instanceof TileEntitySpeaker) {
+            ((TileEntitySpeaker) te).getRedstoneBinding().clearGates();
+        }
+        super.breakBlock(world, pos, state);
+    }
+
     /**
      * The front is recessed and the driver/trim details sit just proud of it, so the block is not
      * opaque or a full cube for rendering. Collision remains the default full block.
