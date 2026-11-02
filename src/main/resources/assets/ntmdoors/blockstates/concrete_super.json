@@ -1,0 +1,52 @@
+{
+    "variants": {
+        "meta=0": {
+            "model": "ntmdoors:concrete_super"
+        },
+        "meta=1": {
+            "model": "ntmdoors:concrete_super"
+        },
+        "meta=2": {
+            "model": "ntmdoors:concrete_super"
+        },
+        "meta=3": {
+            "model": "ntmdoors:concrete_super"
+        },
+        "meta=4": {
+            "model": "ntmdoors:concrete_super"
+        },
+        "meta=5": {
+            "model": "ntmdoors:concrete_super"
+        },
+        "meta=6": {
+            "model": "ntmdoors:concrete_super"
+        },
+        "meta=7": {
+            "model": "ntmdoors:concrete_super"
+        },
+        "meta=8": {
+            "model": "ntmdoors:concrete_super"
+        },
+        "meta=9": {
+            "model": "ntmdoors:concrete_super"
+        },
+        "meta=10": {
+            "model": "ntmdoors:concrete_super_m0"
+        },
+        "meta=11": {
+            "model": "ntmdoors:concrete_super_m0"
+        },
+        "meta=12": {
+            "model": "ntmdoors:concrete_super_m1"
+        },
+        "meta=13": {
+            "model": "ntmdoors:concrete_super_m1"
+        },
+        "meta=14": {
+            "model": "ntmdoors:concrete_super_m2"
+        },
+        "meta=15": {
+            "model": "ntmdoors:concrete_super_m3"
+        }
+    }
+}

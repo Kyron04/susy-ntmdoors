@@ -1,0 +1,7 @@
+{
+    "variants": {
+        "variant=default": {
+            "model": "ntmdoors:brick_concrete_broken"
+        }
+    }
+}
