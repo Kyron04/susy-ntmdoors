@@ -1,5 +1,11 @@
-HBM DOORS: REFRESHED 1.0.35
+HBM DOORS: REFRESHED 1.0.36
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.36
+FIX
+- Fixed the Redstone Gate latching on when redstone dust sits on top of it. The pulse expiry
+  now forces the gate off before it checks for real external power, so the dust can no longer
+  feed the gate's own output back in as an input.
 
 1.0.35
 FEATURES

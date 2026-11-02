@@ -90,6 +90,10 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
         if (getWorld() == null || getWorld().isRemote || pulseEnd <= 0) return;
         if (isPulsing()) return;
         pulseEnd = 0;
+        // Turn off first so any wire the gate was powering updates before we look for a real
+        // external input. Reading the input while still powered lets a wire on top of the gate
+        // latch it on forever.
+        setPowered(false);
         setPowered(BlockRedstoneGate.isReceivingPower(getWorld(), pos));
     }
 
