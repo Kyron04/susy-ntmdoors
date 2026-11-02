@@ -1,0 +1,8 @@
+{
+    "parent": "block/half_slab",
+    "textures": {
+        "bottom": "ntmdoors:blocks/brick_concrete_cracked",
+        "top": "ntmdoors:blocks/brick_concrete_cracked",
+        "side": "ntmdoors:blocks/brick_concrete_cracked"
+    }
+}

@@ -35,11 +35,16 @@ minecraft {
 
 repositories {
     mavenCentral()
+    // Chisel 1.12.2-1.0.2.45 (CurseForge project 235279, file 2915375).
+    maven {
+        name = 'curseMaven'
+        url = 'https://cursemaven.com'
+    }
 }
 
 dependencies {
-    // Put mod dependencies here, e.g.:
-    // deobfCompile 'curse.maven:some-mod:123456:789012'
+    // Chisel is the only required mod dependency; its carving registry supplies the chisel groups.
+    deobfCompile 'curse.maven:chisel-235279:2915375'
 }
 
 processResources {

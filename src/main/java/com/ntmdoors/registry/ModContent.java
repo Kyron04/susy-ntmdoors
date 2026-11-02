@@ -7,12 +7,11 @@ import com.ntmdoors.block.BlockDoorKeypad;
 import com.ntmdoors.block.BlockKeycardProgrammer;
 import com.ntmdoors.block.BlockKeycardScanner;
 import com.ntmdoors.block.BlockSafe;
-<<<<<<< Updated upstream
-=======
 import com.ntmdoors.concrete.ConcreteRecipes;
 import com.ntmdoors.concrete.ConcreteSet;
 import com.ntmdoors.hlblocks.HLBlocksContent;
->>>>>>> Stashed changes
+import com.ntmdoors.concrete.ConcreteRecipes;
+import com.ntmdoors.concrete.ConcreteSet;
 import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.DoorDecls;
 import com.ntmdoors.item.ItemBiometricKeycard;
@@ -163,13 +162,12 @@ public class ModContent {
         e.getRegistry().register(KEYCARD_PROGRAMMER);
         e.getRegistry().register(SAFE);
         e.getRegistry().register(BIOMETRIC_SAFE);
-<<<<<<< Updated upstream
-=======
         // Concrete goes last, like every other addition: no existing block id moves.
         ConcreteSet.registerBlocks(e);
         // HL Blocks follows concrete; both are newer than the original door blocks.
         HLBlocksContent.registerBlocks(e);
->>>>>>> Stashed changes
+        // Concrete goes last, like every other addition: no existing block id moves.
+        ConcreteSet.registerBlocks(e);
     }
 
     @SubscribeEvent
@@ -206,13 +204,12 @@ public class ModContent {
                 .setRegistryName(BIOMETRIC_SAFE.getRegistryName()));
         // Newest cards go after every existing item, so saved numeric item IDs do not shift.
         for (ItemRfidCard card : SCP_CARDS) e.getRegistry().register(card);
-<<<<<<< Updated upstream
-=======
         // Concrete is the newest addition and stays last for the same reason.
         ConcreteSet.registerItems(e);
         // HL Blocks follows concrete, so every previously saved item id is untouched.
         HLBlocksContent.registerItems(e);
->>>>>>> Stashed changes
+        // Concrete is the newest addition and stays last for the same reason.
+        ConcreteSet.registerItems(e);
     }
 
     @SubscribeEvent
@@ -235,5 +232,9 @@ public class ModContent {
 
         // Door crafting recipes are intentionally not included: the originals depend on NTM-only materials.
         // Add your own here (or via JSON in data/recipes), e.g. new ShapedRecipes(...) per door.
+
+        // Concrete building recipes; the base blocks use half-scale crafting-table stand-ins for
+        // CE's chemical-plant and crystallizer steps. See ConcreteRecipes for the substitution list.
+        ConcreteRecipes.register(e);
     }
 }

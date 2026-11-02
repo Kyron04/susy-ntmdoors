@@ -2,11 +2,9 @@ package com.ntmdoors.client;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.block.BlockDoorGeneric;
-<<<<<<< Updated upstream
-=======
 import com.ntmdoors.hlblocks.ItemBlockGroup;
 import com.ntmdoors.item.ItemBlockConcreteVariant;
->>>>>>> Stashed changes
+import com.ntmdoors.item.ItemBlockConcreteVariant;
 import com.ntmdoors.registry.ModContent;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -44,13 +42,12 @@ public class ClientModels {
         // anything added later, and an unregistered item renders as a magenta checkerboard.
         for (Item item : Item.REGISTRY) {
             ResourceLocation name = item.getRegistryName();
-<<<<<<< Updated upstream
-            if (name != null && NTMDoors.MODID.equals(name.getNamespace())) inventory(item);
-=======
             if (name != null && NTMDoors.MODID.equals(name.getNamespace())) {
                 if (item instanceof ItemBlockGroup) {
                     hlGroup((ItemBlockGroup) item);
                 } else if (item instanceof ItemBlockConcreteVariant) {
+            if (name != null && NTMDoors.MODID.equals(name.getNamespace())) {
+                if (item instanceof ItemBlockConcreteVariant) {
                     variants((ItemBlockConcreteVariant) item);
                 } else {
                     inventory(item);
@@ -67,7 +64,6 @@ public class ClientModels {
         for (int meta = 0; meta < item.variantCount(); meta++) {
             ModelLoader.setCustomModelResourceLocation(item, meta, new ModelResourceLocation(
                     new ResourceLocation(NTMDoors.MODID, item.modelName(meta)), "inventory"));
->>>>>>> Stashed changes
         }
     }
 

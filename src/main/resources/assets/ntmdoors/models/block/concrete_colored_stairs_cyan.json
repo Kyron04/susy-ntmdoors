@@ -1,0 +1,8 @@
+{
+    "parent": "block/stairs",
+    "textures": {
+        "bottom": "ntmdoors:blocks/concrete_cyan",
+        "top": "ntmdoors:blocks/concrete_cyan",
+        "side": "ntmdoors:blocks/concrete_cyan"
+    }
+}

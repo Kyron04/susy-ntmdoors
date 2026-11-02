@@ -4,8 +4,6 @@ Source: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
 Assets copied: multiblock door OBJ models, door textures, the vault label, and door sound effects.
 License: GNU Lesser General Public License v3.0 (see LICENSE.LESSER in this JAR).
 
-<<<<<<< Updated upstream
-=======
 The concrete building set is derived from HBM's Nuclear Tech Mod Community Edition (NTM CE):
   https://github.com/Warfactory-Official/Hbm-s-Nuclear-Tech-CE
 Assets copied: concrete textures under assets/ntmdoors/textures/blocks/
@@ -21,6 +19,7 @@ Block definitions, crate stacking and shift-scroll cycling in com.ntmdoors.hlblo
 same source.
 License: GNU Lesser General Public License v3.0.
 
->>>>>>> Stashed changes
+=======
+
 The Java implementation in com.ntmdoors is a standalone 1.12.2 port and keeps the original
 door behaviour and asset layout where practical.

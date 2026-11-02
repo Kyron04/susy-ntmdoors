@@ -16,8 +16,6 @@ under the GNU Lesser General Public License, version 3 (LGPL-3.0):
   * Door geometry, animation dimensions and behaviour used by
     src/main/java/com/ntmdoors/door/DoorDecls.java
 
-<<<<<<< Updated upstream
-=======
 The concrete building set is derived from HBM's Nuclear Tech Mod Community
 Edition (NTM CE):
   https://github.com/Warfactory-Official/Hbm-s-Nuclear-Tech-CE
@@ -37,7 +35,6 @@ The HL Blocks set is derived from NeoRussia's HL Blocks project:
 
 HL Blocks is used under the GNU Lesser General Public License, version 3 (LGPL-3.0).
 
->>>>>>> Stashed changes
 The transition seal model was converted from HBM's Collada source
 (seal.dae) into a grouped OBJ so the 1.12.2 renderer can display it without
 a runtime DAE loader. Its per-group rigid keyframes in
