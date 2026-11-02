@@ -1,16 +1,52 @@
 {
     "variants": {
-        "meta=0,half=bottom": {
+        "half=bottom,variant=0": {
             "model": "ntmdoors:half_slab_concrete"
         },
-        "meta=0,half=top": {
+        "half=top,variant=0": {
             "model": "ntmdoors:upper_slab_concrete"
         },
-        "meta=1,half=bottom": {
+        "half=bottom,variant=1": {
             "model": "ntmdoors:half_slab_concrete_smooth"
         },
-        "meta=1,half=top": {
+        "half=top,variant=1": {
             "model": "ntmdoors:upper_slab_concrete_smooth"
+        },
+        "half=bottom,variant=2": {
+            "model": "ntmdoors:half_slab_concrete"
+        },
+        "half=top,variant=2": {
+            "model": "ntmdoors:upper_slab_concrete"
+        },
+        "half=bottom,variant=3": {
+            "model": "ntmdoors:half_slab_concrete"
+        },
+        "half=top,variant=3": {
+            "model": "ntmdoors:upper_slab_concrete"
+        },
+        "half=bottom,variant=4": {
+            "model": "ntmdoors:half_slab_concrete"
+        },
+        "half=top,variant=4": {
+            "model": "ntmdoors:upper_slab_concrete"
+        },
+        "half=bottom,variant=5": {
+            "model": "ntmdoors:half_slab_concrete"
+        },
+        "half=top,variant=5": {
+            "model": "ntmdoors:upper_slab_concrete"
+        },
+        "half=bottom,variant=6": {
+            "model": "ntmdoors:half_slab_concrete"
+        },
+        "half=top,variant=6": {
+            "model": "ntmdoors:upper_slab_concrete"
+        },
+        "half=bottom,variant=7": {
+            "model": "ntmdoors:half_slab_concrete"
+        },
+        "half=top,variant=7": {
+            "model": "ntmdoors:upper_slab_concrete"
         }
     }
 }

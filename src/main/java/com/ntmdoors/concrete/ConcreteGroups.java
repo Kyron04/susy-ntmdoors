@@ -180,7 +180,7 @@ public final class ConcreteGroups {
             items.add(new ItemStack(group.single, 1, meta));
         }
         for (IBlockState state : group.single.getBlockState().getValidStates()) {
-            if (state.getValue(BlockConcreteSlab.META) < group.variantNames.length) {
+            if (state.getValue(BlockConcreteSlab.VARIANT).ordinal() < group.variantNames.length) {
                 states.add(state);
             }
         }

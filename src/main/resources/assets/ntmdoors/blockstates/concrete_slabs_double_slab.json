@@ -1,10 +1,28 @@
 {
     "variants": {
-        "meta=0": {
+        "variant=0": {
             "model": "ntmdoors:concrete"
         },
-        "meta=1": {
+        "variant=1": {
             "model": "ntmdoors:concrete_smooth"
+        },
+        "variant=2": {
+            "model": "ntmdoors:concrete"
+        },
+        "variant=3": {
+            "model": "ntmdoors:concrete"
+        },
+        "variant=4": {
+            "model": "ntmdoors:concrete"
+        },
+        "variant=5": {
+            "model": "ntmdoors:concrete"
+        },
+        "variant=6": {
+            "model": "ntmdoors:concrete"
+        },
+        "variant=7": {
+            "model": "ntmdoors:concrete"
         }
     }
 }

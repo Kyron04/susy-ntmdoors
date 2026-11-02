@@ -1,16 +1,28 @@
 {
     "variants": {
-        "meta=0": {
+        "variant=0": {
             "model": "ntmdoors:brick_concrete"
         },
-        "meta=1": {
+        "variant=1": {
             "model": "ntmdoors:brick_concrete_mossy"
         },
-        "meta=2": {
+        "variant=2": {
             "model": "ntmdoors:brick_concrete_cracked"
         },
-        "meta=3": {
+        "variant=3": {
             "model": "ntmdoors:brick_concrete_broken"
+        },
+        "variant=4": {
+            "model": "ntmdoors:brick_concrete"
+        },
+        "variant=5": {
+            "model": "ntmdoors:brick_concrete"
+        },
+        "variant=6": {
+            "model": "ntmdoors:brick_concrete"
+        },
+        "variant=7": {
+            "model": "ntmdoors:brick_concrete"
         }
     }
 }

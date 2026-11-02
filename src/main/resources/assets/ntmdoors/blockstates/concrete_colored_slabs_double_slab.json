@@ -1,27 +1,27 @@
 {
     "variants": {
-        "meta=0": {
+        "variant=0": {
             "model": "ntmdoors:concrete_white"
         },
-        "meta=1": {
+        "variant=1": {
             "model": "ntmdoors:concrete_orange"
         },
-        "meta=2": {
+        "variant=2": {
             "model": "ntmdoors:concrete_magenta"
         },
-        "meta=3": {
+        "variant=3": {
             "model": "ntmdoors:concrete_light_blue"
         },
-        "meta=4": {
+        "variant=4": {
             "model": "ntmdoors:concrete_yellow"
         },
-        "meta=5": {
+        "variant=5": {
             "model": "ntmdoors:concrete_lime"
         },
-        "meta=6": {
+        "variant=6": {
             "model": "ntmdoors:concrete_pink"
         },
-        "meta=7": {
+        "variant=7": {
             "model": "ntmdoors:concrete_gray"
         }
     }

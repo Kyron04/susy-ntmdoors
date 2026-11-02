@@ -1,51 +1,51 @@
 {
     "variants": {
-        "meta=0,half=bottom": {
+        "half=bottom,variant=0": {
             "model": "ntmdoors:half_slab_concrete_white"
         },
-        "meta=0,half=top": {
+        "half=top,variant=0": {
             "model": "ntmdoors:upper_slab_concrete_white"
         },
-        "meta=1,half=bottom": {
+        "half=bottom,variant=1": {
             "model": "ntmdoors:half_slab_concrete_orange"
         },
-        "meta=1,half=top": {
+        "half=top,variant=1": {
             "model": "ntmdoors:upper_slab_concrete_orange"
         },
-        "meta=2,half=bottom": {
+        "half=bottom,variant=2": {
             "model": "ntmdoors:half_slab_concrete_magenta"
         },
-        "meta=2,half=top": {
+        "half=top,variant=2": {
             "model": "ntmdoors:upper_slab_concrete_magenta"
         },
-        "meta=3,half=bottom": {
+        "half=bottom,variant=3": {
             "model": "ntmdoors:half_slab_concrete_light_blue"
         },
-        "meta=3,half=top": {
+        "half=top,variant=3": {
             "model": "ntmdoors:upper_slab_concrete_light_blue"
         },
-        "meta=4,half=bottom": {
+        "half=bottom,variant=4": {
             "model": "ntmdoors:half_slab_concrete_yellow"
         },
-        "meta=4,half=top": {
+        "half=top,variant=4": {
             "model": "ntmdoors:upper_slab_concrete_yellow"
         },
-        "meta=5,half=bottom": {
+        "half=bottom,variant=5": {
             "model": "ntmdoors:half_slab_concrete_lime"
         },
-        "meta=5,half=top": {
+        "half=top,variant=5": {
             "model": "ntmdoors:upper_slab_concrete_lime"
         },
-        "meta=6,half=bottom": {
+        "half=bottom,variant=6": {
             "model": "ntmdoors:half_slab_concrete_pink"
         },
-        "meta=6,half=top": {
+        "half=top,variant=6": {
             "model": "ntmdoors:upper_slab_concrete_pink"
         },
-        "meta=7,half=bottom": {
+        "half=bottom,variant=7": {
             "model": "ntmdoors:half_slab_concrete_gray"
         },
-        "meta=7,half=top": {
+        "half=top,variant=7": {
             "model": "ntmdoors:upper_slab_concrete_gray"
         }
     }
