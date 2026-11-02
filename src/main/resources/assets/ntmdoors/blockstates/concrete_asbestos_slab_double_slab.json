@@ -1,6 +1,6 @@
 {
     "variants": {
-        "variant=default": {
+        "meta=0": {
             "model": "ntmdoors:concrete_asbestos"
         }
     }

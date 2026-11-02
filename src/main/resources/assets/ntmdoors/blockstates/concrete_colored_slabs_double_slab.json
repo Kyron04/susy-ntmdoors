@@ -1,0 +1,28 @@
+{
+    "variants": {
+        "meta=0": {
+            "model": "ntmdoors:concrete_white"
+        },
+        "meta=1": {
+            "model": "ntmdoors:concrete_orange"
+        },
+        "meta=2": {
+            "model": "ntmdoors:concrete_magenta"
+        },
+        "meta=3": {
+            "model": "ntmdoors:concrete_light_blue"
+        },
+        "meta=4": {
+            "model": "ntmdoors:concrete_yellow"
+        },
+        "meta=5": {
+            "model": "ntmdoors:concrete_lime"
+        },
+        "meta=6": {
+            "model": "ntmdoors:concrete_pink"
+        },
+        "meta=7": {
+            "model": "ntmdoors:concrete_gray"
+        }
+    }
+}

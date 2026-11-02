@@ -10,8 +10,6 @@ import com.ntmdoors.block.BlockSafe;
 import com.ntmdoors.concrete.ConcreteRecipes;
 import com.ntmdoors.concrete.ConcreteSet;
 import com.ntmdoors.hlblocks.HLBlocksContent;
-import com.ntmdoors.concrete.ConcreteRecipes;
-import com.ntmdoors.concrete.ConcreteSet;
 import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.DoorDecls;
 import com.ntmdoors.item.ItemBiometricKeycard;
@@ -166,8 +164,6 @@ public class ModContent {
         ConcreteSet.registerBlocks(e);
         // HL Blocks follows concrete; both are newer than the original door blocks.
         HLBlocksContent.registerBlocks(e);
-        // Concrete goes last, like every other addition: no existing block id moves.
-        ConcreteSet.registerBlocks(e);
     }
 
     @SubscribeEvent
@@ -208,8 +204,6 @@ public class ModContent {
         ConcreteSet.registerItems(e);
         // HL Blocks follows concrete, so every previously saved item id is untouched.
         HLBlocksContent.registerItems(e);
-        // Concrete is the newest addition and stays last for the same reason.
-        ConcreteSet.registerItems(e);
     }
 
     @SubscribeEvent

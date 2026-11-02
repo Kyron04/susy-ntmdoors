@@ -1,0 +1,40 @@
+{
+    "variants": {
+        "meta=0,half=bottom": {
+            "model": "ntmdoors:half_slab_concrete_colored_ext_hazard"
+        },
+        "meta=0,half=top": {
+            "model": "ntmdoors:upper_slab_concrete_colored_ext_hazard"
+        },
+        "meta=1,half=bottom": {
+            "model": "ntmdoors:half_slab_concrete_colored_ext_hazard_red"
+        },
+        "meta=1,half=top": {
+            "model": "ntmdoors:upper_slab_concrete_colored_ext_hazard_red"
+        },
+        "meta=2,half=bottom": {
+            "model": "ntmdoors:half_slab_concrete_colored_ext_hazard_green"
+        },
+        "meta=2,half=top": {
+            "model": "ntmdoors:upper_slab_concrete_colored_ext_hazard_green"
+        },
+        "meta=3,half=bottom": {
+            "model": "ntmdoors:half_slab_concrete_colored_ext_hazard_blue"
+        },
+        "meta=3,half=top": {
+            "model": "ntmdoors:upper_slab_concrete_colored_ext_hazard_blue"
+        },
+        "meta=4,half=bottom": {
+            "model": "ntmdoors:half_slab_concrete_colored_ext_hazard_white"
+        },
+        "meta=4,half=top": {
+            "model": "ntmdoors:upper_slab_concrete_colored_ext_hazard_white"
+        },
+        "meta=5,half=bottom": {
+            "model": "ntmdoors:half_slab_concrete_colored_ext_hazard_purple"
+        },
+        "meta=5,half=top": {
+            "model": "ntmdoors:upper_slab_concrete_colored_ext_hazard_purple"
+        }
+    }
+}

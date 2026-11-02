@@ -1,0 +1,52 @@
+{
+    "variants": {
+        "meta=0,half=bottom": {
+            "model": "ntmdoors:half_slab_concrete_white"
+        },
+        "meta=0,half=top": {
+            "model": "ntmdoors:upper_slab_concrete_white"
+        },
+        "meta=1,half=bottom": {
+            "model": "ntmdoors:half_slab_concrete_orange"
+        },
+        "meta=1,half=top": {
+            "model": "ntmdoors:upper_slab_concrete_orange"
+        },
+        "meta=2,half=bottom": {
+            "model": "ntmdoors:half_slab_concrete_magenta"
+        },
+        "meta=2,half=top": {
+            "model": "ntmdoors:upper_slab_concrete_magenta"
+        },
+        "meta=3,half=bottom": {
+            "model": "ntmdoors:half_slab_concrete_light_blue"
+        },
+        "meta=3,half=top": {
+            "model": "ntmdoors:upper_slab_concrete_light_blue"
+        },
+        "meta=4,half=bottom": {
+            "model": "ntmdoors:half_slab_concrete_yellow"
+        },
+        "meta=4,half=top": {
+            "model": "ntmdoors:upper_slab_concrete_yellow"
+        },
+        "meta=5,half=bottom": {
+            "model": "ntmdoors:half_slab_concrete_lime"
+        },
+        "meta=5,half=top": {
+            "model": "ntmdoors:upper_slab_concrete_lime"
+        },
+        "meta=6,half=bottom": {
+            "model": "ntmdoors:half_slab_concrete_pink"
+        },
+        "meta=6,half=top": {
+            "model": "ntmdoors:upper_slab_concrete_pink"
+        },
+        "meta=7,half=bottom": {
+            "model": "ntmdoors:half_slab_concrete_gray"
+        },
+        "meta=7,half=top": {
+            "model": "ntmdoors:upper_slab_concrete_gray"
+        }
+    }
+}

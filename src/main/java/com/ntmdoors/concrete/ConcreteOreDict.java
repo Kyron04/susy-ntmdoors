@@ -6,10 +6,8 @@ import net.minecraftforge.oredict.OreDictionary;
 
 /**
  * Registers the concrete set in the common ore dictionaries from Java, without a Groovy script.
- *
- * <p>Every cube, stair and single slab is added to {@code concrete}. The full cubes are also added
- * to {@code blockConcrete}, which is the name the pack's existing recipes use for a full concrete
- * block. Uber Concrete, its Moldy Debris and the technical double-slab blocks are left out.</p>
+ * Full cubes go into {@code concrete} and {@code blockConcrete}; stairs and slabs only into
+ * {@code concrete}.
  */
 public final class ConcreteOreDict {
 
@@ -20,42 +18,29 @@ public final class ConcreteOreDict {
     }
 
     public static void register() {
-        cube(ConcreteSet.CONCRETE);
-        cube(ConcreteSet.CONCRETE_SMOOTH);
-        cube(ConcreteSet.CONCRETE_PILLAR);
-        cube(ConcreteSet.CONCRETE_REBAR);
-        cube(ConcreteSet.CONCRETE_ASBESTOS);
-        for (int meta = 0; meta < ConcreteSet.DYES.length; meta++) {
-            cube(ConcreteSet.CONCRETE_COLORED, meta);
-        }
-        for (int meta = 0; meta < ConcreteSet.EXT_TYPES.length; meta++) {
-            cube(ConcreteSet.CONCRETE_COLORED_EXT, meta);
-        }
-        cube(ConcreteSet.BRICK_CONCRETE);
-        cube(ConcreteSet.BRICK_CONCRETE_MOSSY);
-        cube(ConcreteSet.BRICK_CONCRETE_CRACKED);
-        cube(ConcreteSet.BRICK_CONCRETE_BROKEN);
+        cube(ConcreteSet.CONCRETE, 2);
+        cube(ConcreteSet.CONCRETE_COLORED, ConcreteSet.DYES.length);
+        cube(ConcreteSet.CONCRETE_COLORED_EXT, ConcreteSet.EXT_TYPES.length);
+        cube(ConcreteSet.CONCRETE_BRICKS, ConcreteSet.BRICK_TYPES.length);
+        cube(ConcreteSet.CONCRETE_PILLAR, 1);
+        cube(ConcreteSet.CONCRETE_REBAR, 1);
+        cube(ConcreteSet.CONCRETE_ASBESTOS, 1);
 
-        // Stairs and slabs are concrete, but they are not full blocks: generic dictionary only.
         for (Block stairs : ConcreteSet.allStairs()) {
-            ore(stairs);
+            OreDictionary.registerOre(CONCRETE, new ItemStack(stairs));
         }
-        for (Block slab : ConcreteSet.allSlabs()) {
-            ore(slab);
+        for (ConcreteSet.SlabGroup group : ConcreteSet.slabGroups()) {
+            for (int meta = 0; meta < group.variantNames.length; meta++) {
+                OreDictionary.registerOre(CONCRETE, new ItemStack(group.single, 1, meta));
+            }
         }
     }
 
-    private static void cube(Block block) {
-        cube(block, 0);
-    }
-
-    private static void cube(Block block, int meta) {
-        ItemStack stack = new ItemStack(block, 1, meta);
-        OreDictionary.registerOre(CONCRETE, stack);
-        OreDictionary.registerOre(BLOCK_CONCRETE, stack);
-    }
-
-    private static void ore(Block block) {
-        OreDictionary.registerOre(CONCRETE, new ItemStack(block, 1, 0));
+    private static void cube(Block block, int count) {
+        for (int meta = 0; meta < count; meta++) {
+            ItemStack stack = new ItemStack(block, 1, meta);
+            OreDictionary.registerOre(CONCRETE, stack);
+            OreDictionary.registerOre(BLOCK_CONCRETE, stack);
+        }
     }
 }

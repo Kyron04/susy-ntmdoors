@@ -14,12 +14,9 @@ import java.util.Map;
 /**
  * The shared concrete families used by both the Chisel integration and the shift-scroll cycling.
  *
- * <p>Each group keeps two parallel views: one representative item per variant for cycling, and the
- * full block-state list for Chisel. Stairs and slabs contribute every valid state to the latter so
- * a chisel can recognise them regardless of facing or half.</p>
- *
- * <p>Groups stay flat and shape-specific: cubes never mix with stairs or slabs. The names match the
- * Chisel carving groups.</p>
+ * <p>Each group keeps one representative item per variant for cycling and the full block-state list
+ * for Chisel. Cubes and slabs contribute their metadata variants; stairs contribute every facing
+ * and half state of each stair block.</p>
  */
 public final class ConcreteGroups {
 
@@ -68,7 +65,7 @@ public final class ConcreteGroups {
         List<ItemStack> items = new ArrayList<>();
         List<IBlockState> states = new ArrayList<>();
         cube(items, states, ConcreteSet.CONCRETE, 0);
-        cube(items, states, ConcreteSet.CONCRETE_SMOOTH, 0);
+        cube(items, states, ConcreteSet.CONCRETE, 1);
         addGroup("concrete", items, states);
 
         items = new ArrayList<>();
@@ -79,8 +76,7 @@ public final class ConcreteGroups {
 
         items = new ArrayList<>();
         states = new ArrayList<>();
-        slab(items, states, ConcreteSet.slab("concrete_slab"));
-        slab(items, states, ConcreteSet.slab("concrete_smooth_slab"));
+        slabs(items, states, ConcreteSet.CONCRETE_SLABS);
         addGroup("concrete_slabs", items, states);
 
         items = new ArrayList<>();
@@ -105,17 +101,16 @@ public final class ConcreteGroups {
 
         items = new ArrayList<>();
         states = new ArrayList<>();
-        for (String dye : ConcreteSet.DYES) {
-            slab(items, states, ConcreteSet.slab("concrete_" + dye + "_slab"));
-        }
+        slabs(items, states, ConcreteSet.CONCRETE_COLORED_SLABS);
+        slabs(items, states, ConcreteSet.CONCRETE_COLORED_SLABS_2);
+        slabs(items, states, ConcreteSet.CONCRETE_COLORED_EXT_SLABS);
         addGroup("concrete_colored_slabs", items, states);
 
         items = new ArrayList<>();
         states = new ArrayList<>();
-        cube(items, states, ConcreteSet.BRICK_CONCRETE, 0);
-        cube(items, states, ConcreteSet.BRICK_CONCRETE_MOSSY, 0);
-        cube(items, states, ConcreteSet.BRICK_CONCRETE_CRACKED, 0);
-        cube(items, states, ConcreteSet.BRICK_CONCRETE_BROKEN, 0);
+        for (int meta = 0; meta < ConcreteSet.BRICK_TYPES.length; meta++) {
+            cube(items, states, ConcreteSet.CONCRETE_BRICKS, meta);
+        }
         addGroup("concrete_bricks", items, states);
 
         items = new ArrayList<>();
@@ -128,10 +123,7 @@ public final class ConcreteGroups {
 
         items = new ArrayList<>();
         states = new ArrayList<>();
-        slab(items, states, ConcreteSet.slab("brick_concrete_slab"));
-        slab(items, states, ConcreteSet.slab("brick_concrete_mossy_slab"));
-        slab(items, states, ConcreteSet.slab("brick_concrete_cracked_slab"));
-        slab(items, states, ConcreteSet.slab("brick_concrete_broken_slab"));
+        slabs(items, states, ConcreteSet.CONCRETE_BRICKS_SLABS);
         addGroup("concrete_bricks_slabs", items, states);
     }
 
@@ -142,16 +134,11 @@ public final class ConcreteGroups {
         return Collections.unmodifiableList(GROUPS);
     }
 
-    /** True when the stack has a group with more than one variant. */
     public static boolean isCycleable(ItemStack stack) {
         Match match = match(stack);
         return match != null && match.group.size() > 1;
     }
 
-    /**
-     * The next stack in the held item's group, preserving the stack size, or null when the stack is
-     * not part of a multi-variant group.
-     */
     public static ItemStack next(ItemStack current, int offset) {
         Match match = match(current);
         if (match == null || match.group.size() <= 1) return null;
@@ -187,10 +174,16 @@ public final class ConcreteGroups {
         states.addAll(block.getBlockState().getValidStates());
     }
 
-    private static void slab(List<ItemStack> items, List<IBlockState> states, Block block) {
-        if (block == null) throw new IllegalStateException("Missing concrete slab");
-        items.add(new ItemStack(block));
-        states.addAll(block.getBlockState().getValidStates());
+    private static void slabs(List<ItemStack> items, List<IBlockState> states,
+                              ConcreteSet.SlabGroup group) {
+        for (int meta = 0; meta < group.variantNames.length; meta++) {
+            items.add(new ItemStack(group.single, 1, meta));
+        }
+        for (IBlockState state : group.single.getBlockState().getValidStates()) {
+            if (state.getValue(BlockConcreteSlab.META) < group.variantNames.length) {
+                states.add(state);
+            }
+        }
     }
 
     private static void addGroup(String name, List<ItemStack> items, List<IBlockState> states) {

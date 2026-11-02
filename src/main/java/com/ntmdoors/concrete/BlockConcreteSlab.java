@@ -6,13 +6,12 @@ import net.minecraft.block.BlockSlab;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
-import net.minecraft.block.properties.PropertyEnum;
+import net.minecraft.block.properties.PropertyInteger;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
@@ -20,17 +19,13 @@ import net.minecraft.world.World;
 import java.util.Random;
 
 /**
- * Single concrete slab. Vanilla has no data-driven slab, so each family gets a pair of block ids:
- * the single slab carries the item, {@link Double} is only ever placed by
- * {@link net.minecraft.item.ItemSlab} and drops the single slab again.
- *
- * <p>The double slab is a subclass rather than a flag because {@link BlockSlab} calls
- * {@code isDouble()} while it is still constructing the block, before any instance field could be
- * assigned. A constant override keeps the blockstate shape correct from the first call.</p>
+ * A metadata slab family. Metadata bits 0-2 select the variant and bit 3 is the top half, so one
+ * block id can hold up to eight variants. The double slab is a separate technical block because
+ * {@link BlockSlab} calls {@code isDouble()} during construction.
  */
 public class BlockConcreteSlab extends BlockSlab {
 
-    public static final PropertyEnum<Variant> VARIANT = PropertyEnum.create("variant", Variant.class);
+    public static final PropertyInteger META = PropertyInteger.create("meta", 0, 7);
 
     private final BlockSlab singleBlock;
 
@@ -41,16 +36,16 @@ public class BlockConcreteSlab extends BlockSlab {
         applyCommon(name, hardness, resistance);
         setCreativeTab(ConcreteSet.TAB);
         setDefaultState(blockState.getBaseState()
-                .withProperty(VARIANT, Variant.DEFAULT)
+                .withProperty(META, 0)
                 .withProperty(HALF, EnumBlockHalf.BOTTOM));
     }
 
-    /** Double slab. The single slab is the block the player gets back. */
+    /** Double slab. */
     protected BlockConcreteSlab(String name, Block single, float hardness, float resistance) {
         super(Material.ROCK);
         this.singleBlock = (BlockSlab) single;
         applyCommon(name, hardness, resistance);
-        setDefaultState(blockState.getBaseState().withProperty(VARIANT, Variant.DEFAULT));
+        setDefaultState(blockState.getBaseState().withProperty(META, 0));
     }
 
     private void applyCommon(String name, float hardness, float resistance) {
@@ -69,12 +64,12 @@ public class BlockConcreteSlab extends BlockSlab {
 
     @Override
     public IProperty<?> getVariantProperty() {
-        return VARIANT;
+        return META;
     }
 
     @Override
     public Comparable<?> getTypeForItem(ItemStack stack) {
-        return Variant.DEFAULT;
+        return stack.getMetadata() & 7;
     }
 
     @Override
@@ -84,19 +79,24 @@ public class BlockConcreteSlab extends BlockSlab {
 
     @Override
     public int getMetaFromState(IBlockState state) {
-        int meta = 0;
+        int meta = state.getValue(META);
         if (!isDouble() && state.getValue(HALF) == EnumBlockHalf.TOP) meta |= 8;
         return meta;
     }
 
     @Override
     public IBlockState getStateFromMeta(int meta) {
-        IBlockState state = getDefaultState().withProperty(VARIANT, Variant.DEFAULT);
+        IBlockState state = getDefaultState().withProperty(META, meta & 7);
         if (!isDouble()) {
             state = state.withProperty(HALF,
                     (meta & 8) == 0 ? EnumBlockHalf.BOTTOM : EnumBlockHalf.TOP);
         }
         return state;
+    }
+
+    @Override
+    public int damageDropped(IBlockState state) {
+        return state.getValue(META);
     }
 
     @Override
@@ -107,24 +107,15 @@ public class BlockConcreteSlab extends BlockSlab {
     @Override
     public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world,
                                   BlockPos pos, EntityPlayer player) {
-        return new ItemStack(isDouble() ? singleBlock : this);
+        return new ItemStack(isDouble() ? singleBlock : this, 1, state.getValue(META));
     }
 
     @Override
     protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, HALF, VARIANT);
+        return new BlockStateContainer(this, HALF, META);
     }
 
-    public enum Variant implements IStringSerializable {
-        DEFAULT;
-
-        @Override
-        public String getName() {
-            return "default";
-        }
-    }
-
-    /** The double slab half of a family; see the class comment for why this is a subclass. */
+    /** Double slab half of a family. */
     public static final class Double extends BlockConcreteSlab {
 
         public Double(String name, Block single, float hardness, float resistance) {
@@ -138,7 +129,7 @@ public class BlockConcreteSlab extends BlockSlab {
 
         @Override
         protected BlockStateContainer createBlockState() {
-            return new BlockStateContainer(this, VARIANT);
+            return new BlockStateContainer(this, META);
         }
     }
 }

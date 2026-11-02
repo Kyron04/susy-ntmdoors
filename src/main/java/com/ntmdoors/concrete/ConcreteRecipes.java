@@ -12,32 +12,18 @@ import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
 
 /**
- * The concrete recipes from NTM CE's {@code CraftingManager}, with CE's machine-only base blocks
- * folded into the crafting table.
- *
- * <p>Everything that CE crafts in a normal crafting table is copied one-to-one: the tile, pillar,
- * bricks, coloured concrete, Builder's Choice, and the block-to-slab and block-to-stairs recipes.
- * Like vanilla, stairs and slabs do not convert back into blocks or into each other. CE makes
- * smooth concrete and asbestos concrete in the chemical plant and rebar concrete in the
- * crystallizer; those machines are not part of this mod, so the three base recipes are half-scale
- * crafting-table versions. Clay stands in for cement powder and string for asbestos, the two CE
- * materials that have no equivalent here.</p>
- *
- * <p>Uber Concrete and Moldy Debris have no CE recipe; they stay creative-only.</p>
+ * The concrete recipes. Cubes and slabs are metadata variants now, so every recipe names the cube
+ * meta it consumes and the slab meta it produces. Only blocks make slabs and stairs; the reverse
+ * conversions are deliberately absent, matching vanilla.
  */
 public final class ConcreteRecipes {
 
-    /**
-     * Vanilla dye ore-dictionary names in concrete metadata order (0 = white ... 15 = black).
-     * CE's {@code dyes[15 - i]} produces the same order, but spells light gray "dyeLightGray".
-     */
     private static final String[] DYE_ORE = {
             "dyeWhite", "dyeOrange", "dyeMagenta", "dyeLightBlue", "dyeYellow", "dyeLime",
             "dyePink", "dyeGray", "dyeLightGray", "dyeCyan", "dyePurple", "dyeBlue",
             "dyeBrown", "dyeGreen", "dyeRed", "dyeBlack"
     };
 
-    /** Builder's Choice dye pairs, in CE's {@code EnumConcreteType} order. */
     private static final String[][] EXT_DYES = {
             {"dyeBrown", "dyeGray"},     // machine
             {"dyeBrown", "dyeBlack"},    // machine_stripe
@@ -46,7 +32,12 @@ public final class ConcreteRecipes {
             {"dyePink", "dyeRed"},       // pink
             {"dyeYellow", "dyeBlack"},   // hazard
             {"dyeYellow", "dyeGray"},    // sand
-            {"dyeOrange", "dyeBrown"}    // bronze
+            {"dyeOrange", "dyeBrown"},   // bronze
+            {"dyeRed", "dyeBlack"},      // hazard_red
+            {"dyeGreen", "dyeBlack"},    // hazard_green
+            {"dyeBlue", "dyeBlack"},     // hazard_blue
+            {"dyeWhite", "dyeBlack"},    // hazard_white
+            {"dyePurple", "dyeBlack"}    // hazard_purple
     };
 
     private ConcreteRecipes() {
@@ -55,108 +46,139 @@ public final class ConcreteRecipes {
     public static void register(RegistryEvent.Register<IRecipe> e) {
         baseRecipes(e);
         blockRecipes(e);
-        slabStairRecipes(e);
         coloredRecipes(e);
         extRecipes(e);
+        plainSlabStairRecipes(e);
+        brickSlabStairRecipes(e);
+        coloredSlabStairRecipes(e);
+        extSlabStairRecipes(e);
     }
 
-    /** The three machine-only bases, adapted to the crafting table. */
     private static void baseRecipes(RegistryEvent.Register<IRecipe> e) {
-        // CE chemical plant: 1 cement + 8 gravel + 8 sand + water -> 16 smooth concrete.
-        // Half scale, with clay for cement; the bucket would not fit beside the aggregates.
-        shaped(e, "smooth", new ItemStack(ConcreteSet.CONCRETE_SMOOTH, 8),
+        // Smooth concrete: half-scale chemical plant, clay for cement.
+        shaped(e, "smooth", new ItemStack(ConcreteSet.CONCRETE, 8, 1),
                 "GSG", "SCS", "GSG",
                 'G', Blocks.GRAVEL, 'S', Blocks.SAND, 'C', Items.CLAY_BALL);
-
-        // CE chemical plant: 4 cement + 4 asbestos + 8 sand + water -> 16 asbestos concrete.
-        // Half scale, with clay for cement and string for asbestos.
+        // Asbestos concrete: clay for cement, string for asbestos.
         shaped(e, "asbestos", new ItemStack(ConcreteSet.CONCRETE_ASBESTOS, 8),
                 "SAS", " C ", "SAS",
                 'S', Blocks.SAND, 'A', Items.STRING, 'C', Items.CLAY_BALL);
-
-        // CE crystallizer: 1 rebar + concrete -> 1 rebar concrete. Iron bars stand in for rebar.
+        // Rebar concrete: iron bars for rebar.
         shapeless(e, "rebar", new ItemStack(ConcreteSet.CONCRETE_REBAR),
-                Blocks.IRON_BARS, ConcreteSet.CONCRETE_SMOOTH);
+                Blocks.IRON_BARS, new ItemStack(ConcreteSet.CONCRETE, 1, 1));
     }
 
     private static void blockRecipes(RegistryEvent.Register<IRecipe> e) {
-        shaped(e, "tile", new ItemStack(ConcreteSet.CONCRETE, 4),
-                "CC", "CC", 'C', ConcreteSet.CONCRETE_SMOOTH);
+        shaped(e, "tile", new ItemStack(ConcreteSet.CONCRETE, 4, 0),
+                "CC", "CC", 'C', new ItemStack(ConcreteSet.CONCRETE, 1, 1));
         shaped(e, "pillar", new ItemStack(ConcreteSet.CONCRETE_PILLAR, 6),
-                "CBC", "CBC", "CBC", 'C', ConcreteSet.CONCRETE_SMOOTH, 'B', Blocks.IRON_BARS);
-        shaped(e, "brick", new ItemStack(ConcreteSet.BRICK_CONCRETE, 4),
-                " C ", "CBC", " C ", 'C', ConcreteSet.CONCRETE_SMOOTH, 'B', Items.CLAY_BALL);
-        shaped(e, "brick_from_tile", new ItemStack(ConcreteSet.BRICK_CONCRETE, 4),
-                " C ", "CBC", " C ", 'C', ConcreteSet.CONCRETE, 'B', Items.CLAY_BALL);
-        shaped(e, "brick_mossy", new ItemStack(ConcreteSet.BRICK_CONCRETE_MOSSY, 8),
-                "CCC", "CVC", "CCC", 'C', ConcreteSet.BRICK_CONCRETE, 'V', Blocks.VINE);
-        shaped(e, "brick_cracked", new ItemStack(ConcreteSet.BRICK_CONCRETE_CRACKED, 6),
-                " C ", "C C", " C ", 'C', ConcreteSet.BRICK_CONCRETE);
-        shaped(e, "brick_broken", new ItemStack(ConcreteSet.BRICK_CONCRETE_BROKEN, 6),
-                " C ", "C C", " C ", 'C', ConcreteSet.BRICK_CONCRETE_CRACKED);
+                "CBC", "CBC", "CBC",
+                'C', new ItemStack(ConcreteSet.CONCRETE, 1, 1), 'B', Blocks.IRON_BARS);
+        shaped(e, "brick", new ItemStack(ConcreteSet.CONCRETE_BRICKS, 4, 0),
+                " C ", "CBC", " C ",
+                'C', new ItemStack(ConcreteSet.CONCRETE, 1, 1), 'B', Items.CLAY_BALL);
+        shaped(e, "brick_from_tile", new ItemStack(ConcreteSet.CONCRETE_BRICKS, 4, 0),
+                " C ", "CBC", " C ",
+                'C', new ItemStack(ConcreteSet.CONCRETE, 1, 0), 'B', Items.CLAY_BALL);
+        shaped(e, "brick_mossy", new ItemStack(ConcreteSet.CONCRETE_BRICKS, 8, 1),
+                "CCC", "CVC", "CCC",
+                'C', new ItemStack(ConcreteSet.CONCRETE_BRICKS, 1, 0), 'V', Blocks.VINE);
+        shaped(e, "brick_cracked", new ItemStack(ConcreteSet.CONCRETE_BRICKS, 6, 2),
+                " C ", "C C", " C ",
+                'C', new ItemStack(ConcreteSet.CONCRETE_BRICKS, 1, 0));
+        shaped(e, "brick_broken", new ItemStack(ConcreteSet.CONCRETE_BRICKS, 6, 3),
+                " C ", "C C", " C ",
+                'C', new ItemStack(ConcreteSet.CONCRETE_BRICKS, 1, 2));
     }
 
-    /** Blocks to slabs and stairs only; no stair/slab conversion recipes, matching vanilla. */
-    private static void slabStairRecipes(RegistryEvent.Register<IRecipe> e) {
-        family(e, "brick_concrete", ConcreteSet.BRICK_CONCRETE);
-        family(e, "brick_concrete_mossy", ConcreteSet.BRICK_CONCRETE_MOSSY);
-        family(e, "brick_concrete_cracked", ConcreteSet.BRICK_CONCRETE_CRACKED);
-        family(e, "brick_concrete_broken", ConcreteSet.BRICK_CONCRETE_BROKEN);
-        family(e, "concrete", ConcreteSet.CONCRETE);
-        family(e, "concrete_smooth", ConcreteSet.CONCRETE_SMOOTH);
-        family(e, "concrete_asbestos", ConcreteSet.CONCRETE_ASBESTOS);
-    }
-
-    private static void family(RegistryEvent.Register<IRecipe> e, String key, Block block) {
-        Block slab = ConcreteSet.slab(key + "_slab");
-        Block stairs = ConcreteSet.stairs(key + "_stairs");
-        if (slab == null || stairs == null) {
-            throw new IllegalStateException("Missing slab/stairs for " + key);
-        }
-        shaped(e, "slab_" + key, new ItemStack(slab, 6), "###", '#', block);
-        shaped(e, "stairs_" + key, new ItemStack(stairs, 8), "#  ", "## ", "###", '#', block);
-    }
-
-    /** Coloured concrete, its slabs and its stairs; only block-to-slab/stair recipes. */
     private static void coloredRecipes(RegistryEvent.Register<IRecipe> e) {
         for (int meta = 0; meta < ConcreteSet.DYES.length; meta++) {
-            String dye = ConcreteSet.DYES[meta];
-            Block slab = ConcreteSet.slab("concrete_" + dye + "_slab");
-            Block stairs = ConcreteSet.stairs("concrete_colored_stairs_" + dye);
-            if (slab == null || stairs == null) {
-                throw new IllegalStateException("Missing coloured slab/stairs for " + dye);
-            }
-
-            shaped(e, "colored_" + dye, new ItemStack(ConcreteSet.CONCRETE_COLORED, 8, meta),
+            shaped(e, "colored_" + ConcreteSet.DYES[meta],
+                    new ItemStack(ConcreteSet.CONCRETE_COLORED, 8, meta),
                     "CCC", "CDC", "CCC",
-                    'C', ConcreteSet.CONCRETE_SMOOTH, 'D', DYE_ORE[meta]);
-
-            ItemStack block = new ItemStack(ConcreteSet.CONCRETE_COLORED, 1, meta);
-            shaped(e, "colored_slab_" + dye, new ItemStack(slab, 6), "###", '#', block);
-            shaped(e, "colored_stairs_" + dye, new ItemStack(stairs, 8),
-                    "#  ", "## ", "###", '#', block);
+                    'C', new ItemStack(ConcreteSet.CONCRETE, 1, 1), 'D', DYE_ORE[meta]);
         }
     }
 
-    /** Builder's Choice has stairs in CE but no slabs; only the block-to-stair recipe. */
     private static void extRecipes(RegistryEvent.Register<IRecipe> e) {
         for (int meta = 0; meta < ConcreteSet.EXT_TYPES.length; meta++) {
-            String type = ConcreteSet.EXT_TYPES[meta];
-            Block stairs = ConcreteSet.stairs("concrete_colored_ext_stairs_" + type);
-            if (stairs == null) {
-                throw new IllegalStateException("Missing Builder's Choice stairs for " + type);
-            }
-
-            shaped(e, "colored_ext_" + type,
+            shaped(e, "colored_ext_" + ConcreteSet.EXT_TYPES[meta],
                     new ItemStack(ConcreteSet.CONCRETE_COLORED_EXT, 6, meta),
                     "CCC", "1 2", "CCC",
-                    'C', ConcreteSet.CONCRETE_SMOOTH,
+                    'C', new ItemStack(ConcreteSet.CONCRETE, 1, 1),
                     '1', EXT_DYES[meta][0], '2', EXT_DYES[meta][1]);
-
-            ItemStack block = new ItemStack(ConcreteSet.CONCRETE_COLORED_EXT, 1, meta);
-            shaped(e, "ext_stairs_" + type, new ItemStack(stairs, 8),
-                    "#  ", "## ", "###", '#', block);
         }
+    }
+
+    private static void plainSlabStairRecipes(RegistryEvent.Register<IRecipe> e) {
+        slab(e, "slab_concrete", ConcreteSet.CONCRETE_SLABS, 0, ConcreteSet.CONCRETE, 0);
+        slab(e, "slab_concrete_smooth", ConcreteSet.CONCRETE_SLABS, 1, ConcreteSet.CONCRETE, 1);
+        stairs(e, "stairs_concrete", ConcreteSet.stairs("concrete_stairs"), ConcreteSet.CONCRETE, 0);
+        stairs(e, "stairs_concrete_smooth", ConcreteSet.stairs("concrete_smooth_stairs"),
+                ConcreteSet.CONCRETE, 1);
+        slab(e, "slab_concrete_asbestos", ConcreteSet.CONCRETE_ASBESTOS_SLABS, 0,
+                ConcreteSet.CONCRETE_ASBESTOS, 0);
+        stairs(e, "stairs_concrete_asbestos", ConcreteSet.stairs("concrete_asbestos_stairs"),
+                ConcreteSet.CONCRETE_ASBESTOS, 0);
+    }
+
+    private static void brickSlabStairRecipes(RegistryEvent.Register<IRecipe> e) {
+        String[] stairs = {
+                "brick_concrete_stairs", "brick_concrete_mossy_stairs",
+                "brick_concrete_cracked_stairs", "brick_concrete_broken_stairs"
+        };
+        for (int meta = 0; meta < ConcreteSet.BRICK_TYPES.length; meta++) {
+            slab(e, "slab_" + ConcreteSet.BRICK_TYPES[meta], ConcreteSet.CONCRETE_BRICKS_SLABS,
+                    meta, ConcreteSet.CONCRETE_BRICKS, meta);
+            stairs(e, "stairs_" + ConcreteSet.BRICK_TYPES[meta],
+                    ConcreteSet.stairs(stairs[meta]), ConcreteSet.CONCRETE_BRICKS, meta);
+        }
+    }
+
+    private static void coloredSlabStairRecipes(RegistryEvent.Register<IRecipe> e) {
+        for (int meta = 0; meta < ConcreteSet.DYES.length; meta++) {
+            String dye = ConcreteSet.DYES[meta];
+            ConcreteSet.SlabGroup group = meta < 8
+                    ? ConcreteSet.CONCRETE_COLORED_SLABS
+                    : ConcreteSet.CONCRETE_COLORED_SLABS_2;
+            int slabMeta = meta & 7;
+            slab(e, "slab_concrete_" + dye, group, slabMeta, ConcreteSet.CONCRETE_COLORED, meta);
+            stairs(e, "stairs_concrete_" + dye,
+                    ConcreteSet.stairs("concrete_colored_stairs_" + dye),
+                    ConcreteSet.CONCRETE_COLORED, meta);
+        }
+    }
+
+    private static void extSlabStairRecipes(RegistryEvent.Register<IRecipe> e) {
+        for (int meta = 0; meta < ConcreteSet.EXT_TYPES.length; meta++) {
+            String type = ConcreteSet.EXT_TYPES[meta];
+            stairs(e, "stairs_ext_" + type,
+                    ConcreteSet.stairs("concrete_colored_ext_stairs_" + type),
+                    ConcreteSet.CONCRETE_COLORED_EXT, meta);
+        }
+
+        int slabMeta = 0;
+        for (int meta = 0; meta < ConcreteSet.EXT_TYPES.length; meta++) {
+            String type = ConcreteSet.EXT_TYPES[meta];
+            if (!ConcreteSet.isHazard(type)) continue;
+            slab(e, "slab_ext_" + type, ConcreteSet.CONCRETE_COLORED_EXT_SLABS, slabMeta,
+                    ConcreteSet.CONCRETE_COLORED_EXT, meta);
+            slabMeta++;
+        }
+    }
+
+    private static void slab(RegistryEvent.Register<IRecipe> e, String name,
+                             ConcreteSet.SlabGroup group, int slabMeta,
+                             Block cube, int cubeMeta) {
+        shaped(e, name, new ItemStack(group.single, 6, slabMeta), "###", '#',
+                new ItemStack(cube, 1, cubeMeta));
+    }
+
+    private static void stairs(RegistryEvent.Register<IRecipe> e, String name, Block stairs,
+                               Block cube, int cubeMeta) {
+        if (stairs == null) throw new IllegalStateException("Missing stairs " + name);
+        shaped(e, name, new ItemStack(stairs, 8), "#  ", "## ", "###", '#',
+                new ItemStack(cube, 1, cubeMeta));
     }
 
     private static void shaped(RegistryEvent.Register<IRecipe> e, String name, ItemStack output,
