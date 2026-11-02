@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "bottom=false": {
+      "model": "ntmdoors:hlblocks_crate09"
+    },
+    "bottom=true": {
+      "model": "ntmdoors:hlblocks_crate09_bottom"
+    }
+  }
+}

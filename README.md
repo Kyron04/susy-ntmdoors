@@ -33,6 +33,36 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   (walk through when open, click-through gaps)
 * OBJ renderer (TESR) with per-group translate/rotate animations, X/Y/Z clipping and sounds
 * 3D door item rendering (inventory, hand, ground) from the same OBJ model, matching HBM's door item renderer
+<<<<<<< Updated upstream
+=======
+* NTM concrete building set in its own creative tab: 13 cube blocks (plain, bricks, rebar, asbestos,
+  pillar, 16 dyed, 8 Builder's Choice variants, Über Concrete and its falling Moldy Debris), 31 stairs
+  and 23 slab families. Recipes follow NTM CE's crafting table (tile, pillar, bricks, dyed
+  and Builder's Choice concrete, plus block-to-slab and block-to-stairs recipes; stairs and
+  slabs do not convert back, as in vanilla). CE makes smooth and asbestos
+  concrete in the chemical plant and rebar concrete in the crystallizer; those three steps are
+  half-scale crafting-table recipes here, with clay standing in for cement powder, string for
+  asbestos and iron bars for rebar. Uber Concrete and Moldy Debris have no CE recipe and stay
+  creative-only. Über Concrete decays through sixteen stages and finally crumbles into debris
+  that falls like sand or gravel.
+* Chisel integration: requires the Chisel mod. The concrete set is registered in its carving
+  registry as `concrete`, `concrete_stairs`, `concrete_slabs`, `concrete_colored` (16 dyed +
+  8 Builder's Choice cubes), `concrete_colored_stairs`, `concrete_colored_slabs`,
+  `concrete_bricks`, `concrete_bricks_stairs` and `concrete_bricks_slabs`. Pillar, rebar,
+  asbestos and Uber Concrete are not registered. Chisel groups are flat, so the shared
+  `concrete_` prefix is the only hierarchy the mod can expose.
+* Ore dictionary: every concrete cube, stair and single slab is registered under `concrete`
+  directly by the mod; the full cubes are also registered under `blockConcrete` for the pack's
+  existing concrete recipes. Uber Concrete, Moldy Debris and the technical double-slab blocks
+  are excluded. No Groovy script is involved.
+* HL Blocks integration (`ntmdoors:hlblocks_*`): the included HL decorative set keeps its
+  original shift-scroll cycling, including the grouped `freezer`, `fifties`, `crete`, `duct`,
+  `lab`, `tunnel` and `generic` families and the stacking crate 09. The blast door and the
+  `lab1_dr4d` variant are not included. The concrete chisel families also participate in
+  shift-scroll cycling. Crate 09's lower half uses an opaque palette-backed texture, and
+  "Fifties Cache 1" is renamed "Fifties Couch 1". All included blocks are in the `blockhl`
+  ore dictionary.
+>>>>>>> Stashed changes
 * 16 multiblock OBJ doors: `vault_door`, `sliding_blast_door`, `qe_sliding_door`, `qe_sliding_panel`,
   `fire_door`, `secure_access_door`, `sliding_seal_door`, `round_airlock_door`, `silo_hatch`,
   `silo_hatch_large`, `large_vehicle_door`, `qe_containment`, `blast_door`, `cargo_door`,

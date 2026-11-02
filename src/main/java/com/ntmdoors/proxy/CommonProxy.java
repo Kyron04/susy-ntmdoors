@@ -2,6 +2,7 @@ package com.ntmdoors.proxy;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.door.DoorDecl;
+import com.ntmdoors.hlblocks.HLBlocksOreDict;
 import com.ntmdoors.door.DoorDecls;
 import com.ntmdoors.gui.GuiHandler;
 import com.ntmdoors.network.ModNetwork;
@@ -44,6 +45,20 @@ public class CommonProxy {
 
     public void init(FMLInitializationEvent event) {
         NetworkRegistry.INSTANCE.registerGuiHandler(NTMDoors.INSTANCE, new GuiHandler());
+<<<<<<< Updated upstream
+=======
+        // Items are registered by now; expose the concrete and HL sets to recipes without Groovy.
+        ConcreteOreDict.register();
+        HLBlocksOreDict.register();
+    }
+
+    public void postInit(FMLPostInitializationEvent event) {
+        // Chisel is a required dependency, but the guard keeps a dev run without it from loading
+        // the API class before Forge reports the missing mod.
+        if (Loader.isModLoaded("chisel")) {
+            ChiselIntegration.postInit(event);
+        }
+>>>>>>> Stashed changes
     }
 
     /** Client only: open the Relay Key naming screen. The server never needs to know about it. */
