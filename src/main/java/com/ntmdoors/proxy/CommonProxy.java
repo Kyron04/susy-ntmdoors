@@ -60,6 +60,14 @@ public class CommonProxy {
     public void openScannerCodeGui(BlockPos pos) {
     }
 
+    /** Client only: open the scanner console directly, used by the Creative Keycard. */
+    public void openScannerKeysGui(BlockPos pos) {
+    }
+
+    /** Client only: open the Redstone Gate screen. */
+    public void openRedstoneGateGui(BlockPos pos) {
+    }
+
     /** Client only: open the twenty-page editor for a held Documents Folder. */
     public void openDocumentsFolderGui(EnumHand hand) {
     }

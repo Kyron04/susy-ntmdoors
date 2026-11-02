@@ -69,7 +69,7 @@ public class MessageScannerKey implements IMessage {
             TileEntity te = player.world.getTileEntity(message.pos);
             if (!(te instanceof TileEntityKeycardScanner)) return;
             TileEntityKeycardScanner scanner = (TileEntityKeycardScanner) te;
-            if (!scanner.hasBoundDoors() || !scanner.hasCodeSessionFor(player)) return;
+            if (!scanner.hasConsoleAccess(player)) return;
 
             if (!message.assign) {
                 if (message.biometric) scanner.unassignId(message.value);

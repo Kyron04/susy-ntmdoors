@@ -3,10 +3,12 @@ package com.ntmdoors.proxy;
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.client.GuiDocumentsFolder;
 import com.ntmdoors.client.GuiKeycardViewer;
+import com.ntmdoors.client.GuiRedstoneGate;
 import com.ntmdoors.client.GuiRelayKeyName;
 import com.ntmdoors.client.GuiSafeBiometric;
 import com.ntmdoors.client.GuiSafeCode;
 import com.ntmdoors.client.GuiScannerCode;
+import com.ntmdoors.client.GuiScannerKeys;
 import com.ntmdoors.client.KeyframeAnimation;
 import com.ntmdoors.client.ObjModel;
 import com.ntmdoors.client.RenderDoor;
@@ -60,6 +62,16 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void openScannerCodeGui(BlockPos pos) {
         Minecraft.getMinecraft().displayGuiScreen(new GuiScannerCode(pos));
+    }
+
+    @Override
+    public void openScannerKeysGui(BlockPos pos) {
+        Minecraft.getMinecraft().displayGuiScreen(new GuiScannerKeys(pos));
+    }
+
+    @Override
+    public void openRedstoneGateGui(BlockPos pos) {
+        Minecraft.getMinecraft().displayGuiScreen(new GuiRedstoneGate(pos));
     }
 
     @Override

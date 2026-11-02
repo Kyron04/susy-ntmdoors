@@ -1,5 +1,15 @@
-HBM DOORS: REFRESHED 1.0.34
+HBM DOORS: REFRESHED 1.0.35
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.35
+FEATURES
+- The Creative Keycard now opens the scanner console directly on sneak + right-click, with no
+  security code and even when the scanner has no bound doors.
+- The Redstone Gate now has a screen, opened by sneak + right-clicking it with a Biometric
+  Operator Keycard or the Creative Keycard. It uses the scanner's red page and is intentionally
+  empty for now, ready for gate-specific controls.
+- Wireless events now keep the gate powered for a full 20 ticks using an absolute expiry, so the
+  pulse cannot lose a tick depending on tile-entity update order. Further events extend it.
 
 1.0.34
 FIXES

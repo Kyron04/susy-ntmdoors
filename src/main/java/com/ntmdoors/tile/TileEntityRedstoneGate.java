@@ -18,8 +18,12 @@ import java.util.List;
  */
 public class TileEntityRedstoneGate extends TileEntitySynced implements ITickable {
 
+    /** Every wireless event keeps the gate powered for exactly one second. */
+    public static final int WIRELESS_PULSE_TICKS = 20;
+
     private final List<BlockPos> boundDevices = new ArrayList<>();
-    private int wirelessTicks;
+    /** Absolute world time at which the current wireless pulse ends; 0 when idle. */
+    private long pulseEnd;
 
     /** Server side: adds a safe or scanner to this gate's wireless link. */
     public void bindDevice(BlockPos devicePos) {
@@ -51,33 +55,48 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
         markDirty();
     }
 
-    /** Server side: turns the gate on for at least {@code ticks} ticks. */
+    /**
+     * Server side: turns the gate on for at least {@code ticks} ticks, and never less than
+     * {@link #WIRELESS_PULSE_TICKS}. A second wireless event extends the current pulse instead of
+     * shortening it.
+     */
     public void pulse(int ticks) {
-        if (getWorld() == null || getWorld().isRemote || ticks <= 0) return;
-        wirelessTicks = Math.max(wirelessTicks, ticks);
+        if (getWorld() == null || getWorld().isRemote) return;
+        long now = getWorld().getTotalWorldTime();
+        long end = now + Math.max(ticks, WIRELESS_PULSE_TICKS);
+        // A second event while the gate is already pulsing extends the current window.
+        if (end > pulseEnd) pulseEnd = end;
         setPowered(true);
         markDirty();
     }
 
+    /** Server side: remaining wireless pulse ticks; exposed for diagnostics and the gate screen. */
+    public int getWirelessTicks() {
+        if (getWorld() == null || pulseEnd <= 0) return 0;
+        return (int) Math.max(0L, pulseEnd - getWorld().getTotalWorldTime());
+    }
+
+    private boolean isPulsing() {
+        return getWorld() != null && pulseEnd > getWorld().getTotalWorldTime();
+    }
+
     public void onNeighborChanged() {
         if (getWorld() == null || getWorld().isRemote) return;
-        if (wirelessTicks <= 0) setPowered(BlockRedstoneGate.isReceivingPower(getWorld(), pos));
+        if (!isPulsing()) setPowered(BlockRedstoneGate.isReceivingPower(getWorld(), pos));
     }
 
     @Override
     public void update() {
-        if (getWorld() == null || getWorld().isRemote) return;
-        if (wirelessTicks <= 0) return;
-        if (--wirelessTicks <= 0) {
-            wirelessTicks = 0;
-            setPowered(BlockRedstoneGate.isReceivingPower(getWorld(), pos));
-        }
+        if (getWorld() == null || getWorld().isRemote || pulseEnd <= 0) return;
+        if (isPulsing()) return;
+        pulseEnd = 0;
+        setPowered(BlockRedstoneGate.isReceivingPower(getWorld(), pos));
     }
 
     @Override
     public void onLoad() {
         if (getWorld() == null || getWorld().isRemote) return;
-        if (wirelessTicks > 0) setPowered(true);
+        if (isPulsing()) setPowered(true);
         else setPowered(BlockRedstoneGate.isReceivingPower(getWorld(), pos));
     }
 
@@ -95,7 +114,7 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
     public NBTTagCompound writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
         tag.setString("boundDevices", BlockPositions.encodeList(boundDevices));
-        tag.setInteger("wirelessTicks", wirelessTicks);
+        tag.setLong("wirelessPulseEnd", pulseEnd);
         return tag;
     }
 
@@ -104,6 +123,13 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
         super.readFromNBT(tag);
         boundDevices.clear();
         boundDevices.addAll(BlockPositions.decodeList(tag.getString("boundDevices")));
-        wirelessTicks = tag.getInteger("wirelessTicks");
+        if (tag.hasKey("wirelessPulseEnd")) {
+            pulseEnd = tag.getLong("wirelessPulseEnd");
+        } else if (tag.hasKey("wirelessTicks") && getWorld() != null) {
+            // Migrate the old remaining-ticks field from worlds saved by earlier builds.
+            pulseEnd = getWorld().getTotalWorldTime() + tag.getInteger("wirelessTicks");
+        } else {
+            pulseEnd = 0;
+        }
     }
 }

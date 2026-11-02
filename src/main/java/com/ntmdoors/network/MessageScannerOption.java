@@ -80,7 +80,7 @@ public class MessageScannerOption implements IMessage {
             TileEntity te = player.world.getTileEntity(message.pos);
             if (!(te instanceof TileEntityKeycardScanner)) return;
             TileEntityKeycardScanner scanner = (TileEntityKeycardScanner) te;
-            if (!scanner.hasBoundDoors() || !scanner.hasCodeSessionFor(player)) return;
+            if (!scanner.hasConsoleAccess(player)) return;
             // Raising lockdown mid-stroke would fight the door, so settings wait for a still door.
             // The Redstone event switches do not touch a door, so they stay editable.
             boolean redstone = message.option >= REDSTONE_SCAN_FAIL;

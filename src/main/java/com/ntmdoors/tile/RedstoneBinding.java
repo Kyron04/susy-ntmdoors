@@ -21,8 +21,6 @@ import java.util.UUID;
  */
 public final class RedstoneBinding {
 
-    /** One event keeps the gate on for one second. */
-    public static final int PULSE_TICKS = 20;
     /** A binding session the player walks away from expires after a minute. */
     private static final int BINDING_TICKS = 20 * 60;
 
@@ -119,7 +117,7 @@ public final class RedstoneBinding {
             if (!world.isBlockLoaded(gatePos)) continue;
             TileEntity te = world.getTileEntity(gatePos);
             if (te instanceof TileEntityRedstoneGate) {
-                ((TileEntityRedstoneGate) te).pulse(PULSE_TICKS);
+                ((TileEntityRedstoneGate) te).pulse(TileEntityRedstoneGate.WIRELESS_PULSE_TICKS);
             } else {
                 it.remove();
                 changed = true;

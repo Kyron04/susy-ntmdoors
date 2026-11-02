@@ -530,6 +530,15 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
                 && codeSessionPlayer.equals(player.getUniqueID());
     }
 
+    /**
+     * True when the player may change this scanner's settings. The Creative Keycard is the debug
+     * exception: it opens the console directly, with or without bound doors. Everyone else needs a
+     * code session on a scanner that already controls doors.
+     */
+    public boolean hasConsoleAccess(@Nullable EntityPlayer player) {
+        return ItemCreativeKeycard.isHeldBy(player) || (hasBoundDoors() && hasCodeSessionFor(player));
+    }
+
     /** True when either card frozen at the start of the scan carries an entry assigned here. */
     private boolean holdsAssignedKey(EntityPlayer player) {
         return grantsAccess(scanMain, player) || grantsAccess(scanOff, player);

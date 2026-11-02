@@ -4,7 +4,7 @@ Standalone port of the HBM's Nuclear Tech Mod door system to Minecraft 1.12.2.
 The implementation and the included door models, textures and sounds are used under the
 LGPL-3.0. See `LICENSE.LESSER` and `NOTICE` for attribution and source information.
 
-Current release: **1.0.34**
+Current release: **1.0.35**
 
 Source design reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
 
@@ -140,8 +140,11 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   safe's lockout closes every linked door once. Breaking the safe clears the links.
 * Redstone Gate (`ntmdoors:redstone_gate`): a full-cube redstone component with separate off and on
   textures. It starts off, turns on while it receives redstone power or a wireless pulse, and emits
-  a full-strength signal while on. It has a red menu name and the tooltip `Bound activities from
-  Keypads, Keycard Scanners, and Safes will emit a redstone signal`.
+  a full-strength signal while on. A wireless event keeps it powered for a full 20 ticks; another
+  event extends the pulse. Sneak + right-click it with a Biometric Operator Keycard or the
+  Creative Keycard to open its screen, which reuses the scanner's red Redstone page and is empty
+  for now. It has a red menu name and the tooltip `Bound activities from Keypads, Keycard Scanners,
+  and Safes will emit a redstone signal`.
 * Redstone Relay Key (`ntmdoors:redstone_relay_key`): a red-named creative key with the tooltip
   `Allows Keypads, Keycard Scanners, and Safes to be bound to the Redstone Gate`. Sneak + right-click
   a safe or scanner to start/finish a wireless binding session, then sneak + right-click a gate to
@@ -186,7 +189,9 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   creates the private keys that scanners check. The Creative Keycard is the debug item for testing:
   its name is purple, and right clicking any door opens or closes it regardless of locked/security
   variants, keypad codes or redstone, with a purple `Door overridden` status message. It also
-  bypasses both safes and every scanner. A blank Relay Key creates one private key when the player
+  bypasses both safes and every scanner, and sneak + right-clicking a scanner opens its full
+  console without a code or bound doors. Sneak + right-clicking a Redstone Gate opens the gate
+  screen. A blank Relay Key creates one private key when the player
   sneak right-clicks it away from any machine: a naming screen takes up to 32 characters, and
   confirming it generates a ten digit serial on the server and stores both in the key's NBT. A key
   can be created once and never reset. Its name is yellow, and its tooltip carries a grey
