@@ -1,9 +1,9 @@
 {
     "variants": {
-        "half=bottom,variant=default": {
+        "meta=0,half=bottom": {
             "model": "ntmdoors:half_slab_concrete_asbestos"
         },
-        "half=top,variant=default": {
+        "meta=0,half=top": {
             "model": "ntmdoors:upper_slab_concrete_asbestos"
         }
     }

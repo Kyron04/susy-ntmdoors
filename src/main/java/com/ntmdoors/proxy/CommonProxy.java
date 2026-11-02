@@ -52,8 +52,6 @@ public class CommonProxy {
         // Items are registered by now; expose the concrete and HL sets to recipes without Groovy.
         ConcreteOreDict.register();
         HLBlocksOreDict.register();
-        // Items are registered by now; expose the concrete set to pack recipes without Groovy.
-        ConcreteOreDict.register();
     }
 
     public void postInit(FMLPostInitializationEvent event) {

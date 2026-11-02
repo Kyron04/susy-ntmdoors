@@ -1,0 +1,28 @@
+{
+    "variants": {
+        "meta=0,half=bottom": {
+            "model": "ntmdoors:half_slab_brick_concrete"
+        },
+        "meta=0,half=top": {
+            "model": "ntmdoors:upper_slab_brick_concrete"
+        },
+        "meta=1,half=bottom": {
+            "model": "ntmdoors:half_slab_brick_concrete_mossy"
+        },
+        "meta=1,half=top": {
+            "model": "ntmdoors:upper_slab_brick_concrete_mossy"
+        },
+        "meta=2,half=bottom": {
+            "model": "ntmdoors:half_slab_brick_concrete_cracked"
+        },
+        "meta=2,half=top": {
+            "model": "ntmdoors:upper_slab_brick_concrete_cracked"
+        },
+        "meta=3,half=bottom": {
+            "model": "ntmdoors:half_slab_brick_concrete_broken"
+        },
+        "meta=3,half=top": {
+            "model": "ntmdoors:upper_slab_brick_concrete_broken"
+        }
+    }
+}

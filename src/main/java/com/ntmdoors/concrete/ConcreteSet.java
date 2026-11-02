@@ -7,7 +7,6 @@ import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
-import net.minecraft.item.ItemSlab;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraftforge.event.RegistryEvent;
@@ -20,23 +19,24 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The NTM concrete building set: the block definitions, their items and their creative order.
- *
- * <p>Names, metadata order and material values follow HBM's Nuclear Tech CE so the same block
- * paths, textures and structure data map one-to-one. The Java implementation is a fresh 1.12.2
- * port; see NOTICE for the asset attribution.</p>
+ * The NTM concrete building set. Cubes and slabs are grouped by chisel family into metadata
+ * variants to keep the block id count down; stairs stay one id per variant because
+ * {@code BlockStairs} already spends its four metadata bits on facing and half.
  */
 public final class ConcreteSet {
 
-    /** Vanilla dye metadata order, used by the coloured concrete and its stairs/slabs. */
     public static final String[] DYES = {
             "white", "orange", "magenta", "light_blue", "yellow", "lime", "pink", "gray",
             "silver", "cyan", "purple", "blue", "brown", "green", "red", "black"
     };
 
-    /** Builder's Choice order from CE's {@code EnumConcreteType}. */
     public static final String[] EXT_TYPES = {
-            "machine", "machine_stripe", "indigo", "purple", "pink", "hazard", "sand", "bronze"
+            "machine", "machine_stripe", "indigo", "purple", "pink", "hazard", "sand", "bronze",
+            "hazard_red", "hazard_green", "hazard_blue", "hazard_white", "hazard_purple"
+    };
+
+    public static final String[] BRICK_TYPES = {
+            "brick_concrete", "brick_concrete_mossy", "brick_concrete_cracked", "brick_concrete_broken"
     };
 
     public static final CreativeTabs TAB = new CreativeTabs(NTMDoors.MODID + ".concrete") {
@@ -57,112 +57,152 @@ public final class ConcreteSet {
         }
     };
 
+    /** A metadata slab family: up to eight variants plus its technical double block. */
+    public static final class SlabGroup {
+        public final String name;
+        public final String[] variantNames;
+        public final String[] itemModels;
+        public final Block single;
+        public final Block doubled;
+
+        private SlabGroup(String name, String[] variantNames, String[] itemModels,
+                          Block single, Block doubled) {
+            this.name = name;
+            this.variantNames = variantNames;
+            this.itemModels = itemModels;
+            this.single = single;
+            this.doubled = doubled;
+        }
+    }
+
+    /** A stair block and the cube variant its recipe uses. */
+    public static final class StairSpec {
+        public final Block stairs;
+        public final Block base;
+        public final int baseMeta;
+
+        private StairSpec(Block stairs, Block base, int baseMeta) {
+            this.stairs = stairs;
+            this.base = base;
+            this.baseMeta = baseMeta;
+        }
+    }
+
     private static final List<Block> BLOCKS = new ArrayList<>();
     private static final List<Item> ITEMS = new ArrayList<>();
     private static final List<ItemStack> CREATIVE = new ArrayList<>();
-    /** Stairs and single slabs by registry path, so the recipe table can reach them without 53 fields. */
     private static final Map<String, Block> STAIRS = new LinkedHashMap<>();
-    private static final Map<String, Block> SLABS = new LinkedHashMap<>();
+    private static final List<StairSpec> STAIR_SPECS = new ArrayList<>();
+    private static final List<SlabGroup> SLAB_GROUPS = new ArrayList<>();
+    private static final Map<String, SlabGroup> SLAB_BY_NAME = new LinkedHashMap<>();
 
-    // --- plain cubes -------------------------------------------------------------------------
-    public static final BlockConcreteVariant CONCRETE = cube("concrete", 15F, 140F);
-    public static final BlockConcreteVariant CONCRETE_SMOOTH = cube("concrete_smooth", 15F, 140F);
-    public static final BlockConcretePillar CONCRETE_PILLAR = new BlockConcretePillar("concrete_pillar");
-    public static final BlockConcreteVariant CONCRETE_REBAR = cube("concrete_rebar", 50F, 240F);
-    public static final BlockConcreteVariant CONCRETE_ASBESTOS = cube("concrete_asbestos", 15F, 1500F);
-
-    // --- variant cubes -----------------------------------------------------------------------
+    // --- grouped cubes -----------------------------------------------------------------------
+    public static final BlockConcreteVariant CONCRETE = new BlockConcreteVariant(
+            "concrete", new String[]{"concrete", "concrete_smooth"},
+            new String[]{"concrete", "concrete_smooth"}, true, 15F, 140F);
     public static final BlockConcreteVariant CONCRETE_COLORED = new BlockConcreteVariant(
             "concrete_colored", DYES, prefixed("concrete_", DYES), true, 15F, 140F);
     public static final BlockConcreteVariant CONCRETE_COLORED_EXT = new BlockConcreteVariant(
             "concrete_colored_ext", EXT_TYPES, prefixed("concrete_colored_ext_", EXT_TYPES),
             true, 15F, 140F);
+    public static final BlockConcreteVariant CONCRETE_BRICKS = new BlockConcreteVariant(
+            "concrete_bricks", BRICK_TYPES, BRICK_TYPES, true, 15F, 160F);
 
+    // --- standalone concrete blocks ----------------------------------------------------------
+    public static final BlockConcretePillar CONCRETE_PILLAR = new BlockConcretePillar("concrete_pillar");
+    public static final BlockConcreteVariant CONCRETE_REBAR = cube("concrete_rebar", 50F, 240F);
+    public static final BlockConcreteVariant CONCRETE_ASBESTOS = cube("concrete_asbestos", 15F, 1500F);
     public static final BlockConcreteDebris CONCRETE_SUPER_BROKEN =
             new BlockConcreteDebris("concrete_super_broken");
     public static final BlockUberConcrete CONCRETE_SUPER = new BlockUberConcrete();
 
-    // --- concrete bricks ---------------------------------------------------------------------
-    public static final BlockConcreteVariant BRICK_CONCRETE = cube("brick_concrete", 15F, 160F);
-    public static final BlockConcreteVariant BRICK_CONCRETE_MOSSY = cube("brick_concrete_mossy", 15F, 160F);
-    public static final BlockConcreteVariant BRICK_CONCRETE_CRACKED = cube("brick_concrete_cracked", 15F, 60F);
-    public static final BlockConcreteVariant BRICK_CONCRETE_BROKEN = cube("brick_concrete_broken", 15F, 45F);
-
     static {
-        // Cubes first: the flat building blocks.
         addCube(CONCRETE);
-        addCube(CONCRETE_SMOOTH);
+        addCube(CONCRETE_COLORED);
+        addCube(CONCRETE_COLORED_EXT);
+        addCube(CONCRETE_BRICKS);
         addBlock(CONCRETE_PILLAR);
         addCube(CONCRETE_REBAR);
         addCube(CONCRETE_ASBESTOS);
-        addCube(CONCRETE_COLORED);
-        addCube(CONCRETE_COLORED_EXT);
         addCube(CONCRETE_SUPER);
         addBlock(CONCRETE_SUPER_BROKEN);
-        addCube(BRICK_CONCRETE);
-        addCube(BRICK_CONCRETE_MOSSY);
-        addCube(BRICK_CONCRETE_CRACKED);
-        addCube(BRICK_CONCRETE_BROKEN);
 
-        // Stairs, in the same family order as the cubes.
-        addStairs(BRICK_CONCRETE, "brick_concrete_stairs", 15F, 95F);
-        addStairs(BRICK_CONCRETE_MOSSY, "brick_concrete_mossy_stairs", 15F, 94F);
-        addStairs(BRICK_CONCRETE_CRACKED, "brick_concrete_cracked_stairs", 15F, 40F);
-        addStairs(BRICK_CONCRETE_BROKEN, "brick_concrete_broken_stairs", 15F, 30F);
-        addStairs(CONCRETE, "concrete_stairs", 15F, 94F);
-        addStairs(CONCRETE_SMOOTH, "concrete_smooth_stairs", 15F, 94F);
-        addStairs(CONCRETE_ASBESTOS, "concrete_asbestos_stairs", 15F, 94F);
-        for (String dye : DYES) {
-            addStairs(CONCRETE_COLORED, "concrete_colored_stairs_" + dye, 15F, 94F);
+        // Plain stairs.
+        addStairs(CONCRETE, 0, "concrete_stairs", 15F, 94F);
+        addStairs(CONCRETE, 1, "concrete_smooth_stairs", 15F, 94F);
+        addStairs(CONCRETE_ASBESTOS, 0, "concrete_asbestos_stairs", 15F, 94F);
+        // Brick stairs.
+        addStairs(CONCRETE_BRICKS, 0, "brick_concrete_stairs", 15F, 95F);
+        addStairs(CONCRETE_BRICKS, 1, "brick_concrete_mossy_stairs", 15F, 94F);
+        addStairs(CONCRETE_BRICKS, 2, "brick_concrete_cracked_stairs", 15F, 40F);
+        addStairs(CONCRETE_BRICKS, 3, "brick_concrete_broken_stairs", 15F, 30F);
+        // Coloured stairs.
+        for (int meta = 0; meta < DYES.length; meta++) {
+            addStairs(CONCRETE_COLORED, meta, "concrete_colored_stairs_" + DYES[meta], 15F, 94F);
         }
-        for (String type : EXT_TYPES) {
-            addStairs(CONCRETE_COLORED_EXT, "concrete_colored_ext_stairs_" + type, 15F, 94F);
-        }
-
-        // Slabs. Builder's Choice has stairs in CE but no slabs.
-        addSlab("brick_concrete_slab", 15F, 70F);
-        addSlab("brick_concrete_mossy_slab", 15F, 70F);
-        addSlab("brick_concrete_cracked_slab", 15F, 30F);
-        addSlab("brick_concrete_broken_slab", 15F, 22F);
-        addSlab("concrete_slab", 15F, 70F);
-        addSlab("concrete_smooth_slab", 15F, 70F);
-        addSlab("concrete_asbestos_slab", 15F, 70F);
-        for (String dye : DYES) {
-            addSlab("concrete_" + dye + "_slab", 15F, 70F);
+        // Builder's Choice stairs.
+        for (int meta = 0; meta < EXT_TYPES.length; meta++) {
+            addStairs(CONCRETE_COLORED_EXT, meta,
+                    "concrete_colored_ext_stairs_" + EXT_TYPES[meta], 15F, 94F);
         }
     }
+
+    // Slab fields are initialized after the static block so cubes and stairs keep the earlier
+    // numeric ids and creative-tab order; slabGroup() registers the slabs as a side effect.
+    public static final SlabGroup CONCRETE_SLABS = slabGroup(
+            "concrete_slabs", new String[]{"concrete", "concrete_smooth"},
+            new String[]{"concrete_slab", "concrete_smooth_slab"});
+    public static final SlabGroup CONCRETE_COLORED_SLABS = slabGroup(
+            "concrete_colored_slabs", slice(DYES, 0, 8), dyeSlabModels(0, 8));
+    public static final SlabGroup CONCRETE_COLORED_SLABS_2 = slabGroup(
+            "concrete_colored_slabs_2", slice(DYES, 8, 16), dyeSlabModels(8, 16));
+    public static final SlabGroup CONCRETE_COLORED_EXT_SLABS = slabGroup(
+            "concrete_colored_ext_slabs", hazardTypes(), hazardSlabModels());
+    public static final SlabGroup CONCRETE_BRICKS_SLABS = slabGroup(
+            "concrete_bricks_slabs", BRICK_TYPES, prefixed("", BRICK_TYPES, "_slab"));
+    public static final SlabGroup CONCRETE_ASBESTOS_SLABS = slabGroup(
+            "concrete_asbestos_slab", new String[]{"concrete_asbestos"},
+            new String[]{"concrete_asbestos_slab"});
 
     private ConcreteSet() {
     }
 
-    /** Called from {@code ModContent} after the existing blocks, so saved numeric ids stay put. */
     public static void registerBlocks(RegistryEvent.Register<Block> e) {
         for (Block block : BLOCKS) e.getRegistry().register(block);
     }
 
-    /** Called from {@code ModContent} after the existing items, so saved numeric ids stay put. */
     public static void registerItems(RegistryEvent.Register<Item> e) {
         for (Item item : ITEMS) e.getRegistry().register(item);
     }
 
-    /** Stairs block by registry path, or null; used by {@link ConcreteRecipes}. */
     public static Block stairs(String name) {
         return STAIRS.get(name);
     }
 
-    /** Single slab block by registry path, or null; used by {@link ConcreteRecipes}. */
-    public static Block slab(String name) {
-        return SLABS.get(name);
+    public static SlabGroup slabGroup(String name) {
+        return SLAB_BY_NAME.get(name);
     }
 
-    /** Every stair block, in registration order; used by the ore dictionary registration. */
+    public static boolean isHazard(String type) {
+        return "hazard".equals(type) || type.startsWith("hazard_");
+    }
+
     public static Collection<Block> allStairs() {
         return Collections.unmodifiableCollection(STAIRS.values());
     }
 
-    /** Every single-slab block, in registration order; used by the ore dictionary registration. */
+    public static List<StairSpec> stairSpecs() {
+        return Collections.unmodifiableList(STAIR_SPECS);
+    }
+
+    public static List<SlabGroup> slabGroups() {
+        return Collections.unmodifiableList(SLAB_GROUPS);
+    }
+
     public static Collection<Block> allSlabs() {
-        return Collections.unmodifiableCollection(SLABS.values());
+        List<Block> result = new ArrayList<>();
+        for (SlabGroup group : SLAB_GROUPS) result.add(group.single);
+        return Collections.unmodifiableList(result);
     }
 
     private static BlockConcreteVariant cube(String name, float hardness, float resistance) {
@@ -188,32 +228,72 @@ public final class ConcreteSet {
         }
     }
 
-    private static void addStairs(Block base, String name, float hardness, float resistance) {
+    private static void addStairs(Block base, int baseMeta, String name,
+                                  float hardness, float resistance) {
         BlockConcreteStairs block = new BlockConcreteStairs(base, name, hardness, resistance);
         BLOCKS.add(block);
         STAIRS.put(name, block);
+        STAIR_SPECS.add(new StairSpec(block, base, baseMeta));
         ItemBlock item = new ItemBlock(block);
         item.setRegistryName(block.getRegistryName());
         ITEMS.add(item);
         CREATIVE.add(new ItemStack(item));
     }
 
-    private static void addSlab(String name, float hardness, float resistance) {
-        BlockConcreteSlab single = new BlockConcreteSlab(name, hardness, resistance);
+    private static SlabGroup slabGroup(String name, String[] variantNames, String[] itemModels) {
+        BlockConcreteSlab single = new BlockConcreteSlab(name, 15F, 70F);
         BlockConcreteSlab doubled = new BlockConcreteSlab.Double(name + "_double_slab", single,
-                hardness, resistance);
+                15F, 70F);
+        ItemConcreteSlab item = new ItemConcreteSlab(single, doubled, variantNames, itemModels);
+        item.setRegistryName(single.getRegistryName());
         BLOCKS.add(single);
         BLOCKS.add(doubled);
-        SLABS.put(name, single);
-        ItemSlab item = new ItemSlab(single, single, doubled);
-        item.setRegistryName(single.getRegistryName());
         ITEMS.add(item);
-        CREATIVE.add(new ItemStack(item));
+        for (int meta = 0; meta < variantNames.length; meta++) {
+            CREATIVE.add(new ItemStack(item, 1, meta));
+        }
+        SlabGroup group = new SlabGroup(name, variantNames, itemModels, single, doubled);
+        SLAB_GROUPS.add(group);
+        SLAB_BY_NAME.put(name, group);
+        return group;
+    }
+
+    private static String[] hazardTypes() {
+        List<String> types = new ArrayList<>();
+        for (String type : EXT_TYPES) {
+            if ("hazard".equals(type) || type.startsWith("hazard_")) types.add(type);
+        }
+        return types.toArray(new String[0]);
+    }
+
+    private static String[] hazardSlabModels() {
+        String[] types = hazardTypes();
+        String[] models = new String[types.length];
+        for (int i = 0; i < types.length; i++) {
+            models[i] = "concrete_colored_ext_slab_" + types[i];
+        }
+        return models;
+    }
+
+    private static String[] dyeSlabModels(int from, int to) {
+        String[] models = new String[to - from];
+        for (int i = from; i < to; i++) models[i - from] = "concrete_" + DYES[i] + "_slab";
+        return models;
+    }
+
+    private static String[] slice(String[] source, int from, int to) {
+        String[] result = new String[to - from];
+        System.arraycopy(source, from, result, 0, result.length);
+        return result;
     }
 
     private static String[] prefixed(String prefix, String[] names) {
+        return prefixed(prefix, names, "");
+    }
+
+    private static String[] prefixed(String prefix, String[] names, String suffix) {
         String[] result = new String[names.length];
-        for (int i = 0; i < names.length; i++) result[i] = prefix + names[i];
+        for (int i = 0; i < names.length; i++) result[i] = prefix + names[i] + suffix;
         return result;
     }
 }

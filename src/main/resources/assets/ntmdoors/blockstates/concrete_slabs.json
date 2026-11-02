@@ -1,0 +1,16 @@
+{
+    "variants": {
+        "meta=0,half=bottom": {
+            "model": "ntmdoors:half_slab_concrete"
+        },
+        "meta=0,half=top": {
+            "model": "ntmdoors:upper_slab_concrete"
+        },
+        "meta=1,half=bottom": {
+            "model": "ntmdoors:half_slab_concrete_smooth"
+        },
+        "meta=1,half=top": {
+            "model": "ntmdoors:upper_slab_concrete_smooth"
+        }
+    }
+}

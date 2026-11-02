@@ -2,6 +2,9 @@
     "variants": {
         "meta=0": {
             "model": "ntmdoors:concrete"
+        },
+        "meta=1": {
+            "model": "ntmdoors:concrete_smooth"
         }
     }
 }

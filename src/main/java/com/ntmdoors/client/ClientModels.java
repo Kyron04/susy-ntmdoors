@@ -2,8 +2,8 @@ package com.ntmdoors.client;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.block.BlockDoorGeneric;
+import com.ntmdoors.concrete.ItemConcreteSlab;
 import com.ntmdoors.hlblocks.ItemBlockGroup;
-import com.ntmdoors.item.ItemBlockConcreteVariant;
 import com.ntmdoors.item.ItemBlockConcreteVariant;
 import com.ntmdoors.registry.ModContent;
 import net.minecraft.block.Block;
@@ -21,7 +21,8 @@ import net.minecraftforge.fml.relauncher.Side;
 @Mod.EventBusSubscriber(modid = NTMDoors.MODID, value = Side.CLIENT)
 public class ClientModels {
 
-    private static final ModelResourceLocation EMPTY = new ModelResourceLocation(NTMDoors.MODID + ":door_empty", "normal");
+    private static final ModelResourceLocation EMPTY =
+            new ModelResourceLocation(NTMDoors.MODID + ":door_empty", "normal");
 
     @SubscribeEvent
     public static void onModelRegistry(ModelRegistryEvent e) {
@@ -31,39 +32,37 @@ public class ClientModels {
             Item.getItemFromBlock(block).setTileEntityItemStackRenderer(RenderDoorItem.INSTANCE);
         }
         invisible(ModContent.KEYPAD);
-        // The programmer is a desk unit, so it renders from the OBJ like the keypad; only the item
-        // uses a flat icon.
         invisible(ModContent.KEYCARD_PROGRAMMER);
-        // The scanner is the opposite way round: a flat icon in the inventory and hand, while the
-        // placed block is drawn from the OBJ by RenderKeycardScanner. Its blockstate also carries an
-        // "inventory" variant that points at the same item model.
 
-        // Sweep the item registry rather than listing items by hand. The old list silently dropped
-        // anything added later, and an unregistered item renders as a magenta checkerboard.
+        // Sweep the item registry rather than listing items by hand.
         for (Item item : Item.REGISTRY) {
             ResourceLocation name = item.getRegistryName();
-            if (name != null && NTMDoors.MODID.equals(name.getNamespace())) {
-                if (item instanceof ItemBlockGroup) {
-                    hlGroup((ItemBlockGroup) item);
-                } else if (item instanceof ItemBlockConcreteVariant) {
-            if (name != null && NTMDoors.MODID.equals(name.getNamespace())) {
-                if (item instanceof ItemBlockConcreteVariant) {
-                    variants((ItemBlockConcreteVariant) item);
-                } else {
-                    inventory(item);
-                }
+            if (name == null || !NTMDoors.MODID.equals(name.getNamespace())) continue;
+            if (item instanceof ItemBlockGroup) {
+                hlGroup((ItemBlockGroup) item);
+            } else if (item instanceof ItemConcreteSlab) {
+                slabVariants((ItemConcreteSlab) item);
+            } else if (item instanceof ItemBlockConcreteVariant) {
+                variants((ItemBlockConcreteVariant) item);
+            } else {
+                inventory(item);
             }
         }
     }
 
-    /**
-     * Metadata concrete blocks use one item model per variant. The model path comes from the
-     * block, because Über Concrete reuses five models across its sixteen stages.
-     */
+    /** Metadata concrete cubes use one item model per variant. */
     private static void variants(ItemBlockConcreteVariant item) {
         for (int meta = 0; meta < item.variantCount(); meta++) {
             ModelLoader.setCustomModelResourceLocation(item, meta, new ModelResourceLocation(
                     new ResourceLocation(NTMDoors.MODID, item.modelName(meta)), "inventory"));
+        }
+    }
+
+    /** Metadata slab items use the existing half-slab item model for each variant. */
+    private static void slabVariants(ItemConcreteSlab item) {
+        for (int meta = 0; meta < item.variantCount(); meta++) {
+            ModelLoader.setCustomModelResourceLocation(item, meta, new ModelResourceLocation(
+                    new ResourceLocation(NTMDoors.MODID, item.itemModel(meta)), "inventory"));
         }
     }
 
@@ -76,7 +75,6 @@ public class ClientModels {
         }
     }
 
-    /** Every state of the block maps to the empty model; the TESR draws the real thing. */
     private static void invisible(Block block) {
         ModelLoader.setCustomStateMapper(block, new StateMapperBase() {
             @Override
@@ -86,7 +84,6 @@ public class ClientModels {
         });
     }
 
-    /** Sets up the standard item model location for an item. */
     private static void inventory(Item item) {
         if (item == null || item.getRegistryName() == null) return;
         ModelLoader.setCustomModelResourceLocation(item, 0,
