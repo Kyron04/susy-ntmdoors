@@ -112,7 +112,8 @@ public class ItemOperatorKeycard extends ItemRfidCard {
                 "Holds several private keys that can be assigned",
                 "to scanners bound to doors.",
                 "Sneak + Right Click a bound scanner to set",
-                "its security code.");
+                "its security code, or a Redstone Gate to",
+                "open its settings.");
         Biometrics.addOwnerIfBound(tooltip, stack);
     }
 }

@@ -9,7 +9,6 @@ import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
@@ -42,14 +41,6 @@ public final class RedstoneBinding {
 
     public boolean isBindingFor(@Nullable EntityPlayer player) {
         return player != null && bindingPlayer != null && bindingPlayer.equals(player.getUniqueID());
-    }
-
-    public int getGateCount() {
-        return gates.size();
-    }
-
-    public List<BlockPos> getGates() {
-        return Collections.unmodifiableList(gates);
     }
 
     /** Server side: starts or finishes the wireless binding session for this player. */

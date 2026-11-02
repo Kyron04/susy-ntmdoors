@@ -13,6 +13,7 @@ import com.ntmdoors.client.GuiScannerKeys;
 import com.ntmdoors.client.KeyframeAnimation;
 import com.ntmdoors.client.ObjModel;
 import com.ntmdoors.client.RenderDoor;
+import com.ntmdoors.client.RenderDoorItem;
 import com.ntmdoors.client.RenderDoorKeypad;
 import com.ntmdoors.client.RenderKeycardProgrammer;
 import com.ntmdoors.client.RenderKeycardScanner;
@@ -109,6 +110,7 @@ public class ClientProxy extends CommonProxy {
                     ObjModel.clear();
                     KeyframeAnimation.clear();
                     ObjBounds.clear();
+                    RenderDoorItem.clearCache();
                     logMissingAssets(resourceManager);
                 });
         logMissingAssets(Minecraft.getMinecraft().getResourceManager());

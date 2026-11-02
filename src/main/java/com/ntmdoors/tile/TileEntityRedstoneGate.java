@@ -85,10 +85,6 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
         return invert;
     }
 
-    public int getActiveTicks() {
-        return activeTicks;
-    }
-
     public int getActiveSeconds() {
         return activeTicks / 20;
     }
@@ -152,12 +148,6 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
         // An inverted gate is off while the input is present.
         setPowered(!invert);
         markDirty();
-    }
-
-    /** Server side: remaining wireless pulse ticks; exposed for diagnostics and the gate screen. */
-    public int getWirelessTicks() {
-        if (getWorld() == null || pulseEnd <= 0) return 0;
-        return (int) Math.max(0L, pulseEnd - getWorld().getTotalWorldTime());
     }
 
     private boolean isPulsing() {

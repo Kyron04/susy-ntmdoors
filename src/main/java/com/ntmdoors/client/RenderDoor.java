@@ -10,6 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.BufferUtils;
@@ -90,6 +91,7 @@ public class RenderDoor extends TileEntitySpecialRenderer<TileEntityDoorGeneric>
 
         Map<String, KeyframeAnimation> keyframes = d.keyframeAnim == null
                 ? Collections.emptyMap() : KeyframeAnimation.get(d.keyframeAnim);
+        ResourceLocation boundTexture = null;
 
         for (String group : model.groups()) {
             if (only != null) {
@@ -100,7 +102,11 @@ public class RenderDoor extends TileEntitySpecialRenderer<TileEntityDoorGeneric>
 
             List<PartAnim> steps = d.anims.get(group);
             KeyframeAnimation keyframe = keyframes.get(group);
-            Minecraft.getMinecraft().getTextureManager().bindTexture(d.textureForPart(skin, group));
+            ResourceLocation texture = d.textureForPart(skin, group);
+            if (!texture.equals(boundTexture)) {
+                Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
+                boundTexture = texture;
+            }
 
             // Static groups normally ignore the clip bounds, because most doors only need to hide
             // their moving panel. Cropped variants such as the single-column QE door also need to

@@ -1,5 +1,13 @@
-HBM DOORS: REFRESHED 1.0.39
+HBM DOORS: REFRESHED 1.0.40
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.40
+CLEANUP
+- Removed unused Redstone Gate and Redstone Binding accessors.
+- Cached each door's normalized item-model bounds instead of recalculating them every frame.
+- Door rendering now skips redundant texture binds when consecutive groups share a texture.
+- Removed the stale version-specific CurseForge 1.0.30 notes; the changelog and current
+  CurseForge description are the maintained release documents.
 
 1.0.39
 FEATURES

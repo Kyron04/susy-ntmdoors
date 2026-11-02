@@ -28,10 +28,11 @@ import java.util.UUID;
 /**
  * Server-authoritative keypad.
  *
- * <p>A keypad stores its own 1-6 digit code. The first code set on a door binds that code to the
- * door core, and every keypad linked to the door must use the same code to open it. The binding
- * lives on the door, so destroying a keypad does not unlock the door. A screwdriver starts a reset
- * sequence that clears the code from the door and from every keypad linked to it.</p>
+ * <p>A keypad stores its own 1-6 digit door code. The first code set on a door binds that code to
+ * the door core, and every keypad linked to the door must use the same code to open it. The
+ * binding lives on the door, so destroying a keypad does not unlock the door. A second security
+ * code gates the Redstone Relay Key screen. A screwdriver starts a reset sequence that clears the
+ * door code from the door and from every keypad linked to it.</p>
  *
  * <p>A keypad only links to a door when it is placed directly next to one of the door's cells.
  * This keeps a keypad from binding or auto-syncing to a door elsewhere in the room.</p>
