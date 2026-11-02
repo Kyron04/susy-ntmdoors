@@ -2,6 +2,7 @@ package com.ntmdoors.item;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
+import com.ntmdoors.tile.TileEntityRedstoneGate;
 import com.ntmdoors.util.Biometrics;
 import com.ntmdoors.util.Names;
 import net.minecraft.client.util.ITooltipFlag;
@@ -60,6 +61,10 @@ public class ItemOperatorKeycard extends ItemRfidCard {
                                       EnumFacing facing, float hitX, float hitY, float hitZ) {
         if (!player.isSneaking()) return EnumActionResult.PASS;
         TileEntity te = world.getTileEntity(pos);
+        if (te instanceof TileEntityRedstoneGate) {
+            if (world.isRemote) NTMDoors.proxy.openRedstoneGateGui(pos);
+            return EnumActionResult.SUCCESS;
+        }
         if (!(te instanceof TileEntityKeycardScanner)) return EnumActionResult.PASS;
 
         return openScannerScreen(player, world, (TileEntityKeycardScanner) te, hand);

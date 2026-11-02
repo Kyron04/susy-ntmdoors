@@ -58,6 +58,7 @@ public class MessageKeypadCode implements IMessage {
             TileEntity te = player.world.getTileEntity(message.pos);
             if (!(te instanceof TileEntityDoorKeypad)) return;
             TileEntityDoorKeypad keypad = (TileEntityDoorKeypad) te;
+            if (!keypad.hasCodeSessionFor(player)) return;
 
             if (keypad.hasStoredCode()) {
                 player.sendStatusMessage(new TextComponentTranslation(

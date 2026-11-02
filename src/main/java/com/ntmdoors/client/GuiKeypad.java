@@ -265,8 +265,8 @@ public class GuiKeypad extends GuiScreen {
     }
 
     private void drawCodePage() {
-        drawTitle("SECURITY CODE");
-        drawString(fontRenderer, "FIRST CODE", left + 12, top + 29, HEADING);
+        drawTitle("DOOR CODE");
+        drawString(fontRenderer, "FIRST DOOR CODE", left + 12, top + 29, HEADING);
         drawRect(left + 12, top + 40, left + PANEL_WIDTH - 12, top + 41, RULE);
 
         TileEntityDoorKeypad keypad = keypad();
@@ -282,7 +282,7 @@ public class GuiKeypad extends GuiScreen {
             drawString(fontRenderer, "Doors linked: " + keypad.getDoorCount(),
                     left + 16, top + 86, DIM);
         } else {
-            drawString(fontRenderer, "Choose the first code for this keypad.",
+            drawString(fontRenderer, "Choose the first door code for this keypad.",
                     left + 16, top + 50, MUTED);
             drawString(fontRenderer, "1-6 digits. Press Enter or Set Code.",
                     left + 16, top + 92, DIM);

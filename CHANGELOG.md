@@ -1,5 +1,20 @@
-HBM DOORS: REFRESHED 1.0.38
+HBM DOORS: REFRESHED 1.0.39
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.39
+FEATURES
+- Keypads now have a separate GUI security code. Sneak + right-click with the Redstone Relay Key
+  opens a code screen: the first entry sets the code, later entries must match before the keypad
+  screen opens. The normal door code remains a separate code.
+- The Redstone Gate screen now has Stay active after signal, Invert operation, and activation
+  duration controls: +1/+5/+10/+20 seconds and -1/-5/-10/-20 seconds, clamped to 1 second - 5
+  minutes. Both the plain and Biometric Operator Keycard can open the gate screen.
+- Inverted gates are powered without input and switch off while a signal is present, including
+  wireless pulses and connected redstone.
+
+FIXES
+- Added the missing item models for the security silo hatches, and limited the silo item preview
+  to the hatch lid so both silo variants render correctly in hand.
 
 1.0.38
 FEATURES

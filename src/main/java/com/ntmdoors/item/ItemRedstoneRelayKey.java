@@ -49,9 +49,9 @@ public class ItemRedstoneRelayKey extends Item {
 
         TileEntity te = world.getTileEntity(pos);
         if (world.isRemote) {
-            // Sneak-clicking a keypad opens its configuration screen. Gate binding uses a normal
-            // click on the keypad, handled by BlockDoorKeypad.
-            if (te instanceof TileEntityDoorKeypad) NTMDoors.proxy.openKeypadGui(pos);
+            // Sneak-clicking a keypad opens its security-code screen, then the configuration GUI.
+            // Gate binding uses a normal click on the keypad, handled by BlockDoorKeypad.
+            if (te instanceof TileEntityDoorKeypad) NTMDoors.proxy.openKeypadSecurityCodeGui(pos);
             return EnumActionResult.SUCCESS;
         }
 

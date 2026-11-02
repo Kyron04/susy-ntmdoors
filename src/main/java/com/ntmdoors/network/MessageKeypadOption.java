@@ -69,6 +69,7 @@ public class MessageKeypadOption implements IMessage {
             TileEntity te = player.world.getTileEntity(message.pos);
             if (!(te instanceof TileEntityDoorKeypad)) return;
             TileEntityDoorKeypad keypad = (TileEntityDoorKeypad) te;
+            if (!keypad.hasCodeSessionFor(player)) return;
 
             switch (message.option) {
                 case ON_FAIL:

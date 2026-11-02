@@ -68,8 +68,8 @@ public class CommonProxy {
     public void openRedstoneGateGui(BlockPos pos) {
     }
 
-    /** Client only: open the keypad configuration screen. */
-    public void openKeypadGui(BlockPos pos) {
+    /** Client only: open the keypad security-code screen. */
+    public void openKeypadSecurityCodeGui(BlockPos pos) {
     }
 
     /** Client only: open the twenty-page editor for a held Documents Folder. */

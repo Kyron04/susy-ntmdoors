@@ -117,7 +117,7 @@ public final class RedstoneBinding {
             if (!world.isBlockLoaded(gatePos)) continue;
             TileEntity te = world.getTileEntity(gatePos);
             if (te instanceof TileEntityRedstoneGate) {
-                ((TileEntityRedstoneGate) te).pulse(TileEntityRedstoneGate.WIRELESS_PULSE_TICKS);
+                ((TileEntityRedstoneGate) te).pulse();
             } else {
                 it.remove();
                 changed = true;

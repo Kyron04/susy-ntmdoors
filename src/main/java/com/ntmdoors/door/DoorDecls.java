@@ -349,6 +349,7 @@ public final class DoorDecls {
                     box(-1.5, 0, -2.5, 1.5, 1, -1.5), box(-1.5, 0, 1.5, 1.5, 1, 2.5))
             .openSelectionOnly(box(-2.5, 0, -2.5, 2.5, 0.0625, 2.5))
             .modelPath("models/doors/silo_hatch.obj", "textures/models/doors/silo_hatch.png")
+            .itemGroups("Hatch")
             .modelYaw(90F)
             .sounds(null, SND_WGH_BIG_START, SND_WGH_BIG_STOP)
             // Match HBM's transform order T(origin) * R * T(-origin + translation). The old
@@ -371,6 +372,7 @@ public final class DoorDecls {
                     box(-2.5, 0, -3.5, 2.5, 1, -2.5), box(-2.5, 0, 2.5, 2.5, 1, 3.5))
             .openSelectionOnly(box(-3.5, 0, -3.5, 3.5, 0.0625, 3.5))
             .modelPath("models/doors/silo_hatch_large.obj", "textures/models/doors/silo_hatch_large.png")
+            .itemGroups("Hatch")
             .displayName("Large Silo Hatch")
             .modelYaw(90F)
             .sounds(null, SND_WGH_BIG_START, SND_WGH_BIG_STOP)

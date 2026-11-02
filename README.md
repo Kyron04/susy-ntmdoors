@@ -4,7 +4,7 @@ Standalone port of the HBM's Nuclear Tech Mod door system to Minecraft 1.12.2.
 The implementation and the included door models, textures and sounds are used under the
 LGPL-3.0. See `LICENSE.LESSER` and `NOTICE` for attribution and source information.
 
-Current release: **1.0.38**
+Current release: **1.0.39**
 
 Source design reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
 
@@ -64,10 +64,11 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   its code and skips the confirmation. A keypad never binds or drives a security door: placing one
   against a security door shows `Unable to bound` in red on the LCD. A door is also driven by
   keypads or keycard scanners, never both, so a pad refuses a door a scanner already controls.
-  Sneak + right click a keypad with the Redstone Relay Key to open its screen: set the first code,
-  toggle `On fail` / `On success` Redstone Gate outputs, reset the code, override door locks, or
-  force-close its doors. A normal click with the Redstone Relay Key starts/finishes its wireless
-  gate binding session.
+  Keypads have two codes: the normal door code above, and a separate security code that gates the
+  Redstone Relay Key screen. Sneak + right click a keypad with that key to enter (or first set) the
+  security code; the screen then sets the first door code, toggles `On fail` / `On success`
+  Redstone Gate outputs, resets the door code, overrides door locks, or force-closes its doors.
+  A normal click with the Redstone Relay Key starts/finishes its wireless gate binding session.
 * Keycard Scanner (`ntmdoors:keycard_scanner`): wall-mounted card reader with a black display, a
   blue security stripe and green / yellow / red indicator lenses. Sneak + right click it with the
   screwdriver to start a binding session, sneak + right click up to nine closed doors within 32
@@ -145,11 +146,13 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   safe's lockout closes every linked door once. Breaking the safe clears the links.
 * Redstone Gate (`ntmdoors:redstone_gate`): a full-cube redstone component with separate off and on
   textures. It starts off, turns on while it receives redstone power or a wireless pulse, and emits
-  a full-strength signal while on. A wireless event keeps it powered for a full 20 ticks; another
-  event extends the pulse. Sneak + right-click it with a Biometric Operator Keycard or the
-  Creative Keycard to open its screen, which reuses the scanner's red Redstone page and is empty
-  for now. It has a red menu name and the tooltip `Bound activities from Keypads, Keycard Scanners,
-  and Safes will emit a redstone signal`.
+  a full-strength signal while on. A wireless event keeps it powered for its configured duration;
+  another event extends the pulse. Sneak + right-click it with an Operator Keycard, Biometric
+  Operator Keycard, or the Creative Keycard to open its settings screen. The screen has `Stay
+  active after signal` (hold the gate on until switched off there), `Invert operation` (powered
+  when there is no input), and activation duration controls from 1 second up to 5 minutes using
+  +1/+5/+10/+20 second and matching subtract buttons. It has a red menu name and the tooltip
+  `Bound activities from Keypads, Keycard Scanners, and Safes will emit a redstone signal`.
 * Redstone Relay Key (`ntmdoors:redstone_relay_key`): a red-named creative key with the tooltip
   `Allows Keypads, Keycard Scanners, and Safes to be bound to the Redstone Gate`. Sneak + right-click
   a safe or scanner to start/finish a wireless binding session, then sneak + right-click a gate to
@@ -157,7 +160,8 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   sneak + right-click opens its configuration screen. Devices and gates can be linked many-to-many
   in the same dimension.
 * Both safes and the keycard scanner have a third `Redstone` page with a red panel tint and
-  scrolling. Its event toggles start off; enabling one pulses every linked gate for 20 ticks.
+  scrolling. Its event toggles start off; enabling one pulses every linked gate for that gate's
+  configured activation duration.
   - Code Safe: Code fail, Code success, Binding activities, Lockout.
   - Biometric Safe: Scan fail, Scan success, Match holder fail, Match holder success, Lockout.
   - Keycard Scanner: Scan fail, Scan success, Match holder fail, Match holder success, Private key

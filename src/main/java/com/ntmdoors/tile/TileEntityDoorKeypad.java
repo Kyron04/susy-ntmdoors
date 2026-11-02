@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Server-authoritative keypad.
@@ -139,8 +140,11 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable,
 
     /** Digits typed but not submitted. Also the reset-code buffer. Synced for the LCD. */
     private String entry = "";
-    /** The keypad's own code. Empty until one is set; never sent to clients. */
+    /** The keypad's own door code. Empty until one is set; never sent to clients. */
     private String storedCode = "";
+    /** The separate code that opens this keypad's Redstone Relay Key screen. */
+    private String securityCode = "";
+    private boolean securityCodeSet;
     private Mode mode = Mode.SET_CODE;
     private Feedback feedback = Feedback.NONE;
     private int feedbackTicks;
@@ -157,6 +161,13 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable,
     private final List<BlockPos> boundDoors = new ArrayList<>();
     /** Synced link count so clients can draw the confirmation without receiving positions. */
     private int doorCount;
+
+    /** Two minutes to edit the keypad after entering its security code. */
+    private static final int CODE_SESSION_TICKS = 20 * 120;
+    /** Server only: the player who entered the security code. */
+    @Nullable
+    private UUID codeSessionPlayer;
+    private int codeSessionTicks;
 
     /** Wireless gate link, shared with safes and scanners. */
     private final RedstoneBinding redstoneBinding = new RedstoneBinding(this);
@@ -266,11 +277,47 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable,
         msg(player, key);
     }
 
+    // ------------------------------------------------------------ security code / GUI session
+
+    /** True once a security code has been set for the Redstone Relay Key screen. */
+    public boolean hasSecurityCode() {
+        return securityCodeSet;
+    }
+
+    /** Server side: sets the keypad's first GUI security code. */
+    public boolean setSecurityCode(String raw) {
+        if (world == null || world.isRemote || securityCodeSet) return false;
+        String code = Codes.sanitise(raw, CODE_LENGTH);
+        if (code.isEmpty()) return false;
+        securityCode = code;
+        securityCodeSet = true;
+        sync();
+        return true;
+    }
+
+    /** True when the supplied digits match the GUI security code. */
+    public boolean checkSecurityCode(String raw) {
+        return securityCodeSet && securityCode.equals(Codes.sanitise(raw, CODE_LENGTH));
+    }
+
+    /** Server side: opens the editing session after a successful security-code entry. */
+    public void openCodeSession(EntityPlayer player) {
+        if (player == null) return;
+        codeSessionPlayer = player.getUniqueID();
+        codeSessionTicks = CODE_SESSION_TICKS;
+    }
+
+    public boolean hasCodeSessionFor(@Nullable EntityPlayer player) {
+        return player != null && codeSessionPlayer != null
+                && codeSessionTicks > 0
+                && codeSessionPlayer.equals(player.getUniqueID());
+    }
+
     // ------------------------------------------------------------ GUI actions
 
     /**
-     * Server side: sets the keypad's first code from the Redstone Relay Key screen. Existing codes
-     * are deliberately left alone; the GUI has a separate Reset Code action.
+     * Server side: sets the keypad's first door code from the Redstone Relay Key screen. Existing
+     * codes are deliberately left alone; the GUI has a separate Reset Code action.
      */
     public boolean setFirstCode(String raw) {
         if (world == null || world.isRemote || hasStoredCode()) return false;
@@ -329,6 +376,7 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable,
             feedback = Feedback.NONE;
         }
         if (blackScreenTicks > 0) blackScreenTicks--;
+        if (codeSessionTicks > 0 && --codeSessionTicks == 0) codeSessionPlayer = null;
     }
 
     // ------------------------------------------------------------ button input
@@ -908,6 +956,8 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable,
     public NBTTagCompound writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
         tag.setString("stored", storedCode);
+        tag.setString("securityCode", securityCode);
+        tag.setBoolean("securityCodeSet", securityCodeSet);
         tag.setString("entry", entry);
         tag.setInteger("mode", mode.ordinal());
         tag.setInteger("feedback", feedback.ordinal());
@@ -939,6 +989,7 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable,
     protected NBTTagCompound writeSyncTag(NBTTagCompound tag) {
         writeToNBT(tag);
         tag.removeTag("stored");
+        tag.removeTag("securityCode");
         tag.removeTag("boundDoors");
         return tag;
     }
@@ -958,6 +1009,9 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable,
             storedCode = "";
             mode = Mode.SET_CODE;
         }
+        securityCode = tag.getString("securityCode");
+        securityCodeSet = tag.hasKey("securityCodeSet")
+                ? tag.getBoolean("securityCodeSet") : !securityCode.isEmpty();
         entry = tag.getString("entry");
         feedback = Feedback.byId(tag.getInteger("feedback"));
         feedbackTicks = tag.getInteger("feedbackTicks");

@@ -34,6 +34,12 @@ public final class ModNetwork {
                 Side.SERVER);
         INSTANCE.registerMessage(MessageKeypadOption.Handler.class, MessageKeypadOption.class, 12,
                 Side.SERVER);
+        INSTANCE.registerMessage(MessageKeypadSecurityCode.Handler.class,
+                MessageKeypadSecurityCode.class, 13, Side.SERVER);
+        INSTANCE.registerMessage(MessageKeypadSecurityCodeResult.Handler.class,
+                MessageKeypadSecurityCodeResult.class, 14, Side.CLIENT);
+        INSTANCE.registerMessage(MessageGateOption.Handler.class, MessageGateOption.class, 15,
+                Side.SERVER);
     }
 
     private ModNetwork() {

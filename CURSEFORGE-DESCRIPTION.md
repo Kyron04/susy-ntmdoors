@@ -4,7 +4,7 @@
 
 NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system from HBM's Nuclear Tech Mod. No NTM installation is required. Every model, texture and sound is bundled.
 
-**Current version: 1.0.38**
+**Current version: 1.0.39**
 
 ## 16 multiblock doors
 
@@ -49,8 +49,9 @@ A wall-mounted code panel that binds to the door it touches:
   - **Multi** — link up to 9 doors, adjacent or remote, all on one shared code
 - after linking, `Confirm Door Bounding?` is shown and `E` accepts; the pad then shows `Input code` / `Input multi code`
 - once a pad has a code or any link, its mode is locked and the screwdriver can only reset it
+- keypads have a separate GUI security code in addition to the normal door code
 - Redstone Relay Key: normal right-click starts/finishes a wireless gate-binding session
-- Redstone Relay Key: sneak + right-click opens a two-page screen. Page one sets the first code; page two has `On fail` / `On success` gate outputs plus `Reset Code`, `Override Door Locks` and `Force Close`
+- Redstone Relay Key: sneak + right-click opens a security-code screen, then a two-page keypad screen. Page one sets the first door code; page two has `On fail` / `On success` gate outputs plus `Reset Code`, `Override Door Locks` and `Force Close`
 
 Keypads can bind and drive locked doors. Security doors stay off limits, and a door is never driven by both a keypad and a scanner.
 
@@ -72,7 +73,7 @@ Screwdriver + sneak + right-click cycles door skins:
 - **Keycard Programmer** — desk console with a card slot, live screen and three GUI pages. Bind Relay Keys to Operator Keycards and RFID cards, recolour cards with seven colour options, and run the Legacy Backup Programmer with its five-stage progress bar.
 - **RFID cards** — blank plus red, violet, green, blue, black, orange and yellow variants.
 - **Themed keycards** — Keycard with Blue Marking, Labyrinth, Engine Room, Terminal and Terragroup Labs Access.
-- **Operator Keycard** — aimed at a bound scanner, opens its security code screen; elsewhere it shows its private keys.
+- **Operator Keycard** - aimed at a bound scanner, opens its security code screen; aimed at a Redstone Gate, opens its settings screen. The Biometric Operator Keycard does the same. Elsewhere it shows its private keys.
 - **Creative Keycard** - bypasses card checks on bound doors, opens every scanner, opens both safes, and sneak + right-clicking a scanner opens its full console without a code or bound doors. It also opens the Redstone Gate screen.
 - **Relay Key and Biometric Relay Key** — create named private keys; the biometric version captures the holder's identity instead.
 - **Biometric Keycard and Biometric Operator Keycard** — carry an identity, show the owner in the tooltip, and work with the scanner's Match biometric holder option. The Operator version also lists its stored private keys in the tooltip.
@@ -102,9 +103,9 @@ Screwdriver + sneak + right-click cycles door skins:
 ## Redstone
 
 - Normal and locked doors respond to redstone. Security doors still require a keycard scanner or the Creative Keycard, and lockdown still blocks redstone edges.
-- **Redstone Gate** - a full-cube redstone component with separate off and on textures. It starts off, turns on while it receives redstone power or a wireless pulse, and emits a full-strength signal while on. A wireless event powers it for a full 20 ticks, and another event extends the pulse. Sneak + right-click with a Biometric Operator Keycard or the Creative Keycard to open its screen.
+- **Redstone Gate** - a full-cube redstone component with separate off and on textures. It starts off, turns on while it receives redstone power or a wireless pulse, and emits a full-strength signal while on. A wireless event powers it for the gate's configured duration, and another event extends the pulse. Both Operator Keycards and the Creative Keycard open its settings screen: `Stay active after signal`, `Invert operation`, and +1/+5/+10/+20 second activation duration controls with matching subtract buttons.
 - **Redstone Relay Key** - a red-named creative key. Sneak + right-click a safe or keycard scanner to start/finish a wireless binding session, then sneak + right-click a Redstone Gate to link or unlink it. On a keypad, a normal right-click starts/finishes the session and sneak + right-click opens the keypad screen. Devices and gates can be linked many-to-many in the same dimension.
-- Both safes and the keycard scanner have a third **Redstone** page with a red panel tint and scrolling. Event toggles start off and pulse every linked gate for 20 ticks when enabled:
+- Both safes and the keycard scanner have a third **Redstone** page with a red panel tint and scrolling. Event toggles start off and pulse every linked gate for that gate's configured activation duration when enabled:
   - Code Safe: Code fail, Code success, Binding activities, Lockout.
   - Biometric Safe: Scan fail, Scan success, Match holder fail, Match holder success, Lockout.
   - Keycard Scanner: Scan fail, Scan success, Match holder fail, Match holder success, Private key fail, Private key success, Biometric fail, Biometric success, Lockout.
