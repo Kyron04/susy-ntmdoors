@@ -4,7 +4,7 @@ Standalone port of the HBM's Nuclear Tech Mod door system to Minecraft 1.12.2.
 The implementation and the included door models, textures and sounds are used under the
 LGPL-3.0. See `LICENSE.LESSER` and `NOTICE` for attribution and source information.
 
-Current release: **1.0.30**
+Current release: **1.0.31**
 
 Source design reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
 
@@ -24,35 +24,15 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
 * Multiblock doors of any footprint, placed in one click, rotate with the player, removed as one piece
 * Core tile entity with state machine CLOSED / OPENING / OPEN / CLOSING, synced to clients
 * Redstone from any cell of the door (edge triggered), right click toggle
-* Every door is also registered as a locked, redstone-only copy named `<door>_locked`, and as a
-  `<door>_security` copy that only a keycard scanner (or the Creative Keycard directly) can open:
-  keypads in every binding mode, redstone and hand clicks never move it. The two silo hatches have
-  no security variant. Keypads may bind and drive locked doors exactly like normal ones (a bound
-  door is then code-driven rather than redstone-driven); security doors are off limits to keypads.
+* Every door is also registered as a locked copy named `<door>_locked`, and as a `<door>_security`
+  copy that only a keycard scanner (or the Creative Keycard directly) can open. Normal and locked
+  doors respond to redstone; security doors refuse it, as do hand clicks. The two silo hatches have
+  no security variant. Keypads may bind and drive locked doors exactly like normal ones; security
+  doors are off limits to keypads.
 * State dependent collision and selection boxes that follow the door animation continuously
   (walk through when open, click-through gaps)
 * OBJ renderer (TESR) with per-group translate/rotate animations, X/Y/Z clipping and sounds
 * 3D door item rendering (inventory, hand, ground) from the same OBJ model, matching HBM's door item renderer
-* NTM concrete building set in its own creative tab: 13 cube blocks (plain, bricks, rebar, asbestos,
-  pillar, 16 dyed, 8 Builder's Choice variants, Über Concrete and its falling Moldy Debris), 31 stairs
-  and 23 slab families. Recipes follow NTM CE's crafting table (tile, pillar, bricks, dyed
-  and Builder's Choice concrete, plus block-to-slab and block-to-stairs recipes; stairs and
-  slabs do not convert back, as in vanilla). CE makes smooth and asbestos
-  concrete in the chemical plant and rebar concrete in the crystallizer; those three steps are
-  half-scale crafting-table recipes here, with clay standing in for cement powder, string for
-  asbestos and iron bars for rebar. Uber Concrete and Moldy Debris have no CE recipe and stay
-  creative-only. Über Concrete decays through sixteen stages and finally crumbles into debris
-  that falls like sand or gravel.
-* Chisel integration: requires the Chisel mod. The concrete set is registered in its carving
-  registry as `concrete`, `concrete_stairs`, `concrete_slabs`, `concrete_colored` (16 dyed +
-  8 Builder's Choice cubes), `concrete_colored_stairs`, `concrete_colored_slabs`,
-  `concrete_bricks`, `concrete_bricks_stairs` and `concrete_bricks_slabs`. Pillar, rebar,
-  asbestos and Uber Concrete are not registered. Chisel groups are flat, so the shared
-  `concrete_` prefix is the only hierarchy the mod can expose.
-* Ore dictionary: every concrete cube, stair and single slab is registered under `concrete`
-  directly by the mod; the full cubes are also registered under `blockConcrete` for the pack's
-  existing concrete recipes. Uber Concrete, Moldy Debris and the technical double-slab blocks
-  are excluded. No Groovy script is involved.
 * 16 multiblock OBJ doors: `vault_door`, `sliding_blast_door`, `qe_sliding_door`, `qe_sliding_panel`,
   `fire_door`, `secure_access_door`, `sliding_seal_door`, `round_airlock_door`, `silo_hatch`,
   `silo_hatch_large`, `large_vehicle_door`, `qe_containment`, `blast_door`, `cargo_door`,
@@ -157,6 +137,13 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   link or unlink them. A door can belong to one safe, but a door already controlled by a keypad or
   scanner keeps that binding and can still be linked to a safe. With `Binding Activities` on, the
   safe's lockout closes every linked door once. Breaking the safe clears the links.
+* Redstone Gate (`ntmdoors:redstone_gate`): a full-cube redstone component with separate off and on
+  textures. It starts off, turns on while it receives redstone power, and emits a full-strength
+  signal while on. It has a red menu name and the tooltip `Bound activities from Keypads, Keycard
+  Scanners, and Safes will emit a redstone signal`. The bound-activity logic is not implemented yet.
+* Redstone Relay Key (`ntmdoors:redstone_relay_key`): a red-named creative key with the tooltip
+  `Allows Keypads, Keycard Scanners, and Safes to be bound to the Redstone Gate`. It has no binding
+  behaviour yet.
 * RFID cards: one blank card plus red, violet, green, blue, black, orange and yellow variants.
   Each colour is a separate item (`ntmdoors:red_rfid_card` and so on) sharing a single item class
   and one hand-display model, so they all sit in the hand identically. The scanner recognises them
@@ -264,4 +251,97 @@ for explicit model-space bounds; `.collisionSplits(n)` tightens rotating parts b
 ## Not included
 Crafting recipes for the doors (the originals need NTM materials), for the keypad, programmer,
 scanner, cards, Keycard Holder and Documents Folder; configs, NEI/JEI, and other NTM items. Only the
-screwdriver has a recipe; the concrete building set has its own recipes (see above).
+screwdriver has a recipe.
+
+## SuperSymmetry fork additions
+
+Everything in this section is specific to the SuperSymmetry fork. The sections above describe the
+upstream door port from Kyron04/susy-ntmdoors and are left unchanged.
+
+### Concrete and HL Blocks
+
+This fork adds the NTM concrete building set and the included HL Blocks to the door port:
+
+- The full NTM CE concrete set: plain, smooth, dyed, Builder's Choice, bricks, pillar, rebar,
+  asbestos, Über Concrete and its falling Moldy Debris.
+- The HL Blocks set: three simple blocks and seven metadata groups.
+- A metadata layout that replaces the old one-id-per-variant blocks: cubes and slabs are grouped
+  by Chisel family, so one block id holds a whole texture family.
+- Shift-scroll cycling, flat Chisel carving groups, `concrete` / `blockConcrete` / `blockhl` ore
+  dictionary entries, and the concrete recipes.
+- A fix for the single-slab model lookup: the blockstate variant keys are written in the order
+  Forge actually uses (`half=...,variant=...`).
+
+The upstream "Not included" note predates this fork. The concrete set has its own recipes, listed
+below; the doors, cards and machines still have no recipes.
+
+#### Block layout
+
+Cubes are one block id per family; metadata selects the texture. Stairs stay one block id per
+texture because `BlockStairs` already uses its metadata bits for facing and half. Slabs use one
+block id per family with the `variant` and `half` properties, plus a technical `_double_slab`
+block for the double form.
+
+| Family | Block id | Variants |
+|---|---|---|
+| Plain concrete | `ntmdoors:concrete` | 0 tile, 1 smooth |
+| Dyed concrete | `ntmdoors:concrete_colored` | 16 dyes |
+| Builder's Choice | `ntmdoors:concrete_colored_ext` | 13 variants: machine, machine stripe, indigo, purple, pink, sand, bronze, and six hazard colours (plain, red, green, blue, white, purple) |
+| Concrete bricks | `ntmdoors:concrete_bricks` | brick, mossy, cracked, broken |
+| Special cubes | `ntmdoors:concrete_pillar`, `ntmdoors:concrete_rebar`, `ntmdoors:concrete_asbestos` | 1 each |
+| Über Concrete | `ntmdoors:concrete_super` | 16 decay stages |
+| Moldy Debris | `ntmdoors:concrete_super_broken` | 1 |
+| Stairs | 36 ids such as `concrete_stairs`, `concrete_smooth_stairs`, `concrete_colored_stairs_white`, `concrete_colored_ext_stairs_hazard`, `brick_concrete_stairs` | one id per texture |
+| Slabs | `concrete_slabs` (2), `concrete_colored_slabs` (8), `concrete_colored_slabs_2` (8), `concrete_colored_ext_slabs` (6 hazard), `concrete_bricks_slabs` (4), `concrete_asbestos_slab` (1) | `variant` + `half`; each has a `_double_slab` technical block |
+| HL simple blocks | `ntmdoors:hlblocks_ca1x_con2`, `hlblocks_drkmtlt_flr01`, `hlblocks_crate09` | 1 each |
+| HL metadata groups | `hlblocks_freezer` (2), `hlblocks_fifties` (3), `hlblocks_crete` (3), `hlblocks_duct` (1), `hlblocks_lab` (3), `hlblocks_tunnel` (4), `hlblocks_generic` (3) | metadata |
+
+That is 61 placeable block ids, plus the 6 technical double slabs, covering 142 texture/metadata
+variants. Creative and HEI list 127 of them; Über Concrete stages 1-15 are deliberately hidden and
+remain reachable by metadata.
+
+#### In-game behaviour
+
+- **Creative tabs.** The concrete set has its own `NTM Concrete` tab. The HL Blocks are in the
+  vanilla Building Blocks tab.
+- **Shift-scroll cycling.** Hold a concrete or HL stack and scroll with the cycle modifier
+  (left shift by default, rebindable under Controls → HL Blocks). It cycles every texture in the
+  family in both hands, and the server applies the change.
+- **Chisel.** Chisel is a required dependency. The families are registered as flat carving groups:
+  `concrete`, `concrete_stairs`, `concrete_slabs`, `concrete_colored`,
+  `concrete_colored_stairs`, `concrete_colored_slabs`, `concrete_bricks`,
+  `concrete_bricks_stairs` and `concrete_bricks_slabs`. Pillar, rebar, asbestos and Über Concrete
+  are not registered. Chisel groups are flat, so the shared `concrete_` prefix is the only
+  hierarchy the mod can expose.
+- **Ore dictionary.** Every concrete cube, stair and single slab is registered under `concrete`;
+  full cubes are also under `blockConcrete`. Every included HL block is under `blockhl`. Über
+  Concrete, Moldy Debris and the technical double slabs are excluded. No Groovy script is
+  involved.
+- **Recipes.** Blocks make slabs and stairs, never the reverse. Smooth, asbestos and rebar concrete
+  use half-scale crafting-table recipes: clay stands in for cement powder, string for asbestos and
+  iron bars for rebar. Über Concrete and Moldy Debris have no CE recipe and stay creative-only.
+  The recipes follow NTM CE's tile, pillar, bricks, dyed and Builder's Choice layouts.
+- **Über Concrete.** It decays through sixteen stages on random ticks; the last stage crumbles into
+  Moldy Debris that falls like sand or gravel.
+- **Hazard variants.** The hazard cubes, stairs and the six hazard slabs are part of the same
+  families and stay in the Chisel groups.
+- **World migration.** The metadata refactor removed the old per-variant block ids. Existing worlds
+  do not migrate them; those ids stay missing. New worlds get the grouped ids.
+
+#### Slab model note
+
+Forge builds the blockstate lookup key from a sorted property map, so a slab key must be written
+`half=bottom,variant=1`. The generated blockstates originally used `variant=1,half=bottom`, which
+made every single slab fall back to the missing model even though the model files were present. The
+committed blockstates use the sorted order.
+
+#### Attribution
+
+The concrete assets come from HBM's Nuclear Tech Mod Community Edition. The HL Blocks assets and
+the original block definitions come from NeoRussia's HL Blocks project. Both are used under
+LGPL-3.0; see `NOTICE` for the exact file lists and links.
+
+### AI assistance
+
+The concrete and HL Blocks contribution was prepared with AI assistance. See
+[`AI_DISCLOSURE.md`](AI_DISCLOSURE.md) for the tool, the extent of use and the human review.
