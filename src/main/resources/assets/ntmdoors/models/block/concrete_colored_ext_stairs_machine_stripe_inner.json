@@ -1,0 +1,8 @@
+{
+    "parent": "block/inner_stairs",
+    "textures": {
+        "bottom": "ntmdoors:blocks/concrete_colored_ext.machine_stripe",
+        "top": "ntmdoors:blocks/concrete_colored_ext.machine_stripe",
+        "side": "ntmdoors:blocks/concrete_colored_ext.machine_stripe"
+    }
+}
