@@ -6,8 +6,8 @@ FIXES
 - Concrete and HL Blocks now appear in the NTM Doors creative tab. The separate NTM Concrete tab
   and the vanilla Building Blocks placement were removed.
 - Renamed the SCP access cards from levels 1-6 to 0-5, including their registry names, models,
-  textures and display names. Existing level 1-6 card stacks are remapped to the matching 0-5
-  cards when an old world loads.
+  textures and display names. Existing level 6 cards are remapped to level 5 when an old world
+  loads; the shared 1-5 registry names remain valid.
 
 1.0.46
 FEATURES
