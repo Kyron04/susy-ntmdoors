@@ -1,15 +1,16 @@
 # NTM Doors (Minecraft 1.12.2, Forge 14.23.5.2847)
 
-Standalone port of the HBM's Nuclear Tech Mod door system to Minecraft 1.12.2.
-The implementation and the included door models, textures and sounds are used under the
+Standalone port of the HBM's Nuclear Tech Mod door system and concrete building set to Minecraft
+1.12.2. The implementation and the included door, concrete and HL Blocks assets are used under the
 LGPL-3.0. See `LICENSE.LESSER` and `NOTICE` for attribution and source information.
 
-Current release: **1.0.45**
+Current release: **1.0.46**
 
 Source design reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
 
 ## Build
-Needs JDK 8 (ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs). The Gradle wrapper is included, so:
+Needs JDK 8 (ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs). Chisel 1.12.2-1.0.2.45 is
+required at runtime. The Gradle wrapper is included, so:
 
     export JAVA_HOME=/path/to/jdk8
     ./gradlew setupDecompWorkspace   # one-time: downloads + decompiles Minecraft
@@ -152,6 +153,9 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   volume and enabled state are saved with the block. A normal right-click with the Redstone Relay
   Key starts/finishes a wireless binding session, and starting the alarm pulses every linked
   Redstone Gate.
+* Concrete and HL Blocks: the NTM CE concrete building set and decorative HL Blocks, with metadata
+  families, flat Chisel carving groups, shift-scroll cycling, recipes, and `concrete` /
+  `blockConcrete` / `blockhl` ore dictionary entries. Chisel is required.
 * Redstone Gate (`ntmdoors:redstone_gate`): a full-cube redstone component with separate off and on
   textures. It starts off, turns on while it receives redstone power or a wireless pulse, and emits
   a full-strength signal while on. A wireless event keeps it powered for its configured duration;
@@ -287,16 +291,12 @@ for explicit model-space bounds; `.collisionSplits(n)` tightens rotating parts b
 ## Not included
 Crafting recipes for the doors (the originals need NTM materials), for the keypad, programmer,
 scanner, cards, Keycard Holder and Documents Folder; configs, NEI/JEI, and other NTM items. Only the
-screwdriver has a recipe.
+screwdriver has a recipe. The concrete and HL Block sets added in 1.0.46 do have recipes, listed
+below.
 
-## SuperSymmetry fork additions
+## Concrete and HL Blocks
 
-Everything in this section is specific to the SuperSymmetry fork. The sections above describe the
-upstream door port from Kyron04/susy-ntmdoors and are left unchanged.
-
-### Concrete and HL Blocks
-
-This fork adds the NTM concrete building set and the included HL Blocks to the door port:
+The 1.0.46 update adds the NTM concrete building set and the included HL Blocks to the door port:
 
 - The full NTM CE concrete set: plain, smooth, dyed, Builder's Choice, bricks, pillar, rebar,
   asbestos, Über Concrete and its falling Moldy Debris.
@@ -308,8 +308,8 @@ This fork adds the NTM concrete building set and the included HL Blocks to the d
 - A fix for the single-slab model lookup: the blockstate variant keys are written in the order
   Forge actually uses (`half=...,variant=...`).
 
-The upstream "Not included" note predates this fork. The concrete set has its own recipes, listed
-below; the doors, cards and machines still have no recipes.
+The concrete set has its own recipes, listed below; the doors, cards and machines still have no
+recipes.
 
 #### Block layout
 
@@ -361,8 +361,9 @@ remain reachable by metadata.
   Moldy Debris that falls like sand or gravel.
 - **Hazard variants.** The hazard cubes, stairs and the six hazard slabs are part of the same
   families and stay in the Chisel groups.
-- **World migration.** The metadata refactor removed the old per-variant block ids. Existing worlds
-  do not migrate them; those ids stay missing. New worlds get the grouped ids.
+- **World migration.** The grouped metadata ids are new in 1.0.46. If you used a pre-release fork
+  build with per-variant concrete ids, those old ids are not migrated; new worlds get the grouped
+  ids.
 
 #### Slab model note
 

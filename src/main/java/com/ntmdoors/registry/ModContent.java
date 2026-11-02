@@ -162,15 +162,13 @@ public class ModContent {
         e.getRegistry().register(KEYCARD_PROGRAMMER);
         e.getRegistry().register(SAFE);
         e.getRegistry().register(BIOMETRIC_SAFE);
-        // Concrete goes last, like every other addition: no existing block id moves.
-        ConcreteSet.registerBlocks(e);
-        // HL Blocks follows concrete; both are newer than the original door blocks.
-        HLBlocksContent.registerBlocks(e);
-        // The Redstone Gate is newer than the concrete and HL additions. Registering it last
-        // keeps the concrete and HL numeric ids stable for existing worlds.
+        // Existing Redstone Gate and Speaker blocks keep their old numeric ids.
         e.getRegistry().register(REDSTONE_GATE);
         // Decorative blocks go last so previously saved numeric block IDs do not shift.
         e.getRegistry().register(SPEAKER);
+        // Concrete and HL Blocks are new in 1.0.46 and follow every existing block.
+        ConcreteSet.registerBlocks(e);
+        HLBlocksContent.registerBlocks(e);
     }
 
     @SubscribeEvent
@@ -207,18 +205,16 @@ public class ModContent {
                 .setRegistryName(BIOMETRIC_SAFE.getRegistryName()));
         // Newest cards go after every existing item, so saved numeric item IDs do not shift.
         for (ItemRfidCard card : SCP_CARDS) e.getRegistry().register(card);
-        // Concrete is the newest addition and stays last for the same reason.
-        ConcreteSet.registerItems(e);
-        // HL Blocks follows concrete, so every previously saved item id is untouched.
-        HLBlocksContent.registerItems(e);
-        // Redstone-network items are newer than concrete/HL. Registering them last keeps the
-        // concrete and HL item ids stable for existing worlds.
+        // Existing Redstone Gate and Speaker items keep their old numeric ids.
         e.getRegistry().register(REDSTONE_RELAY_KEY);
         e.getRegistry().register(new ItemBlockRedstoneGate(REDSTONE_GATE)
                 .setRegistryName(REDSTONE_GATE.getRegistryName()));
         e.getRegistry().register(new ItemBlock(SPEAKER)
                 .setRegistryName(SPEAKER.getRegistryName())
                 .setCreativeTab(NTMDoors.TAB));
+        // Concrete and HL Block items are new in 1.0.46 and follow every existing item.
+        ConcreteSet.registerItems(e);
+        HLBlocksContent.registerItems(e);
     }
 
     @SubscribeEvent

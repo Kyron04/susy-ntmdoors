@@ -14,9 +14,9 @@ import java.util.Map;
 /**
  * The shared concrete families used by both the Chisel integration and the shift-scroll cycling.
  *
- * <p>Each group keeps one representative item per variant for cycling and the full block-state list
- * for Chisel. Cubes and slabs contribute their metadata variants; stairs contribute every facing
- * and half state of each stair block.</p>
+ * <p>Each group keeps one representative item and one canonical block state per variant. Chisel
+ * applies the target state directly, so registering every facing/half would rotate stairs and
+ * flip slabs while carving; the canonical state keeps each group to one entry per texture.</p>
  */
 public final class ConcreteGroups {
 
@@ -171,18 +171,16 @@ public final class ConcreteGroups {
     private static void stairs(List<ItemStack> items, List<IBlockState> states, Block block) {
         if (block == null) throw new IllegalStateException("Missing concrete stairs");
         items.add(new ItemStack(block));
-        states.addAll(block.getBlockState().getValidStates());
+        // One canonical orientation per stair texture; Chisel writes the target state directly.
+        states.add(block.getDefaultState());
     }
 
     private static void slabs(List<ItemStack> items, List<IBlockState> states,
                               ConcreteSet.SlabGroup group) {
         for (int meta = 0; meta < group.variantNames.length; meta++) {
             items.add(new ItemStack(group.single, 1, meta));
-        }
-        for (IBlockState state : group.single.getBlockState().getValidStates()) {
-            if (state.getValue(BlockConcreteSlab.VARIANT).ordinal() < group.variantNames.length) {
-                states.add(state);
-            }
+            // getStateFromMeta(meta) is the bottom half of this variant, not an arbitrary half.
+            states.add(group.single.getStateFromMeta(meta));
         }
     }
 

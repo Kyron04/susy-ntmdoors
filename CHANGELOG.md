@@ -1,5 +1,22 @@
-HBM DOORS: REFRESHED 1.0.45
+HBM DOORS: REFRESHED 1.0.46
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.46
+FEATURES
+- Added the NTM CE concrete building set: plain, smooth, 16 dyed, Builder's Choice, bricks,
+  pillar, rebar, asbestos, Über Concrete and Moldy Debris.
+- Added the included HL Blocks: three simple blocks and seven metadata groups.
+- Added metadata families for concrete cubes and slabs, flat Chisel carving groups, shift-scroll
+  cycling, recipes and `concrete` / `blockConcrete` / `blockhl` ore dictionary entries.
+- Added the single-slab blockstate key-order fix.
+CHANGES
+- Chisel 1.12.2-1.0.2.45 is now required.
+- Concrete and HL Blocks register after all existing blocks and items, so saved numeric IDs do not
+  move.
+- Chisel stairs and slabs register one canonical state per texture instead of every orientation, so
+  carving no longer cycles through stair facings or slab halves.
+FIXES
+- Fixed the concrete slab model lookup by writing blockstate keys in the order Forge uses.
 
 1.0.45
 FEATURES

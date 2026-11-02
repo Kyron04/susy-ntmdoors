@@ -29,7 +29,7 @@ public final class ChiselIntegration {
             }
             int order = 0;
             for (IBlockState state : group.states()) {
-                registry.addVariation(group.name(), state, order++);
+                registry.addVariation(group.name(), CarvingUtils.variationFor(state, order++));
             }
         }
     }

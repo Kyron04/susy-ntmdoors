@@ -2,9 +2,9 @@
 
 **HBM's doors, without the rest of the mod.**
 
-NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system from HBM's Nuclear Tech Mod. No NTM installation is required. Every model, texture and sound is bundled.
+NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system and concrete building set from HBM's Nuclear Tech Mod. No NTM installation is required. Chisel 1.12.2-1.0.2.45 is required. Every model, texture and sound is bundled.
 
-**Current version: 1.0.45**
+**Current version: 1.0.46**
 
 ## 16 multiblock doors
 
@@ -100,6 +100,14 @@ Screwdriver + sneak + right-click cycles door skins:
   - Biometric Safe: Match user, Binding Activities and Lockout mode.
 - Lockout mode stops access for five minutes after three failed codes or cards. Reset code clears the code so the next entry sets a new one.
 
+## Concrete and HL Blocks
+
+- **Concrete** - the full NTM CE set: plain, smooth, 16 dyed, Builder's Choice, concrete bricks, pillar, rebar, asbestos, Über Concrete and Moldy Debris. Cubes and slabs use metadata families; stairs stay one id per texture.
+- **HL Blocks** - three simple blocks and seven metadata groups: freezer, fifties, crete, duct, lab, tunnel and generic.
+- Both sets have recipes, `concrete` / `blockConcrete` / `blockhl` ore dictionary entries, and flat Chisel carving groups.
+- Shift + scroll cycles a held concrete or HL stack through its texture family. The cycle modifier is rebindable under Controls.
+- Chisel 1.12.2-1.0.2.45 is required.
+
 ## Decorative blocks
 
 - **Speaker** - a 1x1x1 black-ash cabinet with a woofer, tweeter and bass reflex port. Shift-right-click (with any item or an empty hand) opens a safe-style toggle screen with **Enabled**, four selectable sounds (**Air Raid**, **Facility**, **Industrial**, **EAS**), a 1-64 block range slider and a 0-100% volume slider; anyone may use it. While enabled and receiving redstone power, it loops the selected alarm until the signal or **Enabled** is removed. The sound, range, volume and enabled state are saved with the block. A normal right-click with the Redstone Relay Key starts/finishes a wireless binding session, and starting the alarm pulses every linked Redstone Gate.
@@ -139,7 +147,7 @@ Screwdriver + sneak + right-click cycles door skins:
 
 ## Technical
 
-- Minecraft **1.12.2**, Forge **14.23.5.2847**
+- Minecraft **1.12.2**, Forge **14.23.5.2847**, Chisel **1.12.2-1.0.2.45**
 - OBJ/TESR rendering with per-group translation/rotation, clipping, and 3D inventory/hand/ground items
 - 16 shared door sound events
 - No configs and no NTM dependency
@@ -149,6 +157,9 @@ Screwdriver + sneak + right-click cycles door skins:
 HBM Nuclear Tech, and their contributors.
 HBM GitHub repo: https://github.com/hbmmods/hbm-s-nuclear-tech-git
 HBM CurseForge page: https://www.curseforge.com/minecraft/mc-mods/hbms-nuclear-tech-mod
+
+Concrete assets and reference behaviour: HBM's Nuclear Tech Mod Community Edition.
+HL Blocks assets and original block definitions: NeoRussia's HL Blocks project.
 
 Developers of the port:
 
