@@ -4,6 +4,7 @@ import com.ntmdoors.NTMDoors;
 import com.ntmdoors.compat.ChiselIntegration;
 import com.ntmdoors.concrete.ConcreteOreDict;
 import com.ntmdoors.door.DoorDecl;
+import com.ntmdoors.hlblocks.HLBlocksOreDict;
 import com.ntmdoors.door.DoorDecls;
 import com.ntmdoors.gui.GuiHandler;
 import com.ntmdoors.network.ModNetwork;
@@ -48,6 +49,9 @@ public class CommonProxy {
 
     public void init(FMLInitializationEvent event) {
         NetworkRegistry.INSTANCE.registerGuiHandler(NTMDoors.INSTANCE, new GuiHandler());
+        // Items are registered by now; expose the concrete and HL sets to recipes without Groovy.
+        ConcreteOreDict.register();
+        HLBlocksOreDict.register();
         // Items are registered by now; expose the concrete set to pack recipes without Groovy.
         ConcreteOreDict.register();
     }

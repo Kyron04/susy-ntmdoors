@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "variant=generic015t": {
+      "model": "ntmdoors:hlblocks_generic_generic015t"
+    },
+    "variant=generic015v": {
+      "model": "ntmdoors:hlblocks_generic_generic015v"
+    },
+    "variant=generic80": {
+      "model": "ntmdoors:hlblocks_generic_generic80"
+    }
+  }
+}

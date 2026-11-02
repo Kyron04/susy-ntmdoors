@@ -1,6 +1,8 @@
 package com.ntmdoors.network;
 
 import com.ntmdoors.NTMDoors;
+import com.ntmdoors.hlblocks.CycleHandler;
+import com.ntmdoors.hlblocks.CycleMessage;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
@@ -30,6 +32,7 @@ public final class ModNetwork {
                 Side.SERVER);
         INSTANCE.registerMessage(MessageSafePage.Handler.class, MessageSafePage.class, 10,
                 Side.SERVER);
+        INSTANCE.registerMessage(CycleHandler.class, CycleMessage.class, 11, Side.SERVER);
     }
 
     private ModNetwork() {

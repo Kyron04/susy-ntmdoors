@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "variant=tnnl_flr4b": {
+      "model": "ntmdoors:hlblocks_tunnel_tnnl_flr4b"
+    },
+    "variant=tnnl_flr6": {
+      "model": "ntmdoors:hlblocks_tunnel_tnnl_flr6"
+    },
+    "variant=tnnl_flr6b": {
+      "model": "ntmdoors:hlblocks_tunnel_tnnl_flr6b"
+    },
+    "variant=tnnl_plt1a": {
+      "model": "ntmdoors:hlblocks_tunnel_tnnl_plt1a"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "parent": "block/cube_all",
+  "textures": {
+    "all": "ntmdoors:blocks/hlblocks_lab_lab1_floor4"
+  }
+}

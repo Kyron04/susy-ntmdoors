@@ -12,5 +12,14 @@ Block names, metadata order, material values, recipe layout and the Über Concre
 com.ntmdoors.concrete follow the same source.
 License: GNU Lesser General Public License v3.0.
 
+The HL Blocks set is derived from NeoRussia's HL Blocks project:
+  https://github.com/NeoRussia/HL-Blocks
+Assets copied: HL textures and models under assets/ntmdoors/{textures/blocks,models}/hlblocks_*.
+Block definitions, crate stacking and shift-scroll cycling in com.ntmdoors.hlblocks follow the
+same source.
+License: GNU Lesser General Public License v3.0.
+
+=======
+
 The Java implementation in com.ntmdoors is a standalone 1.12.2 port and keeps the original
 door behaviour and asset layout where practical.

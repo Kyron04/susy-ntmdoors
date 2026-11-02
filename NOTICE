@@ -25,6 +25,16 @@ Edition (NTM CE):
   * Block names, metadata order, material values, recipe layout and the Über Concrete
     decay behaviour used by src/main/java/com/ntmdoors/concrete/
 
+The HL Blocks set is derived from NeoRussia's HL Blocks project:
+  https://github.com/NeoRussia/HL-Blocks
+
+  * HL textures and models under assets/ntmdoors/textures/blocks/hlblocks_* and
+    assets/ntmdoors/models/{block,item}/hlblocks_*
+  * Block definitions, crate stacking and shift-scroll cycling used by
+    src/main/java/com/ntmdoors/hlblocks/
+
+HL Blocks is used under the GNU Lesser General Public License, version 3 (LGPL-3.0).
+
 The transition seal model was converted from HBM's Collada source
 (seal.dae) into a grouped OBJ so the 1.12.2 renderer can display it without
 a runtime DAE loader. Its per-group rigid keyframes in
