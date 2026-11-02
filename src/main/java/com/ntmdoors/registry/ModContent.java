@@ -9,6 +9,9 @@ import com.ntmdoors.block.BlockKeycardScanner;
 import com.ntmdoors.block.BlockRedstoneGate;
 import com.ntmdoors.block.BlockSafe;
 import com.ntmdoors.block.BlockSpeaker;
+import com.ntmdoors.concrete.ConcreteRecipes;
+import com.ntmdoors.concrete.ConcreteSet;
+import com.ntmdoors.hlblocks.HLBlocksContent;
 import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.DoorDecls;
 import com.ntmdoors.item.ItemBiometricKeycard;
@@ -159,6 +162,12 @@ public class ModContent {
         e.getRegistry().register(KEYCARD_PROGRAMMER);
         e.getRegistry().register(SAFE);
         e.getRegistry().register(BIOMETRIC_SAFE);
+        // Concrete goes last, like every other addition: no existing block id moves.
+        ConcreteSet.registerBlocks(e);
+        // HL Blocks follows concrete; both are newer than the original door blocks.
+        HLBlocksContent.registerBlocks(e);
+        // The Redstone Gate is newer than the concrete and HL additions. Registering it last
+        // keeps the concrete and HL numeric ids stable for existing worlds.
         e.getRegistry().register(REDSTONE_GATE);
         // Decorative blocks go last so previously saved numeric block IDs do not shift.
         e.getRegistry().register(SPEAKER);
@@ -198,7 +207,12 @@ public class ModContent {
                 .setRegistryName(BIOMETRIC_SAFE.getRegistryName()));
         // Newest cards go after every existing item, so saved numeric item IDs do not shift.
         for (ItemRfidCard card : SCP_CARDS) e.getRegistry().register(card);
-        // Redstone-network items are newest of all, for the same reason.
+        // Concrete is the newest addition and stays last for the same reason.
+        ConcreteSet.registerItems(e);
+        // HL Blocks follows concrete, so every previously saved item id is untouched.
+        HLBlocksContent.registerItems(e);
+        // Redstone-network items are newer than concrete/HL. Registering them last keeps the
+        // concrete and HL item ids stable for existing worlds.
         e.getRegistry().register(REDSTONE_RELAY_KEY);
         e.getRegistry().register(new ItemBlockRedstoneGate(REDSTONE_GATE)
                 .setRegistryName(REDSTONE_GATE.getRegistryName()));
@@ -227,5 +241,9 @@ public class ModContent {
 
         // Door crafting recipes are intentionally not included: the originals depend on NTM-only materials.
         // Add your own here (or via JSON in data/recipes), e.g. new ShapedRecipes(...) per door.
+
+        // Concrete building recipes; the base blocks use half-scale crafting-table stand-ins for
+        // CE's chemical-plant and crystallizer steps. See ConcreteRecipes for the substitution list.
+        ConcreteRecipes.register(e);
     }
 }

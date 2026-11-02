@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "variant=fifties_cch1": {
+      "model": "ntmdoors:hlblocks_fifties_fifties_cch1"
+    },
+    "variant=fifties_ceil1": {
+      "model": "ntmdoors:hlblocks_fifties_fifties_ceil1"
+    },
+    "variant=fifties_ceil5": {
+      "model": "ntmdoors:hlblocks_fifties_fifties_ceil5"
+    }
+  }
+}

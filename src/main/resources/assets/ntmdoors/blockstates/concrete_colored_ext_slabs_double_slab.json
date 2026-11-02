@@ -1,0 +1,28 @@
+{
+    "variants": {
+        "variant=0": {
+            "model": "ntmdoors:concrete_colored_ext_hazard"
+        },
+        "variant=1": {
+            "model": "ntmdoors:concrete_colored_ext_hazard_red"
+        },
+        "variant=2": {
+            "model": "ntmdoors:concrete_colored_ext_hazard_green"
+        },
+        "variant=3": {
+            "model": "ntmdoors:concrete_colored_ext_hazard_blue"
+        },
+        "variant=4": {
+            "model": "ntmdoors:concrete_colored_ext_hazard_white"
+        },
+        "variant=5": {
+            "model": "ntmdoors:concrete_colored_ext_hazard_purple"
+        },
+        "variant=6": {
+            "model": "ntmdoors:concrete_colored_ext_hazard"
+        },
+        "variant=7": {
+            "model": "ntmdoors:concrete_colored_ext_hazard"
+        }
+    }
+}

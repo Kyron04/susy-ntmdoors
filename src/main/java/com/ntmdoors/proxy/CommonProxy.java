@@ -1,7 +1,10 @@
 package com.ntmdoors.proxy;
 
 import com.ntmdoors.NTMDoors;
+import com.ntmdoors.compat.ChiselIntegration;
+import com.ntmdoors.concrete.ConcreteOreDict;
 import com.ntmdoors.door.DoorDecl;
+import com.ntmdoors.hlblocks.HLBlocksOreDict;
 import com.ntmdoors.door.DoorDecls;
 import com.ntmdoors.gui.GuiHandler;
 import com.ntmdoors.network.ModNetwork;
@@ -19,7 +22,9 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
@@ -48,6 +53,17 @@ public class CommonProxy {
 
     public void init(FMLInitializationEvent event) {
         NetworkRegistry.INSTANCE.registerGuiHandler(NTMDoors.INSTANCE, new GuiHandler());
+        // Items are registered by now; expose the concrete and HL sets to recipes without Groovy.
+        ConcreteOreDict.register();
+        HLBlocksOreDict.register();
+    }
+
+    public void postInit(FMLPostInitializationEvent event) {
+        // Chisel is a required dependency, but the guard keeps a dev run without it from loading
+        // the API class before Forge reports the missing mod.
+        if (Loader.isModLoaded("chisel")) {
+            ChiselIntegration.postInit(event);
+        }
     }
 
     /** Client only: open the Relay Key naming screen. The server never needs to know about it. */

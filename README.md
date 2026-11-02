@@ -288,3 +288,96 @@ for explicit model-space bounds; `.collisionSplits(n)` tightens rotating parts b
 Crafting recipes for the doors (the originals need NTM materials), for the keypad, programmer,
 scanner, cards, Keycard Holder and Documents Folder; configs, NEI/JEI, and other NTM items. Only the
 screwdriver has a recipe.
+
+## SuperSymmetry fork additions
+
+Everything in this section is specific to the SuperSymmetry fork. The sections above describe the
+upstream door port from Kyron04/susy-ntmdoors and are left unchanged.
+
+### Concrete and HL Blocks
+
+This fork adds the NTM concrete building set and the included HL Blocks to the door port:
+
+- The full NTM CE concrete set: plain, smooth, dyed, Builder's Choice, bricks, pillar, rebar,
+  asbestos, Über Concrete and its falling Moldy Debris.
+- The HL Blocks set: three simple blocks and seven metadata groups.
+- A metadata layout that replaces the old one-id-per-variant blocks: cubes and slabs are grouped
+  by Chisel family, so one block id holds a whole texture family.
+- Shift-scroll cycling, flat Chisel carving groups, `concrete` / `blockConcrete` / `blockhl` ore
+  dictionary entries, and the concrete recipes.
+- A fix for the single-slab model lookup: the blockstate variant keys are written in the order
+  Forge actually uses (`half=...,variant=...`).
+
+The upstream "Not included" note predates this fork. The concrete set has its own recipes, listed
+below; the doors, cards and machines still have no recipes.
+
+#### Block layout
+
+Cubes are one block id per family; metadata selects the texture. Stairs stay one block id per
+texture because `BlockStairs` already uses its metadata bits for facing and half. Slabs use one
+block id per family with the `variant` and `half` properties, plus a technical `_double_slab`
+block for the double form.
+
+| Family | Block id | Variants |
+|---|---|---|
+| Plain concrete | `ntmdoors:concrete` | 0 tile, 1 smooth |
+| Dyed concrete | `ntmdoors:concrete_colored` | 16 dyes |
+| Builder's Choice | `ntmdoors:concrete_colored_ext` | 13 variants: machine, machine stripe, indigo, purple, pink, sand, bronze, and six hazard colours (plain, red, green, blue, white, purple) |
+| Concrete bricks | `ntmdoors:concrete_bricks` | brick, mossy, cracked, broken |
+| Special cubes | `ntmdoors:concrete_pillar`, `ntmdoors:concrete_rebar`, `ntmdoors:concrete_asbestos` | 1 each |
+| Über Concrete | `ntmdoors:concrete_super` | 16 decay stages |
+| Moldy Debris | `ntmdoors:concrete_super_broken` | 1 |
+| Stairs | 36 ids such as `concrete_stairs`, `concrete_smooth_stairs`, `concrete_colored_stairs_white`, `concrete_colored_ext_stairs_hazard`, `brick_concrete_stairs` | one id per texture |
+| Slabs | `concrete_slabs` (2), `concrete_colored_slabs` (8), `concrete_colored_slabs_2` (8), `concrete_colored_ext_slabs` (6 hazard), `concrete_bricks_slabs` (4), `concrete_asbestos_slab` (1) | `variant` + `half`; each has a `_double_slab` technical block |
+| HL simple blocks | `ntmdoors:hlblocks_ca1x_con2`, `hlblocks_drkmtlt_flr01`, `hlblocks_crate09` | 1 each |
+| HL metadata groups | `hlblocks_freezer` (2), `hlblocks_fifties` (3), `hlblocks_crete` (3), `hlblocks_duct` (1), `hlblocks_lab` (3), `hlblocks_tunnel` (4), `hlblocks_generic` (3) | metadata |
+
+That is 61 placeable block ids, plus the 6 technical double slabs, covering 142 texture/metadata
+variants. Creative and HEI list 127 of them; Über Concrete stages 1-15 are deliberately hidden and
+remain reachable by metadata.
+
+#### In-game behaviour
+
+- **Creative tabs.** The concrete set has its own `NTM Concrete` tab. The HL Blocks are in the
+  vanilla Building Blocks tab.
+- **Shift-scroll cycling.** Hold a concrete or HL stack and scroll with the cycle modifier
+  (left shift by default, rebindable under Controls → HL Blocks). It cycles every texture in the
+  family in both hands, and the server applies the change.
+- **Chisel.** Chisel is a required dependency. The families are registered as flat carving groups:
+  `concrete`, `concrete_stairs`, `concrete_slabs`, `concrete_colored`,
+  `concrete_colored_stairs`, `concrete_colored_slabs`, `concrete_bricks`,
+  `concrete_bricks_stairs` and `concrete_bricks_slabs`. Pillar, rebar, asbestos and Über Concrete
+  are not registered. Chisel groups are flat, so the shared `concrete_` prefix is the only
+  hierarchy the mod can expose.
+- **Ore dictionary.** Every concrete cube, stair and single slab is registered under `concrete`;
+  full cubes are also under `blockConcrete`. Every included HL block is under `blockhl`. Über
+  Concrete, Moldy Debris and the technical double slabs are excluded. No Groovy script is
+  involved.
+- **Recipes.** Blocks make slabs and stairs, never the reverse. Smooth, asbestos and rebar concrete
+  use half-scale crafting-table recipes: clay stands in for cement powder, string for asbestos and
+  iron bars for rebar. Über Concrete and Moldy Debris have no CE recipe and stay creative-only.
+  The recipes follow NTM CE's tile, pillar, bricks, dyed and Builder's Choice layouts.
+- **Über Concrete.** It decays through sixteen stages on random ticks; the last stage crumbles into
+  Moldy Debris that falls like sand or gravel.
+- **Hazard variants.** The hazard cubes, stairs and the six hazard slabs are part of the same
+  families and stay in the Chisel groups.
+- **World migration.** The metadata refactor removed the old per-variant block ids. Existing worlds
+  do not migrate them; those ids stay missing. New worlds get the grouped ids.
+
+#### Slab model note
+
+Forge builds the blockstate lookup key from a sorted property map, so a slab key must be written
+`half=bottom,variant=1`. The generated blockstates originally used `variant=1,half=bottom`, which
+made every single slab fall back to the missing model even though the model files were present. The
+committed blockstates use the sorted order.
+
+#### Attribution
+
+The concrete assets come from HBM's Nuclear Tech Mod Community Edition. The HL Blocks assets and
+the original block definitions come from NeoRussia's HL Blocks project. Both are used under
+LGPL-3.0; see `NOTICE` for the exact file lists and links.
+
+### AI assistance
+
+The concrete and HL Blocks contribution was prepared with AI assistance. See
+[`AI_DISCLOSURE.md`](AI_DISCLOSURE.md) for the tool, the extent of use and the human review.

@@ -1,0 +1,28 @@
+{
+    "variants": {
+        "variant=0": {
+            "model": "ntmdoors:concrete_asbestos"
+        },
+        "variant=1": {
+            "model": "ntmdoors:concrete_asbestos"
+        },
+        "variant=2": {
+            "model": "ntmdoors:concrete_asbestos"
+        },
+        "variant=3": {
+            "model": "ntmdoors:concrete_asbestos"
+        },
+        "variant=4": {
+            "model": "ntmdoors:concrete_asbestos"
+        },
+        "variant=5": {
+            "model": "ntmdoors:concrete_asbestos"
+        },
+        "variant=6": {
+            "model": "ntmdoors:concrete_asbestos"
+        },
+        "variant=7": {
+            "model": "ntmdoors:concrete_asbestos"
+        }
+    }
+}
