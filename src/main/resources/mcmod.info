@@ -5,10 +5,5 @@
   "version": "${version}",
   "mcversion": "${mcversion}",
   "credits": "Based on the door system and concrete blocks of HBM's Nuclear Tech Mod (LGPL-3.0). Includes HL Blocks by NeoRussia (LGPL-3.0).",
-  "dependencies": ["chisel"]
-  "description": "Standalone port of the multiblock door system and concrete building set from HBM's Nuclear Tech Mod.",
-  "version": "${version}",
-  "mcversion": "${mcversion}",
-  "credits": "Based on the door system and concrete blocks of HBM's Nuclear Tech Mod (LGPL-3.0).",
-  "dependencies": ["chisel"]
+  "dependencies": ["required-after:chisel"]
 }]
