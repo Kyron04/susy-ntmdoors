@@ -1,5 +1,11 @@
-HBM DOORS: REFRESHED 1.0.36
+HBM DOORS: REFRESHED 1.0.37
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.37
+FIX
+- The whole redstone network attached to a Redstone Gate now settles after a wireless pulse.
+  The gate ignores input for one tick while it is forced off, so lines beyond the first dust
+  drop to 0 and the gate cannot latch itself back on.
 
 1.0.36
 FIX

@@ -20,10 +20,14 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
 
     /** Every wireless event keeps the gate powered for exactly one second. */
     public static final int WIRELESS_PULSE_TICKS = 20;
+    /** Ticks the gate stays off so attached redstone can settle before input is checked again. */
+    private static final int INPUT_SETTLE_TICKS = 1;
 
     private final List<BlockPos> boundDevices = new ArrayList<>();
     /** Absolute world time at which the current wireless pulse ends; 0 when idle. */
     private long pulseEnd;
+    /** While positive, neighbor changes are ignored so the gate cannot read its own output back. */
+    private int inputSettleTicks;
 
     /** Server side: adds a safe or scanner to this gate's wireless link. */
     public void bindDevice(BlockPos devicePos) {
@@ -66,6 +70,7 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
         long end = now + Math.max(ticks, WIRELESS_PULSE_TICKS);
         // A second event while the gate is already pulsing extends the current window.
         if (end > pulseEnd) pulseEnd = end;
+        inputSettleTicks = 0;
         setPowered(true);
         markDirty();
     }
@@ -82,19 +87,27 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
 
     public void onNeighborChanged() {
         if (getWorld() == null || getWorld().isRemote) return;
+        if (inputSettleTicks > 0) return;
         if (!isPulsing()) setPowered(BlockRedstoneGate.isReceivingPower(getWorld(), pos));
     }
 
     @Override
     public void update() {
-        if (getWorld() == null || getWorld().isRemote || pulseEnd <= 0) return;
-        if (isPulsing()) return;
+        if (getWorld() == null || getWorld().isRemote) return;
+
+        if (inputSettleTicks > 0) {
+            if (--inputSettleTicks == 0) {
+                setPowered(BlockRedstoneGate.isReceivingPower(getWorld(), pos));
+            }
+            return;
+        }
+        if (pulseEnd <= 0 || isPulsing()) return;
+
         pulseEnd = 0;
-        // Turn off first so any wire the gate was powering updates before we look for a real
-        // external input. Reading the input while still powered lets a wire on top of the gate
-        // latch it on forever.
+        // Force the gate off and ignore input for a moment. The wire network it was powering needs
+        // a tick to update; reading the input immediately lets a line latch the gate back on.
+        inputSettleTicks = INPUT_SETTLE_TICKS;
         setPowered(false);
-        setPowered(BlockRedstoneGate.isReceivingPower(getWorld(), pos));
     }
 
     @Override
