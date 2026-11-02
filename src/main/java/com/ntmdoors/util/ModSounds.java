@@ -20,9 +20,18 @@ public final class ModSounds {
     /** Screwdriver click, played once for every interaction the tool handles. */
     public static final SoundEvent BUTTON9 = create("button9");
 
+    public static final SoundEvent SPEAKER_AIR_RAID = create("speaker_air_raid");
+    public static final SoundEvent SPEAKER_FACILITY = create("speaker_facility");
+    public static final SoundEvent SPEAKER_INDUSTRIAL = create("speaker_industrial");
+    public static final SoundEvent SPEAKER_EAS = create("speaker_eas");
+    /** Speaker sound choices, in the order shown by the screen. */
+    public static final List<SoundEvent> SPEAKER_SOUNDS = Collections.unmodifiableList(Arrays.asList(
+            SPEAKER_AIR_RAID, SPEAKER_FACILITY, SPEAKER_INDUSTRIAL, SPEAKER_EAS));
+
     /** Everything that has to be registered with Forge during sound registration. */
     public static final List<SoundEvent> ALL = Collections.unmodifiableList(Arrays.asList(
-            SCANNER_BUTTON3, SCANNER_BUTTON8, SCANNER_BELL1, BUTTON9));
+            SCANNER_BUTTON3, SCANNER_BUTTON8, SCANNER_BELL1, BUTTON9,
+            SPEAKER_AIR_RAID, SPEAKER_FACILITY, SPEAKER_INDUSTRIAL, SPEAKER_EAS));
 
     private ModSounds() {
     }

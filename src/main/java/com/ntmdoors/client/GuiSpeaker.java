@@ -13,20 +13,23 @@ import org.lwjgl.input.Keyboard;
 import java.io.IOException;
 import java.util.Locale;
 
-/** Small safe-style control screen for the speaker: Enabled, Sound and the alarm range slider. */
+/** Small safe-style control screen for the speaker: Enabled, Sound, Range and Volume. */
 @SideOnly(Side.CLIENT)
 public class GuiSpeaker extends GuiScreen {
 
     private static final int PANEL_WIDTH = 300;
-    private static final int PANEL_HEIGHT = 200;
+    private static final int PANEL_HEIGHT = 260;
     private static final int ROW_TOP = 44;
     private static final int ROW_HEIGHT = 30;
-    private static final int PILL_WIDTH = 60;
+    private static final int PILL_WIDTH = 72;
     private static final int PILL_HEIGHT = 14;
 
     private static final int RANGE_HEADING_TOP = 108;
     private static final int RANGE_LABEL_TOP = 126;
-    private static final int SLIDER_TOP = 144;
+    private static final int RANGE_SLIDER_TOP = 144;
+    private static final int VOLUME_HEADING_TOP = 170;
+    private static final int VOLUME_LABEL_TOP = 188;
+    private static final int VOLUME_SLIDER_TOP = 206;
     private static final int SLIDER_LEFT = 16;
     private static final int SLIDER_RIGHT = PANEL_WIDTH - 16;
 
@@ -41,7 +44,9 @@ public class GuiSpeaker extends GuiScreen {
     private int left;
     private int top;
     private boolean draggingRange;
+    private boolean draggingVolume;
     private int previewRange = TileEntitySpeaker.DEFAULT_RANGE;
+    private int previewVolume = TileEntitySpeaker.DEFAULT_VOLUME;
 
     public GuiSpeaker(BlockPos pos) {
         this.pos = pos;
@@ -73,7 +78,7 @@ public class GuiSpeaker extends GuiScreen {
         drawRect(left + 1, top + 1, left + PANEL_WIDTH - 1, top + PANEL_HEIGHT - 1, 0xFF2B2B2E);
         drawRect(left + 1, top + 1, left + PANEL_WIDTH - 1, top + 22, 0xFF232326);
         drawRect(left + 1, top + 22, left + PANEL_WIDTH - 1, top + 23, RULE);
-        drawRect(left + 1, top + 23, left + PANEL_WIDTH - 1, top + 164, 0xFF1B1B1E);
+        drawRect(left + 1, top + 23, left + PANEL_WIDTH - 1, top + 226, 0xFF1B1B1E);
         drawRect(left + 1, top + 1, left + PANEL_WIDTH - 1, top + 2, 0xFF3C3C40);
 
         drawTitle();
@@ -86,10 +91,11 @@ public class GuiSpeaker extends GuiScreen {
             drawHeading();
             drawRow(0, "Enabled", "Plays while powered.",
                     speaker.isEnabled() ? "ON" : "OFF", speaker.isEnabled(), mouseX, mouseY);
-            drawRow(1, "Sound", "Alarm (placeholder).",
+            drawRow(1, "Sound", "Click to cycle.",
                     TileEntitySpeaker.soundName(speaker.getSound()).toUpperCase(Locale.ROOT),
                     true, mouseX, mouseY);
             drawRange(speaker, mouseX, mouseY);
+            drawVolume(speaker, mouseX, mouseY);
             drawFooter(speaker);
         }
 
@@ -143,28 +149,48 @@ public class GuiSpeaker extends GuiScreen {
                 left + PANEL_WIDTH - 16 - fontRenderer.getStringWidth(value),
                 top + RANGE_LABEL_TOP, MUTED);
 
+        drawSlider(TileEntitySpeaker.MIN_RANGE, TileEntitySpeaker.MAX_RANGE, range,
+                top + RANGE_SLIDER_TOP, draggingRange, mouseX, mouseY);
+    }
+
+    private void drawVolume(TileEntitySpeaker speaker, int mouseX, int mouseY) {
+        drawString(fontRenderer, "VOLUME", left + 12, top + VOLUME_HEADING_TOP, HEADING);
+        drawRect(left + 12, top + VOLUME_HEADING_TOP + 11,
+                left + PANEL_WIDTH - 12, top + VOLUME_HEADING_TOP + 12, RULE);
+
+        int volume = currentVolume(speaker);
+        drawString(fontRenderer, "Level", left + 16, top + VOLUME_LABEL_TOP, COLOUR);
+        String value = volume + "%";
+        drawString(fontRenderer, value,
+                left + PANEL_WIDTH - 16 - fontRenderer.getStringWidth(value),
+                top + VOLUME_LABEL_TOP, MUTED);
+
+        drawSlider(TileEntitySpeaker.MIN_VOLUME, TileEntitySpeaker.MAX_VOLUME, volume,
+                top + VOLUME_SLIDER_TOP, draggingVolume, mouseX, mouseY);
+    }
+
+    private void drawSlider(int min, int max, int value, int trackTop,
+                            boolean dragging, int mouseX, int mouseY) {
         int trackLeft = left + SLIDER_LEFT;
         int trackRight = left + SLIDER_RIGHT;
-        int trackTop = top + SLIDER_TOP;
         drawRect(trackLeft, trackTop, trackRight, trackTop + 4, 0xFF0B0B0D);
         drawRect(trackLeft, trackTop, trackRight, trackTop + 1, RULE);
 
-        int knobX = trackLeft + Math.round((range - TileEntitySpeaker.MIN_RANGE)
-                / (float) (TileEntitySpeaker.MAX_RANGE - TileEntitySpeaker.MIN_RANGE)
+        int knobX = trackLeft + Math.round((value - min) / (float) (max - min)
                 * (trackRight - trackLeft));
         drawRect(trackLeft, trackTop, knobX, trackTop + 4, 0xFF5A2A2A);
-        boolean active = draggingRange || inSlider(mouseX, mouseY);
+        boolean active = dragging || inSlider(mouseX, mouseY, trackTop);
         drawRect(knobX - 5, trackTop - 4, knobX + 5, trackTop + 8, 0xFF080808);
         drawRect(knobX - 4, trackTop - 3, knobX + 4, trackTop + 7,
                 active ? 0xFF8A4A4A : 0xFF5A2A2A);
         drawRect(knobX - 2, trackTop - 1, knobX + 2, trackTop + 5, 0xFFE6C8C8);
 
-        drawString(fontRenderer, Integer.toString(TileEntitySpeaker.MIN_RANGE),
-                left + SLIDER_LEFT, top + SLIDER_TOP + 9, DIM);
-        String max = Integer.toString(TileEntitySpeaker.MAX_RANGE);
-        drawString(fontRenderer, max,
-                left + SLIDER_RIGHT - fontRenderer.getStringWidth(max),
-                top + SLIDER_TOP + 9, DIM);
+        drawString(fontRenderer, Integer.toString(min),
+                left + SLIDER_LEFT, trackTop + 9, DIM);
+        String maxText = Integer.toString(max);
+        drawString(fontRenderer, maxText,
+                left + SLIDER_RIGHT - fontRenderer.getStringWidth(maxText),
+                trackTop + 9, DIM);
     }
 
     private int currentRange(TileEntitySpeaker speaker) {
@@ -172,18 +198,24 @@ public class GuiSpeaker extends GuiScreen {
         return speaker == null ? TileEntitySpeaker.DEFAULT_RANGE : speaker.getRange();
     }
 
+    private int currentVolume(TileEntitySpeaker speaker) {
+        if (draggingVolume) return previewVolume;
+        return speaker == null ? TileEntitySpeaker.DEFAULT_VOLUME : speaker.getVolume();
+    }
+
     private void drawFooter(TileEntitySpeaker speaker) {
-        drawRect(left + 12, top + 164, left + PANEL_WIDTH - 12, top + 165, RULE);
+        drawRect(left + 12, top + 226, left + PANEL_WIDTH - 12, top + 227, RULE);
         String signal = speaker.isPowered() ? "SIGNAL ON" : "SIGNAL OFF";
         int signalColour = speaker.isPowered() ? 0xFFD6F0D6 : DIM;
-        drawString(fontRenderer, signal, left + 14, top + 170, signalColour);
+        drawString(fontRenderer, signal, left + 14, top + 232, signalColour);
 
-        String output = speaker.isEnabled() && speaker.isPowered() ? "PLAYING" : "SILENT";
-        int outputColour = speaker.isEnabled() && speaker.isPowered() ? 0xFFD6F0D6 : DIM;
+        String output = speaker.isEnabled() && speaker.isPowered() && speaker.getVolume() > 0
+                ? "PLAYING" : "SILENT";
+        int outputColour = "PLAYING".equals(output) ? 0xFFD6F0D6 : DIM;
         drawString(fontRenderer, output,
-                left + PANEL_WIDTH - 14 - fontRenderer.getStringWidth(output), top + 170, outputColour);
+                left + PANEL_WIDTH - 14 - fontRenderer.getStringWidth(output), top + 232, outputColour);
         drawCenteredString(fontRenderer, "Changes apply immediately.",
-                left + PANEL_WIDTH / 2, top + 184, MUTED);
+                left + PANEL_WIDTH / 2, top + 246, MUTED);
     }
 
     private boolean inRow(int index, int mouseX, int mouseY) {
@@ -192,8 +224,7 @@ public class GuiSpeaker extends GuiScreen {
                 && mouseY >= y - 3 && mouseY < y + ROW_HEIGHT - 5;
     }
 
-    private boolean inSlider(int mouseX, int mouseY) {
-        int trackTop = top + SLIDER_TOP;
+    private boolean inSlider(int mouseX, int mouseY, int trackTop) {
         return mouseX >= left + SLIDER_LEFT - 6 && mouseX <= left + SLIDER_RIGHT + 6
                 && mouseY >= trackTop - 8 && mouseY <= trackTop + 10;
     }
@@ -206,15 +237,19 @@ public class GuiSpeaker extends GuiScreen {
     }
 
     private void updateRange(int mouseX) {
+        previewRange = valueAt(mouseX, TileEntitySpeaker.MIN_RANGE, TileEntitySpeaker.MAX_RANGE);
+    }
+
+    private void updateVolume(int mouseX) {
+        previewVolume = valueAt(mouseX, TileEntitySpeaker.MIN_VOLUME, TileEntitySpeaker.MAX_VOLUME);
+    }
+
+    private int valueAt(int mouseX, int min, int max) {
         int trackLeft = left + SLIDER_LEFT;
         int trackRight = left + SLIDER_RIGHT;
         float fraction = (mouseX - trackLeft) / (float) (trackRight - trackLeft);
         fraction = Math.max(0F, Math.min(1F, fraction));
-        int range = TileEntitySpeaker.MIN_RANGE + Math.round(fraction
-                * (TileEntitySpeaker.MAX_RANGE - TileEntitySpeaker.MIN_RANGE));
-        if (range == previewRange) return;
-        previewRange = range;
-        sendOption(MessageSpeakerOption.RANGE, range);
+        return min + Math.round(fraction * (max - min));
     }
 
     private void sendOption(int option, int value) {
@@ -225,10 +260,16 @@ public class GuiSpeaker extends GuiScreen {
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
         if (mouseButton == 0) {
             TileEntitySpeaker speaker = speaker();
-            if (speaker != null && inSlider(mouseX, mouseY)) {
+            if (speaker != null && inSlider(mouseX, mouseY, top + RANGE_SLIDER_TOP)) {
                 previewRange = speaker.getRange();
                 draggingRange = true;
                 updateRange(mouseX);
+                return;
+            }
+            if (speaker != null && inSlider(mouseX, mouseY, top + VOLUME_SLIDER_TOP)) {
+                previewVolume = speaker.getVolume();
+                draggingVolume = true;
+                updateVolume(mouseX);
                 return;
             }
             int row = speaker == null ? -1 : rowAt(mouseX, mouseY);
@@ -249,6 +290,7 @@ public class GuiSpeaker extends GuiScreen {
     protected void mouseClickMove(int mouseX, int mouseY, int clickedMouseButton,
                                   long timeSinceLastClick) {
         if (draggingRange) updateRange(mouseX);
+        else if (draggingVolume) updateVolume(mouseX);
         super.mouseClickMove(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
     }
 
@@ -256,9 +298,26 @@ public class GuiSpeaker extends GuiScreen {
     protected void mouseReleased(int mouseX, int mouseY, int state) {
         if (draggingRange) {
             updateRange(mouseX);
+            sendOption(MessageSpeakerOption.RANGE, previewRange);
             draggingRange = false;
+        } else if (draggingVolume) {
+            updateVolume(mouseX);
+            sendOption(MessageSpeakerOption.VOLUME, previewVolume);
+            draggingVolume = false;
         }
         super.mouseReleased(mouseX, mouseY, state);
+    }
+
+    @Override
+    public void onGuiClosed() {
+        if (draggingRange) {
+            sendOption(MessageSpeakerOption.RANGE, previewRange);
+            draggingRange = false;
+        }
+        if (draggingVolume) {
+            sendOption(MessageSpeakerOption.VOLUME, previewVolume);
+            draggingVolume = false;
+        }
     }
 
     @Override

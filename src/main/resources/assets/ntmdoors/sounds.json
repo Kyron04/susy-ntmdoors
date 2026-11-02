@@ -118,5 +118,29 @@
     "sounds": [
       "ntmdoors:scanner/bell1"
     ]
+  },
+  "speaker_air_raid": {
+    "category": "block",
+    "sounds": [
+      "ntmdoors:speaker/air_raid"
+    ]
+  },
+  "speaker_facility": {
+    "category": "block",
+    "sounds": [
+      "ntmdoors:speaker/facility"
+    ]
+  },
+  "speaker_industrial": {
+    "category": "block",
+    "sounds": [
+      "ntmdoors:speaker/industrial"
+    ]
+  },
+  "speaker_eas": {
+    "category": "block",
+    "sounds": [
+      "ntmdoors:speaker/eas"
+    ]
   }
 }

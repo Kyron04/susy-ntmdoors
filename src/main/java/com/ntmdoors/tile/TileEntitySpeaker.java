@@ -1,37 +1,55 @@
 package com.ntmdoors.tile;
 
-import com.ntmdoors.door.DoorDecl;
+import com.ntmdoors.client.SpeakerLoopSound;
+import com.ntmdoors.util.ModSounds;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ITickable;
-import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
  * Speaker state and the redstone-driven alarm. The speaker has no inventory or access control;
- * it simply loops its selected sound while enabled and receiving redstone power. It can also be
- * linked to Redstone Gates with the Redstone Relay Key; starting the alarm pulses every linked gate.
+ * it loops its selected sound while enabled and receiving redstone power. It can also be linked to
+ * Redstone Gates with the Redstone Relay Key; starting the alarm pulses every linked gate.
  */
 public class TileEntitySpeaker extends TileEntitySynced implements ITickable, RedstoneBindingHost {
 
-    /** The lockout alarm is the first placeholder sound. */
-    public static final int SOUND_ALARM = 0;
-    public static final int SOUND_COUNT = 1;
+    public static final int SOUND_AIR_RAID = 0;
+    public static final int SOUND_FACILITY = 1;
+    public static final int SOUND_INDUSTRIAL = 2;
+    public static final int SOUND_EAS = 3;
+    public static final int SOUND_COUNT = 4;
+
     public static final int MIN_RANGE = 1;
     public static final int MAX_RANGE = 64;
     public static final int DEFAULT_RANGE = 32;
-    /** door_alarm.ogg is 1.892 s long; 38 ticks keeps the repeats close together. */
-    private static final int ALARM_INTERVAL_TICKS = 38;
+    public static final int MIN_VOLUME = 0;
+    public static final int MAX_VOLUME = 100;
+    public static final int DEFAULT_VOLUME = 100;
+
     /** Minecraft's sound range is roughly volume * 16 blocks. */
     private static final float SOUND_RANGE_PER_VOLUME = 16F;
+    private static final String[] SOUND_NAMES = {"Air Raid", "Facility", "Industrial", "EAS"};
 
     private final RedstoneBinding redstoneBinding = new RedstoneBinding(this);
 
     private boolean enabled = true;
-    private int sound = SOUND_ALARM;
+    private int sound = SOUND_AIR_RAID;
     private int range = DEFAULT_RANGE;
+    private int volume = DEFAULT_VOLUME;
     private boolean powered;
-    private int soundCooldown;
+
+    @SideOnly(Side.CLIENT)
+    private SpeakerLoopSound loopSound;
+    @SideOnly(Side.CLIENT)
+    private int loopSoundIndex = -1;
+    @SideOnly(Side.CLIENT)
+    private float loopVolume = -1F;
 
     public boolean isEnabled() {
         return enabled;
@@ -41,7 +59,6 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
     public boolean setEnabled(boolean value) {
         if (world == null || world.isRemote || enabled == value) return false;
         enabled = value;
-        soundCooldown = 0;
         if (value && powered) redstoneBinding.fire();
         sync();
         return true;
@@ -55,6 +72,10 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
         return range;
     }
 
+    public int getVolume() {
+        return volume;
+    }
+
     /** Server side: sets the alarm's audible range in blocks. */
     public boolean setRange(int value) {
         if (world == null || world.isRemote) return false;
@@ -65,13 +86,22 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
         return true;
     }
 
-    /** Server side: selects one of the placeholder sounds. */
+    /** Server side: sets the alarm volume, 0-100 percent. */
+    public boolean setVolume(int value) {
+        if (world == null || world.isRemote) return false;
+        int next = clampVolume(value);
+        if (volume == next) return false;
+        volume = next;
+        sync();
+        return true;
+    }
+
+    /** Server side: selects one of the speaker sounds. */
     public boolean setSound(int value) {
         if (world == null || world.isRemote) return false;
         int next = clampSound(value);
         if (sound == next) return false;
         sound = next;
-        soundCooldown = 0;
         sync();
         return true;
     }
@@ -80,8 +110,16 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
         return powered;
     }
 
+    public float getEffectiveVolume() {
+        return (range / SOUND_RANGE_PER_VOLUME) * (volume / (float) MAX_VOLUME);
+    }
+
+    public SoundEvent getSoundEvent() {
+        return ModSounds.SPEAKER_SOUNDS.get(clampSound(sound));
+    }
+
     public static String soundName(int sound) {
-        return sound == SOUND_ALARM ? "Alarm" : "Unknown";
+        return SOUND_NAMES[clampSound(sound)];
     }
 
     @Override
@@ -120,36 +158,69 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
 
     @Override
     public void update() {
-        if (world == null || world.isRemote) return;
+        if (world == null) return;
+        if (world.isRemote) {
+            updateClientSound();
+            return;
+        }
 
         updatePower(world.isBlockPowered(pos));
         redstoneBinding.update();
-        if (!enabled || !powered) {
-            soundCooldown = 0;
-            return;
-        }
-
-        if (soundCooldown > 0) {
-            soundCooldown--;
-            return;
-        }
-
-        playAlarm();
-        soundCooldown = ALARM_INTERVAL_TICKS;
     }
 
     private void updatePower(boolean value) {
         if (powered == value) return;
         powered = value;
-        soundCooldown = 0;
         if (powered && enabled) redstoneBinding.fire();
         sync();
     }
 
-    private void playAlarm() {
-        float volume = range / SOUND_RANGE_PER_VOLUME;
-        world.playSound(null, pos, DoorDecl.sound("door_alarm"),
-                SoundCategory.BLOCKS, volume, 1F);
+    @SideOnly(Side.CLIENT)
+    private void updateClientSound() {
+        if (!enabled || !powered || volume <= 0 || range <= 0) {
+            stopClientSound();
+            return;
+        }
+
+        if (loopSound != null && loopSound.isDonePlaying()) {
+            loopSound = null;
+            loopSoundIndex = -1;
+            loopVolume = -1F;
+        }
+
+        float effectiveVolume = getEffectiveVolume();
+        if (loopSound == null || loopSoundIndex != sound
+                || Math.abs(loopVolume - effectiveVolume) > 0.001F) {
+            stopClientSound();
+            loopSoundIndex = sound;
+            loopVolume = effectiveVolume;
+            loopSound = new SpeakerLoopSound(this, getSoundEvent(), sound, effectiveVolume);
+            Minecraft.getMinecraft().getSoundHandler().playSound(loopSound);
+        } else {
+            loopSound.updateVolume(effectiveVolume);
+        }
+    }
+
+    @SideOnly(Side.CLIENT)
+    private void stopClientSound() {
+        if (loopSound == null) return;
+        SoundHandler handler = Minecraft.getMinecraft().getSoundHandler();
+        if (handler != null) handler.stopSound(loopSound);
+        loopSound = null;
+        loopSoundIndex = -1;
+        loopVolume = -1F;
+    }
+
+    @Override
+    public void invalidate() {
+        if (world != null && world.isRemote) stopClientSound();
+        super.invalidate();
+    }
+
+    @Override
+    public void onChunkUnload() {
+        if (world != null && world.isRemote) stopClientSound();
+        super.onChunkUnload();
     }
 
     private static int clampSound(int value) {
@@ -160,12 +231,17 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
         return Math.max(MIN_RANGE, Math.min(MAX_RANGE, value));
     }
 
+    private static int clampVolume(int value) {
+        return Math.max(MIN_VOLUME, Math.min(MAX_VOLUME, value));
+    }
+
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
         tag.setBoolean("enabled", enabled);
         tag.setInteger("sound", sound);
         tag.setInteger("range", range);
+        tag.setInteger("volume", volume);
         tag.setBoolean("powered", powered);
         redstoneBinding.writeToNBT(tag);
         return tag;
@@ -177,8 +253,8 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
         enabled = !tag.hasKey("enabled") || tag.getBoolean("enabled");
         sound = clampSound(tag.getInteger("sound"));
         range = tag.hasKey("range") ? clampRange(tag.getInteger("range")) : DEFAULT_RANGE;
+        volume = tag.hasKey("volume") ? clampVolume(tag.getInteger("volume")) : DEFAULT_VOLUME;
         powered = tag.getBoolean("powered");
         redstoneBinding.readFromNBT(tag);
-        soundCooldown = 0;
     }
 }

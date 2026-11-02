@@ -4,7 +4,7 @@ Standalone port of the HBM's Nuclear Tech Mod door system to Minecraft 1.12.2.
 The implementation and the included door models, textures and sounds are used under the
 LGPL-3.0. See `LICENSE.LESSER` and `NOTICE` for attribution and source information.
 
-Current release: **1.0.44**
+Current release: **1.0.45**
 
 Source design reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
 
@@ -146,11 +146,12 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   safe's lockout closes every linked door once. Breaking the safe clears the links.
 * Speaker (`ntmdoors:speaker`): a 1x1x1 black-ash cabinet with a woofer, tweeter and bass reflex
   port. Shift-right-click (with any item or an empty hand) opens a safe-style toggle screen with
-  `Enabled`, `Sound`, and a 1-64 block range slider; anyone may use it. While enabled and receiving
-  redstone power, it loops the existing lockout alarm until the signal or `Enabled` is removed.
-  The alarm is the first placeholder sound; the sound, range and enabled state are saved with the
-  block. A normal right-click with the Redstone Relay Key starts/finishes a wireless binding
-  session, and starting the alarm pulses every linked Redstone Gate.
+  `Enabled`, four selectable sounds (`Air Raid`, `Facility`, `Industrial`, `EAS`), a 1-64 block
+  range slider and a 0-100% volume slider; anyone may use it. While enabled and receiving redstone
+  power, it loops the selected alarm until the signal or `Enabled` is removed. The sound, range,
+  volume and enabled state are saved with the block. A normal right-click with the Redstone Relay
+  Key starts/finishes a wireless binding session, and starting the alarm pulses every linked
+  Redstone Gate.
 * Redstone Gate (`ntmdoors:redstone_gate`): a full-cube redstone component with separate off and on
   textures. It starts off, turns on while it receives redstone power or a wireless pulse, and emits
   a full-strength signal while on. A wireless event keeps it powered for its configured duration;

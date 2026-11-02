@@ -1,5 +1,12 @@
-HBM DOORS: REFRESHED 1.0.44
+HBM DOORS: REFRESHED 1.0.45
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.45
+FEATURES
+- The Speaker now offers four selectable alarms: Air Raid, Facility, Industrial and EAS.
+- Added an independent 0-100% volume slider next to the range slider.
+- Speaker alarms now use a client-side loop, so switching off redstone or Enabled stops the
+  selected sound immediately instead of letting a long alarm ring out.
 
 1.0.44
 FEATURES
