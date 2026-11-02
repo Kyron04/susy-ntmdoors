@@ -12,7 +12,7 @@ public class BlockConcretePillar extends BlockRotatedPillar {
         super(Material.ROCK);
         setRegistryName(NTMDoors.MODID, name);
         setTranslationKey(NTMDoors.MODID + "." + name);
-        setCreativeTab(ConcreteSet.TAB);
+        setCreativeTab(NTMDoors.TAB);
         setHardness(15F);
         setResistance(180F);
         setSoundType(SoundType.STONE);

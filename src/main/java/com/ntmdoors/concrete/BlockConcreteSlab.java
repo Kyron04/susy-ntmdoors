@@ -36,7 +36,7 @@ public class BlockConcreteSlab extends BlockSlab {
         super(Material.ROCK);
         this.singleBlock = null;
         applyCommon(name, hardness, resistance);
-        setCreativeTab(ConcreteSet.TAB);
+        setCreativeTab(NTMDoors.TAB);
         setDefaultState(blockState.getBaseState()
                 .withProperty(VARIANT, Variant.V0)
                 .withProperty(HALF, EnumBlockHalf.BOTTOM));

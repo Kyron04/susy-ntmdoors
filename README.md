@@ -4,7 +4,7 @@ Standalone port of the HBM's Nuclear Tech Mod door system and concrete building 
 1.12.2. The implementation and the included door, concrete and HL Blocks assets are used under the
 LGPL-3.0. See `LICENSE.LESSER` and `NOTICE` for attribution and source information.
 
-Current release: **1.0.46**
+Current release: **1.0.47**
 
 Source design reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
 
@@ -193,7 +193,7 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   `ntmdoors:terragroup_labs_access_keycard`): five fixed-name cards, each with its own 16x16 sprite
   and a line of flavour text. They behave exactly like the colour cards - the programmer copies
   private keys onto them and the scanner reads them - but they are not part of the recolour palette.
-* SCP access cards (`ntmdoors:scp_level_1_keycard` through `ntmdoors:scp_level_6_keycard`): six
+* SCP access cards (`ntmdoors:scp_level_0_keycard` through `ntmdoors:scp_level_5_keycard`): six
   fixed-clearance cards in grey, yellow, amber, orange, dark orange and red, with `Level 1` to
   `Level 6 clearance` tooltips. Also included is `ntmdoors:googa_security_keycard`, whose tooltip
   reads `Security is goog` and whose name is gold. They use the same private-key storage, programmer
@@ -296,7 +296,8 @@ below.
 
 ## Concrete and HL Blocks
 
-The 1.0.46 update adds the NTM concrete building set and the included HL Blocks to the door port:
+The 1.0.46 concrete and HL Blocks update adds the NTM concrete building set and the included HL
+Blocks to the door port:
 
 - The full NTM CE concrete set: plain, smooth, dyed, Builder's Choice, bricks, pillar, rebar,
   asbestos, Über Concrete and its falling Moldy Debris.
@@ -338,8 +339,7 @@ remain reachable by metadata.
 
 #### In-game behaviour
 
-- **Creative tabs.** The concrete set has its own `NTM Concrete` tab. The HL Blocks are in the
-  vanilla Building Blocks tab.
+- **Creative tabs.** All concrete and HL Blocks are listed in the `NTM Doors` creative tab.
 - **Shift-scroll cycling.** Hold a concrete or HL stack and scroll with the cycle modifier
   (left shift by default, rebindable under Controls → HL Blocks). It cycles every texture in the
   family in both hands, and the server applies the change.

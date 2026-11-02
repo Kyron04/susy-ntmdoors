@@ -2,9 +2,7 @@ package com.ntmdoors.concrete;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.item.ItemBlockConcreteVariant;
-import com.ntmdoors.util.Names;
 import net.minecraft.block.Block;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
@@ -37,24 +35,6 @@ public final class ConcreteSet {
 
     public static final String[] BRICK_TYPES = {
             "brick_concrete", "brick_concrete_mossy", "brick_concrete_cracked", "brick_concrete_broken"
-    };
-
-    public static final CreativeTabs TAB = new CreativeTabs(NTMDoors.MODID + ".concrete") {
-        @Override
-        public ItemStack createIcon() {
-            return new ItemStack(Item.getItemFromBlock(CONCRETE));
-        }
-
-        @Override
-        public String getTranslationKey() {
-            String key = "itemGroup." + getTabLabel();
-            return Names.canTranslate(key) ? key : "NTM Concrete";
-        }
-
-        @Override
-        public void displayAllRelevantItems(NonNullList<ItemStack> items) {
-            items.addAll(CREATIVE);
-        }
     };
 
     /** A metadata slab family: up to eight variants plus its technical double block. */
@@ -173,6 +153,11 @@ public final class ConcreteSet {
 
     public static void registerItems(RegistryEvent.Register<Item> e) {
         for (Item item : ITEMS) e.getRegistry().register(item);
+    }
+
+    /** Adds every concrete cube, stair and single-slab stack to the main creative tab. */
+    public static void addCreativeStacks(NonNullList<ItemStack> items) {
+        items.addAll(CREATIVE);
     }
 
     public static Block stairs(String name) {

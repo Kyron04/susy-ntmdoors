@@ -12,7 +12,7 @@ public class BlockConcreteDebris extends BlockFalling {
         super(Material.ROCK);
         setRegistryName(NTMDoors.MODID, name);
         setTranslationKey(NTMDoors.MODID + "." + name);
-        setCreativeTab(ConcreteSet.TAB);
+        setCreativeTab(NTMDoors.TAB);
         setHardness(10F);
         setResistance(20F);
         setSoundType(SoundType.STONE);

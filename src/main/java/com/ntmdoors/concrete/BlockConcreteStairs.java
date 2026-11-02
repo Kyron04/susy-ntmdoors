@@ -15,7 +15,7 @@ public class BlockConcreteStairs extends BlockStairs {
         super(base.getDefaultState());
         setRegistryName(NTMDoors.MODID, name);
         setTranslationKey(NTMDoors.MODID + "." + name);
-        setCreativeTab(ConcreteSet.TAB);
+        setCreativeTab(NTMDoors.TAB);
         setHardness(hardness);
         setResistance(resistance);
         setSoundType(SoundType.STONE);

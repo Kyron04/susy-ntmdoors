@@ -4,7 +4,7 @@
 
 NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system and concrete building set from HBM's Nuclear Tech Mod. No NTM installation is required. Chisel 1.12.2-1.0.2.45 is required. Every model, texture and sound is bundled.
 
-**Current version: 1.0.46**
+**Current version: 1.0.47**
 
 ## 16 multiblock doors
 
@@ -79,7 +79,7 @@ Screwdriver + sneak + right-click cycles door skins:
 - **Biometric Keycard and Biometric Operator Keycard** — carry an identity, show the owner in the tooltip, and work with the scanner's Match biometric holder option. The Operator version also lists its stored private keys in the tooltip.
 - **Keycard Holder** — carried 3x4 case for twelve keycards, with its own NBT storage, empty-slot ghosts and shift-click transfer.
 - **Keycard Viewer** — sneak-right-click a card to read every private key stored on it.
-- **SCP access cards** — SCP Level 1–6 clearance cards, plus the Googa security keycard with its gold name and `Security is goog` tooltip.
+- **SCP access cards** — SCP Level 0–5 clearance cards, plus the Googa security keycard with its gold name and `Security is goog` tooltip.
 
 ### Scanner security code and assignment
 
@@ -105,6 +105,7 @@ Screwdriver + sneak + right-click cycles door skins:
 - **Concrete** - the full NTM CE set: plain, smooth, 16 dyed, Builder's Choice, concrete bricks, pillar, rebar, asbestos, Über Concrete and Moldy Debris. Cubes and slabs use metadata families; stairs stay one id per texture.
 - **HL Blocks** - three simple blocks and seven metadata groups: freezer, fifties, crete, duct, lab, tunnel and generic.
 - Both sets have recipes, `concrete` / `blockConcrete` / `blockhl` ore dictionary entries, and flat Chisel carving groups.
+- All concrete and HL Blocks are listed in the NTM Doors creative tab.
 - Shift + scroll cycles a held concrete or HL stack through its texture family. The cycle modifier is rebindable under Controls.
 - Chisel 1.12.2-1.0.2.45 is required.
 

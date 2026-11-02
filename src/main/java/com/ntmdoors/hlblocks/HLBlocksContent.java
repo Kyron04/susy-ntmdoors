@@ -4,9 +4,10 @@ import com.ntmdoors.NTMDoors;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.NonNullList;
 import net.minecraftforge.event.RegistryEvent;
 
 import java.util.ArrayList;
@@ -57,11 +58,21 @@ public final class HLBlocksContent {
         for (Item item : ITEMS) e.getRegistry().register(item);
     }
 
+    /** Adds every simple and metadata HL Block stack to the main creative tab. */
+    public static void addCreativeStacks(NonNullList<ItemStack> items) {
+        for (Block block : SIMPLE_BLOCKS) items.add(new ItemStack(block));
+        for (BlockGroup block : GROUP_BLOCKS) {
+            for (int meta = 0; meta < block.getVariants().size(); meta++) {
+                items.add(new ItemStack(block, 1, meta));
+            }
+        }
+    }
+
     private static void addSimple(Block block, String name) {
         applyStats(block);
         block.setRegistryName(NTMDoors.MODID, "hlblocks_" + name);
         block.setTranslationKey(NTMDoors.MODID + ".hlblocks_" + name);
-        block.setCreativeTab(CreativeTabs.BUILDING_BLOCKS);
+        block.setCreativeTab(NTMDoors.TAB);
 
         ItemBlock item = new ItemBlock(block);
         item.setRegistryName(block.getRegistryName());
@@ -75,7 +86,7 @@ public final class HLBlocksContent {
         applyStats(block);
         block.setRegistryName(NTMDoors.MODID, "hlblocks_" + name);
         block.setTranslationKey(NTMDoors.MODID + ".hlblocks_" + name);
-        block.setCreativeTab(CreativeTabs.BUILDING_BLOCKS);
+        block.setCreativeTab(NTMDoors.TAB);
 
         ItemBlockGroup item = new ItemBlockGroup(block);
         item.setRegistryName(block.getRegistryName());

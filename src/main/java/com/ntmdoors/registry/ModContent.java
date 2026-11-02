@@ -91,6 +91,8 @@ public class ModContent {
     public static final ItemRfidCard TERRAGROUP_LABS_KEYCARD =
             new ItemNamedRfidCard("terragroup_labs_access_keycard", "What are they hiding?");
     /** SCP clearance cards and the Googa joke card; fixed sprites, otherwise ordinary RFID cards. */
+    public static final ItemRfidCard SCP_LEVEL_0_KEYCARD =
+            new ItemNamedRfidCard("scp_level_0_keycard", "Level 0 clearance");
     public static final ItemRfidCard SCP_LEVEL_1_KEYCARD =
             new ItemNamedRfidCard("scp_level_1_keycard", "Level 1 clearance");
     public static final ItemRfidCard SCP_LEVEL_2_KEYCARD =
@@ -101,8 +103,6 @@ public class ModContent {
             new ItemNamedRfidCard("scp_level_4_keycard", "Level 4 clearance");
     public static final ItemRfidCard SCP_LEVEL_5_KEYCARD =
             new ItemNamedRfidCard("scp_level_5_keycard", "Level 5 clearance");
-    public static final ItemRfidCard SCP_LEVEL_6_KEYCARD =
-            new ItemNamedRfidCard("scp_level_6_keycard", "Level 6 clearance");
     public static final ItemRfidCard GOOGA_SECURITY_KEYCARD =
             new ItemNamedRfidCard(TextFormatting.GOLD, "googa_security_keycard", "Security is goog");
     /** Privileged card produced by the programmer and accepted by scanners as an admin card. */
@@ -139,8 +139,8 @@ public class ModContent {
 
     /** New cards registered after every existing item, so saved numeric item IDs are untouched. */
     public static final List<ItemRfidCard> SCP_CARDS = Collections.unmodifiableList(Arrays.asList(
-            SCP_LEVEL_1_KEYCARD, SCP_LEVEL_2_KEYCARD, SCP_LEVEL_3_KEYCARD,
-            SCP_LEVEL_4_KEYCARD, SCP_LEVEL_5_KEYCARD, SCP_LEVEL_6_KEYCARD,
+            SCP_LEVEL_0_KEYCARD, SCP_LEVEL_1_KEYCARD, SCP_LEVEL_2_KEYCARD,
+            SCP_LEVEL_3_KEYCARD, SCP_LEVEL_4_KEYCARD, SCP_LEVEL_5_KEYCARD,
             GOOGA_SECURITY_KEYCARD));
 
     static {
@@ -215,6 +215,36 @@ public class ModContent {
         // Concrete and HL Block items are new in 1.0.46 and follow every existing item.
         ConcreteSet.registerItems(e);
         HLBlocksContent.registerItems(e);
+    }
+
+    /** Keeps existing worlds working after the SCP card registry names moved from 1-6 to 0-5. */
+    @SubscribeEvent
+    public static void remapMissingItems(RegistryEvent.MissingMappings<Item> event) {
+        for (RegistryEvent.MissingMappings.Mapping<Item> mapping : event.getMappings()) {
+            if (!NTMDoors.MODID.equals(mapping.key.getNamespace())) continue;
+            switch (mapping.key.getPath()) {
+                case "scp_level_1_keycard":
+                    mapping.remap(SCP_LEVEL_0_KEYCARD);
+                    break;
+                case "scp_level_2_keycard":
+                    mapping.remap(SCP_LEVEL_1_KEYCARD);
+                    break;
+                case "scp_level_3_keycard":
+                    mapping.remap(SCP_LEVEL_2_KEYCARD);
+                    break;
+                case "scp_level_4_keycard":
+                    mapping.remap(SCP_LEVEL_3_KEYCARD);
+                    break;
+                case "scp_level_5_keycard":
+                    mapping.remap(SCP_LEVEL_4_KEYCARD);
+                    break;
+                case "scp_level_6_keycard":
+                    mapping.remap(SCP_LEVEL_5_KEYCARD);
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
     @SubscribeEvent

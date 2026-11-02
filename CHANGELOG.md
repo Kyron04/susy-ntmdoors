@@ -1,5 +1,13 @@
-HBM DOORS: REFRESHED 1.0.46
+HBM DOORS: REFRESHED 1.0.47
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.47
+FIXES
+- Concrete and HL Blocks now appear in the NTM Doors creative tab. The separate NTM Concrete tab
+  and the vanilla Building Blocks placement were removed.
+- Renamed the SCP access cards from levels 1-6 to 0-5, including their registry names, models,
+  textures and display names. Existing level 1-6 card stacks are remapped to the matching 0-5
+  cards when an old world loads.
 
 1.0.46
 FEATURES

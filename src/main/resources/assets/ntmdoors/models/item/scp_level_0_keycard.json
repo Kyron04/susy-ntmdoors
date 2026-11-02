@@ -1,6 +1,6 @@
 {
   "parent": "ntmdoors:item/rfid_card_base",
   "textures": {
-    "layer0": "ntmdoors:items/scp_level_6_keycard"
+    "layer0": "ntmdoors:items/scp_level_0_keycard"
   }
 }
