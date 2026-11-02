@@ -4,7 +4,7 @@ Standalone port of the HBM's Nuclear Tech Mod door system to Minecraft 1.12.2.
 The implementation and the included door models, textures and sounds are used under the
 LGPL-3.0. See `LICENSE.LESSER` and `NOTICE` for attribution and source information.
 
-Current release: **1.0.40**
+Current release: **1.0.41**
 
 Source design reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
 
@@ -144,6 +144,8 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   link or unlink them. A door can belong to one safe, but a door already controlled by a keypad or
   scanner keeps that binding and can still be linked to a safe. With `Binding Activities` on, the
   safe's lockout closes every linked door once. Breaking the safe clears the links.
+* Speaker (`ntmdoors:speaker`): a decorative 1x1x1 black-ash cabinet with a woofer, tweeter and
+  bass reflex port. It faces the player when placed and currently has no tile entity or behaviour.
 * Redstone Gate (`ntmdoors:redstone_gate`): a full-cube redstone component with separate off and on
   textures. It starts off, turns on while it receives redstone power or a wireless pulse, and emits
   a full-strength signal while on. A wireless event keeps it powered for its configured duration;

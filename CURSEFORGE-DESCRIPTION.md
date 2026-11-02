@@ -4,7 +4,7 @@
 
 NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system from HBM's Nuclear Tech Mod. No NTM installation is required. Every model, texture and sound is bundled.
 
-**Current version: 1.0.40**
+**Current version: 1.0.41**
 
 ## 16 multiblock doors
 
@@ -99,6 +99,10 @@ Screwdriver + sneak + right-click cycles door skins:
   - Code Safe: Binding Activities, Lockout mode and Reset code.
   - Biometric Safe: Match user, Binding Activities and Lockout mode.
 - Lockout mode stops access for five minutes after three failed codes or cards. Reset code clears the code so the next entry sets a new one.
+
+## Decorative blocks
+
+- **Speaker** - a 1x1x1 black-ash cabinet with a woofer, tweeter and bass reflex port. It faces the player when placed and currently has no tile entity or behaviour.
 
 ## Redstone
 

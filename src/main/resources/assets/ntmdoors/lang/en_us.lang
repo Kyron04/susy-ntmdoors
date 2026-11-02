@@ -117,6 +117,7 @@ ntmdoors.msg.biometric_already=Already bound to %s
 tile.ntmdoors.safe.name=Safe
 tile.ntmdoors.biometric_safe.name=Biometric Safe
 tile.ntmdoors.redstone_gate.name=Redstone Gate
+tile.ntmdoors.speaker.name=Speaker
 item.ntmdoors.safe_binding_key.name=Safe Binding Key
 item.ntmdoors.redstone_relay_key.name=Redstone Relay Key
 ntmdoors.msg.safe_code_set=Safe code set

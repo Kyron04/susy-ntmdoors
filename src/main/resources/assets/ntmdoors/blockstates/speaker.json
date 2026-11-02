@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "ntmdoors:speaker" },
+    "facing=east": { "model": "ntmdoors:speaker", "y": 90 },
+    "facing=south": { "model": "ntmdoors:speaker", "y": 180 },
+    "facing=west": { "model": "ntmdoors:speaker", "y": 270 }
+  }
+}

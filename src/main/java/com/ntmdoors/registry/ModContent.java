@@ -8,6 +8,7 @@ import com.ntmdoors.block.BlockKeycardProgrammer;
 import com.ntmdoors.block.BlockKeycardScanner;
 import com.ntmdoors.block.BlockRedstoneGate;
 import com.ntmdoors.block.BlockSafe;
+import com.ntmdoors.block.BlockSpeaker;
 import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.DoorDecls;
 import com.ntmdoors.item.ItemBiometricKeycard;
@@ -33,6 +34,7 @@ import com.ntmdoors.util.ModSounds;
 import net.minecraft.block.Block;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.Ingredient;
@@ -64,6 +66,7 @@ public class ModContent {
     public static final BlockSafe SAFE = new BlockSafe();
     public static final BlockBiometricSafe BIOMETRIC_SAFE = new BlockBiometricSafe();
     public static final BlockRedstoneGate REDSTONE_GATE = new BlockRedstoneGate();
+    public static final BlockSpeaker SPEAKER = new BlockSpeaker();
     public static final ItemScrewdriver SCREWDRIVER = new ItemScrewdriver();
     public static final ItemRfidCard BLANK_RFID_CARD = new ItemRfidCard("blank_rfid_card", false);
     public static final ItemRfidCard RED_RFID_CARD = new ItemRfidCard("red_rfid_card");
@@ -157,6 +160,8 @@ public class ModContent {
         e.getRegistry().register(SAFE);
         e.getRegistry().register(BIOMETRIC_SAFE);
         e.getRegistry().register(REDSTONE_GATE);
+        // Decorative blocks go last so previously saved numeric block IDs do not shift.
+        e.getRegistry().register(SPEAKER);
     }
 
     @SubscribeEvent
@@ -197,6 +202,9 @@ public class ModContent {
         e.getRegistry().register(REDSTONE_RELAY_KEY);
         e.getRegistry().register(new ItemBlockRedstoneGate(REDSTONE_GATE)
                 .setRegistryName(REDSTONE_GATE.getRegistryName()));
+        e.getRegistry().register(new ItemBlock(SPEAKER)
+                .setRegistryName(SPEAKER.getRegistryName())
+                .setCreativeTab(NTMDoors.TAB));
     }
 
     @SubscribeEvent

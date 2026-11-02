@@ -17,7 +17,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-@Mod(modid = NTMDoors.MODID, name = "NTM Doors", version = "1.0.40", acceptedMinecraftVersions = "[1.12.2]")
+@Mod(modid = NTMDoors.MODID, name = "NTM Doors", version = "1.0.41", acceptedMinecraftVersions = "[1.12.2]")
 public class NTMDoors {
 
     public static final String MODID = "ntmdoors";
@@ -65,6 +65,7 @@ public class NTMDoors {
             items.add(new ItemStack(ModContent.SAFE_BINDING_KEY));
             items.add(new ItemStack(ModContent.REDSTONE_RELAY_KEY));
             items.add(new ItemStack(ModContent.REDSTONE_GATE));
+            items.add(new ItemStack(ModContent.SPEAKER));
         }
 
         @Override

@@ -1,5 +1,10 @@
-HBM DOORS: REFRESHED 1.0.40
+HBM DOORS: REFRESHED 1.0.41
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.41
+FEATURES
+- Added the decorative Speaker block (`ntmdoors:speaker`). It is a 1x1x1 cabinet with a woofer,
+  tweeter and bass reflex port, faces the player when placed, and has no tile entity or behaviour.
 
 1.0.40
 CLEANUP
