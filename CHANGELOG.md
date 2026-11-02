@@ -1,5 +1,10 @@
-HBM DOORS: REFRESHED 1.0.41
+HBM DOORS: REFRESHED 1.0.42
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.42
+FIXES
+- The Speaker now uses the safe's non-opaque, non-full-cube rendering/support setup, so its
+  recessed front and shallow driver/trim details are not culled by neighbouring blocks.
 
 1.0.41
 FEATURES
