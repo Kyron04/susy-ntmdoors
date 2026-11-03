@@ -30,7 +30,8 @@ public class MessageSafeOption implements IMessage {
     public static final int REDSTONE_SCAN_SUCCESS = 9;
     public static final int REDSTONE_MATCH_FAIL = 10;
     public static final int REDSTONE_MATCH_SUCCESS = 11;
-    public static final int OPTION_COUNT = 12;
+    public static final int VOID_ON_DESTROY = 12;
+    public static final int OPTION_COUNT = 13;
 
     private BlockPos pos;
     private int option;
@@ -87,6 +88,9 @@ public class MessageSafeOption implements IMessage {
                     break;
                 case BINDING_ACTIVITIES:
                     safe.setBindingActivities(message.value);
+                    break;
+                case VOID_ON_DESTROY:
+                    safe.setVoidOnDestroy(message.value);
                     break;
                 case REDSTONE_CODE_FAIL:
                     safe.setRedstoneEvent(TileEntitySafe.RS_CODE_FAIL, message.value);

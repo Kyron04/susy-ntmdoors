@@ -85,6 +85,8 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ISid
 
     private boolean matchHolder = true;
     private boolean lockoutMode;
+    /** When on, breaking the safe voids the safe item and its contents instead of dropping them. */
+    private boolean voidOnDestroy = true;
     /** When on, the safe can link doors and close them on lockout. Synced to clients. */
     private boolean bindingActivities = true;
     /** Synced mirror of whether the lockout timer is currently running. */
@@ -220,6 +222,19 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ISid
         if (world == null || world.isRemote || lockoutMode == value) return false;
         lockoutMode = value;
         if (!value) clearLockout();
+        sync();
+        return true;
+    }
+
+    /** True when breaking this safe should void the safe item and everything stored in it. */
+    public boolean isVoidOnDestroy() {
+        return voidOnDestroy;
+    }
+
+    /** Server side: arms or disarms void-on-destroy. */
+    public boolean setVoidOnDestroy(boolean value) {
+        if (world == null || world.isRemote || voidOnDestroy == value) return false;
+        voidOnDestroy = value;
         sync();
         return true;
     }
@@ -695,6 +710,7 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ISid
         tag.setBoolean("matchHolder", matchHolder);
         tag.setBoolean("lockoutMode", lockoutMode);
         tag.setBoolean("bindingActivities", bindingActivities);
+        tag.setBoolean("voidOnDestroy", voidOnDestroy);
         tag.setBoolean("lockedOut", lockedOut);
         tag.setByteArray("redstoneEvents", encodeEvents());
     }
@@ -703,6 +719,8 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ISid
         // Holder matching and binding default on, so safes saved before these options keep working.
         matchHolder = !tag.hasKey("matchHolder") || tag.getBoolean("matchHolder");
         bindingActivities = !tag.hasKey("bindingActivities") || tag.getBoolean("bindingActivities");
+        // On by default; safes saved before this option was added also start with the safe voiding.
+        voidOnDestroy = !tag.hasKey("voidOnDestroy") || tag.getBoolean("voidOnDestroy");
         lockoutMode = tag.getBoolean("lockoutMode");
         lockedOut = tag.getBoolean("lockedOut");
         readEvents(tag);

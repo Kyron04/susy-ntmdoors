@@ -13,12 +13,17 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.InventoryHelper;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+
+import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * 1x1x1 steel safe with a keypad. The tile entity owns the 27-slot inventory, the code and the
@@ -156,10 +161,36 @@ public class BlockSafe extends Block {
     public void breakBlock(World world, BlockPos pos, IBlockState state) {
         TileEntity te = world.getTileEntity(pos);
         if (te instanceof TileEntitySafe) {
-            ((TileEntitySafe) te).unbindAllDoors();
-            ((TileEntitySafe) te).getRedstoneBinding().clearGates();
-            InventoryHelper.dropInventoryItems(world, pos, (TileEntitySafe) te);
+            TileEntitySafe safe = (TileEntitySafe) te;
+            safe.unbindAllDoors();
+            safe.getRedstoneBinding().clearGates();
+            if (safe.isVoidOnDestroy()) {
+                safe.clear();
+            } else {
+                InventoryHelper.dropInventoryItems(world, pos, safe);
+            }
         }
         super.breakBlock(world, pos, state);
+    }
+
+    /**
+     * Void-on-destroy also suppresses the safe block's own item. The tile entity is still present
+     * here, so the setting can be read before the block is removed.
+     */
+    @Override
+    public void harvestBlock(World world, EntityPlayer player, BlockPos pos, IBlockState state,
+                             @Nullable TileEntity te, ItemStack stack) {
+        if (te instanceof TileEntitySafe && ((TileEntitySafe) te).isVoidOnDestroy()) return;
+        super.harvestBlock(world, player, pos, state, te, stack);
+    }
+
+    /** Covers explosions and other paths that ask for drops without going through harvestBlock. */
+    @Override
+    public List<ItemStack> getDrops(IBlockAccess world, BlockPos pos, IBlockState state, int fortune) {
+        TileEntity te = world == null ? null : world.getTileEntity(pos);
+        if (te instanceof TileEntitySafe && ((TileEntitySafe) te).isVoidOnDestroy()) {
+            return Collections.emptyList();
+        }
+        return super.getDrops(world, pos, state, fortune);
     }
 }

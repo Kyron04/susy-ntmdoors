@@ -6,11 +6,14 @@ import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.tile.TileEntityBiometricSafe;
 import com.ntmdoors.util.HeldItems;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 
 /**
@@ -27,6 +30,27 @@ public class BlockBiometricSafe extends BlockSafe {
     @Override
     public TileEntity createTileEntity(World world, IBlockState state) {
         return new TileEntityBiometricSafe();
+    }
+
+    /**
+     * Binds a freshly placed safe to the player who placed it. Dispensers and other non-player
+     * placers leave it unowned, which keeps the legacy behaviour for those safes.
+     */
+    @Override
+    public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state,
+                                EntityLivingBase placer, ItemStack stack) {
+        super.onBlockPlacedBy(world, pos, state, placer, stack);
+        if (world.isRemote || !(placer instanceof EntityPlayer)) return;
+
+        ensureTileEntity(world, pos, state);
+        TileEntity te = world.getTileEntity(pos);
+        if (te instanceof TileEntityBiometricSafe) {
+            EntityPlayer player = (EntityPlayer) placer;
+            if (((TileEntityBiometricSafe) te).bindOwner(player)) {
+                player.sendStatusMessage(new TextComponentTranslation(
+                        "ntmdoors.msg.safe_biometric_bound", player.getName()), true);
+            }
+        }
     }
 
     @Override

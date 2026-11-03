@@ -39,6 +39,8 @@ public class GuiSafe extends GuiContainer {
 
     private static final int OPTION_TOP = 36;
     private static final int OPTION_HEIGHT = 27;
+    /** The options page fits four rows in the panel; the redstone page keeps the taller rows. */
+    private static final int OPTIONS_HEIGHT = 21;
     private static final int REDSTONE_AREA = 180;
     private static final int PILL_WIDTH = 54;
     private static final int PILL_HEIGHT = 14;
@@ -49,12 +51,14 @@ public class GuiSafe extends GuiContainer {
     private static final int[] CODE_OPTIONS = {
             MessageSafeOption.BINDING_ACTIVITIES,
             MessageSafeOption.LOCKOUT,
-            MessageSafeOption.RESET_CODE
+            MessageSafeOption.RESET_CODE,
+            MessageSafeOption.VOID_ON_DESTROY
     };
     private static final int[] BIOMETRIC_OPTIONS = {
             MessageSafeOption.MATCH_HOLDER,
             MessageSafeOption.BINDING_ACTIVITIES,
-            MessageSafeOption.LOCKOUT
+            MessageSafeOption.LOCKOUT,
+            MessageSafeOption.VOID_ON_DESTROY
     };
     private static final int[] CODE_REDSTONE = {
             MessageSafeOption.REDSTONE_CODE_FAIL,
@@ -168,6 +172,8 @@ public class GuiSafe extends GuiContainer {
             value = !tile.isLockoutMode();
         } else if (option == MessageSafeOption.BINDING_ACTIVITIES) {
             value = !tile.isBindingActivities();
+        } else if (option == MessageSafeOption.VOID_ON_DESTROY) {
+            value = !tile.isVoidOnDestroy();
         } else {
             value = true;
         }
@@ -213,10 +219,11 @@ public class GuiSafe extends GuiContainer {
 
     private int optionAt(int mouseX, int mouseY) {
         int[] options = options();
+        int height = page == 2 ? OPTION_HEIGHT : OPTIONS_HEIGHT;
         int scroll = page == 2 ? scrollRedstone : 0;
         for (int i = 0; i < options.length; i++) {
-            int y = OPTION_TOP + i * OPTION_HEIGHT - scroll;
-            if (mouseX >= 6 && mouseX < xSize - 6 && mouseY >= y - 2 && mouseY < y + OPTION_HEIGHT - 4) {
+            int y = OPTION_TOP + i * height - scroll;
+            if (mouseX >= 6 && mouseX < xSize - 6 && mouseY >= y - 2 && mouseY < y + height - 4) {
                 return options[i];
             }
         }
@@ -319,10 +326,10 @@ public class GuiSafe extends GuiContainer {
         int[] options = options();
         for (int i = 0; i < options.length; i++) {
             int option = options[i];
-            int y = OPTION_TOP + i * OPTION_HEIGHT;
+            int y = OPTION_TOP + i * OPTIONS_HEIGHT;
             boolean hovered = isOptionHovered(i, mouseX, mouseY);
             if (hovered) {
-                drawRect(6, y - 2, xSize - 6, y + OPTION_HEIGHT - 4, HOVER);
+                drawRect(6, y - 2, xSize - 6, y + OPTIONS_HEIGHT - 4, HOVER);
             }
 
             drawString(fontRenderer, optionLabel(option), 12, y + 1, COLOUR);
@@ -332,9 +339,9 @@ public class GuiSafe extends GuiContainer {
     }
 
     private boolean isOptionHovered(int row, int mouseX, int mouseY) {
-        int y = OPTION_TOP + row * OPTION_HEIGHT;
+        int y = OPTION_TOP + row * OPTIONS_HEIGHT;
         return mouseX >= 6 && mouseX < xSize - 6
-                && mouseY >= y - 2 && mouseY < y + OPTION_HEIGHT - 4;
+                && mouseY >= y - 2 && mouseY < y + OPTIONS_HEIGHT - 4;
     }
 
     private void drawRedstoneOptions(int mouseX, int mouseY) {
@@ -375,6 +382,8 @@ public class GuiSafe extends GuiContainer {
                 return "Lockout mode";
             case MessageSafeOption.BINDING_ACTIVITIES:
                 return "Binding Activities";
+            case MessageSafeOption.VOID_ON_DESTROY:
+                return "Void on destroy";
             case MessageSafeOption.RESET_CODE:
                 return "Reset code";
             case MessageSafeOption.REDSTONE_CODE_FAIL:
@@ -406,6 +415,8 @@ public class GuiSafe extends GuiContainer {
                 return "3 fails = 5 min.";
             case MessageSafeOption.BINDING_ACTIVITIES:
                 return "Linking + lockout.";
+            case MessageSafeOption.VOID_ON_DESTROY:
+                return "No drops at all.";
             case MessageSafeOption.RESET_CODE:
                 return "Clears the code.";
             case MessageSafeOption.REDSTONE_CODE_FAIL:
@@ -438,6 +449,8 @@ public class GuiSafe extends GuiContainer {
             on = tile.isLockoutMode();
         } else if (option == MessageSafeOption.BINDING_ACTIVITIES) {
             on = tile.isBindingActivities();
+        } else if (option == MessageSafeOption.VOID_ON_DESTROY) {
+            on = tile.isVoidOnDestroy();
         } else {
             int event = redstoneEvent(option);
             if (event >= 0) on = tile.isRedstoneEvent(event);

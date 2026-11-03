@@ -1,7 +1,9 @@
 package com.ntmdoors.client;
 
 import com.ntmdoors.network.MessageSafeResult;
+import com.ntmdoors.tile.TileEntityBiometricSafe;
 import com.ntmdoors.tile.TileEntitySafe;
+import com.ntmdoors.util.Biometrics;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
@@ -110,10 +112,19 @@ public class GuiSafeBiometric extends GuiPanelScreen {
         drawRect(x + 2, y + 2, x + 118, y + 18, 0xFF061512);
         drawCenteredString(fontRenderer, "SCANNING...", left + PANEL_WIDTH / 2, y + 6, CYAN);
 
+        int infoY = top + 84;
+        if (safe instanceof TileEntityBiometricSafe) {
+            TileEntityBiometricSafe biometric = (TileEntityBiometricSafe) safe;
+            if (biometric.hasOwner()) {
+                drawCenteredString(fontRenderer, Biometrics.label(biometric.getOwnerName()),
+                        left + PANEL_WIDTH / 2, infoY, MUTED);
+                infoY += 12;
+            }
+        }
         drawCenteredString(fontRenderer, "Hold your Biometric Operator",
-                left + PANEL_WIDTH / 2, top + 84, MUTED);
+                left + PANEL_WIDTH / 2, infoY, MUTED);
         drawCenteredString(fontRenderer, "Keycard to scan",
-                left + PANEL_WIDTH / 2, top + 95, MUTED);
+                left + PANEL_WIDTH / 2, infoY + 11, MUTED);
         drawCenteredString(fontRenderer, "ESC to cancel", left + PANEL_WIDTH / 2,
                 top + PANEL_HEIGHT - 16, 0xFF6A6A6A);
     }

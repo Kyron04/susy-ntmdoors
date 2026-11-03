@@ -126,20 +126,26 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   the pad. Right clicking opens the same keypad screen as the scanner. The first accepted code
   becomes the safe's code; later entries must match. The code safe has no owner restriction, so
   anyone who knows the code can open it. A correct code shows the `SUCCESS!!!` card and then opens
-  a 27-slot container. Page two of the container has `Binding Activities`, `Lockout mode`, and
-  `Reset code`; `Binding Activities` enables door linking and the lockout-door response, `Lockout
-  mode` locks the keypad for five minutes after three bad codes, and `Reset code` clears the code so
-  the next entry sets a new one. The inventory and the code are saved with the block, and breaking
-  the safe drops its contents. A safe takes three real hours of continuous mining with any tool.
+  a 27-slot container. Page two of the container has `Binding Activities`, `Lockout mode`,
+  `Reset code` and `Void on destroy`; `Binding Activities` enables door linking and the
+  lockout-door response, `Lockout mode` locks the keypad for five minutes after three bad codes,
+  `Reset code` clears the code so the next entry sets a new one, and `Void on destroy` makes the
+  broken safe and everything inside it vanish instead of dropping. The inventory, the code and the
+  option are saved with the block; `Void on destroy` starts on, and switching it off makes the
+  broken safe drop its contents again. A safe takes three real hours of continuous mining with any
+  tool.
   Neither safe exposes its slots to hoppers or logistics automation; only the opened container can
   access them. The Creative Keycard bypasses the keypad and opens the container immediately.
 * Biometric Safe (`ntmdoors:biometric_safe`): the same shell, inventory and options page, but its
   reader accepts the Biometric Operator Keycard, or the Creative Keycard. Right clicking with a
   bound biometric card shows a short `SCANNING...` screen, then the same `SUCCESS!!!` / `FAILED!!!`
-  card before opening the container. `Match user` limits the card to the identity it carries; with
-  it off, any bound Biometric Operator Keycard opens the safe. `Lockout mode` works like the
-  scanner's, and the card's owner can still bypass a lockout to turn it off. The normal Biometric
-  Keycard and the plain Operator Keycard are refused; the Creative Keycard opens it directly.
+  card before opening the container. A newly placed safe records the placer's biometric ID, and
+  only a card carrying that ID can open it; safes placed before this change stay unowned and accept
+  any valid biometric card as before. `Match user` limits the card to the identity it carries; with
+  it off, any bound Biometric Operator Keycard carrying the safe owner's ID opens the safe.
+  `Lockout mode` works like the scanner's, and the card's owner can still bypass a lockout to turn
+  it off. The normal Biometric Keycard and the plain Operator Keycard are refused; the Creative
+  Keycard opens it directly.
 * Safe Binding Key (`ntmdoors:safe_binding_key`): a small green USB key with a green name. Sneak
   right-click a safe to start or finish a binding session, then sneak right-click closed doors to
   link or unlink them. A door can belong to one safe, but a door already controlled by a keypad or
