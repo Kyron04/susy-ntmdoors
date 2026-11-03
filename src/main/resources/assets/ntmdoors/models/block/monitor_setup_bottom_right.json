@@ -55,15 +55,6 @@
                                                                 16
                                                             ]
                                                  },
-                                       "west":  {
-                                                    "texture":  "#wood",
-                                                    "uv":  [
-                                                               0,
-                                                               0,
-                                                               16,
-                                                               16
-                                                           ]
-                                                },
                                        "up":  {
                                                   "texture":  "#wood",
                                                   "uv":  [
@@ -86,14 +77,14 @@
                      },
                      {
                          "from":  [
-                                      14,
+                                      13,
                                       0,
-                                      0
+                                      1
                                   ],
                          "to":  [
-                                    16,
+                                    15,
                                     14,
-                                    16
+                                    15
                                 ],
                          "faces":  {
                                        "north":  {
@@ -132,133 +123,6 @@
                                                                16
                                                            ]
                                                 },
-                                       "down":  {
-                                                    "texture":  "#frame",
-                                                    "uv":  [
-                                                               0,
-                                                               0,
-                                                               16,
-                                                               16
-                                                           ]
-                                                }
-                                   }
-                     },
-                     {
-                         "from":  [
-                                      0,
-                                      12,
-                                      14
-                                  ],
-                         "to":  [
-                                    16,
-                                    14,
-                                    16
-                                ],
-                         "faces":  {
-                                       "north":  {
-                                                     "texture":  "#frame",
-                                                     "uv":  [
-                                                                0,
-                                                                0,
-                                                                16,
-                                                                16
-                                                            ]
-                                                 },
-                                       "east":  {
-                                                    "texture":  "#frame",
-                                                    "uv":  [
-                                                               0,
-                                                               0,
-                                                               16,
-                                                               16
-                                                           ]
-                                                },
-                                       "south":  {
-                                                     "texture":  "#frame",
-                                                     "uv":  [
-                                                                0,
-                                                                0,
-                                                                16,
-                                                                16
-                                                            ]
-                                                 },
-                                       "west":  {
-                                                    "texture":  "#frame",
-                                                    "uv":  [
-                                                               0,
-                                                               0,
-                                                               16,
-                                                               16
-                                                           ]
-                                                },
-                                       "down":  {
-                                                    "texture":  "#frame",
-                                                    "uv":  [
-                                                               0,
-                                                               0,
-                                                               16,
-                                                               16
-                                                           ]
-                                                }
-                                   }
-                     },
-                     {
-                         "from":  [
-                                      0,
-                                      0,
-                                      14
-                                  ],
-                         "to":  [
-                                    16,
-                                    2,
-                                    16
-                                ],
-                         "faces":  {
-                                       "north":  {
-                                                     "texture":  "#frame",
-                                                     "uv":  [
-                                                                0,
-                                                                0,
-                                                                16,
-                                                                16
-                                                            ]
-                                                 },
-                                       "east":  {
-                                                    "texture":  "#frame",
-                                                    "uv":  [
-                                                               0,
-                                                               0,
-                                                               16,
-                                                               16
-                                                           ]
-                                                },
-                                       "south":  {
-                                                     "texture":  "#frame",
-                                                     "uv":  [
-                                                                0,
-                                                                0,
-                                                                16,
-                                                                16
-                                                            ]
-                                                 },
-                                       "west":  {
-                                                    "texture":  "#frame",
-                                                    "uv":  [
-                                                               0,
-                                                               0,
-                                                               16,
-                                                               16
-                                                           ]
-                                                },
-                                       "up":  {
-                                                  "texture":  "#frame",
-                                                  "uv":  [
-                                                             0,
-                                                             0,
-                                                             16,
-                                                             16
-                                                         ]
-                                              },
                                        "down":  {
                                                     "texture":  "#frame",
                                                     "uv":  [
