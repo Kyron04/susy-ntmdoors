@@ -171,7 +171,11 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   blue projection of the selected cells; sneak + right-click again hides it. An unbound sensor
   stays inactive and shows yellow. Detection goes through walls. Green means idle, blue means
   authorised personnel are inside, red means someone without clearance is inside, and yellow means
-  the sensor is disabled or has no area bound. The Redstone page is still to come.
+  the sensor is disabled or has no area bound. Page four is the red `REDSTONE` page with
+  `Authorized entry`, `Unauthorized entry`, `Sensor disabled` and `Sensor enabled` event switches.
+  Sneak + right-click the sensor with the Redstone Relay Key to start or finish a gate-binding
+  session, then sneak + right-click gates to link them. Each enabled event pulses every linked
+  gate on the matching entry edge.
 * Concrete and HL Blocks: the NTM CE concrete building set and decorative HL Blocks, with metadata
   families, flat Chisel carving groups, shift-scroll cycling, recipes, and `concrete` /
   `blockConcrete` / `blockhl` ore dictionary entries. Chisel is required.
@@ -185,8 +189,8 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   +1/+5/+10/+20 second and matching subtract buttons. It has a red menu name and the tooltip
   `Bound activities from Keypads, Keycard Scanners, and Safes will emit a redstone signal`.
 * Redstone Relay Key (`ntmdoors:redstone_relay_key`): a red-named creative key with the tooltip
-  `Allows Keypads, Keycard Scanners, Safes, and Speakers to be bound to the Redstone Gate`. Sneak +
-  right-click a safe or scanner to start/finish a wireless binding session, then sneak + right-click
+  `Allows Keypads, Keycard Scanners, Safes, Speakers and Motion Sensors to be bound to the Redstone Gate`. Sneak +
+  right-click a safe, scanner or motion sensor to start/finish a wireless binding session, then sneak + right-click
   a gate to link or unlink it. On a keypad or speaker, a normal right-click starts/finishes the
   binding session; sneak + right-click opens the keypad configuration screen, while the speaker
   uses shift-right-click for its own screen. Devices and gates can be linked many-to-many in the

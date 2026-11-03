@@ -4,6 +4,7 @@ import com.ntmdoors.NTMDoors;
 import com.ntmdoors.tile.RedstoneBinding;
 import com.ntmdoors.tile.TileEntityDoorKeypad;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
+import com.ntmdoors.tile.TileEntityMotionSensor;
 import com.ntmdoors.tile.TileEntityRedstoneGate;
 import com.ntmdoors.tile.TileEntitySafe;
 import com.ntmdoors.tile.TileEntitySpeaker;
@@ -72,6 +73,8 @@ public class ItemRedstoneRelayKey extends Item {
             ((TileEntityKeycardScanner) te).getRedstoneBinding().toggle(player);
         } else if (te instanceof TileEntitySpeaker) {
             ((TileEntitySpeaker) te).getRedstoneBinding().toggle(player);
+        } else if (te instanceof TileEntityMotionSensor) {
+            ((TileEntityMotionSensor) te).getRedstoneBinding().toggle(player);
         } else if (te instanceof TileEntityRedstoneGate) {
             RedstoneBinding binding = RedstoneBinding.findSession(world, player);
             if (binding == null) {
@@ -93,8 +96,10 @@ public class ItemRedstoneRelayKey extends Item {
     public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
         Names.addDescription(tooltip,
                 "Allows Keypads, Keycard Scanners, Safes,",
-                "and Speakers to be bound to the Redstone Gate.",
+                "Speakers and Motion Sensors to be bound",
+                "to the Redstone Gate.",
                 "Normal Right Click a Speaker to bind it.",
-                "Sneak + Right Click a Keypad to configure it.");
+                "Sneak + Right Click a Keypad to configure it.",
+                "Sneak + Right Click a Motion Sensor to bind it.");
     }
 }

@@ -34,7 +34,7 @@ public class GuiMotionSensor extends GuiScreen {
 
     private static final int PANEL_WIDTH = 344;
     private static final int PANEL_HEIGHT = 196;
-    private static final int PAGE_COUNT = 3;
+    private static final int PAGE_COUNT = 4;
 
     private static final int LIST_TOP = 46;
     private static final int LIST_HEIGHT = 102;
@@ -69,6 +69,17 @@ public class GuiMotionSensor extends GuiScreen {
             MessageSensorOption.IGNORE_IDS,
             MessageSensorOption.ENABLED
     };
+
+    private static final int[] REDSTONE_OPTIONS = {
+            MessageSensorOption.REDSTONE_AUTHORIZED,
+            MessageSensorOption.REDSTONE_UNAUTHORIZED,
+            MessageSensorOption.REDSTONE_DISABLED,
+            MessageSensorOption.REDSTONE_ENABLED
+    };
+
+    private static final int RED_PANEL = 0xFF2A0F12;
+    private static final int RED_RULE = 0xFF6A2A2A;
+    private static final int RED_HOVER = 0xFF3A1418;
 
     private static final int COLOUR = 0xFFE8E8E8;
     private static final int MUTED = 0xFFAFAFAF;
@@ -126,6 +137,14 @@ public class GuiMotionSensor extends GuiScreen {
                 return sensor != null && sensor.isIgnoreIds();
             case MessageSensorOption.ENABLED:
                 return sensor == null || sensor.isEnabled();
+            case MessageSensorOption.REDSTONE_AUTHORIZED:
+                return sensor != null && sensor.isRedstoneEvent(TileEntityMotionSensor.RS_AUTHORIZED);
+            case MessageSensorOption.REDSTONE_UNAUTHORIZED:
+                return sensor != null && sensor.isRedstoneEvent(TileEntityMotionSensor.RS_UNAUTHORIZED);
+            case MessageSensorOption.REDSTONE_DISABLED:
+                return sensor != null && sensor.isRedstoneEvent(TileEntityMotionSensor.RS_DISABLED);
+            case MessageSensorOption.REDSTONE_ENABLED:
+                return sensor != null && sensor.isRedstoneEvent(TileEntityMotionSensor.RS_ENABLED);
             default:
                 return false;
         }
@@ -225,23 +244,34 @@ public class GuiMotionSensor extends GuiScreen {
                             new MessageSensorOption(pos, option, !optionValue(option)));
                     return;
                 }
-            } else {
-                int cell = areaCellAt(mouseX, mouseY);
-                if (cell >= 0) {
-                    int[] depths = currentDepths();
-                    if (mouseButton == 0) {
-                        depths[cell] = Math.min(5, depths[cell] + 1);
-                        if (depths[12] < 1) depths[12] = 1;
-                        sendAreaDepths(depths);
-                    } else {
-                        if (depths[cell] <= 0) return;
-                        depths[cell] = Math.max(0, depths[cell] - 1);
-                        if (cell == 12) depths[cell] = Math.max(1, depths[cell]);
-                        sendAreaDepths(depths);
-                    }
+            } else if (page == 3) {
+                int option = redstoneOptionAt(mouseX, mouseY);
+                if (option >= 0) {
+                    ModNetwork.INSTANCE.sendToServer(
+                            new MessageSensorOption(pos, option, !optionValue(option)));
                     return;
                 }
+            }
+        }
 
+        if (page == 2 && (mouseButton == 0 || mouseButton == 1)) {
+            int cell = areaCellAt(mouseX, mouseY);
+            if (cell >= 0) {
+                int[] depths = currentDepths();
+                if (mouseButton == 0) {
+                    depths[cell] = Math.min(5, depths[cell] + 1);
+                    if (depths[12] < 1) depths[12] = 1;
+                    sendAreaDepths(depths);
+                } else {
+                    if (depths[cell] <= 0) return;
+                    depths[cell] = Math.max(0, depths[cell] - 1);
+                    if (cell == 12) depths[cell] = Math.max(1, depths[cell]);
+                    sendAreaDepths(depths);
+                }
+                return;
+            }
+
+            if (mouseButton == 0) {
                 int action = areaActionAt(mouseX, mouseY);
                 if (action == 0) {
                     int[] depths = new int[25];
@@ -349,6 +379,12 @@ public class GuiMotionSensor extends GuiScreen {
         return row >= 0 && row < SETTINGS_OPTIONS.length ? SETTINGS_OPTIONS[row] : -1;
     }
 
+    private int redstoneOptionAt(int mouseX, int mouseY) {
+        if (!inOptionsArea(mouseX, mouseY)) return -1;
+        int row = (mouseY - (top + OPTION_TOP)) / OPTION_HEIGHT;
+        return row >= 0 && row < REDSTONE_OPTIONS.length ? REDSTONE_OPTIONS[row] : -1;
+    }
+
     private boolean inOption(int index, int mouseX, int mouseY, int scroll, int count) {
         if (!inOptionsArea(mouseX, mouseY)) return false;
         int y = top + OPTION_TOP + index * OPTION_HEIGHT - clampScroll(scroll, count, OPTION_AREA);
@@ -381,10 +417,14 @@ public class GuiMotionSensor extends GuiScreen {
         drawRect(left, top, left + PANEL_WIDTH, top + PANEL_HEIGHT, 0xFF111111);
         drawRect(left + 1, top + 1, left + PANEL_WIDTH - 1, top + PANEL_HEIGHT - 1, 0xFF2B2B2E);
         drawRect(left + 1, top + 1, left + PANEL_WIDTH - 1, top + 2, 0xFF3C3C40);
+        if (page == 3) {
+            drawRect(left + 1, top + 1, left + PANEL_WIDTH - 1, top + PANEL_HEIGHT - 1, RED_PANEL);
+        }
 
         if (page == 0) drawKeysPage(mouseX, mouseY);
         else if (page == 1) drawOptionsPage(mouseX, mouseY);
-        else drawAreaPage(mouseX, mouseY);
+        else if (page == 2) drawAreaPage(mouseX, mouseY);
+        else drawRedstonePage(mouseX, mouseY);
 
         drawFooter(mouseX, mouseY);
         super.drawScreen(mouseX, mouseY, partialTicks);
@@ -425,6 +465,17 @@ public class GuiMotionSensor extends GuiScreen {
         GuiClip.end();
         drawScrollbar(left + PANEL_WIDTH - 8, top + OPTION_TOP, OPTION_AREA,
                 SETTINGS_OPTIONS.length, OPTION_HEIGHT, scrollOptions);
+    }
+
+    private void drawRedstonePage(int mouseX, int mouseY) {
+        drawTitle("REDSTONE");
+        drawString(fontRenderer, "EVENT OUTPUTS", left + 12, top + 29, 0xFFF0C0C0);
+        drawRect(left + 12, top + 40, left + PANEL_WIDTH - 12, top + 41, RED_RULE);
+
+        for (int i = 0; i < REDSTONE_OPTIONS.length; i++) {
+            int y = top + OPTION_TOP + i * OPTION_HEIGHT;
+            drawOption(REDSTONE_OPTIONS[i], i, y, mouseX, mouseY, 0, REDSTONE_OPTIONS.length);
+        }
     }
 
     private void drawAreaPage(int mouseX, int mouseY) {
@@ -548,7 +599,7 @@ public class GuiMotionSensor extends GuiScreen {
         boolean hovered = inOption(index, mouseX, mouseY, scroll, count);
         if (hovered) {
             drawRect(left + 8, y - 3, left + PANEL_WIDTH - 8, y + OPTION_HEIGHT - 5,
-                    0xFF232326);
+                    page == 3 ? RED_HOVER : 0xFF232326);
         }
 
         drawString(fontRenderer, optionLabel(option), left + 16, y, COLOUR);
@@ -576,6 +627,14 @@ public class GuiMotionSensor extends GuiScreen {
                 return "Ignore biometric IDs";
             case MessageSensorOption.ENABLED:
                 return "Enabled";
+            case MessageSensorOption.REDSTONE_AUTHORIZED:
+                return "Authorized entry";
+            case MessageSensorOption.REDSTONE_UNAUTHORIZED:
+                return "Unauthorized entry";
+            case MessageSensorOption.REDSTONE_DISABLED:
+                return "Sensor disabled";
+            case MessageSensorOption.REDSTONE_ENABLED:
+                return "Sensor enabled";
             default:
                 return "";
         }
@@ -591,6 +650,14 @@ public class GuiMotionSensor extends GuiScreen {
                 return "Assigned biometric IDs are ignored.";
             case MessageSensorOption.ENABLED:
                 return "Disable to stop detection.";
+            case MessageSensorOption.REDSTONE_AUTHORIZED:
+                return "A cleared player enters.";
+            case MessageSensorOption.REDSTONE_UNAUTHORIZED:
+                return "An unknown player enters.";
+            case MessageSensorOption.REDSTONE_DISABLED:
+                return "Fires when disabled.";
+            case MessageSensorOption.REDSTONE_ENABLED:
+                return "Fires when re-enabled.";
             default:
                 return "";
         }
@@ -624,7 +691,8 @@ public class GuiMotionSensor extends GuiScreen {
         String hint;
         if (page == 0) hint = "Click a key or ID to move it - ESC to close";
         else if (page == 1) hint = "Changes apply to this Motion Sensor";
-        else hint = "Left click adds depth, right click removes it";
+        else if (page == 2) hint = "Left click adds depth, right click removes it";
+        else hint = "Each ON event pulses every bound Redstone Gate";
         drawCenteredString(fontRenderer, hint, left + PANEL_WIDTH / 2, top + 164, MUTED);
         drawCenteredString(fontRenderer, (page + 1) + "/" + PAGE_COUNT,
                 left + PANEL_WIDTH / 2, top + 180, DIM);

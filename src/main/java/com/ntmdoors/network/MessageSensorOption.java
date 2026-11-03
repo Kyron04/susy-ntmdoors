@@ -16,7 +16,11 @@ public class MessageSensorOption implements IMessage {
     public static final int IGNORE_KEYS = 1;
     public static final int IGNORE_IDS = 2;
     public static final int ENABLED = 3;
-    public static final int OPTION_COUNT = 4;
+    public static final int REDSTONE_AUTHORIZED = 4;
+    public static final int REDSTONE_UNAUTHORIZED = 5;
+    public static final int REDSTONE_DISABLED = 6;
+    public static final int REDSTONE_ENABLED = 7;
+    public static final int OPTION_COUNT = 8;
 
     private BlockPos pos;
     private int option;
@@ -76,6 +80,18 @@ public class MessageSensorOption implements IMessage {
                     break;
                 case ENABLED:
                     sensor.setEnabled(message.value);
+                    break;
+                case REDSTONE_AUTHORIZED:
+                    sensor.setRedstoneEvent(TileEntityMotionSensor.RS_AUTHORIZED, message.value);
+                    break;
+                case REDSTONE_UNAUTHORIZED:
+                    sensor.setRedstoneEvent(TileEntityMotionSensor.RS_UNAUTHORIZED, message.value);
+                    break;
+                case REDSTONE_DISABLED:
+                    sensor.setRedstoneEvent(TileEntityMotionSensor.RS_DISABLED, message.value);
+                    break;
+                case REDSTONE_ENABLED:
+                    sensor.setRedstoneEvent(TileEntityMotionSensor.RS_ENABLED, message.value);
                     break;
                 default:
                     break;

@@ -172,6 +172,15 @@ public class BlockMotionSensor extends Block {
     }
 
     @Override
+    public void breakBlock(World world, BlockPos pos, IBlockState state) {
+        TileEntity te = world.getTileEntity(pos);
+        if (te instanceof TileEntityMotionSensor) {
+            ((TileEntityMotionSensor) te).getRedstoneBinding().clearGates();
+        }
+        super.breakBlock(world, pos, state);
+    }
+
+    @Override
     public void neighborChanged(IBlockState state, World world, BlockPos pos, Block block, BlockPos fromPos) {
         if (!world.isRemote) ensureTileEntity(world, pos, state);
     }

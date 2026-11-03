@@ -18,6 +18,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.common.util.Constants;
 
 import java.util.ArrayList;
@@ -37,13 +38,19 @@ import java.util.UUID;
  * blocks from the surface outward. The centre cell is the sensor itself and always keeps at least
  * depth one when an area is bound.</p>
  */
-public class TileEntityMotionSensor extends TileEntitySynced implements ITickable {
+public class TileEntityMotionSensor extends TileEntitySynced implements ITickable, RedstoneBindingHost {
 
     /** Four scans per second is enough for a light and keeps the inventory checks cheap. */
     private static final int SCAN_INTERVAL = 10;
     public static final int GRID_SIZE = 5;
     public static final int MAX_DEPTH = 5;
     public static final int CENTER = 2;
+
+    public static final int RS_AUTHORIZED = 0;
+    public static final int RS_UNAUTHORIZED = 1;
+    public static final int RS_DISABLED = 2;
+    public static final int RS_ENABLED = 3;
+    public static final int RS_EVENT_COUNT = 4;
 
     /** One enrolled identity: the UUID stored on a card plus the cached name to display. */
     public static final class BiometricId {
@@ -61,6 +68,8 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
     private final List<BiometricId> assignedIds = new ArrayList<>();
     /** Server-only set of players currently inside the detection volume. */
     private final Set<UUID> playersInside = new HashSet<>();
+    private final boolean[] redstoneEvents = new boolean[RS_EVENT_COUNT];
+    private final RedstoneBinding redstoneBinding = new RedstoneBinding(this);
 
     private boolean matchHolder = true;
     private boolean ignoreKeys;
@@ -147,6 +156,7 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
             setStatus(areaBound ? BlockMotionSensor.Status.IDLE : BlockMotionSensor.Status.MAINTENANCE);
         }
         sync();
+        fireRedstoneEvent(value ? RS_ENABLED : RS_DISABLED);
         return true;
     }
 
@@ -154,6 +164,48 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
     public boolean hasConsoleAccess(EntityPlayer player) {
         return player != null && (HeldItems.holds(player, ItemMotionRelayKey.class)
                 || HeldItems.holds(player, ItemCreativeKeycard.class));
+    }
+
+    // ------------------------------------------------------------ redstone events
+
+    public boolean isRedstoneEvent(int event) {
+        return event >= 0 && event < RS_EVENT_COUNT && redstoneEvents[event];
+    }
+
+    /** Server side: arms or disarms one event output. */
+    public boolean setRedstoneEvent(int event, boolean value) {
+        if (world == null || world.isRemote || event < 0 || event >= RS_EVENT_COUNT
+                || redstoneEvents[event] == value) {
+            return false;
+        }
+        redstoneEvents[event] = value;
+        sync();
+        return true;
+    }
+
+    /** Server side: pulses every linked gate when this event is enabled. */
+    public void fireRedstoneEvent(int event) {
+        if (isRedstoneEvent(event)) redstoneBinding.fire();
+    }
+
+    @Override
+    public RedstoneBinding getRedstoneBinding() {
+        return redstoneBinding;
+    }
+
+    @Override
+    public void syncRedstoneState() {
+        sync();
+    }
+
+    @Override
+    public void onRedstoneBindingChanged() {
+        sync();
+    }
+
+    @Override
+    public void sendRedstoneMessage(EntityPlayer player, String key) {
+        msg(player, key);
     }
 
     // ------------------------------------------------------------ bound area
@@ -335,6 +387,7 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
     @Override
     public void update() {
         if (world == null || world.isRemote) return;
+        redstoneBinding.update();
         if (++scanTicks < SCAN_INTERVAL) return;
         scanTicks = 0;
         updateDetection();
@@ -361,6 +414,8 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         Set<UUID> current = new HashSet<>();
         boolean authorized = false;
         boolean unauthorized = false;
+        boolean enteredAuthorized = false;
+        boolean enteredUnauthorized = false;
 
         for (EntityPlayer player : world.playerEntities) {
             if (player == null || !player.isEntityAlive() || player.isSpectator()) continue;
@@ -375,9 +430,16 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
             }
             if (!inside) continue;
 
-            current.add(player.getUniqueID());
-            if (hasClearance(player)) authorized = true;
+            UUID id = player.getUniqueID();
+            boolean wasInside = playersInside.contains(id);
+            boolean clearance = hasClearance(player);
+            current.add(id);
+            if (clearance) authorized = true;
             else unauthorized = true;
+            if (!wasInside) {
+                if (clearance) enteredAuthorized = true;
+                else enteredUnauthorized = true;
+            }
         }
 
         playersInside.clear();
@@ -387,6 +449,10 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         if (unauthorized) setStatus(BlockMotionSensor.Status.MOTION);
         else if (authorized) setStatus(BlockMotionSensor.Status.AUTHORIZED);
         else setStatus(BlockMotionSensor.Status.IDLE);
+
+        // Only entry edges fire; standing inside does not keep pulsing the gates.
+        if (enteredAuthorized) fireRedstoneEvent(RS_AUTHORIZED);
+        if (enteredUnauthorized) fireRedstoneEvent(RS_UNAUTHORIZED);
     }
 
     /**
@@ -467,6 +533,20 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         enabled = !tag.hasKey("enabled") || tag.getBoolean("enabled");
     }
 
+    private void writeEvents(NBTTagCompound tag) {
+        byte[] out = new byte[RS_EVENT_COUNT];
+        for (int i = 0; i < RS_EVENT_COUNT; i++) out[i] = (byte) (redstoneEvents[i] ? 1 : 0);
+        tag.setByteArray("redstoneEvents", out);
+    }
+
+    private void readEvents(NBTTagCompound tag) {
+        Arrays.fill(redstoneEvents, false);
+        byte[] saved = tag.getByteArray("redstoneEvents");
+        for (int i = 0; i < Math.min(saved.length, RS_EVENT_COUNT); i++) {
+            redstoneEvents[i] = saved[i] != 0;
+        }
+    }
+
     private void writeArea(NBTTagCompound tag) {
         tag.setBoolean("areaBound", areaBound);
         tag.setByteArray("areaDepths", Arrays.copyOf(areaDepths, areaDepths.length));
@@ -496,6 +576,8 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         tag.setTag("assignedIds", encodeIds());
         writeOptions(tag);
         writeArea(tag);
+        redstoneBinding.writeToNBT(tag);
+        writeEvents(tag);
         return tag;
     }
 
@@ -508,6 +590,8 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         tag.setTag("assignedIds", encodeIds());
         writeOptions(tag);
         writeArea(tag);
+        redstoneBinding.writeSyncTag(tag);
+        writeEvents(tag);
         return tag;
     }
 
@@ -524,6 +608,8 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         readIds(tag);
         readOptions(tag);
         readArea(tag);
+        redstoneBinding.readFromNBT(tag);
+        readEvents(tag);
     }
 
     @Override
@@ -544,5 +630,9 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
     @Override
     public double getMaxRenderDistanceSquared() {
         return 16384D;
+    }
+
+    private static void msg(EntityPlayer player, String key) {
+        player.sendStatusMessage(new TextComponentTranslation(key), true);
     }
 }
