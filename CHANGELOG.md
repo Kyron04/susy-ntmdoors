@@ -1,5 +1,13 @@
-HBM DOORS: 1.0.33
+HBM DOORS: 1.0.34
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.34
+CHANGES
+- Reduced the Motion Sensor to a smoke-detector-sized 8x8 footprint and 4.5 pixel depth.
+- Rebuilt the lens with a defined metal border and concentric Fresnel rings, removing the central
+  cross.
+- Added a separate centred model for the inventory icon so the shallow housing does not sit
+  off-centre in the GUI.
 
 1.0.33
 CHANGES
