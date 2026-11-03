@@ -14,6 +14,7 @@ import com.ntmdoors.tile.TileEntityDoorPart;
 import com.ntmdoors.tile.TileEntityBiometricSafe;
 import com.ntmdoors.tile.TileEntityKeycardProgrammer;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
+import com.ntmdoors.tile.TileEntityMotionSensor;
 import com.ntmdoors.tile.TileEntityRedstoneGate;
 import com.ntmdoors.tile.TileEntitySafe;
 import com.ntmdoors.tile.TileEntitySpeaker;
@@ -42,6 +43,7 @@ public class CommonProxy {
         registerTileEntity(TileEntityBiometricSafe.class, "biometric_safe");
         registerTileEntity(TileEntityRedstoneGate.class, "redstone_gate");
         registerTileEntity(TileEntitySpeaker.class, "speaker");
+        registerTileEntity(TileEntityMotionSensor.class, "motion_sensor");
         // Read the OBJ group bounds used by moving collision boxes now, so the first collision
         // query on a door never has to touch the filesystem.
         for (DoorDecl d : DoorDecls.ALL) d.prepareGeometry();

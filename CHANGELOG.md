@@ -1,5 +1,15 @@
-HBM DOORS: 1.0.32
+HBM DOORS: 1.0.33
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.33
+CHANGES
+- Scaled the Motion Sensor housing down to a 10x10 footprint and 10.5 pixel depth.
+- Rebuilt the lens from the supplied rounded reference, with noise and a symmetrical
+  four-quadrant Fresnel pattern.
+- The Motion Sensor can now be placed on floors, walls and ceilings. The clicked face becomes the
+  lens direction, and the collision and selection boxes follow it.
+- The status light now lives on the tile entity and is applied through the actual block state, so
+  all four colours work with six-way facing. Creative right-click cycles the preview.
 
 1.0.32
 FEATURES
