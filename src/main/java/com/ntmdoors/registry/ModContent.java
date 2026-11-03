@@ -27,6 +27,7 @@ import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.item.ItemDocumentsFolder;
 import com.ntmdoors.item.ItemDoorBlock;
 import com.ntmdoors.item.ItemKeycardHolder;
+import com.ntmdoors.item.ItemMotionRelayKey;
 import com.ntmdoors.item.ItemNamedRfidCard;
 import com.ntmdoors.item.ItemOperatorKeycard;
 import com.ntmdoors.item.ItemRedstoneRelayKey;
@@ -34,6 +35,7 @@ import com.ntmdoors.item.ItemRelayKey;
 import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.item.ItemSafeBindingKey;
 import com.ntmdoors.item.ItemScrewdriver;
+import com.ntmdoors.item.ItemTerminalRelayKey;
 import com.ntmdoors.util.ModSounds;
 import net.minecraft.block.Block;
 import net.minecraft.init.Items;
@@ -126,6 +128,10 @@ public class ModContent {
     public static final ItemSafeBindingKey SAFE_BINDING_KEY = new ItemSafeBindingKey();
     /** Redstone-network key reserved for binding keypads, scanners and safes to a gate. */
     public static final ItemRedstoneRelayKey REDSTONE_RELAY_KEY = new ItemRedstoneRelayKey();
+    /** Blue key reserved for defining the Motion Sensor's 5x5x5 area. */
+    public static final ItemMotionRelayKey MOTION_RELAY_KEY = new ItemMotionRelayKey();
+    /** Orange and grey key reserved for binding devices to the Security Terminal. */
+    public static final ItemTerminalRelayKey TERMINAL_RELAY_KEY = new ItemTerminalRelayKey();
 
     /** The seven cosmetic RFID colours, in the order the programmer's second page shows them. */
     public static final List<ItemRfidCard> COLOUR_CARDS = Collections.unmodifiableList(Arrays.asList(
@@ -223,6 +229,9 @@ public class ModContent {
         e.getRegistry().register(new ItemBlock(MOTION_SENSOR)
                 .setRegistryName(MOTION_SENSOR.getRegistryName())
                 .setCreativeTab(NTMDoors.TAB));
+        // New relay keys go last so previously saved numeric item IDs do not shift.
+        e.getRegistry().register(MOTION_RELAY_KEY);
+        e.getRegistry().register(TERMINAL_RELAY_KEY);
     }
 
     /** Keeps existing worlds working after the SCP card registry names moved from 1-6 to 0-5. */

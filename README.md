@@ -184,6 +184,11 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   binding session; sneak + right-click opens the keypad configuration screen, while the speaker
   uses shift-right-click for its own screen. Devices and gates can be linked many-to-many in the
   same dimension.
+* Motion Relay Key (`ntmdoors:motion_relay_key`) and Terminal Relay Key
+  (`ntmdoors:terminal_relay_key`): blue and orange/grey relay keys. The Motion Relay Key is
+  reserved for defining the 5x5x5 area a Motion Sensor watches; the Terminal Relay Key is reserved
+  for binding devices to the Security Terminal. Both carry their `Sneak + Right Click` tooltips,
+  but neither has behaviour yet.
 * Both safes and the keycard scanner have a third `Redstone` page with a red panel tint and
   scrolling. Its event toggles start off; enabling one pulses every linked gate for that gate's
   configured activation duration.
