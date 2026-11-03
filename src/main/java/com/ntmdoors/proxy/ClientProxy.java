@@ -4,6 +4,7 @@ import com.ntmdoors.NTMDoors;
 import com.ntmdoors.client.GuiDocumentsFolder;
 import com.ntmdoors.client.GuiKeycardViewer;
 import com.ntmdoors.client.GuiKeypadSecurityCode;
+import com.ntmdoors.client.GuiMotionSensor;
 import com.ntmdoors.client.GuiRedstoneGate;
 import com.ntmdoors.client.GuiRelayKeyName;
 import com.ntmdoors.client.GuiSafeBiometric;
@@ -105,6 +106,11 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void openSpeakerGui(BlockPos pos) {
         Minecraft.getMinecraft().displayGuiScreen(new GuiSpeaker(pos));
+    }
+
+    @Override
+    public void openMotionSensorGui(BlockPos pos) {
+        Minecraft.getMinecraft().displayGuiScreen(new GuiMotionSensor(pos));
     }
 
     @Override

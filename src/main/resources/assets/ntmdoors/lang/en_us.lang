@@ -76,6 +76,7 @@ container.ntmdoors.keycard_holder=Keycard Holder
 item.ntmdoors.documents_folder.name=Documents Folder
 ntmdoors.msg.locked=Locked
 ntmdoors.msg.locked_down=Locked down
+ntmdoors.msg.motion_area_pending=Area binding is not configured yet
 ntmdoors.msg.bind_success=Distance Bound Successful
 ntmdoors.msg.bind_open=The door must be closed to bind it
 ntmdoors.msg.bind_far=That door is too far from the keypad

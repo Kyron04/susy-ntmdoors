@@ -27,6 +27,21 @@ public final class HeldItems {
     }
 
     /**
+     * The first matching stack in the main inventory (including the hotbar) or the offhand. Used
+     * by the Motion Sensor console, where the sensor key occupies a hand and the Operator Keycard
+     * that supplies the assignable entries sits elsewhere in the inventory.
+     */
+    public static ItemStack findInInventory(@Nullable EntityPlayer player, Class<? extends Item> type) {
+        if (player == null) return ItemStack.EMPTY;
+
+        for (ItemStack stack : player.inventory.mainInventory) {
+            if (type.isInstance(stack.getItem())) return stack;
+        }
+        ItemStack off = player.getHeldItemOffhand();
+        return type.isInstance(off.getItem()) ? off : ItemStack.EMPTY;
+    }
+
+    /**
      * Flags the player's inventory dirty and sends changed held stacks to their client. On the
      * integrated server the player is not an {@link EntityPlayerMP}, so this is a no-op there.
      */

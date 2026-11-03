@@ -162,9 +162,12 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
 * Motion Sensor (`ntmdoors:motion_sensor`): a compact 8x8x1.375 surface-mounted PIR housing with an
   off-white body, charcoal bezel, ringed concentric Fresnel lens and four status-light colours.
   It can be placed on floors, walls and ceilings; the clicked face becomes the lens direction.
-  Green means no motion, blue means authorised personnel, yellow means maintenance and red means
-  motion detected. Creative right-click cycles the light for preview; detection logic is not
-  wired yet.
+  It passively scans the 5x5x5 volume around itself and checks every card in a player's inventory
+  against the private keys and biometric IDs assigned through its console. A normal right-click
+  with the Motion Relay Key opens the console; sneak + right-click is reserved for area binding.
+  Green means idle, blue means authorised personnel are inside, red means someone without clearance
+  is inside, and yellow means the sensor is disabled. The Bound Area and Redstone pages are still
+  to come.
 * Concrete and HL Blocks: the NTM CE concrete building set and decorative HL Blocks, with metadata
   families, flat Chisel carving groups, shift-scroll cycling, recipes, and `concrete` /
   `blockConcrete` / `blockhl` ore dictionary entries. Chisel is required.

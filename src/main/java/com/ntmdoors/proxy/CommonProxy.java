@@ -107,4 +107,8 @@ public class CommonProxy {
     /** Client only: open the Speaker toggle screen. */
     public void openSpeakerGui(BlockPos pos) {
     }
+
+    /** Client only: open the Motion Sensor console. */
+    public void openMotionSensorGui(BlockPos pos) {
+    }
 }

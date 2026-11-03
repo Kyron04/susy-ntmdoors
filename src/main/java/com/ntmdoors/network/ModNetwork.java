@@ -45,6 +45,9 @@ public final class ModNetwork {
         INSTANCE.registerMessage(MessageSpeakerOption.Handler.class, MessageSpeakerOption.class, 16,
                 Side.SERVER);
         INSTANCE.registerMessage(CycleHandler.class, CycleMessage.class, 17, Side.SERVER);
+        INSTANCE.registerMessage(MessageSensorKey.Handler.class, MessageSensorKey.class, 18, Side.SERVER);
+        INSTANCE.registerMessage(MessageSensorOption.Handler.class, MessageSensorOption.class, 19,
+                Side.SERVER);
     }
 
     private ModNetwork() {

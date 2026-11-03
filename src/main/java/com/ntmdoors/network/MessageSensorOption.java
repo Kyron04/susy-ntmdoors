@@ -1,0 +1,85 @@
+package com.ntmdoors.network;
+
+import com.ntmdoors.tile.TileEntityMotionSensor;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+
+/** Client to server: one toggle row on the Motion Sensor's options page. */
+public class MessageSensorOption implements IMessage {
+
+    public static final int MATCH_HOLDER = 0;
+    public static final int IGNORE_KEYS = 1;
+    public static final int IGNORE_IDS = 2;
+    public static final int ENABLED = 3;
+    public static final int OPTION_COUNT = 4;
+
+    private BlockPos pos;
+    private int option;
+    private boolean value;
+
+    public MessageSensorOption() {
+    }
+
+    public MessageSensorOption(BlockPos pos, int option, boolean value) {
+        this.pos = pos;
+        this.option = option;
+        this.value = value;
+    }
+
+    @Override
+    public void fromBytes(ByteBuf buf) {
+        pos = NetworkUtil.readPos(buf);
+        option = buf.readByte();
+        value = buf.readBoolean();
+    }
+
+    @Override
+    public void toBytes(ByteBuf buf) {
+        NetworkUtil.writePos(buf, pos);
+        buf.writeByte(option);
+        buf.writeBoolean(value);
+    }
+
+    public static class Handler implements IMessageHandler<MessageSensorOption, IMessage> {
+
+        @Override
+        public IMessage onMessage(MessageSensorOption message, MessageContext ctx) {
+            EntityPlayerMP player = ctx.getServerHandler().player;
+            player.getServerWorld().addScheduledTask(() -> apply(player, message));
+            return null;
+        }
+
+        private static void apply(EntityPlayerMP player, MessageSensorOption message) {
+            if (message.pos == null) return;
+            if (message.option < 0 || message.option >= OPTION_COUNT) return;
+            if (!NetworkUtil.isWithinReach(player, message.pos)) return;
+
+            TileEntity te = player.world.getTileEntity(message.pos);
+            if (!(te instanceof TileEntityMotionSensor)) return;
+            TileEntityMotionSensor sensor = (TileEntityMotionSensor) te;
+            if (!sensor.hasConsoleAccess(player)) return;
+
+            switch (message.option) {
+                case MATCH_HOLDER:
+                    sensor.setMatchHolder(message.value);
+                    break;
+                case IGNORE_KEYS:
+                    sensor.setIgnoreKeys(message.value);
+                    break;
+                case IGNORE_IDS:
+                    sensor.setIgnoreIds(message.value);
+                    break;
+                case ENABLED:
+                    sensor.setEnabled(message.value);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+}

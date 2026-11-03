@@ -1,10 +1,19 @@
 package com.ntmdoors.item;
 
 import com.ntmdoors.NTMDoors;
+import com.ntmdoors.tile.TileEntityMotionSensor;
+import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.Names;
 import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 
@@ -28,6 +37,33 @@ public class ItemMotionRelayKey extends Item {
     @Override
     public String getItemStackDisplayName(ItemStack stack) {
         return TextFormatting.BLUE + super.getItemStackDisplayName(stack);
+    }
+
+    /**
+     * A normal click opens the sensor console. Area selection is the sneak-click action and is
+     * reserved for the next phase, so it only reports that it is not configured yet.
+     */
+    @Override
+    public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand,
+                                      EnumFacing facing, float hitX, float hitY, float hitZ) {
+        TileEntity te = world.getTileEntity(pos);
+        if (!(te instanceof TileEntityMotionSensor)) return EnumActionResult.PASS;
+
+        if (player.isSneaking()) {
+            if (!world.isRemote) {
+                player.sendStatusMessage(new TextComponentTranslation(
+                        "ntmdoors.msg.motion_area_pending"), true);
+            }
+            return EnumActionResult.SUCCESS;
+        }
+
+        if (world.isRemote) NTMDoors.proxy.openMotionSensorGui(pos);
+        return EnumActionResult.SUCCESS;
+    }
+
+    /** True when either hand holds a Motion Relay Key. */
+    public static boolean isHeldBy(EntityPlayer player) {
+        return HeldItems.holds(player, ItemMotionRelayKey.class);
     }
 
     @Override
