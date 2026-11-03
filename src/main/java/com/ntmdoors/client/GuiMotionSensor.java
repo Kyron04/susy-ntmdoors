@@ -68,6 +68,7 @@ public class GuiMotionSensor extends GuiScreen {
             MessageSensorOption.DETECT_HOSTILE,
             MessageSensorOption.DETECT_NEUTRAL,
             MessageSensorOption.PERSIST_WITHIN_BOUNDS,
+            MessageSensorOption.PERSIST_OUT_OF_BOUNDS,
             MessageSensorOption.MATCH_HOLDER,
             MessageSensorOption.IGNORE_KEYS,
             MessageSensorOption.IGNORE_IDS,
@@ -149,6 +150,8 @@ public class GuiMotionSensor extends GuiScreen {
                 return sensor == null || sensor.isDetectNeutral();
             case MessageSensorOption.PERSIST_WITHIN_BOUNDS:
                 return sensor != null && sensor.isPersistWithinBounds();
+            case MessageSensorOption.PERSIST_OUT_OF_BOUNDS:
+                return sensor != null && sensor.isPersistOutOfBounds();
             case MessageSensorOption.REDSTONE_AUTHORIZED:
                 return sensor != null && sensor.isRedstoneEvent(TileEntityMotionSensor.RS_AUTHORIZED);
             case MessageSensorOption.REDSTONE_UNAUTHORIZED:
@@ -652,6 +655,8 @@ public class GuiMotionSensor extends GuiScreen {
                 return "Detect neutral mobs";
             case MessageSensorOption.PERSIST_WITHIN_BOUNDS:
                 return "Persist within bounds";
+            case MessageSensorOption.PERSIST_OUT_OF_BOUNDS:
+                return "Persist out of bounds";
             case MessageSensorOption.REDSTONE_AUTHORIZED:
                 return "Authorized entry";
             case MessageSensorOption.REDSTONE_UNAUTHORIZED:
@@ -683,6 +688,8 @@ public class GuiMotionSensor extends GuiScreen {
                 return "Animals, villagers and NPCs.";
             case MessageSensorOption.PERSIST_WITHIN_BOUNDS:
                 return "Hold the signal until they leave.";
+            case MessageSensorOption.PERSIST_OUT_OF_BOUNDS:
+                return "Power while the area is empty.";
             case MessageSensorOption.REDSTONE_AUTHORIZED:
                 return "A cleared player enters.";
             case MessageSensorOption.REDSTONE_UNAUTHORIZED:
