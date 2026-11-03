@@ -34,20 +34,20 @@ public class BlockMotionSensor extends Block {
     public static final PropertyDirection FACING = PropertyDirection.create("facing");
     public static final PropertyEnum<Status> STATUS = PropertyEnum.create("status", Status.class);
 
-    /** One texture pixel. The model occupies an 8x8 footprint and is 4.5 pixels deep. */
+    /** One texture pixel. The model occupies an 8x8 footprint and is 2.25 pixels deep. */
     private static final double P = 1.0 / 16.0;
     private static final AxisAlignedBB BOX_NORTH =
-            new AxisAlignedBB(4 * P, 4 * P, 11.5 * P, 12 * P, 12 * P, 16 * P);
+            new AxisAlignedBB(4 * P, 4 * P, 13.75 * P, 12 * P, 12 * P, 16 * P);
     private static final AxisAlignedBB BOX_SOUTH =
-            new AxisAlignedBB(4 * P, 4 * P, 0 * P, 12 * P, 12 * P, 4.5 * P);
+            new AxisAlignedBB(4 * P, 4 * P, 0 * P, 12 * P, 12 * P, 2.25 * P);
     private static final AxisAlignedBB BOX_EAST =
-            new AxisAlignedBB(0 * P, 4 * P, 4 * P, 4.5 * P, 12 * P, 12 * P);
+            new AxisAlignedBB(0 * P, 4 * P, 4 * P, 2.25 * P, 12 * P, 12 * P);
     private static final AxisAlignedBB BOX_WEST =
-            new AxisAlignedBB(11.5 * P, 4 * P, 4 * P, 16 * P, 12 * P, 12 * P);
+            new AxisAlignedBB(13.75 * P, 4 * P, 4 * P, 16 * P, 12 * P, 12 * P);
     private static final AxisAlignedBB BOX_UP =
-            new AxisAlignedBB(4 * P, 0 * P, 4 * P, 12 * P, 4.5 * P, 12 * P);
+            new AxisAlignedBB(4 * P, 0 * P, 4 * P, 12 * P, 2.25 * P, 12 * P);
     private static final AxisAlignedBB BOX_DOWN =
-            new AxisAlignedBB(4 * P, 11.5 * P, 4 * P, 12 * P, 16 * P, 12 * P);
+            new AxisAlignedBB(4 * P, 13.75 * P, 4 * P, 12 * P, 16 * P, 12 * P);
 
     /** Light colours: idle green, authorised blue, maintenance yellow, motion red. */
     public enum Status implements IStringSerializable {

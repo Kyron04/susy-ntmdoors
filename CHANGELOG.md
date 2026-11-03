@@ -1,5 +1,12 @@
-HBM DOORS: 1.0.34
+HBM DOORS: 1.0.35
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.35
+CHANGES
+- Pressed the Motion Sensor's front assembly into the back plate, reducing its depth from 4.5 to
+  2.25 pixels.
+- Updated the collision and selection boxes and the centred inventory model to the new depth.
+- Kept the 8x8 footprint, ringed lens and status-light behaviour.
 
 1.0.34
 CHANGES
