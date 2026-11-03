@@ -113,6 +113,7 @@ Screwdriver + sneak + right-click cycles door skins:
 
 - **Speaker** - a 1x1x1 black-ash cabinet with a woofer, tweeter and bass reflex port. Shift-right-click (with any item or an empty hand) opens a safe-style toggle screen with **Enabled**, four selectable sounds (**Air Raid**, **Facility**, **Industrial**, **EAS**), a 1-64 block range slider and a 0-100% volume slider; anyone may use it. While enabled and receiving redstone power, it loops the selected alarm until the signal or **Enabled** is removed. The sound, range, volume and enabled state are saved with the block. A normal right-click with the Redstone Relay Key starts/finishes a wireless binding session, and starting the alarm pulses every linked Redstone Gate.
 - **Motion Sensor** - a compact 8x8x2.25 surface-mounted PIR sensor with an off-white ABS housing, charcoal bezel, ringed concentric Fresnel lens and a status light. It can be placed on floors, walls and ceilings; the clicked face becomes the lens direction. Green means no motion, blue means authorised personnel, yellow means maintenance and red means motion detected. Creative right-click cycles the light for preview; detection logic is not implemented yet.
+  - [Final model preview](https://github.com/Kyron04/susy-ntmdoors/blob/main/source-art/motion-sensor/motion-sensor-model-preview-final.png)
 
 ## Redstone
 

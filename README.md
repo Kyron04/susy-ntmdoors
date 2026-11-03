@@ -253,6 +253,13 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   default, clean, nuclear trefoil, and plain white, red and grey; the plain skins have no letters,
   numbers, trefoil or hazard stripes.
 
+## Motion Sensor preview
+
+![Motion Sensor final model preview](source-art/motion-sensor/motion-sensor-model-preview-final.png)
+
+The 1.0.35 model is 8x8x2.25 with a centred GUI model and four status lights. The full source
+materials and texture generator live in `source-art/motion-sensor/`.
+
 ## Included door assets
 Models live under `src/main/resources/assets/ntmdoors/models/doors/`, textures under
 `textures/models/doors/`, and sounds under `sounds/doors/`. Door items do **not** need flat
