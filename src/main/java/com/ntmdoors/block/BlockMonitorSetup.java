@@ -57,6 +57,12 @@ public class BlockMonitorSetup extends Block {
     }
 
     private static final ThreadLocal<Boolean> DISMANTLING = ThreadLocal.withInitial(() -> false);
+    /**
+     * 1.12's {@link Block#NULL_AABB} is actually null, not a zero-size box. Returning it from
+     * getBoundingBox makes Block.shouldSideBeRendered and Block.rayTrace throw an NPE, so the
+     * pass-through upper cells need a real, non-null empty box.
+     */
+    private static final AxisAlignedBB EMPTY_AABB = new AxisAlignedBB(0, 0, 0, 0, 0, 0);
 
     private final Layer layer;
 
@@ -153,12 +159,13 @@ public class BlockMonitorSetup extends Block {
     /** Middle and top cells are invisible to collision but still reserve their block space. */
     @Override
     public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess world, BlockPos pos) {
-        return layer == Layer.BOTTOM ? FULL_BLOCK_AABB : NULL_AABB;
+        return layer == Layer.BOTTOM ? FULL_BLOCK_AABB : EMPTY_AABB;
     }
 
+    /** Null means no collision; the render/raytrace box above is deliberately non-null. */
     @Override
     public AxisAlignedBB getCollisionBoundingBox(IBlockState state, IBlockAccess world, BlockPos pos) {
-        return layer == Layer.BOTTOM ? FULL_BLOCK_AABB : NULL_AABB;
+        return layer == Layer.BOTTOM ? FULL_BLOCK_AABB : null;
     }
 
     @Override
