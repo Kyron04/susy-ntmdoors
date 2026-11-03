@@ -13,68 +13,10 @@
                      "keyboard":  "ntmdoors:blocks/keyboard",
                      "mouse":  "ntmdoors:blocks/mouse",
                      "mouse_wheel":  "ntmdoors:blocks/mouse_wheel",
-                     "mousepad":  "ntmdoors:blocks/mousepad"
+                     "mousepad":  "ntmdoors:blocks/mousepad",
+                     "keycap":  "ntmdoors:blocks/keycap"
                  },
     "elements":  [
-                     {
-                         "from":  [
-                                      0,
-                                      0,
-                                      2
-                                  ],
-                         "to":  [
-                                    16,
-                                    1,
-                                    10
-                                ],
-                         "faces":  {
-                                       "north":  {
-                                                     "texture":  "#frame",
-                                                     "uv":  [
-                                                                0,
-                                                                0,
-                                                                16,
-                                                                16
-                                                            ]
-                                                 },
-                                       "east":  {
-                                                    "texture":  "#frame",
-                                                    "uv":  [
-                                                               0,
-                                                               0,
-                                                               16,
-                                                               16
-                                                           ]
-                                                },
-                                       "south":  {
-                                                     "texture":  "#frame",
-                                                     "uv":  [
-                                                                0,
-                                                                0,
-                                                                16,
-                                                                16
-                                                            ]
-                                                 },
-                                       "west":  {
-                                                    "texture":  "#frame",
-                                                    "uv":  [
-                                                               0,
-                                                               0,
-                                                               16,
-                                                               16
-                                                           ]
-                                                },
-                                       "up":  {
-                                                  "texture":  "#keyboard",
-                                                  "uv":  [
-                                                             0,
-                                                             0,
-                                                             16,
-                                                             8
-                                                         ]
-                                              }
-                                   }
-                     },
                      {
                          "from":  [
                                       7.3999999999999986,
@@ -436,6 +378,3097 @@
                                                                16
                                                            ]
                                                 }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      0,
+                                      0.19999999999999929,
+                                      2
+                                  ],
+                         "to":  [
+                                    16,
+                                    1,
+                                    8
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#bezel",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              },
+                                       "down":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      0.5,
+                                      0,
+                                      2.5
+                                  ],
+                         "to":  [
+                                    1.5,
+                                    0.19999999999999929,
+                                    3.5
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      14.5,
+                                      0,
+                                      2.5
+                                  ],
+                         "to":  [
+                                    15.5,
+                                    0.19999999999999929,
+                                    3.5
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      0.5,
+                                      0,
+                                      6.5
+                                  ],
+                         "to":  [
+                                    1.5,
+                                    0.19999999999999929,
+                                    7.5
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      14.5,
+                                      0,
+                                      6.5
+                                  ],
+                         "to":  [
+                                    15.5,
+                                    0.19999999999999929,
+                                    7.5
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      0.30000000000000071,
+                                      1,
+                                      2.5
+                                  ],
+                         "to":  [
+                                    15.7,
+                                    1.3999999999999986,
+                                    7.5
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#bezel",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      0,
+                                      0,
+                                      1
+                                  ],
+                         "to":  [
+                                    16,
+                                    0.5,
+                                    2
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#bezel",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      7.8000000000000007,
+                                      0,
+                                      8
+                                  ],
+                         "to":  [
+                                    8.2,
+                                    0.120000000000001,
+                                    9
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#bezel",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      8.2,
+                                      0,
+                                      8.5
+                                  ],
+                         "to":  [
+                                    15,
+                                    0.120000000000001,
+                                    9.1
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#bezel",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      15,
+                                      0,
+                                      8.6
+                                  ],
+                         "to":  [
+                                    16,
+                                    0.19999999999999929,
+                                    9.2
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#bezel",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      0.57499999999999929,
+                                      1.3999999999999986,
+                                      2.9749999999999996
+                                  ],
+                         "to":  [
+                                    1.6750000000000007,
+                                    1.6499999999999986,
+                                    3.875
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      1.8249999999999993,
+                                      1.3999999999999986,
+                                      2.9749999999999996
+                                  ],
+                         "to":  [
+                                    2.9250000000000007,
+                                    1.6499999999999986,
+                                    3.875
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      3.0749999999999993,
+                                      1.3999999999999986,
+                                      2.9749999999999996
+                                  ],
+                         "to":  [
+                                    4.1750000000000007,
+                                    1.6499999999999986,
+                                    3.875
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      11.825,
+                                      1.3999999999999986,
+                                      2.9749999999999996
+                                  ],
+                         "to":  [
+                                    12.925,
+                                    1.6499999999999986,
+                                    3.875
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      13.075,
+                                      1.3999999999999986,
+                                      2.9749999999999996
+                                  ],
+                         "to":  [
+                                    14.175,
+                                    1.6499999999999986,
+                                    3.875
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      14.325,
+                                      1.3999999999999986,
+                                      2.9749999999999996
+                                  ],
+                         "to":  [
+                                    15.425,
+                                    1.6499999999999986,
+                                    3.875
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      4.3249999999999993,
+                                      1.3999999999999986,
+                                      2.9749999999999996
+                                  ],
+                         "to":  [
+                                    11.675,
+                                    1.6499999999999986,
+                                    3.875
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      0.57499999999999929,
+                                      1.3999999999999986,
+                                      4.0249999999999995
+                                  ],
+                         "to":  [
+                                    1.6750000000000007,
+                                    1.6499999999999986,
+                                    4.925
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      1.8249999999999993,
+                                      1.3999999999999986,
+                                      4.0249999999999995
+                                  ],
+                         "to":  [
+                                    2.9250000000000007,
+                                    1.6499999999999986,
+                                    4.925
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      3.0749999999999993,
+                                      1.3999999999999986,
+                                      4.0249999999999995
+                                  ],
+                         "to":  [
+                                    4.1750000000000007,
+                                    1.6499999999999986,
+                                    4.925
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      4.3249999999999993,
+                                      1.3999999999999986,
+                                      4.0249999999999995
+                                  ],
+                         "to":  [
+                                    5.4250000000000007,
+                                    1.6499999999999986,
+                                    4.925
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      5.5749999999999993,
+                                      1.3999999999999986,
+                                      4.0249999999999995
+                                  ],
+                         "to":  [
+                                    6.6750000000000007,
+                                    1.6499999999999986,
+                                    4.925
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      6.8249999999999993,
+                                      1.3999999999999986,
+                                      4.0249999999999995
+                                  ],
+                         "to":  [
+                                    7.9250000000000007,
+                                    1.6499999999999986,
+                                    4.925
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      8.075,
+                                      1.3999999999999986,
+                                      4.0249999999999995
+                                  ],
+                         "to":  [
+                                    9.1749999999999972,
+                                    1.6499999999999986,
+                                    4.925
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      9.325,
+                                      1.3999999999999986,
+                                      4.0249999999999995
+                                  ],
+                         "to":  [
+                                    10.425,
+                                    1.6499999999999986,
+                                    4.925
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      10.575,
+                                      1.3999999999999986,
+                                      4.0249999999999995
+                                  ],
+                         "to":  [
+                                    11.675,
+                                    1.6499999999999986,
+                                    4.925
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      11.825,
+                                      1.3999999999999986,
+                                      4.0249999999999995
+                                  ],
+                         "to":  [
+                                    12.925,
+                                    1.6499999999999986,
+                                    4.925
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      13.075,
+                                      1.3999999999999986,
+                                      4.0249999999999995
+                                  ],
+                         "to":  [
+                                    14.175,
+                                    1.6499999999999986,
+                                    4.925
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      14.325,
+                                      1.3999999999999986,
+                                      4.0249999999999995
+                                  ],
+                         "to":  [
+                                    15.425,
+                                    1.6499999999999986,
+                                    4.925
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      0.57499999999999929,
+                                      1.3999999999999986,
+                                      5.0749999999999993
+                                  ],
+                         "to":  [
+                                    1.6750000000000007,
+                                    1.6499999999999986,
+                                    5.975
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      1.8249999999999993,
+                                      1.3999999999999986,
+                                      5.0749999999999993
+                                  ],
+                         "to":  [
+                                    2.9250000000000007,
+                                    1.6499999999999986,
+                                    5.975
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      3.0749999999999993,
+                                      1.3999999999999986,
+                                      5.0749999999999993
+                                  ],
+                         "to":  [
+                                    4.1750000000000007,
+                                    1.6499999999999986,
+                                    5.975
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      4.3249999999999993,
+                                      1.3999999999999986,
+                                      5.0749999999999993
+                                  ],
+                         "to":  [
+                                    5.4250000000000007,
+                                    1.6499999999999986,
+                                    5.975
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      5.5749999999999993,
+                                      1.3999999999999986,
+                                      5.0749999999999993
+                                  ],
+                         "to":  [
+                                    6.6750000000000007,
+                                    1.6499999999999986,
+                                    5.975
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      6.8249999999999993,
+                                      1.3999999999999986,
+                                      5.0749999999999993
+                                  ],
+                         "to":  [
+                                    7.9250000000000007,
+                                    1.6499999999999986,
+                                    5.975
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      8.075,
+                                      1.3999999999999986,
+                                      5.0749999999999993
+                                  ],
+                         "to":  [
+                                    9.1749999999999972,
+                                    1.6499999999999986,
+                                    5.975
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      9.325,
+                                      1.3999999999999986,
+                                      5.0749999999999993
+                                  ],
+                         "to":  [
+                                    10.425,
+                                    1.6499999999999986,
+                                    5.975
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      10.575,
+                                      1.3999999999999986,
+                                      5.0749999999999993
+                                  ],
+                         "to":  [
+                                    11.675,
+                                    1.6499999999999986,
+                                    5.975
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      11.825,
+                                      1.3999999999999986,
+                                      5.0749999999999993
+                                  ],
+                         "to":  [
+                                    12.925,
+                                    1.6499999999999986,
+                                    5.975
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      13.075,
+                                      1.3999999999999986,
+                                      5.0749999999999993
+                                  ],
+                         "to":  [
+                                    14.175,
+                                    1.6499999999999986,
+                                    5.975
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      14.325,
+                                      1.3999999999999986,
+                                      5.0749999999999993
+                                  ],
+                         "to":  [
+                                    15.425,
+                                    1.6499999999999986,
+                                    5.975
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      0.57499999999999929,
+                                      1.3999999999999986,
+                                      6.125
+                                  ],
+                         "to":  [
+                                    1.6750000000000007,
+                                    1.6499999999999986,
+                                    7.025
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      1.8249999999999993,
+                                      1.3999999999999986,
+                                      6.125
+                                  ],
+                         "to":  [
+                                    2.9250000000000007,
+                                    1.6499999999999986,
+                                    7.025
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      3.0749999999999993,
+                                      1.3999999999999986,
+                                      6.125
+                                  ],
+                         "to":  [
+                                    4.1750000000000007,
+                                    1.6499999999999986,
+                                    7.025
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      4.3249999999999993,
+                                      1.3999999999999986,
+                                      6.125
+                                  ],
+                         "to":  [
+                                    5.4250000000000007,
+                                    1.6499999999999986,
+                                    7.025
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      5.5749999999999993,
+                                      1.3999999999999986,
+                                      6.125
+                                  ],
+                         "to":  [
+                                    6.6750000000000007,
+                                    1.6499999999999986,
+                                    7.025
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      6.8249999999999993,
+                                      1.3999999999999986,
+                                      6.125
+                                  ],
+                         "to":  [
+                                    7.9250000000000007,
+                                    1.6499999999999986,
+                                    7.025
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      8.075,
+                                      1.3999999999999986,
+                                      6.125
+                                  ],
+                         "to":  [
+                                    9.1749999999999972,
+                                    1.6499999999999986,
+                                    7.025
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      9.325,
+                                      1.3999999999999986,
+                                      6.125
+                                  ],
+                         "to":  [
+                                    10.425,
+                                    1.6499999999999986,
+                                    7.025
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      10.575,
+                                      1.3999999999999986,
+                                      6.125
+                                  ],
+                         "to":  [
+                                    11.675,
+                                    1.6499999999999986,
+                                    7.025
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      11.825,
+                                      1.3999999999999986,
+                                      6.125
+                                  ],
+                         "to":  [
+                                    12.925,
+                                    1.6499999999999986,
+                                    7.025
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      13.075,
+                                      1.3999999999999986,
+                                      6.125
+                                  ],
+                         "to":  [
+                                    14.175,
+                                    1.6499999999999986,
+                                    7.025
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      14.325,
+                                      1.3999999999999986,
+                                      6.125
+                                  ],
+                         "to":  [
+                                    15.425,
+                                    1.6499999999999986,
+                                    7.025
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "south":  {
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keycap",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              }
                                    }
                      }
                  ]

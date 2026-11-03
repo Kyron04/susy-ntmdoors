@@ -13,7 +13,8 @@
                      "keyboard":  "ntmdoors:blocks/keyboard",
                      "mouse":  "ntmdoors:blocks/mouse",
                      "mouse_wheel":  "ntmdoors:blocks/mouse_wheel",
-                     "mousepad":  "ntmdoors:blocks/mousepad"
+                     "mousepad":  "ntmdoors:blocks/mousepad",
+                     "keycap":  "ntmdoors:blocks/keycap"
                  },
     "elements":  [
                      {

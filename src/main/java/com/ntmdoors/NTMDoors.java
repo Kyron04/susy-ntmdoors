@@ -20,7 +20,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-@Mod(modid = NTMDoors.MODID, name = "NTM Doors", version = "1.0.55",
+@Mod(modid = NTMDoors.MODID, name = "NTM Doors", version = "1.0.56",
         acceptedMinecraftVersions = "[1.12.2]", dependencies = "required-after:chisel")
 public class NTMDoors {
 
