@@ -1,5 +1,12 @@
-HBM DOORS: CURSEFORGE RELEASE 1.0.31
+HBM DOORS: 1.0.32
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.32
+FEATURES
+- Added the Motion Sensor block with a 16x16 wall-mounted PIR model, a symmetrical Fresnel lens
+  and four status-light textures: green for idle, blue for authorised personnel, yellow for
+  maintenance and red for motion. Detection logic is not wired yet.
+- Added the Motion Sensor to the NTM Doors creative tab.
 
 The public 1.0.31 release is the cumulative build of the internal 1.0.31-1.0.47
 changes. The public-facing CurseForge changelog is

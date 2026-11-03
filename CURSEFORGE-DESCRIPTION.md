@@ -4,7 +4,7 @@
 
 NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system and concrete building set from HBM's Nuclear Tech Mod. No NTM installation is required. Chisel 1.12.2-1.0.2.45 is required. Every model, texture and sound is bundled.
 
-**Current version: 1.0.31**
+**Current version: 1.0.32**
 
 ## 16 multiblock doors
 
@@ -112,6 +112,7 @@ Screwdriver + sneak + right-click cycles door skins:
 ## Decorative blocks
 
 - **Speaker** - a 1x1x1 black-ash cabinet with a woofer, tweeter and bass reflex port. Shift-right-click (with any item or an empty hand) opens a safe-style toggle screen with **Enabled**, four selectable sounds (**Air Raid**, **Facility**, **Industrial**, **EAS**), a 1-64 block range slider and a 0-100% volume slider; anyone may use it. While enabled and receiving redstone power, it loops the selected alarm until the signal or **Enabled** is removed. The sound, range, volume and enabled state are saved with the block. A normal right-click with the Redstone Relay Key starts/finishes a wireless binding session, and starting the alarm pulses every linked Redstone Gate.
+- **Motion Sensor** - a wall-mounted PIR sensor with an off-white ABS housing, charcoal bezel, symmetrical faceted Fresnel lens and a status light. Green means no motion, blue means authorised personnel, yellow means maintenance and red means motion detected. The block and all four light states are registered; detection logic is not implemented yet.
 
 ## Redstone
 

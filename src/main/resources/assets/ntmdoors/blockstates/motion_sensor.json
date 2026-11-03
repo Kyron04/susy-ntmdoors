@@ -1,0 +1,23 @@
+{
+  "variants": {
+    "facing=north,status=idle": { "model": "ntmdoors:motion_sensor_idle" },
+    "facing=east,status=idle": { "model": "ntmdoors:motion_sensor_idle", "y": 90 },
+    "facing=south,status=idle": { "model": "ntmdoors:motion_sensor_idle", "y": 180 },
+    "facing=west,status=idle": { "model": "ntmdoors:motion_sensor_idle", "y": 270 },
+
+    "facing=north,status=authorized": { "model": "ntmdoors:motion_sensor_authorized" },
+    "facing=east,status=authorized": { "model": "ntmdoors:motion_sensor_authorized", "y": 90 },
+    "facing=south,status=authorized": { "model": "ntmdoors:motion_sensor_authorized", "y": 180 },
+    "facing=west,status=authorized": { "model": "ntmdoors:motion_sensor_authorized", "y": 270 },
+
+    "facing=north,status=maintenance": { "model": "ntmdoors:motion_sensor_maintenance" },
+    "facing=east,status=maintenance": { "model": "ntmdoors:motion_sensor_maintenance", "y": 90 },
+    "facing=south,status=maintenance": { "model": "ntmdoors:motion_sensor_maintenance", "y": 180 },
+    "facing=west,status=maintenance": { "model": "ntmdoors:motion_sensor_maintenance", "y": 270 },
+
+    "facing=north,status=motion": { "model": "ntmdoors:motion_sensor_motion" },
+    "facing=east,status=motion": { "model": "ntmdoors:motion_sensor_motion", "y": 90 },
+    "facing=south,status=motion": { "model": "ntmdoors:motion_sensor_motion", "y": 180 },
+    "facing=west,status=motion": { "model": "ntmdoors:motion_sensor_motion", "y": 270 }
+  }
+}

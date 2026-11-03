@@ -6,6 +6,7 @@ import com.ntmdoors.block.BlockDoorGeneric;
 import com.ntmdoors.block.BlockDoorKeypad;
 import com.ntmdoors.block.BlockKeycardProgrammer;
 import com.ntmdoors.block.BlockKeycardScanner;
+import com.ntmdoors.block.BlockMotionSensor;
 import com.ntmdoors.block.BlockRedstoneGate;
 import com.ntmdoors.block.BlockSafe;
 import com.ntmdoors.block.BlockSpeaker;
@@ -70,6 +71,7 @@ public class ModContent {
     public static final BlockBiometricSafe BIOMETRIC_SAFE = new BlockBiometricSafe();
     public static final BlockRedstoneGate REDSTONE_GATE = new BlockRedstoneGate();
     public static final BlockSpeaker SPEAKER = new BlockSpeaker();
+    public static final BlockMotionSensor MOTION_SENSOR = new BlockMotionSensor();
     public static final ItemScrewdriver SCREWDRIVER = new ItemScrewdriver();
     public static final ItemRfidCard BLANK_RFID_CARD = new ItemRfidCard("blank_rfid_card", false);
     public static final ItemRfidCard RED_RFID_CARD = new ItemRfidCard("red_rfid_card");
@@ -169,6 +171,8 @@ public class ModContent {
         // Concrete and HL Blocks are new in 1.0.46 and follow every existing block.
         ConcreteSet.registerBlocks(e);
         HLBlocksContent.registerBlocks(e);
+        // New blocks go last so previously saved numeric block IDs do not shift.
+        e.getRegistry().register(MOTION_SENSOR);
     }
 
     @SubscribeEvent
@@ -215,6 +219,10 @@ public class ModContent {
         // Concrete and HL Block items are new in 1.0.46 and follow every existing item.
         ConcreteSet.registerItems(e);
         HLBlocksContent.registerItems(e);
+        // New block items go last so previously saved numeric item IDs do not shift.
+        e.getRegistry().register(new ItemBlock(MOTION_SENSOR)
+                .setRegistryName(MOTION_SENSOR.getRegistryName())
+                .setCreativeTab(NTMDoors.TAB));
     }
 
     /** Keeps existing worlds working after the SCP card registry names moved from 1-6 to 0-5. */
