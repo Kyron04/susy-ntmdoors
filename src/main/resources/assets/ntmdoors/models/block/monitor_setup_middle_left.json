@@ -29,19 +29,49 @@
                                 ],
                          "faces":  {
                                        "north":  {
-                                                     "texture":  "#mousepad"
+                                                     "texture":  "#mousepad",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
                                                  },
                                        "east":  {
-                                                    "texture":  "#mousepad"
+                                                    "texture":  "#mousepad",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
                                                 },
                                        "south":  {
-                                                     "texture":  "#mousepad"
+                                                     "texture":  "#mousepad",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
                                                  },
                                        "west":  {
-                                                    "texture":  "#mousepad"
+                                                    "texture":  "#mousepad",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
                                                 },
                                        "up":  {
-                                                  "texture":  "#mousepad"
+                                                  "texture":  "#mousepad",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
                                               }
                                    }
                      },
@@ -58,19 +88,49 @@
                                 ],
                          "faces":  {
                                        "north":  {
-                                                     "texture":  "#frame"
+                                                     "texture":  "#frame",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
                                                  },
                                        "east":  {
-                                                    "texture":  "#frame"
+                                                    "texture":  "#frame",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
                                                 },
                                        "south":  {
-                                                     "texture":  "#frame"
+                                                     "texture":  "#frame",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
                                                  },
                                        "west":  {
-                                                    "texture":  "#frame"
+                                                    "texture":  "#frame",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
                                                 },
                                        "up":  {
-                                                  "texture":  "#mouse"
+                                                  "texture":  "#mouse",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
                                               }
                                    }
                      },
@@ -87,48 +147,108 @@
                                 ],
                          "faces":  {
                                        "north":  {
-                                                     "texture":  "#frame"
+                                                     "texture":  "#frame",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
                                                  },
                                        "east":  {
-                                                    "texture":  "#frame"
+                                                    "texture":  "#frame",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
                                                 },
                                        "south":  {
-                                                     "texture":  "#frame"
+                                                     "texture":  "#frame",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
                                                  },
                                        "west":  {
-                                                    "texture":  "#frame"
+                                                    "texture":  "#frame",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
                                                 },
                                        "up":  {
-                                                  "texture":  "#mouse_wheel"
+                                                  "texture":  "#mouse_wheel",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
                                               }
                                    }
                      },
                      {
                          "from":  [
-                                      9.75,
+                                      9.4,
                                       0.80000000000000071,
-                                      11.3
+                                      11.2
                                   ],
                          "to":  [
-                                    10.25,
+                                    10.6,
                                     25,
-                                    11.8
+                                    11.9
                                 ],
                          "faces":  {
                                        "north":  {
-                                                     "texture":  "#frame"
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
                                                  },
                                        "east":  {
-                                                    "texture":  "#frame"
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
                                                 },
                                        "south":  {
-                                                     "texture":  "#frame"
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
                                                  },
                                        "west":  {
-                                                    "texture":  "#frame"
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
                                                 },
                                        "up":  {
-                                                  "texture":  "#frame"
+                                                  "texture":  "#bezel",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
                                               }
                                    },
                          "rotation":  {
@@ -138,36 +258,66 @@
                                                          11.55
                                                      ],
                                           "axis":  "y",
-                                          "angle":  22.5,
+                                          "angle":  -22.5,
                                           "rescale":  false
                                       }
                      },
                      {
                          "from":  [
-                                      8.6,
+                                      8.2,
                                       0,
-                                      10.8
+                                      10.6
                                   ],
                          "to":  [
-                                    11.4,
-                                    0.80000000000000071,
-                                    12.2
+                                    11.8,
+                                    0.89999999999999858,
+                                    12.4
                                 ],
                          "faces":  {
                                        "north":  {
-                                                     "texture":  "#frame"
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
                                                  },
                                        "east":  {
-                                                    "texture":  "#frame"
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
                                                 },
                                        "south":  {
-                                                     "texture":  "#frame"
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
                                                  },
                                        "west":  {
-                                                    "texture":  "#frame"
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
                                                 },
                                        "up":  {
-                                                  "texture":  "#frame"
+                                                  "texture":  "#bezel",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
                                               }
                                    },
                          "rotation":  {
@@ -177,7 +327,7 @@
                                                          11.55
                                                      ],
                                           "axis":  "y",
-                                          "angle":  22.5,
+                                          "angle":  -22.5,
                                           "rescale":  false
                                       }
                      },
@@ -194,22 +344,58 @@
                                 ],
                          "faces":  {
                                        "north":  {
-                                                     "texture":  "#bezel"
+                                                     "texture":  "#bezel",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
                                                  },
                                        "east":  {
-                                                    "texture":  "#bezel"
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
                                                 },
                                        "south":  {
-                                                     "texture":  "#back"
+                                                     "texture":  "#back",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
                                                  },
                                        "west":  {
-                                                    "texture":  "#bezel"
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
                                                 },
                                        "up":  {
-                                                  "texture":  "#bezel"
+                                                  "texture":  "#bezel",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
                                               },
                                        "down":  {
-                                                    "texture":  "#bezel"
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
                                                 }
                                    },
                          "rotation":  {
@@ -219,7 +405,7 @@
                                                          11.55
                                                      ],
                                           "axis":  "y",
-                                          "angle":  22.5,
+                                          "angle":  -22.5,
                                           "rescale":  false
                                       }
                      },
@@ -236,19 +422,49 @@
                                 ],
                          "faces":  {
                                        "north":  {
-                                                     "texture":  "#screen"
+                                                     "texture":  "#screen",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
                                                  },
                                        "east":  {
-                                                    "texture":  "#bezel"
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
                                                 },
                                        "west":  {
-                                                    "texture":  "#bezel"
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
                                                 },
                                        "up":  {
-                                                  "texture":  "#bezel"
+                                                  "texture":  "#bezel",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
                                               },
                                        "down":  {
-                                                    "texture":  "#bezel"
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
                                                 }
                                    },
                          "rotation":  {
@@ -258,7 +474,7 @@
                                                          11.55
                                                      ],
                                           "axis":  "y",
-                                          "angle":  22.5,
+                                          "angle":  -22.5,
                                           "rescale":  false
                                       }
                      },
@@ -275,19 +491,49 @@
                                 ],
                          "faces":  {
                                        "north":  {
-                                                     "texture":  "#led"
+                                                     "texture":  "#led",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
                                                  },
                                        "east":  {
-                                                    "texture":  "#bezel"
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
                                                 },
                                        "west":  {
-                                                    "texture":  "#bezel"
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
                                                 },
                                        "up":  {
-                                                  "texture":  "#bezel"
+                                                  "texture":  "#bezel",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
                                               },
                                        "down":  {
-                                                    "texture":  "#bezel"
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
                                                 }
                                    },
                          "rotation":  {
@@ -297,33 +543,57 @@
                                                          11.55
                                                      ],
                                           "axis":  "y",
-                                          "angle":  22.5,
+                                          "angle":  -22.5,
                                           "rescale":  false
                                       }
                      },
                      {
                          "from":  [
-                                      9.4,
-                                      7,
-                                      10.8
+                                      9.35,
+                                      6.8000000000000007,
+                                      10.7
                                   ],
                          "to":  [
-                                    10.6,
-                                    9,
+                                    10.65,
+                                    9.2,
                                     11.3
                                 ],
                          "faces":  {
                                        "east":  {
-                                                    "texture":  "#frame"
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
                                                 },
                                        "west":  {
-                                                    "texture":  "#frame"
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
                                                 },
                                        "up":  {
-                                                  "texture":  "#frame"
+                                                  "texture":  "#bezel",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
                                               },
                                        "down":  {
-                                                    "texture":  "#frame"
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
                                                 }
                                    },
                          "rotation":  {
@@ -333,7 +603,7 @@
                                                          11.55
                                                      ],
                                           "axis":  "y",
-                                          "angle":  22.5,
+                                          "angle":  -22.5,
                                           "rescale":  false
                                       }
                      },
@@ -350,19 +620,49 @@
                                 ],
                          "faces":  {
                                        "north":  {
-                                                     "texture":  "#led"
+                                                     "texture":  "#led",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
                                                  },
                                        "east":  {
-                                                    "texture":  "#bezel"
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
                                                 },
                                        "west":  {
-                                                    "texture":  "#bezel"
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
                                                 },
                                        "up":  {
-                                                  "texture":  "#bezel"
+                                                  "texture":  "#bezel",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
                                               },
                                        "down":  {
-                                                    "texture":  "#bezel"
+                                                    "texture":  "#bezel",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
                                                 }
                                    },
                          "rotation":  {
@@ -372,7 +672,7 @@
                                                          11.55
                                                      ],
                                           "axis":  "y",
-                                          "angle":  22.5,
+                                          "angle":  -22.5,
                                           "rescale":  false
                                       }
                      }
