@@ -30,6 +30,8 @@ public final class RedstoneBinding {
     @Nullable
     private UUID bindingPlayer;
     private int bindingTicks;
+    /** True while the host wants every linked gate held on instead of pulsed. */
+    private boolean held;
 
     public RedstoneBinding(TileEntity host) {
         if (!(host instanceof RedstoneBindingHost)) {
@@ -90,10 +92,34 @@ public final class RedstoneBinding {
 
         if (!gates.contains(gatePos)) gates.add(gatePos);
         gate.bindDevice(host.getPos());
+        gate.setHeld(host.getPos(), held);
         callbacks.onRedstoneBindingChanged();
         callbacks.syncRedstoneState();
         callbacks.sendRedstoneMessage(player, "ntmdoors.msg.redstone_gate_linked");
         return true;
+    }
+
+    /**
+     * Server side: holds or releases every linked gate. Reapplying the same state is intentional;
+     * it lets a gate that was just loaded adopt the current hold again.
+     */
+    public void setHeld(boolean held) {
+        this.held = held;
+        World world = host.getWorld();
+        if (world == null || world.isRemote) return;
+
+        BlockPos self = host.getPos();
+        for (BlockPos gatePos : gates) {
+            if (!world.isBlockLoaded(gatePos)) continue;
+            TileEntity te = world.getTileEntity(gatePos);
+            if (te instanceof TileEntityRedstoneGate) {
+                ((TileEntityRedstoneGate) te).setHeld(self, held);
+            }
+        }
+    }
+
+    public boolean isHeld() {
+        return held;
     }
 
     /** Server side: pulses every loaded gate in this link. */
@@ -128,10 +154,12 @@ public final class RedstoneBinding {
             if (!world.isBlockLoaded(gatePos)) continue;
             TileEntity te = world.getTileEntity(gatePos);
             if (te instanceof TileEntityRedstoneGate) {
+                ((TileEntityRedstoneGate) te).setHeld(host.getPos(), false);
                 ((TileEntityRedstoneGate) te).unbindDevice(host.getPos());
             }
         }
         gates.clear();
+        held = false;
         callbacks.syncRedstoneState();
     }
 
@@ -157,6 +185,7 @@ public final class RedstoneBinding {
 
     public void readFromNBT(NBTTagCompound tag) {
         gates.clear();
+        held = false;
         if (tag.hasKey("redstoneGates")) {
             gates.addAll(BlockPositions.decodeList(tag.getString("redstoneGates")));
         }

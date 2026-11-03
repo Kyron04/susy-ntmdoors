@@ -172,13 +172,16 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   stays inactive and shows yellow. Detection goes through walls. Page two has `Detect players`,
   `Detect hostile mobs` and `Detect neutral mobs`; all three start on, so every living entity type
   is covered. Non-player living entities are always unauthorized intruders, while players use the
-  card rules above. Green means idle, blue means authorised players are inside, red means any
+  card rules above. `Persist within bounds` is also on page two: when on, a linked gate stays
+  powered while any entity matching an enabled entry event remains inside, and releases as soon as
+  the area is empty. Green means idle, blue means authorised players are inside, red means any
   unauthorized player or mob is inside, and yellow means the sensor is disabled or has no area
   bound. Page four is the red `REDSTONE` page with
   `Authorized entry`, `Unauthorized entry`, `Sensor disabled` and `Sensor enabled` event switches.
   Sneak + right-click the sensor with the Redstone Relay Key to start or finish a gate-binding
-  session, then sneak + right-click gates to link them. Each enabled event pulses every linked
-  gate on the matching entry edge.
+  session, then sneak + right-click gates to link them. With `Persist within bounds` off, each
+  enabled event pulses every linked gate on the matching entry edge. With it on, the enabled entry
+  events hold the gates instead.
 * Concrete and HL Blocks: the NTM CE concrete building set and decorative HL Blocks, with metadata
   families, flat Chisel carving groups, shift-scroll cycling, recipes, and `concrete` /
   `blockConcrete` / `blockhl` ore dictionary entries. Chisel is required.

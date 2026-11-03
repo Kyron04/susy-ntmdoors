@@ -81,6 +81,8 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
     private boolean detectPlayers = true;
     private boolean detectHostile = true;
     private boolean detectNeutral = true;
+    /** Hold linked gates on while a qualifying entity remains inside, instead of pulsing. */
+    private boolean persistWithinBounds;
 
     /** One depth 0-5 per grid cell, indexed u + v * 5. */
     private final byte[] areaDepths = new byte[GRID_SIZE * GRID_SIZE];
@@ -180,6 +182,19 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         return true;
     }
 
+    public boolean isPersistWithinBounds() {
+        return persistWithinBounds;
+    }
+
+    /** Server side: switches between edge pulses and a hold that ends when the area is empty. */
+    public boolean setPersistWithinBounds(boolean value) {
+        if (world == null || world.isRemote || persistWithinBounds == value) return false;
+        persistWithinBounds = value;
+        if (!value) redstoneBinding.setHeld(false);
+        sync();
+        return true;
+    }
+
     public boolean isEnabled() {
         return enabled;
     }
@@ -190,6 +205,7 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         enabled = value;
         if (!value) {
             entitiesInside.clear();
+            redstoneBinding.setHeld(false);
             setStatus(BlockMotionSensor.Status.MAINTENANCE);
         } else {
             setStatus(areaBound ? BlockMotionSensor.Status.IDLE : BlockMotionSensor.Status.MAINTENANCE);
@@ -272,6 +288,8 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
 
         System.arraycopy(depths, 0, areaDepths, 0, areaDepths.length);
         areaBound = true;
+        redstoneBinding.setHeld(false);
+        entitiesInside.clear();
         sync();
         if (enabled) setStatus(BlockMotionSensor.Status.IDLE);
         return true;
@@ -283,6 +301,7 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         Arrays.fill(areaDepths, (byte) 0);
         areaBound = false;
         entitiesInside.clear();
+        redstoneBinding.setHeld(false);
         setStatus(BlockMotionSensor.Status.MAINTENANCE);
         sync();
         return true;
@@ -435,6 +454,7 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
     private void updateDetection() {
         if (!enabled || !areaBound) {
             entitiesInside.clear();
+            redstoneBinding.setHeld(false);
             setStatus(BlockMotionSensor.Status.MAINTENANCE);
             return;
         }
@@ -446,6 +466,7 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         }
         if (boxes.isEmpty()) {
             entitiesInside.clear();
+            redstoneBinding.setHeld(false);
             setStatus(BlockMotionSensor.Status.MAINTENANCE);
             return;
         }
@@ -455,6 +476,7 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         boolean unauthorized = false;
         boolean enteredAuthorized = false;
         boolean enteredUnauthorized = false;
+        boolean hold = false;
 
         for (EntityLivingBase entity : world.getEntitiesWithinAABB(
                 EntityLivingBase.class, getProjectionBounds())) {
@@ -488,6 +510,10 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
                 if (clearance) enteredAuthorized = true;
                 else enteredUnauthorized = true;
             }
+
+            boolean triggers = clearance
+                    ? isRedstoneEvent(RS_AUTHORIZED) : isRedstoneEvent(RS_UNAUTHORIZED);
+            if (persistWithinBounds && triggers) hold = true;
         }
 
         entitiesInside.clear();
@@ -498,9 +524,15 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         else if (authorized) setStatus(BlockMotionSensor.Status.AUTHORIZED);
         else setStatus(BlockMotionSensor.Status.IDLE);
 
-        // Only entry edges fire; standing inside does not keep pulsing the gates.
-        if (enteredAuthorized) fireRedstoneEvent(RS_AUTHORIZED);
-        if (enteredUnauthorized) fireRedstoneEvent(RS_UNAUTHORIZED);
+        if (persistWithinBounds) {
+            // Hold while a qualifying entity remains; release immediately when the area empties.
+            redstoneBinding.setHeld(hold);
+        } else {
+            // Only entry edges fire; standing inside does not keep pulsing the gates.
+            redstoneBinding.setHeld(false);
+            if (enteredAuthorized) fireRedstoneEvent(RS_AUTHORIZED);
+            if (enteredUnauthorized) fireRedstoneEvent(RS_UNAUTHORIZED);
+        }
     }
 
     /**
@@ -574,6 +606,7 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         tag.setBoolean("detectPlayers", detectPlayers);
         tag.setBoolean("detectHostile", detectHostile);
         tag.setBoolean("detectNeutral", detectNeutral);
+        tag.setBoolean("persistWithinBounds", persistWithinBounds);
     }
 
     private void readOptions(NBTTagCompound tag) {
@@ -586,6 +619,7 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         detectPlayers = !tag.hasKey("detectPlayers") || tag.getBoolean("detectPlayers");
         detectHostile = !tag.hasKey("detectHostile") || tag.getBoolean("detectHostile");
         detectNeutral = !tag.hasKey("detectNeutral") || tag.getBoolean("detectNeutral");
+        persistWithinBounds = tag.getBoolean("persistWithinBounds");
     }
 
     private void writeEvents(NBTTagCompound tag) {

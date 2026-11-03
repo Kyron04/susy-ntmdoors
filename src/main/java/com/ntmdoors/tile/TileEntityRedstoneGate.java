@@ -10,7 +10,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Gate logic. Redstone input and wireless events share the block's POWERED state. Wireless events
@@ -27,8 +29,12 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
     public static final int MAX_ACTIVE_TICKS = 20 * 60 * 5;
     /** Ticks the gate stays off so attached redstone can settle before input is checked again. */
     private static final int INPUT_SETTLE_TICKS = 1;
+    /** A hold expires if its sensor stops refreshing it, e.g. because its chunk unloaded. */
+    private static final int HOLD_TIMEOUT_TICKS = 60;
 
     private final List<BlockPos> boundDevices = new ArrayList<>();
+    /** Devices currently holding this gate on, with the tick at which each hold expires. */
+    private final Map<BlockPos, Long> heldUntil = new HashMap<>();
     /** Absolute world time at which the current wireless pulse ends; 0 when idle. */
     private long pulseEnd;
     /** While positive, neighbor changes are ignored so the gate cannot read its own output back. */
@@ -56,7 +62,42 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
 
     /** Server side: removes one device from this gate's wireless link. */
     public void unbindDevice(BlockPos devicePos) {
-        if (devicePos != null && boundDevices.remove(devicePos)) markDirty();
+        if (devicePos == null) return;
+        boolean unbound = boundDevices.remove(devicePos);
+        boolean unheld = heldUntil.remove(devicePos) != null;
+        if (unbound || unheld) {
+            markDirty();
+            if (unheld) {
+                inputSettleTicks = 0;
+                invertProbeTicks = 0;
+                ignoreNeighborTicks = 1;
+                refreshPower();
+            }
+        }
+    }
+
+    /**
+     * Server side: a linked sensor holds this gate on while its bound area still contains a
+     * qualifying entity. Multiple sensors may hold the same gate at once.
+     */
+    public void setHeld(BlockPos source, boolean held) {
+        if (getWorld() == null || getWorld().isRemote || source == null) return;
+        BlockPos key = source.toImmutable();
+        if (held) {
+            heldUntil.put(key, getWorld().getTotalWorldTime() + HOLD_TIMEOUT_TICKS);
+        } else {
+            if (heldUntil.remove(key) == null) return;
+        }
+
+        inputSettleTicks = 0;
+        invertProbeTicks = 0;
+        ignoreNeighborTicks = 1;
+        markDirty();
+        refreshPower();
+    }
+
+    public boolean isHeld() {
+        return !heldUntil.isEmpty();
     }
 
     /** Server side: clears both sides of every link before the gate is broken. */
@@ -72,6 +113,7 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
             }
         }
         boundDevices.clear();
+        heldUntil.clear();
         markDirty();
     }
 
@@ -161,7 +203,7 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
             setPowered(true);
             return;
         }
-        if (isPulsing()) return;
+        if (isPulsing() || !heldUntil.isEmpty()) return;
 
         if (invert) {
             if (isPoweredOn()) startInvertProbe();
@@ -175,6 +217,15 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
     public void update() {
         World world = getWorld();
         if (world == null || world.isRemote) return;
+
+        if (!heldUntil.isEmpty()) {
+            long now = world.getTotalWorldTime();
+            boolean changed = heldUntil.values().removeIf(expiry -> expiry < now);
+            if (changed) {
+                refreshPower();
+                ignoreNeighborTicks = 1;
+            }
+        }
 
         if (ignoreNeighborTicks > 0) ignoreNeighborTicks--;
 
@@ -192,6 +243,11 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
         if (pulseEnd <= 0 || isPulsing()) return;
 
         pulseEnd = 0;
+        if (!heldUntil.isEmpty()) {
+            refreshPower();
+            ignoreNeighborTicks = 1;
+            return;
+        }
         if (invert) {
             // The gate was already off during the pulse; the attached wire has settled.
             refreshPower();
@@ -231,7 +287,8 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
             setPowered(true);
             return;
         }
-        boolean active = isPulsing() || BlockRedstoneGate.isReceivingPower(getWorld(), pos);
+        boolean active = isPulsing() || !heldUntil.isEmpty()
+                || BlockRedstoneGate.isReceivingPower(getWorld(), pos);
         if (invert) ignoreNeighborTicks = 1;
         setPowered(invert ? !active : active);
     }

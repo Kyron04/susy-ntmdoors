@@ -23,7 +23,8 @@ public class MessageSensorOption implements IMessage {
     public static final int DETECT_PLAYERS = 8;
     public static final int DETECT_HOSTILE = 9;
     public static final int DETECT_NEUTRAL = 10;
-    public static final int OPTION_COUNT = 11;
+    public static final int PERSIST_WITHIN_BOUNDS = 11;
+    public static final int OPTION_COUNT = 12;
 
     private BlockPos pos;
     private int option;
@@ -104,6 +105,9 @@ public class MessageSensorOption implements IMessage {
                     break;
                 case DETECT_NEUTRAL:
                     sensor.setDetectNeutral(message.value);
+                    break;
+                case PERSIST_WITHIN_BOUNDS:
+                    sensor.setPersistWithinBounds(message.value);
                     break;
                 default:
                     break;

@@ -67,6 +67,7 @@ public class GuiMotionSensor extends GuiScreen {
             MessageSensorOption.DETECT_PLAYERS,
             MessageSensorOption.DETECT_HOSTILE,
             MessageSensorOption.DETECT_NEUTRAL,
+            MessageSensorOption.PERSIST_WITHIN_BOUNDS,
             MessageSensorOption.MATCH_HOLDER,
             MessageSensorOption.IGNORE_KEYS,
             MessageSensorOption.IGNORE_IDS,
@@ -146,6 +147,8 @@ public class GuiMotionSensor extends GuiScreen {
                 return sensor == null || sensor.isDetectHostile();
             case MessageSensorOption.DETECT_NEUTRAL:
                 return sensor == null || sensor.isDetectNeutral();
+            case MessageSensorOption.PERSIST_WITHIN_BOUNDS:
+                return sensor != null && sensor.isPersistWithinBounds();
             case MessageSensorOption.REDSTONE_AUTHORIZED:
                 return sensor != null && sensor.isRedstoneEvent(TileEntityMotionSensor.RS_AUTHORIZED);
             case MessageSensorOption.REDSTONE_UNAUTHORIZED:
@@ -647,6 +650,8 @@ public class GuiMotionSensor extends GuiScreen {
                 return "Detect hostile mobs";
             case MessageSensorOption.DETECT_NEUTRAL:
                 return "Detect neutral mobs";
+            case MessageSensorOption.PERSIST_WITHIN_BOUNDS:
+                return "Persist within bounds";
             case MessageSensorOption.REDSTONE_AUTHORIZED:
                 return "Authorized entry";
             case MessageSensorOption.REDSTONE_UNAUTHORIZED:
@@ -676,6 +681,8 @@ public class GuiMotionSensor extends GuiScreen {
                 return "Monsters and hostile mobs.";
             case MessageSensorOption.DETECT_NEUTRAL:
                 return "Animals, villagers and NPCs.";
+            case MessageSensorOption.PERSIST_WITHIN_BOUNDS:
+                return "Hold the signal until they leave.";
             case MessageSensorOption.REDSTONE_AUTHORIZED:
                 return "A cleared player enters.";
             case MessageSensorOption.REDSTONE_UNAUTHORIZED:
