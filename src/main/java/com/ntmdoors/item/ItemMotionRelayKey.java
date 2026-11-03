@@ -13,7 +13,6 @@ import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 
@@ -40,25 +39,38 @@ public class ItemMotionRelayKey extends Item {
     }
 
     /**
-     * A normal click opens the sensor console. Area selection is the sneak-click action and is
-     * reserved for the next phase, so it only reports that it is not configured yet.
+     * A normal click opens the sensor console. Sneak-clicking the sensor starts or finishes an
+     * area selection; while a session is active, sneak-clicking a block sets a corner.
      */
     @Override
     public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand,
                                       EnumFacing facing, float hitX, float hitY, float hitZ) {
         TileEntity te = world.getTileEntity(pos);
-        if (!(te instanceof TileEntityMotionSensor)) return EnumActionResult.PASS;
 
         if (player.isSneaking()) {
-            if (!world.isRemote) {
-                player.sendStatusMessage(new TextComponentTranslation(
-                        "ntmdoors.msg.motion_area_pending"), true);
+            if (te instanceof TileEntityMotionSensor) {
+                if (world.isRemote) return EnumActionResult.SUCCESS;
+                TileEntityMotionSensor sensor = (TileEntityMotionSensor) te;
+                if (sensor.isAreaBindingFor(player)) sensor.cancelAreaBinding(player);
+                else sensor.startAreaBinding(player);
+                return EnumActionResult.SUCCESS;
             }
-            return EnumActionResult.SUCCESS;
+
+            if (!world.isRemote) {
+                TileEntityMotionSensor sensor = TileEntityMotionSensor.findAreaBinding(world, player);
+                if (sensor != null) {
+                    sensor.setAreaCorner(player, pos);
+                    return EnumActionResult.SUCCESS;
+                }
+            }
+            return EnumActionResult.PASS;
         }
 
-        if (world.isRemote) NTMDoors.proxy.openMotionSensorGui(pos);
-        return EnumActionResult.SUCCESS;
+        if (te instanceof TileEntityMotionSensor) {
+            if (world.isRemote) NTMDoors.proxy.openMotionSensorGui(pos);
+            return EnumActionResult.SUCCESS;
+        }
+        return EnumActionResult.PASS;
     }
 
     /** True when either hand holds a Motion Relay Key. */

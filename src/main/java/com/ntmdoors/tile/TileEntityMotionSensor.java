@@ -13,9 +13,13 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.common.util.Constants;
 
 import java.util.ArrayList;
@@ -26,16 +30,21 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Motion Sensor. It passively scans the players inside its 5x5x5 volume and checks the cards in
+ * Motion Sensor. It passively scans the players inside its bound area and checks the cards in
  * their inventories against the private keys and biometric identities assigned here.
  *
- * <p>Phase one uses the whole 5x5x5 around the sensor and only drives the status light. The Bound
- * Area and Redstone pages will replace the fixed volume and add the gate output later.</p>
+ * <p>The selectable volume is a 5x5x5 cube centred on the sensor. The active area is a sub-box of
+ * that cube, selected with the Motion Relay Key or the Bound Area page, and must contain the
+ * sensor. An unbound sensor stays inactive and shows the yellow light.</p>
  */
 public class TileEntityMotionSensor extends TileEntitySynced implements ITickable {
 
     /** Four scans per second is enough for a light and keeps the inventory checks cheap. */
     private static final int SCAN_INTERVAL = 10;
+    /** The selectable volume extends two blocks in every direction from the sensor. */
+    public static final int MAX_OFFSET = 2;
+    /** A binding session the player walks away from expires after a minute. */
+    private static final int AREA_BINDING_TICKS = 20 * 60;
 
     /** One enrolled identity: the UUID stored on a card plus the cached name to display. */
     public static final class BiometricId {
@@ -58,6 +67,22 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
     private boolean ignoreKeys;
     private boolean ignoreIds;
     private boolean enabled = true;
+
+    /** Active area offsets from the sensor block. Only meaningful while {@link #areaBound}. */
+    private boolean areaBound;
+    private int minX = -MAX_OFFSET;
+    private int maxX = MAX_OFFSET;
+    private int minY = -MAX_OFFSET;
+    private int maxY = MAX_OFFSET;
+    private int minZ = -MAX_OFFSET;
+    private int maxZ = MAX_OFFSET;
+
+    /** Server-only area-binding session. */
+    @javax.annotation.Nullable
+    private UUID areaBindingPlayer;
+    @javax.annotation.Nullable
+    private BlockPos areaCornerA;
+    private int areaBindingTicks;
 
     private int scanTicks;
     private BlockMotionSensor.Status status = BlockMotionSensor.Status.IDLE;
@@ -127,7 +152,7 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
             playersInside.clear();
             setStatus(BlockMotionSensor.Status.MAINTENANCE);
         } else {
-            setStatus(BlockMotionSensor.Status.IDLE);
+            setStatus(areaBound ? BlockMotionSensor.Status.IDLE : BlockMotionSensor.Status.MAINTENANCE);
         }
         sync();
         return true;
@@ -137,6 +162,235 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
     public boolean hasConsoleAccess(EntityPlayer player) {
         return player != null && (HeldItems.holds(player, ItemMotionRelayKey.class)
                 || HeldItems.holds(player, ItemCreativeKeycard.class));
+    }
+
+    // ------------------------------------------------------------ bound area
+
+    public boolean hasArea() {
+        return areaBound;
+    }
+
+    public int getAreaMinX() {
+        return minX;
+    }
+
+    public int getAreaMaxX() {
+        return maxX;
+    }
+
+    public int getAreaMinY() {
+        return minY;
+    }
+
+    public int getAreaMaxY() {
+        return maxY;
+    }
+
+    public int getAreaMinZ() {
+        return minZ;
+    }
+
+    public int getAreaMaxZ() {
+        return maxZ;
+    }
+
+    /** The complete selectable 5x5x5 cube, used for the selection preview. */
+    public AxisAlignedBB getMaxBox() {
+        return new AxisAlignedBB(pos.getX() - MAX_OFFSET, pos.getY() - MAX_OFFSET,
+                pos.getZ() - MAX_OFFSET, pos.getX() + MAX_OFFSET + 1,
+                pos.getY() + MAX_OFFSET + 1, pos.getZ() + MAX_OFFSET + 1);
+    }
+
+    /** The active area, or null while no area has been bound. */
+    @javax.annotation.Nullable
+    public AxisAlignedBB getActiveBox() {
+        if (!areaBound) return null;
+        return new AxisAlignedBB(pos.getX() + minX, pos.getY() + minY, pos.getZ() + minZ,
+                pos.getX() + maxX + 1, pos.getY() + maxY + 1, pos.getZ() + maxZ + 1);
+    }
+
+    /** Server side: binds a sub-box. Offsets are relative to the sensor and must contain it. */
+    public boolean setArea(int minX, int maxX, int minY, int maxY, int minZ, int maxZ) {
+        if (world == null || world.isRemote) return false;
+        if (!validArea(minX, maxX, minY, maxY, minZ, maxZ)) return false;
+
+        this.minX = minX;
+        this.maxX = maxX;
+        this.minY = minY;
+        this.maxY = maxY;
+        this.minZ = minZ;
+        this.maxZ = maxZ;
+        areaBound = true;
+        sync();
+        if (enabled) setStatus(BlockMotionSensor.Status.IDLE);
+        return true;
+    }
+
+    /** Server side: returns the sensor to the unbound, inactive state. */
+    public boolean clearArea() {
+        if (world == null || world.isRemote || !areaBound) return false;
+        areaBound = false;
+        resetAreaFields();
+        playersInside.clear();
+        setStatus(BlockMotionSensor.Status.MAINTENANCE);
+        sync();
+        return true;
+    }
+
+    /** The editor starts from the full 5x5x5 template whenever no area is bound. */
+    private void resetAreaFields() {
+        minX = -MAX_OFFSET;
+        maxX = MAX_OFFSET;
+        minY = -MAX_OFFSET;
+        maxY = MAX_OFFSET;
+        minZ = -MAX_OFFSET;
+        maxZ = MAX_OFFSET;
+    }
+
+    /** Offsets are inclusive and the sensor (0,0,0) must stay inside the box. */
+    private static boolean validArea(int minX, int maxX, int minY, int maxY, int minZ, int maxZ) {
+        if (minX < -MAX_OFFSET || maxX > MAX_OFFSET
+                || minY < -MAX_OFFSET || maxY > MAX_OFFSET
+                || minZ < -MAX_OFFSET || maxZ > MAX_OFFSET) {
+            return false;
+        }
+        if (minX > maxX || minY > maxY || minZ > maxZ) return false;
+        return minX <= 0 && maxX >= 0
+                && minY <= 0 && maxY >= 0
+                && minZ <= 0 && maxZ >= 0;
+    }
+
+    // ------------------------------------------------------------ area binding
+
+    public boolean isAreaBindingFor(EntityPlayer player) {
+        return player != null && areaBindingPlayer != null
+                && areaBindingPlayer.equals(player.getUniqueID());
+    }
+
+    /** Server side: starts a two-corner selection session for this player. */
+    public boolean startAreaBinding(EntityPlayer player) {
+        if (world == null || world.isRemote || player == null) return false;
+        if (areaBindingPlayer != null && !areaBindingPlayer.equals(player.getUniqueID())) {
+            msg(player, "ntmdoors.msg.motion_area_busy");
+            return false;
+        }
+
+        cancelOtherAreaBindings(world, player, this);
+        areaBindingPlayer = player.getUniqueID();
+        areaCornerA = null;
+        areaBindingTicks = AREA_BINDING_TICKS;
+        showAreaOutline(true);
+        msg(player, "ntmdoors.msg.motion_area_started");
+        return true;
+    }
+
+    /** Server side: cancels the current session for this player. */
+    public boolean cancelAreaBinding(EntityPlayer player) {
+        if (!isAreaBindingFor(player)) return false;
+        stopAreaBinding();
+        msg(player, "ntmdoors.msg.motion_area_cancelled");
+        return true;
+    }
+
+    /**
+     * Server side: records one corner. The first click arms the session; the second binds the box.
+     * Invalid corners are refused without losing the first one.
+     */
+    public boolean setAreaCorner(EntityPlayer player, BlockPos clicked) {
+        if (world == null || world.isRemote || player == null || clicked == null) return false;
+        if (!isAreaBindingFor(player)) return false;
+
+        int ox = clicked.getX() - pos.getX();
+        int oy = clicked.getY() - pos.getY();
+        int oz = clicked.getZ() - pos.getZ();
+        if (Math.abs(ox) > MAX_OFFSET || Math.abs(oy) > MAX_OFFSET || Math.abs(oz) > MAX_OFFSET) {
+            msg(player, "ntmdoors.msg.motion_area_invalid");
+            return false;
+        }
+
+        if (areaCornerA == null) {
+            areaCornerA = clicked.toImmutable();
+            areaBindingTicks = AREA_BINDING_TICKS;
+            showAreaOutline(true);
+            msg(player, "ntmdoors.msg.motion_area_first");
+            return true;
+        }
+
+        int newMinX = Math.min(areaCornerA.getX(), clicked.getX()) - pos.getX();
+        int newMaxX = Math.max(areaCornerA.getX(), clicked.getX()) - pos.getX();
+        int newMinY = Math.min(areaCornerA.getY(), clicked.getY()) - pos.getY();
+        int newMaxY = Math.max(areaCornerA.getY(), clicked.getY()) - pos.getY();
+        int newMinZ = Math.min(areaCornerA.getZ(), clicked.getZ()) - pos.getZ();
+        int newMaxZ = Math.max(areaCornerA.getZ(), clicked.getZ()) - pos.getZ();
+
+        if (!setArea(newMinX, newMaxX, newMinY, newMaxY, newMinZ, newMaxZ)) {
+            msg(player, "ntmdoors.msg.motion_area_invalid");
+            return false;
+        }
+
+        stopAreaBinding();
+        showAreaOutline(false);
+        msg(player, "ntmdoors.msg.motion_area_bound",
+                newMaxX - newMinX + 1, newMaxY - newMinY + 1, newMaxZ - newMinZ + 1);
+        return true;
+    }
+
+    /** The sensor whose area-binding session belongs to this player, or null. */
+    @javax.annotation.Nullable
+    public static TileEntityMotionSensor findAreaBinding(net.minecraft.world.World world, EntityPlayer player) {
+        if (world == null || player == null) return null;
+        for (TileEntity te : world.loadedTileEntityList) {
+            if (te instanceof TileEntityMotionSensor
+                    && ((TileEntityMotionSensor) te).isAreaBindingFor(player)) {
+                return (TileEntityMotionSensor) te;
+            }
+        }
+        return null;
+    }
+
+    private void stopAreaBinding() {
+        areaBindingPlayer = null;
+        areaCornerA = null;
+        areaBindingTicks = 0;
+    }
+
+    private static void cancelOtherAreaBindings(net.minecraft.world.World world, EntityPlayer player,
+                                                TileEntity except) {
+        for (TileEntity te : world.loadedTileEntityList) {
+            if (te == except || !(te instanceof TileEntityMotionSensor)) continue;
+            TileEntityMotionSensor sensor = (TileEntityMotionSensor) te;
+            if (sensor.isAreaBindingFor(player)) sensor.stopAreaBinding();
+        }
+    }
+
+    /** Draws the selectable cube or the active area with short-lived red dust particles. */
+    public void showAreaOutline(boolean max) {
+        if (world == null || world.isRemote) return;
+        AxisAlignedBB box = max ? getMaxBox() : getActiveBox();
+        if (box == null) return;
+
+        for (double x = box.minX; x <= box.maxX; x += 0.5D) {
+            particle(x, box.minY, box.minZ);
+            particle(x, box.minY, box.maxZ);
+            particle(x, box.maxY, box.minZ);
+            particle(x, box.maxY, box.maxZ);
+        }
+        for (double y = box.minY; y <= box.maxY; y += 0.5D) {
+            particle(box.minX, y, box.minZ);
+            particle(box.minX, y, box.maxZ);
+            particle(box.maxX, y, box.minZ);
+            particle(box.maxX, y, box.maxZ);
+        }
+        for (double z = box.minZ; z <= box.maxZ; z += 0.5D) {
+            particle(box.minX, box.minY, z);
+            particle(box.maxX, box.minY, z);
+            particle(box.minX, box.maxY, z);
+            particle(box.maxX, box.maxY, z);
+        }
+    }
+
+    private void particle(double x, double y, double z) {
+        world.spawnParticle(EnumParticleTypes.END_ROD, x, y, z, 0, 0, 0);
     }
 
     // ------------------------------------------------------------ assignment
@@ -209,28 +463,33 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
 
     // ------------------------------------------------------------ detection
 
-    /** The full temporary 5x5x5 volume. The Bound Area page will refine this later. */
-    public AxisAlignedBB getDetectionBox() {
-        return new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(),
-                pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1).grow(2.0D);
-    }
-
     @Override
     public void update() {
         if (world == null || world.isRemote) return;
+
+        if (areaBindingPlayer != null) {
+            EntityPlayer player = world.getPlayerEntityByUUID(areaBindingPlayer);
+            if (player == null || --areaBindingTicks <= 0) stopAreaBinding();
+        }
+
         if (++scanTicks < SCAN_INTERVAL) return;
         scanTicks = 0;
         updateDetection();
     }
 
     private void updateDetection() {
-        if (!enabled) {
+        if (!enabled || !areaBound) {
             playersInside.clear();
             setStatus(BlockMotionSensor.Status.MAINTENANCE);
             return;
         }
 
-        AxisAlignedBB box = getDetectionBox();
+        AxisAlignedBB box = getActiveBox();
+        if (box == null) {
+            setStatus(BlockMotionSensor.Status.MAINTENANCE);
+            return;
+        }
+
         Set<UUID> current = new HashSet<>();
         boolean authorized = false;
         boolean unauthorized = false;
@@ -332,6 +591,31 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         enabled = !tag.hasKey("enabled") || tag.getBoolean("enabled");
     }
 
+    private void writeArea(NBTTagCompound tag) {
+        tag.setBoolean("areaBound", areaBound);
+        tag.setInteger("areaMinX", minX);
+        tag.setInteger("areaMaxX", maxX);
+        tag.setInteger("areaMinY", minY);
+        tag.setInteger("areaMaxY", maxY);
+        tag.setInteger("areaMinZ", minZ);
+        tag.setInteger("areaMaxZ", maxZ);
+    }
+
+    private void readArea(NBTTagCompound tag) {
+        areaBound = tag.getBoolean("areaBound");
+        resetAreaFields();
+        if (tag.hasKey("areaMinX")) minX = tag.getInteger("areaMinX");
+        if (tag.hasKey("areaMaxX")) maxX = tag.getInteger("areaMaxX");
+        if (tag.hasKey("areaMinY")) minY = tag.getInteger("areaMinY");
+        if (tag.hasKey("areaMaxY")) maxY = tag.getInteger("areaMaxY");
+        if (tag.hasKey("areaMinZ")) minZ = tag.getInteger("areaMinZ");
+        if (tag.hasKey("areaMaxZ")) maxZ = tag.getInteger("areaMaxZ");
+        if (!validArea(minX, maxX, minY, maxY, minZ, maxZ)) {
+            areaBound = false;
+            resetAreaFields();
+        }
+    }
+
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
@@ -339,6 +623,7 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         tag.setTag("assignedKeys", PrivateKeys.toList(assignedKeys));
         tag.setTag("assignedIds", encodeIds());
         writeOptions(tag);
+        writeArea(tag);
         return tag;
     }
 
@@ -350,6 +635,7 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         tag.setTag("assignedKeys", PrivateKeys.toList(assignedKeys));
         tag.setTag("assignedIds", encodeIds());
         writeOptions(tag);
+        writeArea(tag);
         return tag;
     }
 
@@ -365,6 +651,7 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         }
         readIds(tag);
         readOptions(tag);
+        readArea(tag);
     }
 
     @Override
@@ -375,5 +662,9 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
             // actual state from this tile entity.
             world.markBlockRangeForRenderUpdate(pos, pos);
         }
+    }
+
+    private static void msg(EntityPlayer player, String key, Object... args) {
+        player.sendStatusMessage(new TextComponentTranslation(key, args), true);
     }
 }

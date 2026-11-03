@@ -1,6 +1,7 @@
 package com.ntmdoors.client;
 
 import com.ntmdoors.item.ItemOperatorKeycard;
+import com.ntmdoors.network.MessageSensorArea;
 import com.ntmdoors.network.MessageSensorKey;
 import com.ntmdoors.network.MessageSensorOption;
 import com.ntmdoors.network.ModNetwork;
@@ -32,7 +33,7 @@ public class GuiMotionSensor extends GuiScreen {
 
     private static final int PANEL_WIDTH = 344;
     private static final int PANEL_HEIGHT = 196;
-    private static final int PAGE_COUNT = 2;
+    private static final int PAGE_COUNT = 3;
 
     private static final int LIST_TOP = 46;
     private static final int LIST_HEIGHT = 102;
@@ -50,6 +51,14 @@ public class GuiMotionSensor extends GuiScreen {
 
     private static final int ARROW_SIZE = 18;
     private static final int ARROW_Y = 159;
+
+    /** Bound Area page: six stepper rows, then the full/clear actions. */
+    private static final int AREA_TOP = 46;
+    private static final int AREA_ROW_HEIGHT = 14;
+    private static final int AREA_STEP_X = 220;
+    private static final int AREA_STEP_SIZE = 12;
+    private static final int AREA_ACTION_Y = 132;
+    private static final int AREA_ACTION_HEIGHT = 16;
 
     private static final int[] SETTINGS_OPTIONS = {
             MessageSensorOption.MATCH_HOLDER,
@@ -175,7 +184,7 @@ public class GuiMotionSensor extends GuiScreen {
                 scrollRight = clampScroll(scrollRight + (wheel > 0 ? -ROW_HEIGHT : ROW_HEIGHT),
                         available().size(), LIST_HEIGHT);
             }
-        } else if (inOptionsArea(lastMouseX, lastMouseY)) {
+        } else if (page == 1 && inOptionsArea(lastMouseX, lastMouseY)) {
             scrollOptions += wheel > 0 ? -OPTION_HEIGHT : OPTION_HEIGHT;
         }
     }
@@ -206,11 +215,27 @@ public class GuiMotionSensor extends GuiScreen {
                     send(available.get(rightRow), true);
                     return;
                 }
-            } else {
+            } else if (page == 1) {
                 int option = settingsOptionAt(mouseX, mouseY);
                 if (option >= 0) {
                     ModNetwork.INSTANCE.sendToServer(
                             new MessageSensorOption(pos, option, !optionValue(option)));
+                    return;
+                }
+            } else {
+                int step = areaStepAt(mouseX, mouseY);
+                if (step >= 0) {
+                    sendAreaChange(step / 2, (step & 1) == 0 ? -1 : 1);
+                    return;
+                }
+                int action = areaActionAt(mouseX, mouseY);
+                if (action == 0) {
+                    sendArea(-2, 2, -2, 2, -2, 2);
+                    return;
+                }
+                if (action == 1) {
+                    ModNetwork.INSTANCE.sendToServer(
+                            new MessageSensorArea(pos, true, 0, 0, 0, 0, 0, 0));
                     return;
                 }
             }
@@ -221,6 +246,73 @@ public class GuiMotionSensor extends GuiScreen {
     private void send(Entry entry, boolean assign) {
         ModNetwork.INSTANCE.sendToServer(
                 new MessageSensorKey(pos, entry.value, assign, entry.biometric));
+    }
+
+    // ------------------------------------------------------------ bound area
+
+    private int areaValue(int index) {
+        TileEntityMotionSensor sensor = sensor();
+        if (sensor == null || !sensor.hasArea()) {
+            // The editor starts from the full 5x5x5 template while nothing is bound.
+            return (index & 1) == 0 ? -2 : 2;
+        }
+        switch (index) {
+            case 0: return sensor.getAreaMinX();
+            case 1: return sensor.getAreaMaxX();
+            case 2: return sensor.getAreaMinY();
+            case 3: return sensor.getAreaMaxY();
+            case 4: return sensor.getAreaMinZ();
+            case 5: return sensor.getAreaMaxZ();
+            default: return 0;
+        }
+    }
+
+    private void sendArea(int minX, int maxX, int minY, int maxY, int minZ, int maxZ) {
+        ModNetwork.INSTANCE.sendToServer(
+                new MessageSensorArea(pos, false, minX, maxX, minY, maxY, minZ, maxZ));
+    }
+
+    /** index 0..5 = min/max X, min/max Y, min/max Z. */
+    private void sendAreaChange(int index, int delta) {
+        int[] values = new int[6];
+        for (int i = 0; i < values.length; i++) values[i] = areaValue(i);
+
+        if ((index & 1) == 0) {
+            values[index] = Math.max(-2, Math.min(0, values[index] + delta));
+            if (values[index] > values[index + 1]) values[index] = values[index + 1];
+        } else {
+            values[index] = Math.max(0, Math.min(2, values[index] + delta));
+            if (values[index] < values[index - 1]) values[index] = values[index - 1];
+        }
+
+        sendArea(values[0], values[1], values[2], values[3], values[4], values[5]);
+    }
+
+    private int areaStepAt(int mouseX, int mouseY) {
+        for (int i = 0; i < 6; i++) {
+            int y = top + AREA_TOP + i * AREA_ROW_HEIGHT + 1;
+            int minusX = left + AREA_STEP_X;
+            int plusX = minusX + AREA_STEP_SIZE + 6;
+            if (inStepper(mouseX, mouseY, minusX, y)) return i * 2;
+            if (inStepper(mouseX, mouseY, plusX, y)) return i * 2 + 1;
+        }
+        return -1;
+    }
+
+    private int areaActionAt(int mouseX, int mouseY) {
+        int y = top + AREA_ACTION_Y;
+        if (mouseX >= left + 24 && mouseX < left + 124 && mouseY >= y && mouseY < y + AREA_ACTION_HEIGHT) {
+            return 0;
+        }
+        if (mouseX >= left + 132 && mouseX < left + 202 && mouseY >= y && mouseY < y + AREA_ACTION_HEIGHT) {
+            return 1;
+        }
+        return -1;
+    }
+
+    private static boolean inStepper(int mouseX, int mouseY, int x, int y) {
+        return mouseX >= x && mouseX < x + AREA_STEP_SIZE
+                && mouseY >= y && mouseY < y + AREA_STEP_SIZE;
     }
 
     private void changePage(int delta) {
@@ -303,7 +395,8 @@ public class GuiMotionSensor extends GuiScreen {
         drawRect(left + 1, top + 1, left + PANEL_WIDTH - 1, top + 2, 0xFF3C3C40);
 
         if (page == 0) drawKeysPage(mouseX, mouseY);
-        else drawOptionsPage(mouseX, mouseY);
+        else if (page == 1) drawOptionsPage(mouseX, mouseY);
+        else drawAreaPage(mouseX, mouseY);
 
         drawFooter(mouseX, mouseY);
         super.drawScreen(mouseX, mouseY, partialTicks);
@@ -344,6 +437,53 @@ public class GuiMotionSensor extends GuiScreen {
         GuiClip.end();
         drawScrollbar(left + PANEL_WIDTH - 8, top + OPTION_TOP, OPTION_AREA,
                 SETTINGS_OPTIONS.length, OPTION_HEIGHT, scrollOptions);
+    }
+
+    private void drawAreaPage(int mouseX, int mouseY) {
+        TileEntityMotionSensor sensor = sensor();
+        boolean bound = sensor != null && sensor.hasArea();
+        String size = bound
+                ? (sensor.getAreaMaxX() - sensor.getAreaMinX() + 1) + "x"
+                        + (sensor.getAreaMaxY() - sensor.getAreaMinY() + 1) + "x"
+                        + (sensor.getAreaMaxZ() - sensor.getAreaMinZ() + 1)
+                : "UNBOUND";
+        drawTitle(size);
+        drawString(fontRenderer, "MAX 5 x 5 x 5", left + 24, top + 29, HEADING);
+        drawRect(left + 12, top + 40, left + PANEL_WIDTH - 12, top + 41, RULE);
+
+        String[] labels = {"Min X", "Max X", "Min Y", "Max Y", "Min Z", "Max Z"};
+        for (int i = 0; i < labels.length; i++) drawAreaRow(i, labels[i], mouseX, mouseY);
+
+        drawActionButton(24, AREA_ACTION_Y, 100, "Full 5x5x5", areaActionAt(mouseX, mouseY) == 0);
+        drawActionButton(132, AREA_ACTION_Y, 70, "Clear", areaActionAt(mouseX, mouseY) == 1);
+    }
+
+    private void drawAreaRow(int index, String label, int mouseX, int mouseY) {
+        int y = top + AREA_TOP + index * AREA_ROW_HEIGHT;
+        drawString(fontRenderer, label, left + 24, y + 2, COLOUR);
+        drawString(fontRenderer, String.valueOf(areaValue(index)), left + 170, y + 2, COLOUR);
+
+        int minusX = left + AREA_STEP_X;
+        int plusX = minusX + AREA_STEP_SIZE + 6;
+        drawStepButton(minusX, y + 1, "-", areaStepAt(mouseX, mouseY) == index * 2);
+        drawStepButton(plusX, y + 1, "+", areaStepAt(mouseX, mouseY) == index * 2 + 1);
+    }
+
+    private void drawStepButton(int x, int y, String text, boolean hovered) {
+        drawRect(x, y, x + AREA_STEP_SIZE, y + AREA_STEP_SIZE, hovered ? HOVER : 0xFF232326);
+        drawRect(x, y, x + AREA_STEP_SIZE, y + 1, RULE);
+        drawRect(x, y + AREA_STEP_SIZE - 1, x + AREA_STEP_SIZE, y + AREA_STEP_SIZE, 0xFF151517);
+        drawCenteredString(fontRenderer, text, x + AREA_STEP_SIZE / 2, y + 2, COLOUR);
+    }
+
+    private void drawActionButton(int x, int y, int width, String label, boolean hovered) {
+        int ax = left + x;
+        drawRect(ax, top + y, ax + width, top + y + AREA_ACTION_HEIGHT,
+                hovered ? HOVER : 0xFF232326);
+        drawRect(ax, top + y, ax + width, top + y + 1, RULE);
+        drawRect(ax, top + y + AREA_ACTION_HEIGHT - 1, ax + width, top + y + AREA_ACTION_HEIGHT,
+                0xFF151517);
+        drawCenteredString(fontRenderer, label, ax + width / 2, top + y + 4, COLOUR);
     }
 
     private void drawTitle(String rightLabel) {
@@ -472,9 +612,10 @@ public class GuiMotionSensor extends GuiScreen {
         drawRect(left + 12, top + 152, left + PANEL_WIDTH - 12, top + 153, RULE);
         drawPageArrows(mouseX, mouseY);
 
-        String hint = page == 0
-                ? "Click a key or ID to move it - ESC to close"
-                : "Changes apply to this Motion Sensor";
+        String hint;
+        if (page == 0) hint = "Click a key or ID to move it - ESC to close";
+        else if (page == 1) hint = "Changes apply to this Motion Sensor";
+        else hint = "The sensor must stay inside the bound area";
         drawCenteredString(fontRenderer, hint, left + PANEL_WIDTH / 2, top + 164, MUTED);
         drawCenteredString(fontRenderer, (page + 1) + "/" + PAGE_COUNT,
                 left + PANEL_WIDTH / 2, top + 180, DIM);

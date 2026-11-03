@@ -48,6 +48,8 @@ public final class ModNetwork {
         INSTANCE.registerMessage(MessageSensorKey.Handler.class, MessageSensorKey.class, 18, Side.SERVER);
         INSTANCE.registerMessage(MessageSensorOption.Handler.class, MessageSensorOption.class, 19,
                 Side.SERVER);
+        INSTANCE.registerMessage(MessageSensorArea.Handler.class, MessageSensorArea.class, 20,
+                Side.SERVER);
     }
 
     private ModNetwork() {
