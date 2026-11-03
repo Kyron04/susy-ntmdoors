@@ -162,14 +162,16 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
 * Motion Sensor (`ntmdoors:motion_sensor`): a compact 8x8x1.375 surface-mounted PIR housing with an
   off-white body, charcoal bezel, ringed concentric Fresnel lens and four status-light colours.
   It can be placed on floors, walls and ceilings; the clicked face becomes the lens direction.
-  It passively scans the area bound inside a 5x5x5 cube around itself and checks every card in a
-  player's inventory against the private keys and biometric IDs assigned through its console. A
-  normal right-click with the Motion Relay Key opens the console; sneak + right-click starts a
-  two-corner area selection, or page three edits the six offsets directly. The active box must
-  contain the sensor, and an unbound sensor stays inactive and shows yellow. Detection goes
-  through walls. Green means idle, blue means authorised personnel are inside, red means someone
-  without clearance is inside, and yellow means the sensor is disabled or has no area bound. The
-  Redstone page is still to come.
+  It passively scans the cells selected inside a 5x5 footprint that projects five blocks away from
+  the mounting surface along the sensor's facing, and checks every card in a player's inventory
+  against the private keys and biometric IDs assigned through its console. A normal right-click
+  with the Motion Relay Key opens the console. Page three is a 5x5 grid: left-click adds one block
+  of depth to a column, right-click removes one, and opacity shows the selected depth. The centre
+  cell keeps the green sensor dot. Sneak + right-click the sensor toggles a client-side transparent
+  blue projection of the selected cells; sneak + right-click again hides it. An unbound sensor
+  stays inactive and shows yellow. Detection goes through walls. Green means idle, blue means
+  authorised personnel are inside, red means someone without clearance is inside, and yellow means
+  the sensor is disabled or has no area bound. The Redstone page is still to come.
 * Concrete and HL Blocks: the NTM CE concrete building set and decorative HL Blocks, with metadata
   families, flat Chisel carving groups, shift-scroll cycling, recipes, and `concrete` /
   `blockConcrete` / `blockhl` ore dictionary entries. Chisel is required.

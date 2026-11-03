@@ -7,22 +7,21 @@ import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.util.Biometrics;
 import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.PrivateKeys;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.common.util.Constants;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -30,21 +29,21 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Motion Sensor. It passively scans the players inside its bound area and checks the cards in
+ * Motion Sensor. It passively scans players inside the selected cells and checks the cards in
  * their inventories against the private keys and biometric identities assigned here.
  *
- * <p>The selectable volume is a 5x5x5 cube centred on the sensor. The active area is a sub-box of
- * that cube, selected with the Motion Relay Key or the Bound Area page, and must contain the
- * sensor. An unbound sensor stays inactive and shows the yellow light.</p>
+ * <p>The editable volume is a 5x5 footprint projecting five blocks away from the mounting surface
+ * along the sensor's facing. Each footprint cell stores a depth (0-5): the number of selected
+ * blocks from the surface outward. The centre cell is the sensor itself and always keeps at least
+ * depth one when an area is bound.</p>
  */
 public class TileEntityMotionSensor extends TileEntitySynced implements ITickable {
 
     /** Four scans per second is enough for a light and keeps the inventory checks cheap. */
     private static final int SCAN_INTERVAL = 10;
-    /** The selectable volume extends two blocks in every direction from the sensor. */
-    public static final int MAX_OFFSET = 2;
-    /** A binding session the player walks away from expires after a minute. */
-    private static final int AREA_BINDING_TICKS = 20 * 60;
+    public static final int GRID_SIZE = 5;
+    public static final int MAX_DEPTH = 5;
+    public static final int CENTER = 2;
 
     /** One enrolled identity: the UUID stored on a card plus the cached name to display. */
     public static final class BiometricId {
@@ -68,21 +67,14 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
     private boolean ignoreIds;
     private boolean enabled = true;
 
-    /** Active area offsets from the sensor block. Only meaningful while {@link #areaBound}. */
+    /** One depth 0-5 per grid cell, indexed u + v * 5. */
+    private final byte[] areaDepths = new byte[GRID_SIZE * GRID_SIZE];
     private boolean areaBound;
-    private int minX = -MAX_OFFSET;
-    private int maxX = MAX_OFFSET;
-    private int minY = -MAX_OFFSET;
-    private int maxY = MAX_OFFSET;
-    private int minZ = -MAX_OFFSET;
-    private int maxZ = MAX_OFFSET;
-
-    /** Server-only area-binding session. */
+    /** Cached culling box for the fixed 5x5x5 projection. */
     @javax.annotation.Nullable
-    private UUID areaBindingPlayer;
+    private AxisAlignedBB projectionBounds;
     @javax.annotation.Nullable
-    private BlockPos areaCornerA;
-    private int areaBindingTicks;
+    private EnumFacing projectionFacing;
 
     private int scanTicks;
     private BlockMotionSensor.Status status = BlockMotionSensor.Status.IDLE;
@@ -170,56 +162,24 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         return areaBound;
     }
 
-    public int getAreaMinX() {
-        return minX;
+    /** Depth for one footprint cell, 0-5. */
+    public int getAreaDepth(int u, int v) {
+        if (u < 0 || u >= GRID_SIZE || v < 0 || v >= GRID_SIZE) return 0;
+        return areaDepths[u + v * GRID_SIZE] & 0xFF;
     }
 
-    public int getAreaMaxX() {
-        return maxX;
-    }
+    /** Server side: replaces the footprint depths. The centre cell must keep the sensor included. */
+    public boolean setAreaDepths(byte[] depths) {
+        if (world == null || world.isRemote || depths == null || depths.length != areaDepths.length) {
+            return false;
+        }
+        for (byte depth : depths) {
+            if (depth < 0 || depth > MAX_DEPTH) return false;
+        }
+        int centre = depths[CENTER + CENTER * GRID_SIZE];
+        if (centre < 1) return false;
 
-    public int getAreaMinY() {
-        return minY;
-    }
-
-    public int getAreaMaxY() {
-        return maxY;
-    }
-
-    public int getAreaMinZ() {
-        return minZ;
-    }
-
-    public int getAreaMaxZ() {
-        return maxZ;
-    }
-
-    /** The complete selectable 5x5x5 cube, used for the selection preview. */
-    public AxisAlignedBB getMaxBox() {
-        return new AxisAlignedBB(pos.getX() - MAX_OFFSET, pos.getY() - MAX_OFFSET,
-                pos.getZ() - MAX_OFFSET, pos.getX() + MAX_OFFSET + 1,
-                pos.getY() + MAX_OFFSET + 1, pos.getZ() + MAX_OFFSET + 1);
-    }
-
-    /** The active area, or null while no area has been bound. */
-    @javax.annotation.Nullable
-    public AxisAlignedBB getActiveBox() {
-        if (!areaBound) return null;
-        return new AxisAlignedBB(pos.getX() + minX, pos.getY() + minY, pos.getZ() + minZ,
-                pos.getX() + maxX + 1, pos.getY() + maxY + 1, pos.getZ() + maxZ + 1);
-    }
-
-    /** Server side: binds a sub-box. Offsets are relative to the sensor and must contain it. */
-    public boolean setArea(int minX, int maxX, int minY, int maxY, int minZ, int maxZ) {
-        if (world == null || world.isRemote) return false;
-        if (!validArea(minX, maxX, minY, maxY, minZ, maxZ)) return false;
-
-        this.minX = minX;
-        this.maxX = maxX;
-        this.minY = minY;
-        this.maxY = maxY;
-        this.minZ = minZ;
-        this.maxZ = maxZ;
+        System.arraycopy(depths, 0, areaDepths, 0, areaDepths.length);
         areaBound = true;
         sync();
         if (enabled) setStatus(BlockMotionSensor.Status.IDLE);
@@ -229,168 +189,77 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
     /** Server side: returns the sensor to the unbound, inactive state. */
     public boolean clearArea() {
         if (world == null || world.isRemote || !areaBound) return false;
+        Arrays.fill(areaDepths, (byte) 0);
         areaBound = false;
-        resetAreaFields();
         playersInside.clear();
         setStatus(BlockMotionSensor.Status.MAINTENANCE);
         sync();
         return true;
     }
 
-    /** The editor starts from the full 5x5x5 template whenever no area is bound. */
-    private void resetAreaFields() {
-        minX = -MAX_OFFSET;
-        maxX = MAX_OFFSET;
-        minY = -MAX_OFFSET;
-        maxY = MAX_OFFSET;
-        minZ = -MAX_OFFSET;
-        maxZ = MAX_OFFSET;
-    }
+    /** The world cells selected by the current footprint, in sensor-local order. */
+    public List<BlockPos> getSelectedCells() {
+        if (!areaBound) return Collections.emptyList();
 
-    /** Offsets are inclusive and the sensor (0,0,0) must stay inside the box. */
-    private static boolean validArea(int minX, int maxX, int minY, int maxY, int minZ, int maxZ) {
-        if (minX < -MAX_OFFSET || maxX > MAX_OFFSET
-                || minY < -MAX_OFFSET || maxY > MAX_OFFSET
-                || minZ < -MAX_OFFSET || maxZ > MAX_OFFSET) {
-            return false;
-        }
-        if (minX > maxX || minY > maxY || minZ > maxZ) return false;
-        return minX <= 0 && maxX >= 0
-                && minY <= 0 && maxY >= 0
-                && minZ <= 0 && maxZ >= 0;
-    }
-
-    // ------------------------------------------------------------ area binding
-
-    public boolean isAreaBindingFor(EntityPlayer player) {
-        return player != null && areaBindingPlayer != null
-                && areaBindingPlayer.equals(player.getUniqueID());
-    }
-
-    /** Server side: starts a two-corner selection session for this player. */
-    public boolean startAreaBinding(EntityPlayer player) {
-        if (world == null || world.isRemote || player == null) return false;
-        if (areaBindingPlayer != null && !areaBindingPlayer.equals(player.getUniqueID())) {
-            msg(player, "ntmdoors.msg.motion_area_busy");
-            return false;
-        }
-
-        cancelOtherAreaBindings(world, player, this);
-        areaBindingPlayer = player.getUniqueID();
-        areaCornerA = null;
-        areaBindingTicks = AREA_BINDING_TICKS;
-        showAreaOutline(true);
-        msg(player, "ntmdoors.msg.motion_area_started");
-        return true;
-    }
-
-    /** Server side: cancels the current session for this player. */
-    public boolean cancelAreaBinding(EntityPlayer player) {
-        if (!isAreaBindingFor(player)) return false;
-        stopAreaBinding();
-        msg(player, "ntmdoors.msg.motion_area_cancelled");
-        return true;
-    }
-
-    /**
-     * Server side: records one corner. The first click arms the session; the second binds the box.
-     * Invalid corners are refused without losing the first one.
-     */
-    public boolean setAreaCorner(EntityPlayer player, BlockPos clicked) {
-        if (world == null || world.isRemote || player == null || clicked == null) return false;
-        if (!isAreaBindingFor(player)) return false;
-
-        int ox = clicked.getX() - pos.getX();
-        int oy = clicked.getY() - pos.getY();
-        int oz = clicked.getZ() - pos.getZ();
-        if (Math.abs(ox) > MAX_OFFSET || Math.abs(oy) > MAX_OFFSET || Math.abs(oz) > MAX_OFFSET) {
-            msg(player, "ntmdoors.msg.motion_area_invalid");
-            return false;
-        }
-
-        if (areaCornerA == null) {
-            areaCornerA = clicked.toImmutable();
-            areaBindingTicks = AREA_BINDING_TICKS;
-            showAreaOutline(true);
-            msg(player, "ntmdoors.msg.motion_area_first");
-            return true;
-        }
-
-        int newMinX = Math.min(areaCornerA.getX(), clicked.getX()) - pos.getX();
-        int newMaxX = Math.max(areaCornerA.getX(), clicked.getX()) - pos.getX();
-        int newMinY = Math.min(areaCornerA.getY(), clicked.getY()) - pos.getY();
-        int newMaxY = Math.max(areaCornerA.getY(), clicked.getY()) - pos.getY();
-        int newMinZ = Math.min(areaCornerA.getZ(), clicked.getZ()) - pos.getZ();
-        int newMaxZ = Math.max(areaCornerA.getZ(), clicked.getZ()) - pos.getZ();
-
-        if (!setArea(newMinX, newMaxX, newMinY, newMaxY, newMinZ, newMaxZ)) {
-            msg(player, "ntmdoors.msg.motion_area_invalid");
-            return false;
-        }
-
-        stopAreaBinding();
-        showAreaOutline(false);
-        msg(player, "ntmdoors.msg.motion_area_bound",
-                newMaxX - newMinX + 1, newMaxY - newMinY + 1, newMaxZ - newMinZ + 1);
-        return true;
-    }
-
-    /** The sensor whose area-binding session belongs to this player, or null. */
-    @javax.annotation.Nullable
-    public static TileEntityMotionSensor findAreaBinding(net.minecraft.world.World world, EntityPlayer player) {
-        if (world == null || player == null) return null;
-        for (TileEntity te : world.loadedTileEntityList) {
-            if (te instanceof TileEntityMotionSensor
-                    && ((TileEntityMotionSensor) te).isAreaBindingFor(player)) {
-                return (TileEntityMotionSensor) te;
+        List<BlockPos> cells = new ArrayList<>();
+        for (int v = 0; v < GRID_SIZE; v++) {
+            for (int u = 0; u < GRID_SIZE; u++) {
+                int depth = getAreaDepth(u, v);
+                for (int d = 0; d < depth; d++) cells.add(cellAt(u, v, d));
             }
         }
-        return null;
+        return cells;
     }
 
-    private void stopAreaBinding() {
-        areaBindingPlayer = null;
-        areaCornerA = null;
-        areaBindingTicks = 0;
+    /** The complete 5x5x5 projection, used by the renderer's culling box. */
+    public AxisAlignedBB getProjectionBounds() {
+        EnumFacing facing = facing();
+        if (projectionBounds != null && projectionFacing == facing) return projectionBounds;
+
+        int minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE, minZ = Integer.MAX_VALUE;
+        int maxX = Integer.MIN_VALUE, maxY = Integer.MIN_VALUE, maxZ = Integer.MIN_VALUE;
+        for (int d = 0; d < MAX_DEPTH; d++) {
+            for (int v = 0; v < GRID_SIZE; v++) {
+                for (int u = 0; u < GRID_SIZE; u++) {
+                    BlockPos cell = cellAt(u, v, d);
+                    minX = Math.min(minX, cell.getX());
+                    minY = Math.min(minY, cell.getY());
+                    minZ = Math.min(minZ, cell.getZ());
+                    maxX = Math.max(maxX, cell.getX());
+                    maxY = Math.max(maxY, cell.getY());
+                    maxZ = Math.max(maxZ, cell.getZ());
+                }
+            }
+        }
+
+        projectionFacing = facing;
+        projectionBounds = new AxisAlignedBB(minX, minY, minZ, maxX + 1, maxY + 1, maxZ + 1);
+        return projectionBounds;
     }
 
-    private static void cancelOtherAreaBindings(net.minecraft.world.World world, EntityPlayer player,
-                                                TileEntity except) {
-        for (TileEntity te : world.loadedTileEntityList) {
-            if (te == except || !(te instanceof TileEntityMotionSensor)) continue;
-            TileEntityMotionSensor sensor = (TileEntityMotionSensor) te;
-            if (sensor.isAreaBindingFor(player)) sensor.stopAreaBinding();
-        }
+    /** Local cell (u,v,d) to the world. d=0 is the sensor's plane. */
+    private BlockPos cellAt(int u, int v, int d) {
+        return pos.offset(uAxis(), u - CENTER)
+                .offset(vAxis(), v - CENTER)
+                .offset(facing(), d);
     }
 
-    /** Draws the selectable cube or the active area with short-lived red dust particles. */
-    public void showAreaOutline(boolean max) {
-        if (world == null || world.isRemote) return;
-        AxisAlignedBB box = max ? getMaxBox() : getActiveBox();
-        if (box == null) return;
-
-        for (double x = box.minX; x <= box.maxX; x += 0.5D) {
-            particle(x, box.minY, box.minZ);
-            particle(x, box.minY, box.maxZ);
-            particle(x, box.maxY, box.minZ);
-            particle(x, box.maxY, box.maxZ);
-        }
-        for (double y = box.minY; y <= box.maxY; y += 0.5D) {
-            particle(box.minX, y, box.minZ);
-            particle(box.minX, y, box.maxZ);
-            particle(box.maxX, y, box.minZ);
-            particle(box.maxX, y, box.maxZ);
-        }
-        for (double z = box.minZ; z <= box.maxZ; z += 0.5D) {
-            particle(box.minX, box.minY, z);
-            particle(box.maxX, box.minY, z);
-            particle(box.minX, box.maxY, z);
-            particle(box.maxX, box.maxY, z);
-        }
+    private EnumFacing facing() {
+        if (world == null) return EnumFacing.NORTH;
+        IBlockState state = world.getBlockState(pos);
+        return state.getBlock() instanceof BlockMotionSensor
+                ? state.getValue(BlockMotionSensor.FACING) : EnumFacing.NORTH;
     }
 
-    private void particle(double x, double y, double z) {
-        world.spawnParticle(EnumParticleTypes.END_ROD, x, y, z, 0, 0, 0);
+    /** Horizontal sensors look across; vertical sensors use world east/south for the grid. */
+    private EnumFacing uAxis() {
+        EnumFacing facing = facing();
+        return facing.getAxis().isHorizontal() ? facing.rotateY() : EnumFacing.EAST;
+    }
+
+    private EnumFacing vAxis() {
+        EnumFacing facing = facing();
+        return facing.getAxis().isHorizontal() ? EnumFacing.UP : EnumFacing.SOUTH;
     }
 
     // ------------------------------------------------------------ assignment
@@ -466,12 +335,6 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
     @Override
     public void update() {
         if (world == null || world.isRemote) return;
-
-        if (areaBindingPlayer != null) {
-            EntityPlayer player = world.getPlayerEntityByUUID(areaBindingPlayer);
-            if (player == null || --areaBindingTicks <= 0) stopAreaBinding();
-        }
-
         if (++scanTicks < SCAN_INTERVAL) return;
         scanTicks = 0;
         updateDetection();
@@ -484,8 +347,13 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
             return;
         }
 
-        AxisAlignedBB box = getActiveBox();
-        if (box == null) {
+        List<AxisAlignedBB> boxes = new ArrayList<>();
+        for (BlockPos cell : getSelectedCells()) {
+            boxes.add(new AxisAlignedBB(cell.getX(), cell.getY(), cell.getZ(),
+                    cell.getX() + 1, cell.getY() + 1, cell.getZ() + 1));
+        }
+        if (boxes.isEmpty()) {
+            playersInside.clear();
             setStatus(BlockMotionSensor.Status.MAINTENANCE);
             return;
         }
@@ -496,8 +364,16 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
 
         for (EntityPlayer player : world.playerEntities) {
             if (player == null || !player.isEntityAlive() || player.isSpectator()) continue;
-            Vec3d centre = new Vec3d(player.posX, player.posY + player.height * 0.5D, player.posZ);
-            if (!box.contains(centre)) continue;
+
+            boolean inside = false;
+            AxisAlignedBB playerBox = player.getEntityBoundingBox();
+            for (AxisAlignedBB box : boxes) {
+                if (playerBox.intersects(box)) {
+                    inside = true;
+                    break;
+                }
+            }
+            if (!inside) continue;
 
             current.add(player.getUniqueID());
             if (hasClearance(player)) authorized = true;
@@ -593,26 +469,22 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
 
     private void writeArea(NBTTagCompound tag) {
         tag.setBoolean("areaBound", areaBound);
-        tag.setInteger("areaMinX", minX);
-        tag.setInteger("areaMaxX", maxX);
-        tag.setInteger("areaMinY", minY);
-        tag.setInteger("areaMaxY", maxY);
-        tag.setInteger("areaMinZ", minZ);
-        tag.setInteger("areaMaxZ", maxZ);
+        tag.setByteArray("areaDepths", Arrays.copyOf(areaDepths, areaDepths.length));
     }
 
     private void readArea(NBTTagCompound tag) {
         areaBound = tag.getBoolean("areaBound");
-        resetAreaFields();
-        if (tag.hasKey("areaMinX")) minX = tag.getInteger("areaMinX");
-        if (tag.hasKey("areaMaxX")) maxX = tag.getInteger("areaMaxX");
-        if (tag.hasKey("areaMinY")) minY = tag.getInteger("areaMinY");
-        if (tag.hasKey("areaMaxY")) maxY = tag.getInteger("areaMaxY");
-        if (tag.hasKey("areaMinZ")) minZ = tag.getInteger("areaMinZ");
-        if (tag.hasKey("areaMaxZ")) maxZ = tag.getInteger("areaMaxZ");
-        if (!validArea(minX, maxX, minY, maxY, minZ, maxZ)) {
+        Arrays.fill(areaDepths, (byte) 0);
+        byte[] saved = tag.getByteArray("areaDepths");
+        if (saved.length == areaDepths.length) {
+            for (int i = 0; i < saved.length; i++) {
+                areaDepths[i] = (byte) Math.max(0, Math.min(MAX_DEPTH, saved[i] & 0xFF));
+            }
+        }
+        int centre = areaDepths[CENTER + CENTER * GRID_SIZE];
+        if (!areaBound || centre < 1) {
             areaBound = false;
-            resetAreaFields();
+            Arrays.fill(areaDepths, (byte) 0);
         }
     }
 
@@ -664,7 +536,13 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         }
     }
 
-    private static void msg(EntityPlayer player, String key, Object... args) {
-        player.sendStatusMessage(new TextComponentTranslation(key, args), true);
+    @Override
+    public AxisAlignedBB getRenderBoundingBox() {
+        return getProjectionBounds().grow(1.0D);
+    }
+
+    @Override
+    public double getMaxRenderDistanceSquared() {
+        return 16384D;
     }
 }

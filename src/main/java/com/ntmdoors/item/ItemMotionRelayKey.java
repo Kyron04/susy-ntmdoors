@@ -49,19 +49,8 @@ public class ItemMotionRelayKey extends Item {
 
         if (player.isSneaking()) {
             if (te instanceof TileEntityMotionSensor) {
-                if (world.isRemote) return EnumActionResult.SUCCESS;
-                TileEntityMotionSensor sensor = (TileEntityMotionSensor) te;
-                if (sensor.isAreaBindingFor(player)) sensor.cancelAreaBinding(player);
-                else sensor.startAreaBinding(player);
+                if (world.isRemote) NTMDoors.proxy.toggleMotionSensorOverlay(pos);
                 return EnumActionResult.SUCCESS;
-            }
-
-            if (!world.isRemote) {
-                TileEntityMotionSensor sensor = TileEntityMotionSensor.findAreaBinding(world, player);
-                if (sensor != null) {
-                    sensor.setAreaCorner(player, pos);
-                    return EnumActionResult.SUCCESS;
-                }
             }
             return EnumActionResult.PASS;
         }
@@ -81,8 +70,8 @@ public class ItemMotionRelayKey extends Item {
     @Override
     public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
         Names.addDescription(tooltip,
-                "Allows you to define an area the sensor is",
-                "placed in within 5 by 5 by 5 area",
-                "Sneak + Right Click");
+                "Right click a sensor to open its console.",
+                "Page three defines the 5 by 5 by 5 bound area.",
+                "Sneak + Right Click toggles the blue projection.");
     }
 }

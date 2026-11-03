@@ -111,4 +111,8 @@ public class CommonProxy {
     /** Client only: open the Motion Sensor console. */
     public void openMotionSensorGui(BlockPos pos) {
     }
+
+    /** Client only: show or hide the blue bound-area projection for one sensor. */
+    public void toggleMotionSensorOverlay(BlockPos pos) {
+    }
 }

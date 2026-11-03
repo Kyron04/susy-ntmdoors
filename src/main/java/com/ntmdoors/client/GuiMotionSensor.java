@@ -11,6 +11,7 @@ import com.ntmdoors.util.Biometrics;
 import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.PrivateKeys;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
@@ -52,12 +53,14 @@ public class GuiMotionSensor extends GuiScreen {
     private static final int ARROW_SIZE = 18;
     private static final int ARROW_Y = 159;
 
-    /** Bound Area page: six stepper rows, then the full/clear actions. */
-    private static final int AREA_TOP = 46;
-    private static final int AREA_ROW_HEIGHT = 14;
-    private static final int AREA_STEP_X = 220;
-    private static final int AREA_STEP_SIZE = 12;
-    private static final int AREA_ACTION_Y = 132;
+    /** Bound Area page: one 5x5 footprint grid, depth shown as opacity. */
+    private static final int AREA_GRID_X = 24;
+    private static final int AREA_GRID_Y = 46;
+    private static final int AREA_CELL = 20;
+    private static final int AREA_ACTION_X = 136;
+    private static final int AREA_FULL_Y = 112;
+    private static final int AREA_CLEAR_Y = 132;
+    private static final int AREA_ACTION_WIDTH = 100;
     private static final int AREA_ACTION_HEIGHT = 16;
 
     private static final int[] SETTINGS_OPTIONS = {
@@ -223,19 +226,32 @@ public class GuiMotionSensor extends GuiScreen {
                     return;
                 }
             } else {
-                int step = areaStepAt(mouseX, mouseY);
-                if (step >= 0) {
-                    sendAreaChange(step / 2, (step & 1) == 0 ? -1 : 1);
+                int cell = areaCellAt(mouseX, mouseY);
+                if (cell >= 0) {
+                    int[] depths = currentDepths();
+                    if (mouseButton == 0) {
+                        depths[cell] = Math.min(5, depths[cell] + 1);
+                        if (depths[12] < 1) depths[12] = 1;
+                        sendAreaDepths(depths);
+                    } else {
+                        if (depths[cell] <= 0) return;
+                        depths[cell] = Math.max(0, depths[cell] - 1);
+                        if (cell == 12) depths[cell] = Math.max(1, depths[cell]);
+                        sendAreaDepths(depths);
+                    }
                     return;
                 }
+
                 int action = areaActionAt(mouseX, mouseY);
                 if (action == 0) {
-                    sendArea(-2, 2, -2, 2, -2, 2);
+                    int[] depths = new int[25];
+                    java.util.Arrays.fill(depths, 5);
+                    sendAreaDepths(depths);
                     return;
                 }
                 if (action == 1) {
                     ModNetwork.INSTANCE.sendToServer(
-                            new MessageSensorArea(pos, true, 0, 0, 0, 0, 0, 0));
+                            new MessageSensorArea(pos, true, new byte[0]));
                     return;
                 }
             }
@@ -250,69 +266,41 @@ public class GuiMotionSensor extends GuiScreen {
 
     // ------------------------------------------------------------ bound area
 
-    private int areaValue(int index) {
+    private int[] currentDepths() {
+        int[] depths = new int[25];
         TileEntityMotionSensor sensor = sensor();
-        if (sensor == null || !sensor.hasArea()) {
-            // The editor starts from the full 5x5x5 template while nothing is bound.
-            return (index & 1) == 0 ? -2 : 2;
+        if (sensor == null || !sensor.hasArea()) return depths;
+        for (int v = 0; v < 5; v++) {
+            for (int u = 0; u < 5; u++) depths[u + v * 5] = sensor.getAreaDepth(u, v);
         }
-        switch (index) {
-            case 0: return sensor.getAreaMinX();
-            case 1: return sensor.getAreaMaxX();
-            case 2: return sensor.getAreaMinY();
-            case 3: return sensor.getAreaMaxY();
-            case 4: return sensor.getAreaMinZ();
-            case 5: return sensor.getAreaMaxZ();
-            default: return 0;
-        }
+        return depths;
     }
 
-    private void sendArea(int minX, int maxX, int minY, int maxY, int minZ, int maxZ) {
-        ModNetwork.INSTANCE.sendToServer(
-                new MessageSensorArea(pos, false, minX, maxX, minY, maxY, minZ, maxZ));
+    private void sendAreaDepths(int[] depths) {
+        byte[] bytes = new byte[depths.length];
+        for (int i = 0; i < depths.length; i++) bytes[i] = (byte) depths[i];
+        ModNetwork.INSTANCE.sendToServer(new MessageSensorArea(pos, false, bytes));
     }
 
-    /** index 0..5 = min/max X, min/max Y, min/max Z. */
-    private void sendAreaChange(int index, int delta) {
-        int[] values = new int[6];
-        for (int i = 0; i < values.length; i++) values[i] = areaValue(i);
-
-        if ((index & 1) == 0) {
-            values[index] = Math.max(-2, Math.min(0, values[index] + delta));
-            if (values[index] > values[index + 1]) values[index] = values[index + 1];
-        } else {
-            values[index] = Math.max(0, Math.min(2, values[index] + delta));
-            if (values[index] < values[index - 1]) values[index] = values[index - 1];
-        }
-
-        sendArea(values[0], values[1], values[2], values[3], values[4], values[5]);
-    }
-
-    private int areaStepAt(int mouseX, int mouseY) {
-        for (int i = 0; i < 6; i++) {
-            int y = top + AREA_TOP + i * AREA_ROW_HEIGHT + 1;
-            int minusX = left + AREA_STEP_X;
-            int plusX = minusX + AREA_STEP_SIZE + 6;
-            if (inStepper(mouseX, mouseY, minusX, y)) return i * 2;
-            if (inStepper(mouseX, mouseY, plusX, y)) return i * 2 + 1;
-        }
-        return -1;
+    /** Grid index u + v*5, or -1 when the mouse is outside the 5x5 footprint. */
+    private int areaCellAt(int mouseX, int mouseY) {
+        int x = mouseX - (left + AREA_GRID_X);
+        int y = mouseY - (top + AREA_GRID_Y);
+        if (x < 0 || y < 0 || x >= AREA_CELL * 5 || y >= AREA_CELL * 5) return -1;
+        return x / AREA_CELL + (y / AREA_CELL) * 5;
     }
 
     private int areaActionAt(int mouseX, int mouseY) {
-        int y = top + AREA_ACTION_Y;
-        if (mouseX >= left + 24 && mouseX < left + 124 && mouseY >= y && mouseY < y + AREA_ACTION_HEIGHT) {
-            return 0;
-        }
-        if (mouseX >= left + 132 && mouseX < left + 202 && mouseY >= y && mouseY < y + AREA_ACTION_HEIGHT) {
-            return 1;
+        int x = left + AREA_ACTION_X;
+        if (mouseX >= x && mouseX < x + AREA_ACTION_WIDTH) {
+            if (mouseY >= top + AREA_FULL_Y && mouseY < top + AREA_FULL_Y + AREA_ACTION_HEIGHT) {
+                return 0;
+            }
+            if (mouseY >= top + AREA_CLEAR_Y && mouseY < top + AREA_CLEAR_Y + AREA_ACTION_HEIGHT) {
+                return 1;
+            }
         }
         return -1;
-    }
-
-    private static boolean inStepper(int mouseX, int mouseY, int x, int y) {
-        return mouseX >= x && mouseX < x + AREA_STEP_SIZE
-                && mouseY >= y && mouseY < y + AREA_STEP_SIZE;
     }
 
     private void changePage(int delta) {
@@ -442,38 +430,59 @@ public class GuiMotionSensor extends GuiScreen {
     private void drawAreaPage(int mouseX, int mouseY) {
         TileEntityMotionSensor sensor = sensor();
         boolean bound = sensor != null && sensor.hasArea();
-        String size = bound
-                ? (sensor.getAreaMaxX() - sensor.getAreaMinX() + 1) + "x"
-                        + (sensor.getAreaMaxY() - sensor.getAreaMinY() + 1) + "x"
-                        + (sensor.getAreaMaxZ() - sensor.getAreaMinZ() + 1)
-                : "UNBOUND";
-        drawTitle(size);
+        int[] depths = currentDepths();
+        int selected = 0;
+        for (int depth : depths) selected += depth;
+
+        drawTitle(bound ? selected + " blocks" : "UNBOUND");
         drawString(fontRenderer, "MAX 5 x 5 x 5", left + 24, top + 29, HEADING);
         drawRect(left + 12, top + 40, left + PANEL_WIDTH - 12, top + 41, RULE);
 
-        String[] labels = {"Min X", "Max X", "Min Y", "Max Y", "Min Z", "Max Z"};
-        for (int i = 0; i < labels.length; i++) drawAreaRow(i, labels[i], mouseX, mouseY);
+        GlStateManager.enableBlend();
+        GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA,
+                GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+        for (int v = 0; v < 5; v++) {
+            for (int u = 0; u < 5; u++) {
+                int x = left + AREA_GRID_X + u * AREA_CELL;
+                int y = top + AREA_GRID_Y + v * AREA_CELL;
+                drawAreaCell(u, v, x, y, depths[u + v * 5], mouseX, mouseY);
+            }
+        }
 
-        drawActionButton(24, AREA_ACTION_Y, 100, "Full 5x5x5", areaActionAt(mouseX, mouseY) == 0);
-        drawActionButton(132, AREA_ACTION_Y, 70, "Clear", areaActionAt(mouseX, mouseY) == 1);
+        // The sensor sits at the centre of the footprint, regardless of the selected depths.
+        int centreX = left + AREA_GRID_X + 2 * AREA_CELL + AREA_CELL / 2;
+        int centreY = top + AREA_GRID_Y + 2 * AREA_CELL + AREA_CELL / 2;
+        drawRect(centreX - 3, centreY - 3, centreX + 4, centreY + 4, 0xFF0A5A2A);
+        drawRect(centreX - 2, centreY - 2, centreX + 3, centreY + 3, 0xFF35E06A);
+        GlStateManager.disableBlend();
+
+        drawString(fontRenderer, "LEFT CLICK +1 DEPTH", left + 136, top + 52, COLOUR);
+        drawString(fontRenderer, "RIGHT CLICK -1 DEPTH", left + 136, top + 64, COLOUR);
+        drawString(fontRenderer, "OPACITY = DEPTH", left + 136, top + 76, MUTED);
+        drawString(fontRenderer, "CENTER DOT = SENSOR", left + 136, top + 88, MUTED);
+        drawString(fontRenderer, "SELECTED: " + selected, left + 136, top + 100, MUTED);
+
+        drawActionButton(AREA_ACTION_X, AREA_FULL_Y, AREA_ACTION_WIDTH,
+                "Full 5x5x5", areaActionAt(mouseX, mouseY) == 0);
+        drawActionButton(AREA_ACTION_X, AREA_CLEAR_Y, AREA_ACTION_WIDTH,
+                "Clear", areaActionAt(mouseX, mouseY) == 1);
     }
 
-    private void drawAreaRow(int index, String label, int mouseX, int mouseY) {
-        int y = top + AREA_TOP + index * AREA_ROW_HEIGHT;
-        drawString(fontRenderer, label, left + 24, y + 2, COLOUR);
-        drawString(fontRenderer, String.valueOf(areaValue(index)), left + 170, y + 2, COLOUR);
+    private void drawAreaCell(int u, int v, int x, int y, int depth, int mouseX, int mouseY) {
+        boolean hovered = mouseX >= x && mouseX < x + AREA_CELL && mouseY >= y && mouseY < y + AREA_CELL;
+        drawRect(x, y, x + AREA_CELL, y + AREA_CELL, hovered ? 0xFF2A2D32 : 0xFF1B1B1E);
 
-        int minusX = left + AREA_STEP_X;
-        int plusX = minusX + AREA_STEP_SIZE + 6;
-        drawStepButton(minusX, y + 1, "-", areaStepAt(mouseX, mouseY) == index * 2);
-        drawStepButton(plusX, y + 1, "+", areaStepAt(mouseX, mouseY) == index * 2 + 1);
-    }
+        if (depth > 0) {
+            int alpha = Math.min(210, 55 + depth * 31);
+            int colour = (alpha << 24) | 0x003A7BFF;
+            drawRect(x + 1, y + 1, x + AREA_CELL - 1, y + AREA_CELL - 1, colour);
+        }
 
-    private void drawStepButton(int x, int y, String text, boolean hovered) {
-        drawRect(x, y, x + AREA_STEP_SIZE, y + AREA_STEP_SIZE, hovered ? HOVER : 0xFF232326);
-        drawRect(x, y, x + AREA_STEP_SIZE, y + 1, RULE);
-        drawRect(x, y + AREA_STEP_SIZE - 1, x + AREA_STEP_SIZE, y + AREA_STEP_SIZE, 0xFF151517);
-        drawCenteredString(fontRenderer, text, x + AREA_STEP_SIZE / 2, y + 2, COLOUR);
+        drawRect(x, y, x + AREA_CELL, y + 1, RULE);
+        drawRect(x, y, x + 1, y + AREA_CELL, RULE);
+        drawRect(x + AREA_CELL - 1, y, x + AREA_CELL, y + AREA_CELL, RULE);
+        drawRect(x, y + AREA_CELL - 1, x + AREA_CELL, y + AREA_CELL, RULE);
+        drawString(fontRenderer, String.valueOf(depth), x + 2, y + 2, depth > 0 ? 0xFFFFFFFF : 0xFF6A6A6A);
     }
 
     private void drawActionButton(int x, int y, int width, String label, boolean hovered) {
@@ -615,7 +624,7 @@ public class GuiMotionSensor extends GuiScreen {
         String hint;
         if (page == 0) hint = "Click a key or ID to move it - ESC to close";
         else if (page == 1) hint = "Changes apply to this Motion Sensor";
-        else hint = "The sensor must stay inside the bound area";
+        else hint = "Left click adds depth, right click removes it";
         drawCenteredString(fontRenderer, hint, left + PANEL_WIDTH / 2, top + 164, MUTED);
         drawCenteredString(fontRenderer, (page + 1) + "/" + PAGE_COUNT,
                 left + PANEL_WIDTH / 2, top + 180, DIM);

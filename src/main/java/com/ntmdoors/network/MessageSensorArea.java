@@ -11,52 +11,39 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 /**
- * Client to server: a Bound Area page edit. The values are sensor-relative offsets; the server
- * re-validates the 5x5x5 limit and that the sensor remains inside the box.
+ * Client to server: the complete 5x5 footprint depth map from the Bound Area page. The server
+ * validates every depth and that the centre cell still contains the sensor.
  */
 public class MessageSensorArea implements IMessage {
 
     private BlockPos pos;
     private boolean clear;
-    private int minX, maxX, minY, maxY, minZ, maxZ;
+    private byte[] depths = new byte[TileEntityMotionSensor.GRID_SIZE * TileEntityMotionSensor.GRID_SIZE];
 
     public MessageSensorArea() {
     }
 
-    public MessageSensorArea(BlockPos pos, boolean clear,
-                             int minX, int maxX, int minY, int maxY, int minZ, int maxZ) {
+    public MessageSensorArea(BlockPos pos, boolean clear, byte[] depths) {
         this.pos = pos;
         this.clear = clear;
-        this.minX = minX;
-        this.maxX = maxX;
-        this.minY = minY;
-        this.maxY = maxY;
-        this.minZ = minZ;
-        this.maxZ = maxZ;
+        this.depths = depths == null ? new byte[0] : depths;
     }
 
     @Override
     public void fromBytes(ByteBuf buf) {
         pos = NetworkUtil.readPos(buf);
         clear = buf.readBoolean();
-        minX = buf.readByte();
-        maxX = buf.readByte();
-        minY = buf.readByte();
-        maxY = buf.readByte();
-        minZ = buf.readByte();
-        maxZ = buf.readByte();
+        int length = buf.readUnsignedByte();
+        depths = new byte[length];
+        buf.readBytes(depths);
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
         NetworkUtil.writePos(buf, pos);
         buf.writeBoolean(clear);
-        buf.writeByte(minX);
-        buf.writeByte(maxX);
-        buf.writeByte(minY);
-        buf.writeByte(maxY);
-        buf.writeByte(minZ);
-        buf.writeByte(maxZ);
+        buf.writeByte(depths.length);
+        buf.writeBytes(depths);
     }
 
     public static class Handler implements IMessageHandler<MessageSensorArea, IMessage> {
@@ -85,8 +72,7 @@ public class MessageSensorArea implements IMessage {
                 return;
             }
 
-            if (!sensor.setArea(message.minX, message.maxX, message.minY, message.maxY,
-                    message.minZ, message.maxZ)) {
+            if (!sensor.setAreaDepths(message.depths)) {
                 player.sendStatusMessage(new TextComponentTranslation(
                         "ntmdoors.msg.motion_area_invalid"), true);
             }

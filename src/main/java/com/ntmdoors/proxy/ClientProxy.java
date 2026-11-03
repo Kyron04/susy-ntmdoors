@@ -6,6 +6,8 @@ import com.ntmdoors.client.GuiKeycardViewer;
 import com.ntmdoors.client.GuiKeypadSecurityCode;
 import com.ntmdoors.client.GuiMotionSensor;
 import com.ntmdoors.client.GuiRedstoneGate;
+import com.ntmdoors.client.MotionSensorOverlay;
+import com.ntmdoors.client.RenderMotionSensorArea;
 import com.ntmdoors.client.GuiRelayKeyName;
 import com.ntmdoors.client.GuiSafeBiometric;
 import com.ntmdoors.client.GuiSafeCode;
@@ -27,6 +29,7 @@ import com.ntmdoors.tile.TileEntityDoorGeneric;
 import com.ntmdoors.tile.TileEntityDoorKeypad;
 import com.ntmdoors.tile.TileEntityKeycardProgrammer;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
+import com.ntmdoors.tile.TileEntityMotionSensor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IReloadableResourceManager;
 import net.minecraft.client.resources.IResourceManager;
@@ -51,6 +54,7 @@ public class ClientProxy extends CommonProxy {
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityDoorKeypad.class, new RenderDoorKeypad());
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityKeycardScanner.class, new RenderKeycardScanner());
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityKeycardProgrammer.class, new RenderKeycardProgrammer());
+        ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMotionSensor.class, new RenderMotionSensorArea());
     }
 
     @Override
@@ -111,6 +115,11 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void openMotionSensorGui(BlockPos pos) {
         Minecraft.getMinecraft().displayGuiScreen(new GuiMotionSensor(pos));
+    }
+
+    @Override
+    public void toggleMotionSensorOverlay(BlockPos pos) {
+        MotionSensorOverlay.toggle(pos);
     }
 
     @Override

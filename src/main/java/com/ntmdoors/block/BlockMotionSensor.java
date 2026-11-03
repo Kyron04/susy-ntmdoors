@@ -153,8 +153,9 @@ public class BlockMotionSensor extends Block {
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player,
                                     EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
         if (HeldItems.holds(player, ItemMotionRelayKey.class)) {
-            if (world.isRemote && !player.isSneaking()) {
-                NTMDoors.proxy.openMotionSensorGui(pos);
+            if (world.isRemote) {
+                if (player.isSneaking()) NTMDoors.proxy.toggleMotionSensorOverlay(pos);
+                else NTMDoors.proxy.openMotionSensorGui(pos);
             }
             return true;
         }
