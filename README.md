@@ -169,9 +169,12 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   of depth to a column, right-click removes one, and opacity shows the selected depth. The centre
   cell keeps the green sensor dot. Sneak + right-click the sensor toggles a client-side transparent
   blue projection of the selected cells; sneak + right-click again hides it. An unbound sensor
-  stays inactive and shows yellow. Detection goes through walls. Green means idle, blue means
-  authorised personnel are inside, red means someone without clearance is inside, and yellow means
-  the sensor is disabled or has no area bound. Page four is the red `REDSTONE` page with
+  stays inactive and shows yellow. Detection goes through walls. Page two has `Detect players`,
+  `Detect hostile mobs` and `Detect neutral mobs`; all three start on, so every living entity type
+  is covered. Non-player living entities are always unauthorized intruders, while players use the
+  card rules above. Green means idle, blue means authorised players are inside, red means any
+  unauthorized player or mob is inside, and yellow means the sensor is disabled or has no area
+  bound. Page four is the red `REDSTONE` page with
   `Authorized entry`, `Unauthorized entry`, `Sensor disabled` and `Sensor enabled` event switches.
   Sneak + right-click the sensor with the Redstone Relay Key to start or finish a gate-binding
   session, then sneak + right-click gates to link them. Each enabled event pulses every linked

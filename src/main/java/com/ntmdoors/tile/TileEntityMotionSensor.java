@@ -8,6 +8,9 @@ import com.ntmdoors.util.Biometrics;
 import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.PrivateKeys;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.item.EntityArmorStand;
+import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -66,8 +69,8 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
 
     private final List<PrivateKeys.Key> assignedKeys = new ArrayList<>();
     private final List<BiometricId> assignedIds = new ArrayList<>();
-    /** Server-only set of players currently inside the detection volume. */
-    private final Set<UUID> playersInside = new HashSet<>();
+    /** Server-only set of entities currently inside the detection volume. */
+    private final Set<UUID> entitiesInside = new HashSet<>();
     private final boolean[] redstoneEvents = new boolean[RS_EVENT_COUNT];
     private final RedstoneBinding redstoneBinding = new RedstoneBinding(this);
 
@@ -75,6 +78,9 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
     private boolean ignoreKeys;
     private boolean ignoreIds;
     private boolean enabled = true;
+    private boolean detectPlayers = true;
+    private boolean detectHostile = true;
+    private boolean detectNeutral = true;
 
     /** One depth 0-5 per grid cell, indexed u + v * 5. */
     private final byte[] areaDepths = new byte[GRID_SIZE * GRID_SIZE];
@@ -141,6 +147,39 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         return true;
     }
 
+    public boolean isDetectPlayers() {
+        return detectPlayers;
+    }
+
+    public boolean setDetectPlayers(boolean value) {
+        if (world == null || world.isRemote || detectPlayers == value) return false;
+        detectPlayers = value;
+        sync();
+        return true;
+    }
+
+    public boolean isDetectHostile() {
+        return detectHostile;
+    }
+
+    public boolean setDetectHostile(boolean value) {
+        if (world == null || world.isRemote || detectHostile == value) return false;
+        detectHostile = value;
+        sync();
+        return true;
+    }
+
+    public boolean isDetectNeutral() {
+        return detectNeutral;
+    }
+
+    public boolean setDetectNeutral(boolean value) {
+        if (world == null || world.isRemote || detectNeutral == value) return false;
+        detectNeutral = value;
+        sync();
+        return true;
+    }
+
     public boolean isEnabled() {
         return enabled;
     }
@@ -150,7 +189,7 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         if (world == null || world.isRemote || enabled == value) return false;
         enabled = value;
         if (!value) {
-            playersInside.clear();
+            entitiesInside.clear();
             setStatus(BlockMotionSensor.Status.MAINTENANCE);
         } else {
             setStatus(areaBound ? BlockMotionSensor.Status.IDLE : BlockMotionSensor.Status.MAINTENANCE);
@@ -243,7 +282,7 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         if (world == null || world.isRemote || !areaBound) return false;
         Arrays.fill(areaDepths, (byte) 0);
         areaBound = false;
-        playersInside.clear();
+        entitiesInside.clear();
         setStatus(BlockMotionSensor.Status.MAINTENANCE);
         sync();
         return true;
@@ -395,7 +434,7 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
 
     private void updateDetection() {
         if (!enabled || !areaBound) {
-            playersInside.clear();
+            entitiesInside.clear();
             setStatus(BlockMotionSensor.Status.MAINTENANCE);
             return;
         }
@@ -406,7 +445,7 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
                     cell.getX() + 1, cell.getY() + 1, cell.getZ() + 1));
         }
         if (boxes.isEmpty()) {
-            playersInside.clear();
+            entitiesInside.clear();
             setStatus(BlockMotionSensor.Status.MAINTENANCE);
             return;
         }
@@ -417,22 +456,31 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         boolean enteredAuthorized = false;
         boolean enteredUnauthorized = false;
 
-        for (EntityPlayer player : world.playerEntities) {
-            if (player == null || !player.isEntityAlive() || player.isSpectator()) continue;
+        for (EntityLivingBase entity : world.getEntitiesWithinAABB(
+                EntityLivingBase.class, getProjectionBounds())) {
+            if (entity == null || !entity.isEntityAlive() || entity instanceof EntityArmorStand) continue;
+
+            boolean player = entity instanceof EntityPlayer;
+            if (player) {
+                if (!detectPlayers || ((EntityPlayer) entity).isSpectator()) continue;
+            } else {
+                boolean hostile = entity instanceof IMob;
+                if (hostile ? !detectHostile : !detectNeutral) continue;
+            }
 
             boolean inside = false;
-            AxisAlignedBB playerBox = player.getEntityBoundingBox();
+            AxisAlignedBB entityBox = entity.getEntityBoundingBox();
             for (AxisAlignedBB box : boxes) {
-                if (playerBox.intersects(box)) {
+                if (entityBox.intersects(box)) {
                     inside = true;
                     break;
                 }
             }
             if (!inside) continue;
 
-            UUID id = player.getUniqueID();
-            boolean wasInside = playersInside.contains(id);
-            boolean clearance = hasClearance(player);
+            UUID id = entity.getUniqueID();
+            boolean wasInside = entitiesInside.contains(id);
+            boolean clearance = player && hasClearance((EntityPlayer) entity);
             current.add(id);
             if (clearance) authorized = true;
             else unauthorized = true;
@@ -442,8 +490,8 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
             }
         }
 
-        playersInside.clear();
-        playersInside.addAll(current);
+        entitiesInside.clear();
+        entitiesInside.addAll(current);
 
         // An intruder takes priority over an authorized player standing in the same volume.
         if (unauthorized) setStatus(BlockMotionSensor.Status.MOTION);
@@ -523,6 +571,9 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         tag.setBoolean("ignoreKeys", ignoreKeys);
         tag.setBoolean("ignoreIds", ignoreIds);
         tag.setBoolean("enabled", enabled);
+        tag.setBoolean("detectPlayers", detectPlayers);
+        tag.setBoolean("detectHostile", detectHostile);
+        tag.setBoolean("detectNeutral", detectNeutral);
     }
 
     private void readOptions(NBTTagCompound tag) {
@@ -531,6 +582,10 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         ignoreKeys = tag.getBoolean("ignoreKeys");
         ignoreIds = tag.getBoolean("ignoreIds");
         enabled = !tag.hasKey("enabled") || tag.getBoolean("enabled");
+        // All three detection categories default on for older sensors and fresh placements.
+        detectPlayers = !tag.hasKey("detectPlayers") || tag.getBoolean("detectPlayers");
+        detectHostile = !tag.hasKey("detectHostile") || tag.getBoolean("detectHostile");
+        detectNeutral = !tag.hasKey("detectNeutral") || tag.getBoolean("detectNeutral");
     }
 
     private void writeEvents(NBTTagCompound tag) {

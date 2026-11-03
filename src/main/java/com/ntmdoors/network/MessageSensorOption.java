@@ -20,7 +20,10 @@ public class MessageSensorOption implements IMessage {
     public static final int REDSTONE_UNAUTHORIZED = 5;
     public static final int REDSTONE_DISABLED = 6;
     public static final int REDSTONE_ENABLED = 7;
-    public static final int OPTION_COUNT = 8;
+    public static final int DETECT_PLAYERS = 8;
+    public static final int DETECT_HOSTILE = 9;
+    public static final int DETECT_NEUTRAL = 10;
+    public static final int OPTION_COUNT = 11;
 
     private BlockPos pos;
     private int option;
@@ -92,6 +95,15 @@ public class MessageSensorOption implements IMessage {
                     break;
                 case REDSTONE_ENABLED:
                     sensor.setRedstoneEvent(TileEntityMotionSensor.RS_ENABLED, message.value);
+                    break;
+                case DETECT_PLAYERS:
+                    sensor.setDetectPlayers(message.value);
+                    break;
+                case DETECT_HOSTILE:
+                    sensor.setDetectHostile(message.value);
+                    break;
+                case DETECT_NEUTRAL:
+                    sensor.setDetectNeutral(message.value);
                     break;
                 default:
                     break;

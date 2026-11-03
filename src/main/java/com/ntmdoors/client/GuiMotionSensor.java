@@ -64,6 +64,9 @@ public class GuiMotionSensor extends GuiScreen {
     private static final int AREA_ACTION_HEIGHT = 16;
 
     private static final int[] SETTINGS_OPTIONS = {
+            MessageSensorOption.DETECT_PLAYERS,
+            MessageSensorOption.DETECT_HOSTILE,
+            MessageSensorOption.DETECT_NEUTRAL,
             MessageSensorOption.MATCH_HOLDER,
             MessageSensorOption.IGNORE_KEYS,
             MessageSensorOption.IGNORE_IDS,
@@ -137,6 +140,12 @@ public class GuiMotionSensor extends GuiScreen {
                 return sensor != null && sensor.isIgnoreIds();
             case MessageSensorOption.ENABLED:
                 return sensor == null || sensor.isEnabled();
+            case MessageSensorOption.DETECT_PLAYERS:
+                return sensor == null || sensor.isDetectPlayers();
+            case MessageSensorOption.DETECT_HOSTILE:
+                return sensor == null || sensor.isDetectHostile();
+            case MessageSensorOption.DETECT_NEUTRAL:
+                return sensor == null || sensor.isDetectNeutral();
             case MessageSensorOption.REDSTONE_AUTHORIZED:
                 return sensor != null && sensor.isRedstoneEvent(TileEntityMotionSensor.RS_AUTHORIZED);
             case MessageSensorOption.REDSTONE_UNAUTHORIZED:
@@ -374,7 +383,7 @@ public class GuiMotionSensor extends GuiScreen {
 
     private int settingsOptionAt(int mouseX, int mouseY) {
         if (!inOptionsArea(mouseX, mouseY)) return -1;
-        int clamped = clampScroll(scrollOptions, SETTINGS_OPTIONS.length, OPTION_AREA);
+        int clamped = clampOptionsScroll(scrollOptions, SETTINGS_OPTIONS.length);
         int row = (mouseY - (top + OPTION_TOP) + clamped) / OPTION_HEIGHT;
         return row >= 0 && row < SETTINGS_OPTIONS.length ? SETTINGS_OPTIONS[row] : -1;
     }
@@ -387,7 +396,7 @@ public class GuiMotionSensor extends GuiScreen {
 
     private boolean inOption(int index, int mouseX, int mouseY, int scroll, int count) {
         if (!inOptionsArea(mouseX, mouseY)) return false;
-        int y = top + OPTION_TOP + index * OPTION_HEIGHT - clampScroll(scroll, count, OPTION_AREA);
+        int y = top + OPTION_TOP + index * OPTION_HEIGHT - clampOptionsScroll(scroll, count);
         return mouseY >= y && mouseY < y + OPTION_HEIGHT - 2;
     }
 
@@ -399,6 +408,11 @@ public class GuiMotionSensor extends GuiScreen {
 
     private static int clampScroll(int scroll, int count, int height) {
         return Math.max(0, Math.min(maxScroll(count, height), scroll));
+    }
+
+    private static int clampOptionsScroll(int scroll, int count) {
+        int max = Math.max(0, count * OPTION_HEIGHT - OPTION_AREA);
+        return Math.max(0, Math.min(max, scroll));
     }
 
     private static int maxScroll(int count, int height) {
@@ -454,7 +468,7 @@ public class GuiMotionSensor extends GuiScreen {
         drawString(fontRenderer, "TOGGLES", left + 12, top + 29, HEADING);
         drawRect(left + 12, top + 40, left + PANEL_WIDTH - 12, top + 41, RULE);
 
-        scrollOptions = clampScroll(scrollOptions, SETTINGS_OPTIONS.length, OPTION_AREA);
+        scrollOptions = clampOptionsScroll(scrollOptions, SETTINGS_OPTIONS.length);
         GuiClip.begin(left + 8, top + OPTION_TOP, PANEL_WIDTH - 16, OPTION_AREA);
         for (int i = 0; i < SETTINGS_OPTIONS.length; i++) {
             int y = top + OPTION_TOP + i * OPTION_HEIGHT - scrollOptions;
@@ -627,6 +641,12 @@ public class GuiMotionSensor extends GuiScreen {
                 return "Ignore biometric IDs";
             case MessageSensorOption.ENABLED:
                 return "Enabled";
+            case MessageSensorOption.DETECT_PLAYERS:
+                return "Detect players";
+            case MessageSensorOption.DETECT_HOSTILE:
+                return "Detect hostile mobs";
+            case MessageSensorOption.DETECT_NEUTRAL:
+                return "Detect neutral mobs";
             case MessageSensorOption.REDSTONE_AUTHORIZED:
                 return "Authorized entry";
             case MessageSensorOption.REDSTONE_UNAUTHORIZED:
@@ -650,6 +670,12 @@ public class GuiMotionSensor extends GuiScreen {
                 return "Assigned biometric IDs are ignored.";
             case MessageSensorOption.ENABLED:
                 return "Disable to stop detection.";
+            case MessageSensorOption.DETECT_PLAYERS:
+                return "Players in the bound area.";
+            case MessageSensorOption.DETECT_HOSTILE:
+                return "Monsters and hostile mobs.";
+            case MessageSensorOption.DETECT_NEUTRAL:
+                return "Animals, villagers and NPCs.";
             case MessageSensorOption.REDSTONE_AUTHORIZED:
                 return "A cleared player enters.";
             case MessageSensorOption.REDSTONE_UNAUTHORIZED:
