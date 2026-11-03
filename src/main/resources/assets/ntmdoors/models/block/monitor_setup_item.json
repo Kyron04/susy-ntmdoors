@@ -1,0 +1,1386 @@
+﻿{
+    "parent":  "block/block",
+    "gui_light":  "front",
+    "ambientocclusion":  true,
+    "textures":  {
+                     "particle":  "ntmdoors:blocks/desk_wood",
+                     "wood":  "ntmdoors:blocks/desk_wood",
+                     "frame":  "ntmdoors:blocks/desk_frame",
+                     "bezel":  "ntmdoors:blocks/monitor_bezel",
+                     "back":  "ntmdoors:blocks/monitor_back",
+                     "screen":  "ntmdoors:blocks/monitor_screen",
+                     "led":  "ntmdoors:blocks/monitor_led",
+                     "keyboard":  "ntmdoors:blocks/keyboard",
+                     "mouse":  "ntmdoors:blocks/mouse",
+                     "mouse_wheel":  "ntmdoors:blocks/mouse_wheel",
+                     "mousepad":  "ntmdoors:blocks/mousepad"
+                 },
+    "elements":  [
+                     {
+                         "from":  [
+                                      0,
+                                      5.833333333333333,
+                                      5.333333333333333
+                                  ],
+                         "to":  [
+                                    16,
+                                    6.5,
+                                    10.666666666666666
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#wood"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#wood"
+                                                },
+                                       "south":  {
+                                                     "texture":  "#wood"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#wood"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#wood"
+                                              },
+                                       "down":  {
+                                                    "texture":  "#frame"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      0,
+                                      1.1666666666666667,
+                                      5.333333333333333
+                                  ],
+                         "to":  [
+                                    0.66666666666666663,
+                                    5.833333333333333,
+                                    10.666666666666666
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "south":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "down":  {
+                                                    "texture":  "#frame"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      15.333333333333332,
+                                      1.1666666666666667,
+                                      5.333333333333333
+                                  ],
+                         "to":  [
+                                    16,
+                                    5.833333333333333,
+                                    10.666666666666666
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "south":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "down":  {
+                                                    "texture":  "#frame"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      0,
+                                      5.166666666666667,
+                                      10
+                                  ],
+                         "to":  [
+                                    16,
+                                    5.833333333333333,
+                                    10.666666666666666
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "south":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "down":  {
+                                                    "texture":  "#frame"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      0,
+                                      1.1666666666666667,
+                                      10
+                                  ],
+                         "to":  [
+                                    16,
+                                    1.8333333333333335,
+                                    10.666666666666666
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "south":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#frame"
+                                              },
+                                       "down":  {
+                                                    "texture":  "#frame"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      5.333333333333333,
+                                      6.5,
+                                      6
+                                  ],
+                         "to":  [
+                                    10.666666666666666,
+                                    6.7666666666666666,
+                                    7.6666666666666661
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "south":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#keyboard"
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      5.6666666666666661,
+                                      6.5,
+                                      5.6666666666666661
+                                  ],
+                         "to":  [
+                                    10.333333333333332,
+                                    6.6333333333333329,
+                                    6
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "south":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#frame"
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      3.833333333333333,
+                                      6.5,
+                                      5.833333333333333
+                                  ],
+                         "to":  [
+                                    5.333333333333333,
+                                    6.5333333333333341,
+                                    7.333333333333333
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#mousepad"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#mousepad"
+                                                },
+                                       "south":  {
+                                                     "texture":  "#mousepad"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#mousepad"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#mousepad"
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      4.1666666666666661,
+                                      6.5333333333333341,
+                                      6.0666666666666664
+                                  ],
+                         "to":  [
+                                    4.6666666666666661,
+                                    6.8,
+                                    6.8
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "south":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#mouse"
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      4.333333333333333,
+                                      6.8,
+                                      6.1666666666666661
+                                  ],
+                         "to":  [
+                                    4.4333333333333336,
+                                    6.8666666666666671,
+                                    6.3
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "south":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#mouse_wheel"
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      3.25,
+                                      6.7666666666666666,
+                                      9.1
+                                  ],
+                         "to":  [
+                                    3.4166666666666665,
+                                    14.833333333333332,
+                                    9.2666666666666657
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "south":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#frame"
+                                              }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         3.333333333333333,
+                                                         1.1666666666666667,
+                                                         9.1833333333333336
+                                                     ],
+                                          "axis":  "y",
+                                          "angle":  22.5,
+                                          "rescale":  false
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      2.8666666666666663,
+                                      6.5,
+                                      8.9333333333333336
+                                  ],
+                         "to":  [
+                                    3.8,
+                                    6.7666666666666666,
+                                    9.3999999999999986
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "south":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#frame"
+                                              }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         3.333333333333333,
+                                                         1.1666666666666667,
+                                                         9.1833333333333336
+                                                     ],
+                                          "axis":  "y",
+                                          "angle":  22.5,
+                                          "rescale":  false
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      1.1666666666666665,
+                                      7.5,
+                                      8.4333333333333336
+                                  ],
+                         "to":  [
+                                    5.5,
+                                    10.833333333333332,
+                                    8.9333333333333336
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "south":  {
+                                                     "texture":  "#back"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#bezel"
+                                              },
+                                       "down":  {
+                                                    "texture":  "#bezel"
+                                                }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         3.333333333333333,
+                                                         1.1666666666666667,
+                                                         9.1833333333333336
+                                                     ],
+                                          "axis":  "y",
+                                          "angle":  22.5,
+                                          "rescale":  false
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      1.3333333333333333,
+                                      7.666666666666667,
+                                      8.4166666666666661
+                                  ],
+                         "to":  [
+                                    5.333333333333333,
+                                    10.666666666666666,
+                                    8.4333333333333336
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#screen"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "west":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#bezel"
+                                              },
+                                       "down":  {
+                                                    "texture":  "#bezel"
+                                                }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         3.333333333333333,
+                                                         1.1666666666666667,
+                                                         9.1833333333333336
+                                                     ],
+                                          "axis":  "y",
+                                          "angle":  22.5,
+                                          "rescale":  false
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      5.1666666666666661,
+                                      7.55,
+                                      8.3999999999999986
+                                  ],
+                         "to":  [
+                                    5.333333333333333,
+                                    7.6333333333333329,
+                                    8.4333333333333336
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#led"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "west":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#bezel"
+                                              },
+                                       "down":  {
+                                                    "texture":  "#bezel"
+                                                }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         3.333333333333333,
+                                                         1.1666666666666667,
+                                                         9.1833333333333336
+                                                     ],
+                                          "axis":  "y",
+                                          "angle":  22.5,
+                                          "rescale":  false
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      3.1333333333333333,
+                                      8.8333333333333321,
+                                      8.9333333333333336
+                                  ],
+                         "to":  [
+                                    3.5333333333333332,
+                                    9.4999999999999982,
+                                    9.1
+                                ],
+                         "faces":  {
+                                       "east":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "west":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#frame"
+                                              },
+                                       "down":  {
+                                                    "texture":  "#frame"
+                                                }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         3.333333333333333,
+                                                         1.1666666666666667,
+                                                         9.1833333333333336
+                                                     ],
+                                          "axis":  "y",
+                                          "angle":  22.5,
+                                          "rescale":  false
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      1.1666666666666665,
+                                      11.499999999999998,
+                                      8.4333333333333336
+                                  ],
+                         "to":  [
+                                    5.5,
+                                    14.833333333333332,
+                                    8.9333333333333336
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "south":  {
+                                                     "texture":  "#back"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#bezel"
+                                              },
+                                       "down":  {
+                                                    "texture":  "#bezel"
+                                                }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         3.333333333333333,
+                                                         1.1666666666666667,
+                                                         9.1833333333333336
+                                                     ],
+                                          "axis":  "y",
+                                          "angle":  22.5,
+                                          "rescale":  false
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      1.3333333333333333,
+                                      11.666666666666666,
+                                      8.4166666666666661
+                                  ],
+                         "to":  [
+                                    5.333333333333333,
+                                    14.666666666666666,
+                                    8.4333333333333336
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#screen"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "west":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#bezel"
+                                              },
+                                       "down":  {
+                                                    "texture":  "#bezel"
+                                                }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         3.333333333333333,
+                                                         1.1666666666666667,
+                                                         9.1833333333333336
+                                                     ],
+                                          "axis":  "y",
+                                          "angle":  22.5,
+                                          "rescale":  false
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      5.1666666666666661,
+                                      11.549999999999999,
+                                      8.3999999999999986
+                                  ],
+                         "to":  [
+                                    5.333333333333333,
+                                    11.633333333333331,
+                                    8.4333333333333336
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#led"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "west":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#bezel"
+                                              },
+                                       "down":  {
+                                                    "texture":  "#bezel"
+                                                }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         3.333333333333333,
+                                                         1.1666666666666667,
+                                                         9.1833333333333336
+                                                     ],
+                                          "axis":  "y",
+                                          "angle":  22.5,
+                                          "rescale":  false
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      3.1333333333333333,
+                                      12.833333333333332,
+                                      8.9333333333333336
+                                  ],
+                         "to":  [
+                                    3.5333333333333332,
+                                    13.499999999999998,
+                                    9.1
+                                ],
+                         "faces":  {
+                                       "east":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "west":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#frame"
+                                              },
+                                       "down":  {
+                                                    "texture":  "#frame"
+                                                }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         3.333333333333333,
+                                                         1.1666666666666667,
+                                                         9.1833333333333336
+                                                     ],
+                                          "axis":  "y",
+                                          "angle":  22.5,
+                                          "rescale":  false
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      7.9166666666666661,
+                                      6.7666666666666666,
+                                      9.1
+                                  ],
+                         "to":  [
+                                    8.0833333333333321,
+                                    14.833333333333332,
+                                    9.2666666666666657
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "south":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#frame"
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      7.5333333333333332,
+                                      6.5,
+                                      8.9333333333333336
+                                  ],
+                         "to":  [
+                                    8.466666666666665,
+                                    6.7666666666666666,
+                                    9.3999999999999986
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "south":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#frame"
+                                              }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      5.833333333333333,
+                                      7.5,
+                                      8.4333333333333336
+                                  ],
+                         "to":  [
+                                    10.166666666666666,
+                                    10.833333333333332,
+                                    8.9333333333333336
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "south":  {
+                                                     "texture":  "#back"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#bezel"
+                                              },
+                                       "down":  {
+                                                    "texture":  "#bezel"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      6,
+                                      7.666666666666667,
+                                      8.4166666666666661
+                                  ],
+                         "to":  [
+                                    10,
+                                    10.666666666666666,
+                                    8.4333333333333336
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#screen"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "west":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#bezel"
+                                              },
+                                       "down":  {
+                                                    "texture":  "#bezel"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      9.8333333333333321,
+                                      7.55,
+                                      8.3999999999999986
+                                  ],
+                         "to":  [
+                                    10,
+                                    7.6333333333333329,
+                                    8.4333333333333336
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#led"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "west":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#bezel"
+                                              },
+                                       "down":  {
+                                                    "texture":  "#bezel"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      7.7999999999999989,
+                                      8.8333333333333321,
+                                      8.9333333333333336
+                                  ],
+                         "to":  [
+                                    8.2,
+                                    9.4999999999999982,
+                                    9.1
+                                ],
+                         "faces":  {
+                                       "east":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "west":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#frame"
+                                              },
+                                       "down":  {
+                                                    "texture":  "#frame"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      5.833333333333333,
+                                      11.499999999999998,
+                                      8.4333333333333336
+                                  ],
+                         "to":  [
+                                    10.166666666666666,
+                                    14.833333333333332,
+                                    8.9333333333333336
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "south":  {
+                                                     "texture":  "#back"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#bezel"
+                                              },
+                                       "down":  {
+                                                    "texture":  "#bezel"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      6,
+                                      11.666666666666666,
+                                      8.4166666666666661
+                                  ],
+                         "to":  [
+                                    10,
+                                    14.666666666666666,
+                                    8.4333333333333336
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#screen"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "west":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#bezel"
+                                              },
+                                       "down":  {
+                                                    "texture":  "#bezel"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      9.8333333333333321,
+                                      11.549999999999999,
+                                      8.3999999999999986
+                                  ],
+                         "to":  [
+                                    10,
+                                    11.633333333333331,
+                                    8.4333333333333336
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#led"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "west":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#bezel"
+                                              },
+                                       "down":  {
+                                                    "texture":  "#bezel"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      7.7999999999999989,
+                                      12.833333333333332,
+                                      8.9333333333333336
+                                  ],
+                         "to":  [
+                                    8.2,
+                                    13.499999999999998,
+                                    9.1
+                                ],
+                         "faces":  {
+                                       "east":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "west":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#frame"
+                                              },
+                                       "down":  {
+                                                    "texture":  "#frame"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      12.583333333333332,
+                                      6.7666666666666666,
+                                      9.1
+                                  ],
+                         "to":  [
+                                    12.75,
+                                    14.833333333333332,
+                                    9.2666666666666657
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "south":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#frame"
+                                              }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         12.666666666666666,
+                                                         1.1666666666666667,
+                                                         9.1833333333333336
+                                                     ],
+                                          "axis":  "y",
+                                          "angle":  -22.5,
+                                          "rescale":  false
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      12.2,
+                                      6.5,
+                                      8.9333333333333336
+                                  ],
+                         "to":  [
+                                    13.133333333333333,
+                                    6.7666666666666666,
+                                    9.3999999999999986
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "south":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#frame"
+                                              }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         12.666666666666666,
+                                                         1.1666666666666667,
+                                                         9.1833333333333336
+                                                     ],
+                                          "axis":  "y",
+                                          "angle":  -22.5,
+                                          "rescale":  false
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      10.5,
+                                      7.5,
+                                      8.4333333333333336
+                                  ],
+                         "to":  [
+                                    14.833333333333332,
+                                    10.833333333333332,
+                                    8.9333333333333336
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "south":  {
+                                                     "texture":  "#back"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#bezel"
+                                              },
+                                       "down":  {
+                                                    "texture":  "#bezel"
+                                                }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         12.666666666666666,
+                                                         1.1666666666666667,
+                                                         9.1833333333333336
+                                                     ],
+                                          "axis":  "y",
+                                          "angle":  -22.5,
+                                          "rescale":  false
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      10.666666666666666,
+                                      7.666666666666667,
+                                      8.4166666666666661
+                                  ],
+                         "to":  [
+                                    14.666666666666666,
+                                    10.666666666666666,
+                                    8.4333333333333336
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#screen"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "west":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#bezel"
+                                              },
+                                       "down":  {
+                                                    "texture":  "#bezel"
+                                                }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         12.666666666666666,
+                                                         1.1666666666666667,
+                                                         9.1833333333333336
+                                                     ],
+                                          "axis":  "y",
+                                          "angle":  -22.5,
+                                          "rescale":  false
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      14.5,
+                                      7.55,
+                                      8.3999999999999986
+                                  ],
+                         "to":  [
+                                    14.666666666666666,
+                                    7.6333333333333329,
+                                    8.4333333333333336
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#led"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "west":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#bezel"
+                                              },
+                                       "down":  {
+                                                    "texture":  "#bezel"
+                                                }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         12.666666666666666,
+                                                         1.1666666666666667,
+                                                         9.1833333333333336
+                                                     ],
+                                          "axis":  "y",
+                                          "angle":  -22.5,
+                                          "rescale":  false
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      12.466666666666665,
+                                      8.8333333333333321,
+                                      8.9333333333333336
+                                  ],
+                         "to":  [
+                                    12.866666666666667,
+                                    9.4999999999999982,
+                                    9.1
+                                ],
+                         "faces":  {
+                                       "east":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "west":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#frame"
+                                              },
+                                       "down":  {
+                                                    "texture":  "#frame"
+                                                }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         12.666666666666666,
+                                                         1.1666666666666667,
+                                                         9.1833333333333336
+                                                     ],
+                                          "axis":  "y",
+                                          "angle":  -22.5,
+                                          "rescale":  false
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      10.5,
+                                      11.499999999999998,
+                                      8.4333333333333336
+                                  ],
+                         "to":  [
+                                    14.833333333333332,
+                                    14.833333333333332,
+                                    8.9333333333333336
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "south":  {
+                                                     "texture":  "#back"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#bezel"
+                                              },
+                                       "down":  {
+                                                    "texture":  "#bezel"
+                                                }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         12.666666666666666,
+                                                         1.1666666666666667,
+                                                         9.1833333333333336
+                                                     ],
+                                          "axis":  "y",
+                                          "angle":  -22.5,
+                                          "rescale":  false
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      10.666666666666666,
+                                      11.666666666666666,
+                                      8.4166666666666661
+                                  ],
+                         "to":  [
+                                    14.666666666666666,
+                                    14.666666666666666,
+                                    8.4333333333333336
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#screen"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "west":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#bezel"
+                                              },
+                                       "down":  {
+                                                    "texture":  "#bezel"
+                                                }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         12.666666666666666,
+                                                         1.1666666666666667,
+                                                         9.1833333333333336
+                                                     ],
+                                          "axis":  "y",
+                                          "angle":  -22.5,
+                                          "rescale":  false
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      14.5,
+                                      11.549999999999999,
+                                      8.3999999999999986
+                                  ],
+                         "to":  [
+                                    14.666666666666666,
+                                    11.633333333333331,
+                                    8.4333333333333336
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#led"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "west":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#bezel"
+                                              },
+                                       "down":  {
+                                                    "texture":  "#bezel"
+                                                }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         12.666666666666666,
+                                                         1.1666666666666667,
+                                                         9.1833333333333336
+                                                     ],
+                                          "axis":  "y",
+                                          "angle":  -22.5,
+                                          "rescale":  false
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      12.466666666666665,
+                                      12.833333333333332,
+                                      8.9333333333333336
+                                  ],
+                         "to":  [
+                                    12.866666666666667,
+                                    13.499999999999998,
+                                    9.1
+                                ],
+                         "faces":  {
+                                       "east":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "west":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#frame"
+                                              },
+                                       "down":  {
+                                                    "texture":  "#frame"
+                                                }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         12.666666666666666,
+                                                         1.1666666666666667,
+                                                         9.1833333333333336
+                                                     ],
+                                          "axis":  "y",
+                                          "angle":  -22.5,
+                                          "rescale":  false
+                                      }
+                     }
+                 ]
+}

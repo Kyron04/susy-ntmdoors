@@ -1,0 +1,293 @@
+﻿{
+    "parent":  "block/block",
+    "gui_light":  "front",
+    "ambientocclusion":  true,
+    "textures":  {
+                     "particle":  "ntmdoors:blocks/desk_wood",
+                     "wood":  "ntmdoors:blocks/desk_wood",
+                     "frame":  "ntmdoors:blocks/desk_frame",
+                     "bezel":  "ntmdoors:blocks/monitor_bezel",
+                     "back":  "ntmdoors:blocks/monitor_back",
+                     "screen":  "ntmdoors:blocks/monitor_screen",
+                     "led":  "ntmdoors:blocks/monitor_led",
+                     "keyboard":  "ntmdoors:blocks/keyboard",
+                     "mouse":  "ntmdoors:blocks/mouse",
+                     "mouse_wheel":  "ntmdoors:blocks/mouse_wheel",
+                     "mousepad":  "ntmdoors:blocks/mousepad"
+                 },
+    "elements":  [
+                     {
+                         "from":  [
+                                      5.75,
+                                      0.80000000000000071,
+                                      11.3
+                                  ],
+                         "to":  [
+                                    6.25,
+                                    25,
+                                    11.8
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "south":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#frame"
+                                              }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         6,
+                                                         -16,
+                                                         11.55
+                                                     ],
+                                          "axis":  "y",
+                                          "angle":  -22.5,
+                                          "rescale":  false
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      4.6000000000000014,
+                                      0,
+                                      10.8
+                                  ],
+                         "to":  [
+                                    7.3999999999999986,
+                                    0.80000000000000071,
+                                    12.2
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "south":  {
+                                                     "texture":  "#frame"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#frame"
+                                              }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         6,
+                                                         -16,
+                                                         11.55
+                                                     ],
+                                          "axis":  "y",
+                                          "angle":  -22.5,
+                                          "rescale":  false
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      -0.5,
+                                      3,
+                                      9.3
+                                  ],
+                         "to":  [
+                                    12.5,
+                                    13,
+                                    10.8
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#bezel"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "south":  {
+                                                     "texture":  "#back"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#bezel"
+                                              },
+                                       "down":  {
+                                                    "texture":  "#bezel"
+                                                }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         6,
+                                                         -16,
+                                                         11.55
+                                                     ],
+                                          "axis":  "y",
+                                          "angle":  -22.5,
+                                          "rescale":  false
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      0,
+                                      3.5,
+                                      9.25
+                                  ],
+                         "to":  [
+                                    12,
+                                    12.5,
+                                    9.3
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#screen"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "west":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#bezel"
+                                              },
+                                       "down":  {
+                                                    "texture":  "#bezel"
+                                                }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         6,
+                                                         -16,
+                                                         11.55
+                                                     ],
+                                          "axis":  "y",
+                                          "angle":  -22.5,
+                                          "rescale":  false
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      11.5,
+                                      3.1499999999999986,
+                                      9.2
+                                  ],
+                         "to":  [
+                                    12,
+                                    3.3999999999999986,
+                                    9.3
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#led"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "west":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#bezel"
+                                              },
+                                       "down":  {
+                                                    "texture":  "#bezel"
+                                                }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         6,
+                                                         -16,
+                                                         11.55
+                                                     ],
+                                          "axis":  "y",
+                                          "angle":  -22.5,
+                                          "rescale":  false
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      5.3999999999999986,
+                                      7,
+                                      10.8
+                                  ],
+                         "to":  [
+                                    6.6000000000000014,
+                                    9,
+                                    11.3
+                                ],
+                         "faces":  {
+                                       "east":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "west":  {
+                                                    "texture":  "#frame"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#frame"
+                                              },
+                                       "down":  {
+                                                    "texture":  "#frame"
+                                                }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         6,
+                                                         -16,
+                                                         11.55
+                                                     ],
+                                          "axis":  "y",
+                                          "angle":  -22.5,
+                                          "rescale":  false
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      11.5,
+                                      15.149999999999999,
+                                      9.2
+                                  ],
+                         "to":  [
+                                    12,
+                                    15.399999999999999,
+                                    9.3
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#led"
+                                                 },
+                                       "east":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "west":  {
+                                                    "texture":  "#bezel"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#bezel"
+                                              },
+                                       "down":  {
+                                                    "texture":  "#bezel"
+                                                }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         6,
+                                                         -16,
+                                                         11.55
+                                                     ],
+                                          "axis":  "y",
+                                          "angle":  -22.5,
+                                          "rescale":  false
+                                      }
+                     }
+                 ]
+}

@@ -6,6 +6,7 @@ import com.ntmdoors.block.BlockDoorGeneric;
 import com.ntmdoors.block.BlockDoorKeypad;
 import com.ntmdoors.block.BlockKeycardProgrammer;
 import com.ntmdoors.block.BlockKeycardScanner;
+import com.ntmdoors.block.BlockMonitorSetup;
 import com.ntmdoors.block.BlockMotionSensor;
 import com.ntmdoors.block.BlockRedstoneGate;
 import com.ntmdoors.block.BlockSafe;
@@ -27,6 +28,7 @@ import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.item.ItemDocumentsFolder;
 import com.ntmdoors.item.ItemDoorBlock;
 import com.ntmdoors.item.ItemKeycardHolder;
+import com.ntmdoors.item.ItemMonitorSetup;
 import com.ntmdoors.item.ItemMotionRelayKey;
 import com.ntmdoors.item.ItemNamedRfidCard;
 import com.ntmdoors.item.ItemOperatorKeycard;
@@ -74,6 +76,7 @@ public class ModContent {
     public static final BlockRedstoneGate REDSTONE_GATE = new BlockRedstoneGate();
     public static final BlockSpeaker SPEAKER = new BlockSpeaker();
     public static final BlockMotionSensor MOTION_SENSOR = new BlockMotionSensor();
+    public static final BlockMonitorSetup MONITOR_SETUP = new BlockMonitorSetup();
     public static final ItemScrewdriver SCREWDRIVER = new ItemScrewdriver();
     public static final ItemRfidCard BLANK_RFID_CARD = new ItemRfidCard("blank_rfid_card", false);
     public static final ItemRfidCard RED_RFID_CARD = new ItemRfidCard("red_rfid_card");
@@ -179,6 +182,7 @@ public class ModContent {
         HLBlocksContent.registerBlocks(e);
         // New blocks go last so previously saved numeric block IDs do not shift.
         e.getRegistry().register(MOTION_SENSOR);
+        e.getRegistry().register(MONITOR_SETUP);
     }
 
     @SubscribeEvent
@@ -228,6 +232,9 @@ public class ModContent {
         // New block items go last so previously saved numeric item IDs do not shift.
         e.getRegistry().register(new ItemBlock(MOTION_SENSOR)
                 .setRegistryName(MOTION_SENSOR.getRegistryName())
+                .setCreativeTab(NTMDoors.TAB));
+        e.getRegistry().register(new ItemMonitorSetup(MONITOR_SETUP)
+                .setRegistryName(MONITOR_SETUP.getRegistryName())
                 .setCreativeTab(NTMDoors.TAB));
         // New relay keys go last so previously saved numeric item IDs do not shift.
         e.getRegistry().register(MOTION_RELAY_KEY);

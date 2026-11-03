@@ -188,6 +188,13 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
 * Concrete and HL Blocks: the NTM CE concrete building set and decorative HL Blocks, with metadata
   families, flat Chisel carving groups, shift-scroll cycling, recipes, and `concrete` /
   `blockConcrete` / `blockhl` ore dictionary entries. Chisel is required.
+* 6 Monitor Setup (`ntmdoors:monitor_setup`): a decorative 3x3x1 desk with six monitors, a
+  keyboard, mouse and mousepad. It places as one item, faces the player, and reserves its full
+  3x3x1 footprint; breaking any part removes the whole desk. The bottom row is solid, while the
+  two upper rows are pass-through occupancy cells. There are no controls or redstone events yet.
+  The desk is split into nine cell models so every element stays inside the 1.12 model limits;
+  the supplied 15-degree side-monitor yaw is rounded to 22.5 degrees, the closest legal JSON
+  angle.
 * Redstone Gate (`ntmdoors:redstone_gate`): a full-cube redstone component with separate off and on
   textures. It starts off, turns on while it receives redstone power or a wireless pulse, and emits
   a full-strength signal while on. A wireless event keeps it powered for its configured duration;
