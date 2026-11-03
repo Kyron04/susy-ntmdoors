@@ -4,7 +4,7 @@ Standalone port of the HBM's Nuclear Tech Mod door system and concrete building 
 1.12.2. The implementation and the included door, concrete and HL Blocks assets are used under the
 LGPL-3.0. See `LICENSE.LESSER` and `NOTICE` for attribution and source information.
 
-Current release: **1.0.47**
+Current release: **1.0.31**
 
 Source design reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
 

@@ -1,5 +1,8 @@
-HBM DOORS: REFRESHED 1.0.47
+HBM DOORS: CURSEFORGE RELEASE 1.0.31
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+The public 1.0.31 release is the cumulative build of the internal 1.0.27-1.0.47
+changes. The internal history follows.
 
 1.0.47
 FIXES
