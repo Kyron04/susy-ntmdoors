@@ -1,7 +1,9 @@
 package com.ntmdoors.block;
 
 import com.ntmdoors.NTMDoors;
+import com.ntmdoors.item.ItemMotionRelayKey;
 import com.ntmdoors.tile.TileEntityMotionSensor;
+import com.ntmdoors.util.HeldItems;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.EnumPushReaction;
@@ -142,10 +144,21 @@ public class BlockMotionSensor extends Block {
         }
     }
 
-    /** Creative-only preview until the motion logic lands; survival right-click is left untouched. */
+    /**
+     * The item-use path opens the console, but some right-click orders reach the block first.
+     * Accepting the Motion Relay Key here as well makes the interaction work from either hand.
+     * The creative status preview remains for an empty hand.
+     */
     @Override
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player,
                                     EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
+        if (HeldItems.holds(player, ItemMotionRelayKey.class)) {
+            if (world.isRemote && !player.isSneaking()) {
+                NTMDoors.proxy.openMotionSensorGui(pos);
+            }
+            return true;
+        }
+
         if (!player.isCreative()) return false;
         if (world.isRemote) return true;
         ensureTileEntity(world, pos, state);
