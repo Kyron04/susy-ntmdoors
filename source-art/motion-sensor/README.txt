@@ -1,6 +1,6 @@
 NTM Doors - Motion Sensor final model materials
 Minecraft 1.12.2 / Forge 14.23.5.2847
-Model version: 1.0.35
+Model version: 1.0.36
 =================================================
 
 CONTENTS
@@ -32,8 +32,11 @@ scripts\generate_motion_sensor_textures.ps1
         powershell -ExecutionPolicy Bypass -File generate_motion_sensor_textures.ps1
     Output is written to ..\assets\ntmdoors\textures\blocks.
 
+scripts\generate_motion_sensor_preview.ps1
+    Rebuilds the four-panel model preview from the final textures.
+
 motion-sensor-model-preview-final.png
-    Canonical final model preview. Shows the 8x8x2.25 cage and all four status
+    Canonical final model preview. Shows the 8x8x1.375 cage and all four status
     lights: IDLE green, AUTHORIZED blue, MAINTENANCE yellow, MOTION red.
 
 motion-sensor-textures-16x16-final.png
@@ -43,12 +46,12 @@ motion-sensor-textures-16x16-final.png
 DIMENSIONS
 ----------
 Footprint: 8 x 8 texture pixels (x=4..12, y=4..12)
-Depth:     2.25 texture pixels (front z=13.75, back z=16)
+Depth:     1.375 texture pixels (front z=14.625, back z=16)
 Front:     north in model space
 Back plate: 1 pixel thick at z=15..16
 
 The model is deliberately thin: the bezel and lens are pressed almost flat
-against the mounting plate. The in-world hitbox uses the same 8 x 8 x 2.25
+against the mounting plate. The in-world hitbox uses the same 8 x 8 x 1.375
 bounds.
 
 

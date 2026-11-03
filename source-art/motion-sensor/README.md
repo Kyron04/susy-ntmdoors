@@ -1,6 +1,6 @@
 # Motion Sensor source art
 
-Final model and texture source materials for the NTM Doors Motion Sensor (model 1.0.35).
+Final model and texture source materials for the NTM Doors Motion Sensor (model 1.0.36).
 
 ![Motion Sensor final model preview](motion-sensor-model-preview-final.png)
 
@@ -10,7 +10,7 @@ These files are archived here for reference. The active copies loaded by the mod
 ## Model
 
 - Footprint: 8 x 8 texture pixels
-- Depth: 2.25 texture pixels
+- Depth: 1.375 texture pixels
 - Front: north in model space
 - Back plate: z=15..16
 - Blocks: `motion_sensor`, with six-way facing and four status models
@@ -38,6 +38,7 @@ Run the PowerShell generator to rebuild every texture exactly:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\generate_motion_sensor_textures.ps1
+powershell -ExecutionPolicy Bypass -File scripts\generate_motion_sensor_preview.ps1
 ```
 
 See `README.txt` for the full asset list, dimensions and installation notes.

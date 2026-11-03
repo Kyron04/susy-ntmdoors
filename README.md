@@ -4,7 +4,7 @@ Standalone port of the HBM's Nuclear Tech Mod door system and concrete building 
 1.12.2. The implementation and the included door, concrete and HL Blocks assets are used under the
 LGPL-3.0. See `LICENSE.LESSER` and `NOTICE` for attribution and source information.
 
-Current release: **1.0.35**
+Current release: **1.0.36**
 
 Source design reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
 
@@ -153,7 +153,7 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   volume and enabled state are saved with the block. A normal right-click with the Redstone Relay
   Key starts/finishes a wireless binding session, and starting the alarm pulses every linked
   Redstone Gate.
-* Motion Sensor (`ntmdoors:motion_sensor`): a compact 8x8x2.25 surface-mounted PIR housing with an
+* Motion Sensor (`ntmdoors:motion_sensor`): a compact 8x8x1.375 surface-mounted PIR housing with an
   off-white body, charcoal bezel, ringed concentric Fresnel lens and four status-light colours.
   It can be placed on floors, walls and ceilings; the clicked face becomes the lens direction.
   Green means no motion, blue means authorised personnel, yellow means maintenance and red means
@@ -257,7 +257,7 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
 
 ![Motion Sensor final model preview](source-art/motion-sensor/motion-sensor-model-preview-final.png)
 
-The 1.0.35 model is 8x8x2.25 with a centred GUI model and four status lights. The full source
+The 1.0.36 model is 8x8x1.375 with a centred GUI model and four status lights. The full source
 materials and texture generator live in `source-art/motion-sensor/`.
 
 ## Included door assets
