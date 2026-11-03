@@ -76,7 +76,16 @@ public class ModContent {
     public static final BlockRedstoneGate REDSTONE_GATE = new BlockRedstoneGate();
     public static final BlockSpeaker SPEAKER = new BlockSpeaker();
     public static final BlockMotionSensor MOTION_SENSOR = new BlockMotionSensor();
-    public static final BlockMonitorSetup MONITOR_SETUP = new BlockMonitorSetup();
+    /** Bottom row, including the core cell and the item form of the desk. */
+    public static final BlockMonitorSetup MONITOR_SETUP =
+            new BlockMonitorSetup("monitor_setup", BlockMonitorSetup.Layer.BOTTOM);
+    public static final BlockMonitorSetup MONITOR_MIDDLE =
+            new BlockMonitorSetup("monitor_setup_middle", BlockMonitorSetup.Layer.MIDDLE);
+    public static final BlockMonitorSetup MONITOR_TOP =
+            new BlockMonitorSetup("monitor_setup_top", BlockMonitorSetup.Layer.TOP);
+    /** Bottom, middle and top blocks, in placement order. */
+    public static final List<BlockMonitorSetup> MONITOR_BLOCKS = Collections.unmodifiableList(Arrays.asList(
+            MONITOR_SETUP, MONITOR_MIDDLE, MONITOR_TOP));
     public static final ItemScrewdriver SCREWDRIVER = new ItemScrewdriver();
     public static final ItemRfidCard BLANK_RFID_CARD = new ItemRfidCard("blank_rfid_card", false);
     public static final ItemRfidCard RED_RFID_CARD = new ItemRfidCard("red_rfid_card");
@@ -182,7 +191,7 @@ public class ModContent {
         HLBlocksContent.registerBlocks(e);
         // New blocks go last so previously saved numeric block IDs do not shift.
         e.getRegistry().register(MOTION_SENSOR);
-        e.getRegistry().register(MONITOR_SETUP);
+        for (BlockMonitorSetup block : MONITOR_BLOCKS) e.getRegistry().register(block);
     }
 
     @SubscribeEvent
@@ -233,7 +242,7 @@ public class ModContent {
         e.getRegistry().register(new ItemBlock(MOTION_SENSOR)
                 .setRegistryName(MOTION_SENSOR.getRegistryName())
                 .setCreativeTab(NTMDoors.TAB));
-        e.getRegistry().register(new ItemMonitorSetup(MONITOR_SETUP)
+        e.getRegistry().register(new ItemMonitorSetup(MONITOR_SETUP, MONITOR_BLOCKS)
                 .setRegistryName(MONITOR_SETUP.getRegistryName())
                 .setCreativeTab(NTMDoors.TAB));
         // New relay keys go last so previously saved numeric item IDs do not shift.

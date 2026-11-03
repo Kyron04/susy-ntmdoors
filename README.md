@@ -194,7 +194,8 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   two upper rows are pass-through occupancy cells. There are no controls or redstone events yet.
   The desk is split into nine cell models so every element stays inside the 1.12 model limits;
   the supplied 15-degree side-monitor yaw is rounded to 22.5 degrees, the closest legal JSON
-  angle.
+  angle. Three block types (bottom/middle/top) each carry three columns, so the part and facing
+  fit in the four metadata bits and no tile entity is needed.
 * Redstone Gate (`ntmdoors:redstone_gate`): a full-cube redstone component with separate off and on
   textures. It starts off, turns on while it receives redstone power or a wireless pulse, and emits
   a full-strength signal while on. A wireless event keeps it powered for its configured duration;

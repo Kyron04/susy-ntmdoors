@@ -1,0 +1,52 @@
+﻿{
+    "variants":  {
+                     "facing=north,column=left":  {
+                                                      "model":  "ntmdoors:monitor_setup_top_left",
+                                                      "y":  0
+                                                  },
+                     "facing=north,column=center":  {
+                                                        "model":  "ntmdoors:monitor_setup_top_center",
+                                                        "y":  0
+                                                    },
+                     "facing=north,column=right":  {
+                                                       "model":  "ntmdoors:monitor_setup_top_right",
+                                                       "y":  0
+                                                   },
+                     "facing=east,column=left":  {
+                                                     "model":  "ntmdoors:monitor_setup_top_left",
+                                                     "y":  90
+                                                 },
+                     "facing=east,column=center":  {
+                                                       "model":  "ntmdoors:monitor_setup_top_center",
+                                                       "y":  90
+                                                   },
+                     "facing=east,column=right":  {
+                                                      "model":  "ntmdoors:monitor_setup_top_right",
+                                                      "y":  90
+                                                  },
+                     "facing=south,column=left":  {
+                                                      "model":  "ntmdoors:monitor_setup_top_left",
+                                                      "y":  180
+                                                  },
+                     "facing=south,column=center":  {
+                                                        "model":  "ntmdoors:monitor_setup_top_center",
+                                                        "y":  180
+                                                    },
+                     "facing=south,column=right":  {
+                                                       "model":  "ntmdoors:monitor_setup_top_right",
+                                                       "y":  180
+                                                   },
+                     "facing=west,column=left":  {
+                                                     "model":  "ntmdoors:monitor_setup_top_left",
+                                                     "y":  270
+                                                 },
+                     "facing=west,column=center":  {
+                                                       "model":  "ntmdoors:monitor_setup_top_center",
+                                                       "y":  270
+                                                   },
+                     "facing=west,column=right":  {
+                                                      "model":  "ntmdoors:monitor_setup_top_right",
+                                                      "y":  270
+                                                  }
+                 }
+}
