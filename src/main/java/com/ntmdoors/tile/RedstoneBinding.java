@@ -30,8 +30,11 @@ public final class RedstoneBinding {
     @Nullable
     private UUID bindingPlayer;
     private int bindingTicks;
-    /** True while the host wants every linked gate held on instead of pulsed. */
-    private boolean held;
+    /** How the host currently holds its linked gates. */
+    private enum HoldMode { NONE, PRESENCE, VACANCY }
+
+    private HoldMode holdMode = HoldMode.NONE;
+    private boolean holdActive;
 
     public RedstoneBinding(TileEntity host) {
         if (!(host instanceof RedstoneBindingHost)) {
@@ -92,7 +95,7 @@ public final class RedstoneBinding {
 
         if (!gates.contains(gatePos)) gates.add(gatePos);
         gate.bindDevice(host.getPos());
-        gate.setHeld(host.getPos(), held);
+        applyHoldTo(gate);
         callbacks.onRedstoneBindingChanged();
         callbacks.syncRedstoneState();
         callbacks.sendRedstoneMessage(player, "ntmdoors.msg.redstone_gate_linked");
@@ -100,26 +103,61 @@ public final class RedstoneBinding {
     }
 
     /**
-     * Server side: holds or releases every linked gate. Reapplying the same state is intentional;
-     * it lets a gate that was just loaded adopt the current hold again.
+     * Server side: presence hold. Reapplying the same state is intentional; it lets a gate that
+     * was just loaded adopt the current hold again.
      */
     public void setHeld(boolean held) {
-        this.held = held;
+        if (held) {
+            holdMode = HoldMode.PRESENCE;
+            holdActive = true;
+        } else if (holdMode == HoldMode.PRESENCE) {
+            holdMode = HoldMode.NONE;
+            holdActive = false;
+        } else {
+            return;
+        }
+        applyHold();
+    }
+
+    /** Server side: vacancy hold, where every linked out-of-bounds sensor must be empty. */
+    public void setVacancy(boolean empty) {
+        holdMode = HoldMode.VACANCY;
+        holdActive = empty;
+        applyHold();
+    }
+
+    /** Server side: releases any hold this device owns. */
+    public void clearHold() {
+        holdMode = HoldMode.NONE;
+        holdActive = false;
+        applyHold();
+    }
+
+    public boolean isHolding() {
+        return holdMode != HoldMode.NONE;
+    }
+
+    private void applyHold() {
         World world = host.getWorld();
         if (world == null || world.isRemote) return;
 
-        BlockPos self = host.getPos();
         for (BlockPos gatePos : gates) {
             if (!world.isBlockLoaded(gatePos)) continue;
             TileEntity te = world.getTileEntity(gatePos);
-            if (te instanceof TileEntityRedstoneGate) {
-                ((TileEntityRedstoneGate) te).setHeld(self, held);
-            }
+            if (te instanceof TileEntityRedstoneGate) applyHoldTo((TileEntityRedstoneGate) te);
         }
     }
 
-    public boolean isHeld() {
-        return held;
+    private void applyHoldTo(TileEntityRedstoneGate gate) {
+        BlockPos self = host.getPos();
+        if (holdMode == HoldMode.NONE) {
+            gate.releaseHold(self);
+        } else if (holdMode == HoldMode.PRESENCE) {
+            if (holdActive) gate.setHeld(self, true);
+            else gate.releaseHold(self);
+        } else {
+            gate.setVacancy(self, holdActive);
+        }
     }
 
     /** Server side: pulses every loaded gate in this link. */
@@ -154,12 +192,13 @@ public final class RedstoneBinding {
             if (!world.isBlockLoaded(gatePos)) continue;
             TileEntity te = world.getTileEntity(gatePos);
             if (te instanceof TileEntityRedstoneGate) {
-                ((TileEntityRedstoneGate) te).setHeld(host.getPos(), false);
+                ((TileEntityRedstoneGate) te).releaseHold(host.getPos());
                 ((TileEntityRedstoneGate) te).unbindDevice(host.getPos());
             }
         }
         gates.clear();
-        held = false;
+        holdMode = HoldMode.NONE;
+        holdActive = false;
         callbacks.syncRedstoneState();
     }
 
@@ -185,7 +224,8 @@ public final class RedstoneBinding {
 
     public void readFromNBT(NBTTagCompound tag) {
         gates.clear();
-        held = false;
+        holdMode = HoldMode.NONE;
+        holdActive = false;
         if (tag.hasKey("redstoneGates")) {
             gates.addAll(BlockPositions.decodeList(tag.getString("redstoneGates")));
         }

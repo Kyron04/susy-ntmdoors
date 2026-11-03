@@ -175,7 +175,8 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   card rules above. `Persist within bounds` is also on page two: when on, a linked gate stays
   powered while any entity matching an enabled entry event remains inside, and releases as soon as
   the area is empty. `Persist out of bounds` is the inverse and mutually exclusive with it: the
-  gate is powered while the area is empty and the hold drops as soon as anything steps in. Green
+  gate is powered while the area is empty and the hold drops as soon as anything steps in. When
+  several out-of-bounds sensors share one gate, every one of them must be empty. Green
   means idle, blue means authorised players are inside, red means any
   unauthorized player or mob is inside, and yellow means the sensor is disabled or has no area
   bound. Page four is the red `REDSTONE` page with

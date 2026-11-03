@@ -194,9 +194,9 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         persistWithinBounds = value;
         if (value) {
             persistOutOfBounds = false;
-            redstoneBinding.setHeld(false);
+            redstoneBinding.clearHold();
         } else if (!persistOutOfBounds) {
-            redstoneBinding.setHeld(false);
+            redstoneBinding.clearHold();
         }
         sync();
         return true;
@@ -212,9 +212,9 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         persistOutOfBounds = value;
         if (value) {
             persistWithinBounds = false;
-            redstoneBinding.setHeld(enabled && areaBound && entitiesInside.isEmpty());
+            redstoneBinding.setVacancy(enabled && areaBound && entitiesInside.isEmpty());
         } else {
-            redstoneBinding.setHeld(false);
+            redstoneBinding.clearHold();
         }
         sync();
         return true;
@@ -230,11 +230,11 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         enabled = value;
         if (!value) {
             entitiesInside.clear();
-            redstoneBinding.setHeld(false);
+            redstoneBinding.clearHold();
             setStatus(BlockMotionSensor.Status.MAINTENANCE);
         } else {
             setStatus(areaBound ? BlockMotionSensor.Status.IDLE : BlockMotionSensor.Status.MAINTENANCE);
-            if (persistOutOfBounds && areaBound) redstoneBinding.setHeld(entitiesInside.isEmpty());
+            if (persistOutOfBounds && areaBound) redstoneBinding.setVacancy(entitiesInside.isEmpty());
         }
         sync();
         fireRedstoneEvent(value ? RS_ENABLED : RS_DISABLED);
@@ -314,7 +314,7 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
 
         System.arraycopy(depths, 0, areaDepths, 0, areaDepths.length);
         areaBound = true;
-        redstoneBinding.setHeld(false);
+        redstoneBinding.clearHold();
         entitiesInside.clear();
         sync();
         if (enabled) setStatus(BlockMotionSensor.Status.IDLE);
@@ -327,7 +327,7 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         Arrays.fill(areaDepths, (byte) 0);
         areaBound = false;
         entitiesInside.clear();
-        redstoneBinding.setHeld(false);
+        redstoneBinding.clearHold();
         setStatus(BlockMotionSensor.Status.MAINTENANCE);
         sync();
         return true;
@@ -480,7 +480,7 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
     private void updateDetection() {
         if (!enabled || !areaBound) {
             entitiesInside.clear();
-            redstoneBinding.setHeld(false);
+            redstoneBinding.clearHold();
             setStatus(BlockMotionSensor.Status.MAINTENANCE);
             return;
         }
@@ -492,7 +492,7 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         }
         if (boxes.isEmpty()) {
             entitiesInside.clear();
-            redstoneBinding.setHeld(false);
+            redstoneBinding.clearHold();
             setStatus(BlockMotionSensor.Status.MAINTENANCE);
             return;
         }
@@ -553,13 +553,14 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         boolean occupied = !current.isEmpty();
         if (persistWithinBounds) {
             // Hold while a qualifying entity remains; release immediately when the area empties.
-            redstoneBinding.setHeld(hold);
+            if (hold) redstoneBinding.setHeld(true);
+            else redstoneBinding.clearHold();
         } else if (persistOutOfBounds) {
             // The opposite mode: power while empty and drop the hold as soon as anything steps in.
-            redstoneBinding.setHeld(!occupied);
+            redstoneBinding.setVacancy(!occupied);
         } else {
             // Only entry edges fire; standing inside does not keep pulsing the gates.
-            redstoneBinding.setHeld(false);
+            redstoneBinding.clearHold();
             if (enteredAuthorized) fireRedstoneEvent(RS_AUTHORIZED);
             if (enteredUnauthorized) fireRedstoneEvent(RS_UNAUTHORIZED);
         }

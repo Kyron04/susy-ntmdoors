@@ -33,8 +33,24 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
     private static final int HOLD_TIMEOUT_TICKS = 60;
 
     private final List<BlockPos> boundDevices = new ArrayList<>();
-    /** Devices currently holding this gate on, with the tick at which each hold expires. */
-    private final Map<BlockPos, Long> heldUntil = new HashMap<>();
+    /**
+     * Per-device hold state. A presence hold powers the gate while active; vacancy holds are an
+     * AND group, so a gate linked to several out-of-bounds sensors only powers while every one of
+     * them is empty.
+     */
+    private final Map<BlockPos, Hold> holds = new HashMap<>();
+
+    private static final class Hold {
+        final boolean vacancy;
+        boolean active;
+        long expiry;
+
+        Hold(boolean vacancy, boolean active, long expiry) {
+            this.vacancy = vacancy;
+            this.active = active;
+            this.expiry = expiry;
+        }
+    }
     /** Absolute world time at which the current wireless pulse ends; 0 when idle. */
     private long pulseEnd;
     /** While positive, neighbor changes are ignored so the gate cannot read its own output back. */
@@ -64,7 +80,7 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
     public void unbindDevice(BlockPos devicePos) {
         if (devicePos == null) return;
         boolean unbound = boundDevices.remove(devicePos);
-        boolean unheld = heldUntil.remove(devicePos) != null;
+        boolean unheld = holds.remove(devicePos) != null;
         if (unbound || unheld) {
             markDirty();
             if (unheld) {
@@ -77,18 +93,49 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
     }
 
     /**
-     * Server side: a linked sensor holds this gate on while its bound area still contains a
-     * qualifying entity. Multiple sensors may hold the same gate at once.
+     * Server side: a within-bounds sensor holds this gate while a qualifying entity is inside.
+     * Releasing a presence hold removes it; vacancy hold state is left alone.
      */
     public void setHeld(BlockPos source, boolean held) {
         if (getWorld() == null || getWorld().isRemote || source == null) return;
         BlockPos key = source.toImmutable();
+        Hold current = holds.get(key);
         if (held) {
-            heldUntil.put(key, getWorld().getTotalWorldTime() + HOLD_TIMEOUT_TICKS);
+            holds.put(key, new Hold(false, true, getWorld().getTotalWorldTime() + HOLD_TIMEOUT_TICKS));
+        } else if (current != null && !current.vacancy) {
+            holds.remove(key);
         } else {
-            if (heldUntil.remove(key) == null) return;
+            return;
         }
+        applyHoldChange();
+    }
 
+    /**
+     * Server side: an out-of-bounds sensor reports whether its area is empty. All vacancy sensors
+     * on one gate must be empty for the gate to stay powered.
+     */
+    public void setVacancy(BlockPos source, boolean empty) {
+        if (getWorld() == null || getWorld().isRemote || source == null) return;
+        BlockPos key = source.toImmutable();
+        long expiry = getWorld().getTotalWorldTime() + HOLD_TIMEOUT_TICKS;
+        Hold current = holds.get(key);
+        if (current == null || !current.vacancy) {
+            holds.put(key, new Hold(true, empty, expiry));
+        } else {
+            current.active = empty;
+            current.expiry = expiry;
+        }
+        applyHoldChange();
+    }
+
+    /** Server side: removes any hold owned by this source. */
+    public void releaseHold(BlockPos source) {
+        if (getWorld() == null || getWorld().isRemote || source == null) return;
+        if (holds.remove(source.toImmutable()) == null) return;
+        applyHoldChange();
+    }
+
+    private void applyHoldChange() {
         inputSettleTicks = 0;
         invertProbeTicks = 0;
         ignoreNeighborTicks = 1;
@@ -96,8 +143,22 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
         refreshPower();
     }
 
+    /** True when the current holds should power the gate. */
     public boolean isHeld() {
-        return !heldUntil.isEmpty();
+        boolean presence = false;
+        boolean hasVacancy = false;
+        boolean allVacancyEmpty = true;
+        long now = getWorld() == null ? 0 : getWorld().getTotalWorldTime();
+        for (Hold hold : holds.values()) {
+            if (hold.expiry < now) continue;
+            if (hold.vacancy) {
+                hasVacancy = true;
+                if (!hold.active) allVacancyEmpty = false;
+            } else if (hold.active) {
+                presence = true;
+            }
+        }
+        return presence || (hasVacancy && allVacancyEmpty);
     }
 
     /** Server side: clears both sides of every link before the gate is broken. */
@@ -113,7 +174,7 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
             }
         }
         boundDevices.clear();
-        heldUntil.clear();
+        holds.clear();
         markDirty();
     }
 
@@ -203,7 +264,7 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
             setPowered(true);
             return;
         }
-        if (isPulsing() || !heldUntil.isEmpty()) return;
+        if (isPulsing() || isHeld()) return;
 
         if (invert) {
             if (isPoweredOn()) startInvertProbe();
@@ -218,9 +279,9 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
         World world = getWorld();
         if (world == null || world.isRemote) return;
 
-        if (!heldUntil.isEmpty()) {
+        if (!holds.isEmpty()) {
             long now = world.getTotalWorldTime();
-            boolean changed = heldUntil.values().removeIf(expiry -> expiry < now);
+            boolean changed = holds.values().removeIf(hold -> hold.expiry < now);
             if (changed) {
                 refreshPower();
                 ignoreNeighborTicks = 1;
@@ -243,7 +304,7 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
         if (pulseEnd <= 0 || isPulsing()) return;
 
         pulseEnd = 0;
-        if (!heldUntil.isEmpty()) {
+        if (isHeld()) {
             refreshPower();
             ignoreNeighborTicks = 1;
             return;
@@ -287,7 +348,7 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
             setPowered(true);
             return;
         }
-        boolean active = isPulsing() || !heldUntil.isEmpty()
+        boolean active = isPulsing() || isHeld()
                 || BlockRedstoneGate.isReceivingPower(getWorld(), pos);
         if (invert) ignoreNeighborTicks = 1;
         setPowered(invert ? !active : active);
