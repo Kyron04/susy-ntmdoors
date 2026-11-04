@@ -1,0 +1,22 @@
+{
+    "parent":  "block/block",
+    "gui_light":  "front",
+    "ambientocclusion":  true,
+    "textures":  {
+                     "particle":  "ntmdoors:blocks/desk_wood",
+                     "wood":  "ntmdoors:blocks/desk_wood",
+                     "frame":  "ntmdoors:blocks/desk_frame",
+                     "bezel":  "ntmdoors:blocks/monitor_bezel",
+                     "back":  "ntmdoors:blocks/monitor_back",
+                     "screen":  "ntmdoors:blocks/monitor_screen",
+                     "led":  "ntmdoors:blocks/monitor_led",
+                     "keyboard":  "ntmdoors:blocks/keyboard",
+                     "mouse":  "ntmdoors:blocks/mouse",
+                     "mouse_wheel":  "ntmdoors:blocks/mouse_wheel",
+                     "mousepad":  "ntmdoors:blocks/mousepad",
+                     "keycap":  "ntmdoors:blocks/keycap"
+                 },
+    "elements":  [
+
+                 ]
+}

@@ -1,0 +1,125 @@
+{
+    "parent": "ntmdoors:block/single_monitor_setup_item",
+    "display":  {
+                    "thirdperson_lefthand":  {
+                                                 "translation":  [
+                                                                     0,
+                                                                     2.5,
+                                                                     0
+                                                                 ],
+                                                 "rotation":  [
+                                                                  75,
+                                                                  45,
+                                                                  0
+                                                              ],
+                                                 "scale":  [
+                                                               0.375,
+                                                               0.375,
+                                                               0.375
+                                                           ]
+                                             },
+                    "ground":  {
+                                   "translation":  [
+                                                       0,
+                                                       3,
+                                                       0
+                                                   ],
+                                   "rotation":  [
+                                                    0,
+                                                    0,
+                                                    0
+                                                ],
+                                   "scale":  [
+                                                 0.25,
+                                                 0.25,
+                                                 0.25
+                                             ]
+                               },
+                    "firstperson_lefthand":  {
+                                                 "translation":  [
+                                                                     0,
+                                                                     0,
+                                                                     0
+                                                                 ],
+                                                 "rotation":  [
+                                                                  0,
+                                                                  225,
+                                                                  0
+                                                              ],
+                                                 "scale":  [
+                                                               0.4,
+                                                               0.4,
+                                                               0.4
+                                                           ]
+                                             },
+                    "thirdperson_righthand":  {
+                                                  "translation":  [
+                                                                      0,
+                                                                      2.5,
+                                                                      0
+                                                                  ],
+                                                  "rotation":  [
+                                                                   75,
+                                                                   45,
+                                                                   0
+                                                               ],
+                                                  "scale":  [
+                                                                0.375,
+                                                                0.375,
+                                                                0.375
+                                                            ]
+                                              },
+                    "fixed":  {
+                                  "translation":  [
+                                                      0,
+                                                      0,
+                                                      0
+                                                  ],
+                                  "rotation":  [
+                                                   0,
+                                                   0,
+                                                   0
+                                               ],
+                                  "scale":  [
+                                                0.5,
+                                                0.5,
+                                                0.5
+                                            ]
+                              },
+                    "gui":  {
+                                "translation":  [
+                                                    0,
+                                                    0,
+                                                    0
+                                                ],
+                                "rotation":  [
+                                                 30,
+                                                 225,
+                                                 0
+                                             ],
+                                "scale":  [
+                                              0.625,
+                                              0.625,
+                                              0.625
+                                          ]
+                            },
+                    "firstperson_righthand":  {
+                                                  "translation":  [
+                                                                      0,
+                                                                      0,
+                                                                      0
+                                                                  ],
+                                                  "rotation":  [
+                                                                   0,
+                                                                   45,
+                                                                   0
+                                                               ],
+                                                  "scale":  [
+                                                                0.4,
+                                                                0.4,
+                                                                0.4
+                                                            ]
+                                              }
+                }
+}
+

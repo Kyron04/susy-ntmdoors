@@ -1,0 +1,37 @@
+{
+    "variants":  {
+                     "column=left,facing=north":  {
+                                                      "model":  "ntmdoors:single_monitor_middle_left",
+                                                      "y":  0
+                                                  },
+                     "column=left,facing=east":  {
+                                                     "model":  "ntmdoors:single_monitor_middle_left",
+                                                     "y":  90
+                                                 },
+                     "column=left,facing=south":  {
+                                                      "model":  "ntmdoors:single_monitor_middle_left",
+                                                      "y":  180
+                                                  },
+                     "column=left,facing=west":  {
+                                                     "model":  "ntmdoors:single_monitor_middle_left",
+                                                     "y":  270
+                                                 },
+                     "column=right,facing=north":  {
+                                                       "model":  "ntmdoors:single_monitor_middle_right",
+                                                       "y":  0
+                                                   },
+                     "column=right,facing=east":  {
+                                                      "model":  "ntmdoors:single_monitor_middle_right",
+                                                      "y":  90
+                                                  },
+                     "column=right,facing=south":  {
+                                                       "model":  "ntmdoors:single_monitor_middle_right",
+                                                       "y":  180
+                                                   },
+                     "column=right,facing=west":  {
+                                                      "model":  "ntmdoors:single_monitor_middle_right",
+                                                      "y":  270
+                                                  }
+                 }
+}
+

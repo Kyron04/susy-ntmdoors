@@ -6,8 +6,11 @@ import com.ntmdoors.block.BlockDoorGeneric;
 import com.ntmdoors.block.BlockDoorKeypad;
 import com.ntmdoors.block.BlockKeycardProgrammer;
 import com.ntmdoors.block.BlockKeycardScanner;
+import com.ntmdoors.block.BlockMonitorDesk;
+import com.ntmdoors.block.BlockMonitorDesk2;
 import com.ntmdoors.block.BlockMonitorSetup;
 import com.ntmdoors.block.BlockMotionSensor;
+import com.ntmdoors.block.MonitorDesk;
 import com.ntmdoors.block.BlockRedstoneGate;
 import com.ntmdoors.block.BlockSafe;
 import com.ntmdoors.block.BlockSpeaker;
@@ -28,6 +31,7 @@ import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.item.ItemDocumentsFolder;
 import com.ntmdoors.item.ItemDoorBlock;
 import com.ntmdoors.item.ItemKeycardHolder;
+import com.ntmdoors.item.ItemMonitorDesk;
 import com.ntmdoors.item.ItemMonitorSetup;
 import com.ntmdoors.item.ItemMotionRelayKey;
 import com.ntmdoors.item.ItemNamedRfidCard;
@@ -86,6 +90,49 @@ public class ModContent {
     /** Bottom, middle and top blocks, in placement order. */
     public static final List<BlockMonitorSetup> MONITOR_BLOCKS = Collections.unmodifiableList(Arrays.asList(
             MONITOR_SETUP, MONITOR_MIDDLE, MONITOR_TOP));
+
+    /** Smaller monitor desks, built from the same sliced-cell approach. */
+    public static final MonitorDesk TRIPLE_MONITOR_DESK = new MonitorDesk(3);
+    public static final BlockMonitorDesk TRIPLE_MONITOR_SETUP = new BlockMonitorDesk(
+            TRIPLE_MONITOR_DESK, "triple_monitor_setup", BlockMonitorSetup.Layer.BOTTOM,
+            BlockMonitorSetup.Column.LEFT, BlockMonitorSetup.Column.CENTER, BlockMonitorSetup.Column.RIGHT);
+    public static final BlockMonitorDesk TRIPLE_MONITOR_SETUP_MIDDLE = new BlockMonitorDesk(
+            TRIPLE_MONITOR_DESK, "triple_monitor_setup_middle", BlockMonitorSetup.Layer.MIDDLE,
+            BlockMonitorSetup.Column.LEFT, BlockMonitorSetup.Column.CENTER, BlockMonitorSetup.Column.RIGHT);
+    public static final List<BlockMonitorDesk> TRIPLE_MONITOR_BLOCKS = Collections.unmodifiableList(Arrays.asList(
+            TRIPLE_MONITOR_SETUP, TRIPLE_MONITOR_SETUP_MIDDLE));
+
+    public static final MonitorDesk DUAL_MONITOR_DESK = new MonitorDesk(3);
+    public static final BlockMonitorDesk DUAL_MONITOR_SETUP = new BlockMonitorDesk(
+            DUAL_MONITOR_DESK, "dual_monitor_setup", BlockMonitorSetup.Layer.BOTTOM,
+            BlockMonitorSetup.Column.LEFT, BlockMonitorSetup.Column.CENTER, BlockMonitorSetup.Column.RIGHT);
+    /** The open right-middle cell is not placed; the two monitors occupy the left and centre. */
+    public static final BlockMonitorDesk DUAL_MONITOR_SETUP_MIDDLE = new BlockMonitorDesk(
+            DUAL_MONITOR_DESK, "dual_monitor_setup_middle", BlockMonitorSetup.Layer.MIDDLE,
+            BlockMonitorSetup.Column.LEFT, BlockMonitorSetup.Column.CENTER);
+    public static final List<BlockMonitorDesk> DUAL_MONITOR_BLOCKS = Collections.unmodifiableList(Arrays.asList(
+            DUAL_MONITOR_SETUP, DUAL_MONITOR_SETUP_MIDDLE));
+
+    public static final MonitorDesk DUAL_MONITOR_SHORT_DESK = new MonitorDesk(2);
+    public static final BlockMonitorDesk2 DUAL_MONITOR_SETUP_2X2 = new BlockMonitorDesk2(
+            DUAL_MONITOR_SHORT_DESK, "dual_monitor_setup_2x2", BlockMonitorSetup.Layer.BOTTOM,
+            BlockMonitorSetup.Column.LEFT, BlockMonitorSetup.Column.RIGHT);
+    public static final BlockMonitorDesk2 DUAL_MONITOR_SETUP_2X2_MIDDLE = new BlockMonitorDesk2(
+            DUAL_MONITOR_SHORT_DESK, "dual_monitor_setup_2x2_middle", BlockMonitorSetup.Layer.MIDDLE,
+            BlockMonitorSetup.Column.LEFT, BlockMonitorSetup.Column.RIGHT);
+    public static final List<BlockMonitorDesk> DUAL_MONITOR_SHORT_BLOCKS = Collections.unmodifiableList(
+            Arrays.<BlockMonitorDesk>asList(DUAL_MONITOR_SETUP_2X2, DUAL_MONITOR_SETUP_2X2_MIDDLE));
+
+    public static final MonitorDesk SINGLE_MONITOR_DESK = new MonitorDesk(2);
+    public static final BlockMonitorDesk2 SINGLE_MONITOR_SETUP = new BlockMonitorDesk2(
+            SINGLE_MONITOR_DESK, "single_monitor_setup", BlockMonitorSetup.Layer.BOTTOM,
+            BlockMonitorSetup.Column.LEFT, BlockMonitorSetup.Column.RIGHT);
+    public static final BlockMonitorDesk2 SINGLE_MONITOR_SETUP_MIDDLE = new BlockMonitorDesk2(
+            SINGLE_MONITOR_DESK, "single_monitor_setup_middle", BlockMonitorSetup.Layer.MIDDLE,
+            BlockMonitorSetup.Column.LEFT, BlockMonitorSetup.Column.RIGHT);
+    public static final List<BlockMonitorDesk> SINGLE_MONITOR_BLOCKS = Collections.unmodifiableList(
+            Arrays.<BlockMonitorDesk>asList(SINGLE_MONITOR_SETUP, SINGLE_MONITOR_SETUP_MIDDLE));
+
     public static final ItemScrewdriver SCREWDRIVER = new ItemScrewdriver();
     public static final ItemRfidCard BLANK_RFID_CARD = new ItemRfidCard("blank_rfid_card", false);
     public static final ItemRfidCard RED_RFID_CARD = new ItemRfidCard("red_rfid_card");
@@ -192,6 +239,11 @@ public class ModContent {
         // New blocks go last so previously saved numeric block IDs do not shift.
         e.getRegistry().register(MOTION_SENSOR);
         for (BlockMonitorSetup block : MONITOR_BLOCKS) e.getRegistry().register(block);
+        // New monitor desks go last so previously saved numeric block IDs do not shift.
+        for (BlockMonitorDesk block : TRIPLE_MONITOR_BLOCKS) e.getRegistry().register(block);
+        for (BlockMonitorDesk block : DUAL_MONITOR_BLOCKS) e.getRegistry().register(block);
+        for (BlockMonitorDesk block : DUAL_MONITOR_SHORT_BLOCKS) e.getRegistry().register(block);
+        for (BlockMonitorDesk block : SINGLE_MONITOR_BLOCKS) e.getRegistry().register(block);
     }
 
     @SubscribeEvent
@@ -248,6 +300,19 @@ public class ModContent {
         // New relay keys go last so previously saved numeric item IDs do not shift.
         e.getRegistry().register(MOTION_RELAY_KEY);
         e.getRegistry().register(TERMINAL_RELAY_KEY);
+        // New monitor desk items go last for the same reason.
+        e.getRegistry().register(new ItemMonitorDesk(TRIPLE_MONITOR_SETUP, TRIPLE_MONITOR_DESK)
+                .setRegistryName(TRIPLE_MONITOR_SETUP.getRegistryName())
+                .setCreativeTab(NTMDoors.TAB));
+        e.getRegistry().register(new ItemMonitorDesk(DUAL_MONITOR_SETUP, DUAL_MONITOR_DESK)
+                .setRegistryName(DUAL_MONITOR_SETUP.getRegistryName())
+                .setCreativeTab(NTMDoors.TAB));
+        e.getRegistry().register(new ItemMonitorDesk(DUAL_MONITOR_SETUP_2X2, DUAL_MONITOR_SHORT_DESK)
+                .setRegistryName(DUAL_MONITOR_SETUP_2X2.getRegistryName())
+                .setCreativeTab(NTMDoors.TAB));
+        e.getRegistry().register(new ItemMonitorDesk(SINGLE_MONITOR_SETUP, SINGLE_MONITOR_DESK)
+                .setRegistryName(SINGLE_MONITOR_SETUP.getRegistryName())
+                .setCreativeTab(NTMDoors.TAB));
     }
 
     /** Keeps existing worlds working after the SCP card registry names moved from 1-6 to 0-5. */

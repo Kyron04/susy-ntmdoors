@@ -20,7 +20,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-@Mod(modid = NTMDoors.MODID, name = "NTM Doors", version = "1.0.60",
+@Mod(modid = NTMDoors.MODID, name = "NTM Doors", version = "1.0.61",
         acceptedMinecraftVersions = "[1.12.2]", dependencies = "required-after:chisel")
 public class NTMDoors {
 
@@ -74,6 +74,10 @@ public class NTMDoors {
             items.add(new ItemStack(ModContent.SPEAKER));
             items.add(new ItemStack(ModContent.MOTION_SENSOR));
             items.add(new ItemStack(ModContent.MONITOR_SETUP));
+            items.add(new ItemStack(ModContent.TRIPLE_MONITOR_SETUP));
+            items.add(new ItemStack(ModContent.DUAL_MONITOR_SETUP));
+            items.add(new ItemStack(ModContent.DUAL_MONITOR_SETUP_2X2));
+            items.add(new ItemStack(ModContent.SINGLE_MONITOR_SETUP));
             ConcreteSet.addCreativeStacks(items);
             HLBlocksContent.addCreativeStacks(items);
         }

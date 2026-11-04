@@ -198,6 +198,12 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   the supplied 15-degree side-monitor yaw is rounded to 22.5 degrees, the closest legal JSON
   angle. Three block types (bottom/middle/top) each carry three columns, so the part and facing
   fit in the four metadata bits and no tile entity is needed.
+* Smaller monitor desks use the same sliced-cell approach and behaviour: `3 Monitor Setup`
+  (`ntmdoors:triple_monitor_setup`, 3x2x1), `Dual Monitor Setup` (`ntmdoors:dual_monitor_setup`,
+  3x2x1 with the open right-middle cell left free), `Dual Monitor Setup (short table)`
+  (`ntmdoors:dual_monitor_setup_2x2`, 2x2x1), and `Monitor` (`ntmdoors:single_monitor_setup`,
+  2x2x1). They place as one item, face the player, use the same half-depth monitor hitbox and
+  break-any-cell dismantle, and have no controls or redstone events yet.
 * Redstone Gate (`ntmdoors:redstone_gate`): a full-cube redstone component with separate off and on
   textures. It starts off, turns on while it receives redstone power or a wireless pulse, and emits
   a full-strength signal while on. A wireless event keeps it powered for its configured duration;
