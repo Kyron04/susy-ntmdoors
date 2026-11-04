@@ -28,7 +28,8 @@ import net.minecraft.world.World;
  * renders one slice of the supplied 48x41x16 model.
  *
  * <p>The model is authored facing north; the blockstate rotates each part for the other facings.
- * The bottom row is solid; the two upper rows are pass-through and only reserve the desk volume.
+ * The bottom row is solid; the two upper rows add a half-depth collision wall on the monitor side
+ * so the player can stand on the front half of the desk but cannot walk through the monitors.
  * The core is the bottom-centre block, named {@code ntmdoors:monitor_setup}.</p>
  */
 public class BlockMonitorSetup extends Block {
@@ -57,12 +58,12 @@ public class BlockMonitorSetup extends Block {
     }
 
     private static final ThreadLocal<Boolean> DISMANTLING = ThreadLocal.withInitial(() -> false);
-    /**
-     * 1.12's {@link Block#NULL_AABB} is actually null, not a zero-size box. Returning it from
-     * getBoundingBox makes Block.shouldSideBeRendered and Block.rayTrace throw an NPE, so the
-     * pass-through upper cells need a real, non-null empty box.
-     */
-    private static final AxisAlignedBB EMPTY_AABB = new AxisAlignedBB(0, 0, 0, 0, 0, 0);
+    /** Authored monitor wall: the south half of a block, centred so it can be rotated. */
+    private static final AxisAlignedBB MONITOR_LOCAL = new AxisAlignedBB(-0.5, 0, 0, 0.5, 1, 0.5);
+    private static final AxisAlignedBB MONITOR_NORTH = rotatedMonitorBox(EnumFacing.NORTH);
+    private static final AxisAlignedBB MONITOR_SOUTH = rotatedMonitorBox(EnumFacing.SOUTH);
+    private static final AxisAlignedBB MONITOR_EAST = rotatedMonitorBox(EnumFacing.EAST);
+    private static final AxisAlignedBB MONITOR_WEST = rotatedMonitorBox(EnumFacing.WEST);
 
     private final Layer layer;
 
@@ -156,16 +157,38 @@ public class BlockMonitorSetup extends Block {
         super.breakBlock(world, pos, state);
     }
 
-    /** Middle and top cells are invisible to collision but still reserve their block space. */
+    /**
+     * The bottom row keeps the full cube. The middle and top rows use the back half only, forming
+     * one continuous half-depth wall over the monitors while leaving the front half of the desk
+     * walkable and jumpable.
+     */
     @Override
     public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess world, BlockPos pos) {
-        return layer == Layer.BOTTOM ? FULL_BLOCK_AABB : EMPTY_AABB;
+        return layer == Layer.BOTTOM ? FULL_BLOCK_AABB : monitorBox(state.getValue(FACING));
     }
 
-    /** Null means no collision; the render/raytrace box above is deliberately non-null. */
     @Override
     public AxisAlignedBB getCollisionBoundingBox(IBlockState state, IBlockAccess world, BlockPos pos) {
-        return layer == Layer.BOTTOM ? FULL_BLOCK_AABB : null;
+        return layer == Layer.BOTTOM ? FULL_BLOCK_AABB : monitorBox(state.getValue(FACING));
+    }
+
+    /** Rotates the authored south-half monitor wall into the block's facing. */
+    private static AxisAlignedBB monitorBox(EnumFacing facing) {
+        switch (facing) {
+            case SOUTH:
+                return MONITOR_SOUTH;
+            case EAST:
+                return MONITOR_EAST;
+            case WEST:
+                return MONITOR_WEST;
+            case NORTH:
+            default:
+                return MONITOR_NORTH;
+        }
+    }
+
+    private static AxisAlignedBB rotatedMonitorBox(EnumFacing facing) {
+        return Facings.rotate(MONITOR_LOCAL, facing).offset(0.5D, 0D, 0.5D);
     }
 
     @Override

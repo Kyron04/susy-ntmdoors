@@ -191,7 +191,9 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
 * 6 Monitor Setup (`ntmdoors:monitor_setup`): a decorative 3x3x1 desk with six monitors, a
   keyboard, mouse and mousepad. It places as one item, faces the player, and reserves its full
   3x3x1 footprint; breaking any part removes the whole desk. The bottom row is solid, while the
-  two upper rows are pass-through occupancy cells. There are no controls or redstone events yet.
+  two upper rows use a half-depth collision wall over the monitors so the player can stand and jump
+  on the front half of the desk but cannot walk through the screens. There are no controls or
+  redstone events yet.
   The desk is split into nine cell models so every element stays inside the 1.12 model limits;
   the supplied 15-degree side-monitor yaw is rounded to 22.5 degrees, the closest legal JSON
   angle. Three block types (bottom/middle/top) each carry three columns, so the part and facing
