@@ -11,6 +11,7 @@ import com.ntmdoors.item.ItemRelayKey;
 import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.item.ItemSafeBindingKey;
 import com.ntmdoors.item.ItemScrewdriver;
+import com.ntmdoors.item.ItemTerminalRelayKey;
 import com.ntmdoors.tile.TileEntityDoorGeneric;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -45,6 +46,7 @@ public final class GuardEvents {
 
     @SubscribeEvent
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        if (event.isCanceled()) return;
         World world = event.getWorld();
         BlockPos pos = event.getPos();
         if (!isGuardedBlock(world.getBlockState(pos).getBlock())) return;
@@ -57,6 +59,7 @@ public final class GuardEvents {
                 || item instanceof ItemRelayKey
                 || item instanceof ItemSafeBindingKey
                 || item instanceof ItemRedstoneRelayKey
+                || item instanceof ItemTerminalRelayKey
                 || item instanceof ItemKeycardHolder
                 || item instanceof ItemBlock) {
             return;

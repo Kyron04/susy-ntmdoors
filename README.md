@@ -228,9 +228,23 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   same dimension.
 * Motion Relay Key (`ntmdoors:motion_relay_key`) and Terminal Relay Key
   (`ntmdoors:terminal_relay_key`): blue and orange/grey relay keys. The Motion Relay Key is
-  reserved for defining the 5x5x5 area a Motion Sensor watches; the Terminal Relay Key is reserved
-  for binding devices to the Security Terminal. Both carry their `Sneak + Right Click` tooltips,
-  but neither has behaviour yet.
+  reserved for defining the 5x5x5 area a Motion Sensor watches. The Terminal Relay Key starts a
+  binding session with a sneak + right click on a monitor desk, adds doors, keypads, keycard
+  scanners, motion sensors, Redstone Gates and speakers with further sneak + right clicks, asks
+  for a name for each device, and confirms the whole list by sneak + right clicking the same desk
+  again. Security opens on a landing page that lists each named security net with its device count;
+  an `Add security net` row sits beneath them. Adding a net prompts for a name, uses
+  `Security net N` when the name is left blank, and opens that net's empty device list. Each net
+  page has a Terminal Relay Key slot: hold a key, click the slot, then press `Bind` to link the key
+  to that net; `Rename` changes the linked key's display name and `Unlink` clears the link.
+  `Delete net` asks for confirmation, then removes the net and its device list and unlinks its key.
+  A key links to one net at a time and a net accepts one key; starting a linked key at another desk
+  reports `Key is already linked`. Clicking a linked device opens its screen remotely while the
+  player remains at the terminal; keypads and scanners still ask for their security codes. A
+  linked door opens the first loaded scanner controlling it, or reports `No scanner`. Escape in a
+  device screen returns to that net's linked-device list. The terminal uses the supplied
+  mouse-click sound for its buttons and rows. Starting at a different desk discards an unconfirmed
+  session.
 * Both safes and the keycard scanner have a third `Redstone` page with a red panel tint and
   scrolling. Its event toggles start off; enabling one pulses every linked gate for that gate's
   configured activation duration.

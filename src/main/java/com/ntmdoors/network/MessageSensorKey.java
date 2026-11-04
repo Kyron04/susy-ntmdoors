@@ -1,5 +1,7 @@
 package com.ntmdoors.network;
 
+import com.ntmdoors.monitor.MonitorAccess;
+
 import com.ntmdoors.item.ItemOperatorKeycard;
 import com.ntmdoors.tile.TileEntityMotionSensor;
 import com.ntmdoors.util.Biometrics;
@@ -63,12 +65,13 @@ public class MessageSensorKey implements IMessage {
 
         private static void apply(EntityPlayerMP player, MessageSensorKey message) {
             if (message.pos == null || message.value == null || message.value.isEmpty()) return;
-            if (!NetworkUtil.isWithinReach(player, message.pos)) return;
+            if (!MonitorAccess.canAccess(player, message.pos)) return;
 
             TileEntity te = player.world.getTileEntity(message.pos);
             if (!(te instanceof TileEntityMotionSensor)) return;
             TileEntityMotionSensor sensor = (TileEntityMotionSensor) te;
-            if (!sensor.hasConsoleAccess(player)) return;
+            boolean remote = MonitorAccess.isRemoteAuthorized(player, message.pos);
+            if (!remote && !sensor.hasConsoleAccess(player)) return;
 
             if (!message.assign) {
                 if (message.biometric) sensor.unassignId(message.value);

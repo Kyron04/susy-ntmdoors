@@ -113,6 +113,12 @@
       "ntmdoors:button9"
     ]
   },
+  "gui_click": {
+    "category": "master",
+    "sounds": [
+      "ntmdoors:gui_click"
+    ]
+  },
   "scanner_bell1": {
     "category": "block",
     "sounds": [

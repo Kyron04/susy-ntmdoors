@@ -1,5 +1,7 @@
 package com.ntmdoors.network;
 
+import com.ntmdoors.monitor.MonitorAccess;
+
 import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.item.ItemOperatorKeycard;
 import com.ntmdoors.tile.TileEntityRedstoneGate;
@@ -66,8 +68,9 @@ public class MessageGateOption implements IMessage {
         private static void apply(EntityPlayerMP player, MessageGateOption message) {
             if (message.pos == null) return;
             if (message.option < 0 || message.option >= OPTION_COUNT) return;
-            if (!NetworkUtil.isWithinReach(player, message.pos)) return;
-            if (!HeldItems.holds(player, ItemOperatorKeycard.class)
+            if (!MonitorAccess.canAccess(player, message.pos)) return;
+            boolean remote = MonitorAccess.isRemoteAuthorized(player, message.pos);
+            if (!remote && !HeldItems.holds(player, ItemOperatorKeycard.class)
                     && !ItemCreativeKeycard.isHeldBy(player)) {
                 return;
             }

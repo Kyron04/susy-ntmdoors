@@ -54,6 +54,20 @@ public final class ModNetwork {
                 Side.SERVER);
         INSTANCE.registerMessage(MessageMonitorState.Handler.class, MessageMonitorState.class, 22,
                 Side.CLIENT);
+        INSTANCE.registerMessage(MessageMonitorDevices.Handler.class, MessageMonitorDevices.class, 23,
+                Side.CLIENT);
+        INSTANCE.registerMessage(MessageTerminalBind.Handler.class, MessageTerminalBind.class, 24,
+                Side.SERVER);
+        INSTANCE.registerMessage(MessageMonitorDoorScanner.Handler.class,
+                MessageMonitorDoorScanner.class, 25, Side.SERVER);
+        INSTANCE.registerMessage(MessageMonitorDoorScannerResult.Handler.class,
+                MessageMonitorDoorScannerResult.class, 26, Side.CLIENT);
+        INSTANCE.registerMessage(MessageMonitorNetRequest.Handler.class,
+                MessageMonitorNetRequest.class, 27, Side.SERVER);
+        INSTANCE.registerMessage(MessageMonitorNets.Handler.class,
+                MessageMonitorNets.class, 28, Side.CLIENT);
+        INSTANCE.registerMessage(MessageMonitorKeyResult.Handler.class,
+                MessageMonitorKeyResult.class, 29, Side.CLIENT);
     }
 
     private ModNetwork() {

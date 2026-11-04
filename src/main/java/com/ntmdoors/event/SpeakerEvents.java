@@ -19,6 +19,7 @@ public final class SpeakerEvents {
 
     @SubscribeEvent
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        if (event.isCanceled()) return;
         EntityPlayer player = event.getEntityPlayer();
         if (player == null || !player.isSneaking()) return;
 

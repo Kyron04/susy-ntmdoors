@@ -1,0 +1,299 @@
+package com.ntmdoors.network;
+
+import com.ntmdoors.monitor.MonitorAccess;
+import com.ntmdoors.monitor.SecurityNet;
+import com.ntmdoors.monitor.SecurityNetSummary;
+import com.ntmdoors.monitor.TerminalKeyData;
+import com.ntmdoors.item.ItemTerminalRelayKey;
+import com.ntmdoors.tile.TileEntityMonitorDesk;
+import com.ntmdoors.util.HeldItems;
+import com.ntmdoors.util.PrivateKeys;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemStack;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * Client to server: Security net and key-slot actions.
+ */
+public class MessageMonitorNetRequest implements IMessage {
+
+    public static final int REQUEST_NETS = 0;
+    public static final int REQUEST_DEVICES = 1;
+    public static final int CREATE_NET = 2;
+    public static final int BIND_KEY = 3;
+    public static final int UNLINK_KEY = 4;
+    public static final int RENAME_KEY = 5;
+    public static final int DELETE_NET = 6;
+
+    private BlockPos deskPos;
+    private int action;
+    private int netId;
+    private String name;
+    private int hand;
+
+    public MessageMonitorNetRequest() {
+    }
+
+    public MessageMonitorNetRequest(BlockPos deskPos, int action, int netId, String name, int hand) {
+        this.deskPos = deskPos;
+        this.action = action;
+        this.netId = netId;
+        this.name = name;
+        this.hand = hand;
+    }
+
+    @Override
+    public void fromBytes(ByteBuf buf) {
+        deskPos = NetworkUtil.readPos(buf);
+        action = buf.readByte();
+        netId = buf.readInt();
+        name = ByteBufUtils.readUTF8String(buf);
+        hand = buf.readByte();
+    }
+
+    @Override
+    public void toBytes(ByteBuf buf) {
+        NetworkUtil.writePos(buf, deskPos);
+        buf.writeByte(action);
+        buf.writeInt(netId);
+        ByteBufUtils.writeUTF8String(buf, name == null ? "" : name);
+        buf.writeByte(hand);
+    }
+
+    public static class Handler implements IMessageHandler<MessageMonitorNetRequest, IMessage> {
+
+        @Override
+        public IMessage onMessage(MessageMonitorNetRequest message, MessageContext ctx) {
+            EntityPlayerMP player = ctx.getServerHandler().player;
+            player.getServerWorld().addScheduledTask(() -> apply(player, message));
+            return null;
+        }
+
+        private static void apply(EntityPlayerMP player, MessageMonitorNetRequest message) {
+            if (message.deskPos == null || !NetworkUtil.isWithinReach(player, message.deskPos)) return;
+
+            TileEntityMonitorDesk desk = TileEntityMonitorDesk.at(player.world, message.deskPos);
+            if (desk == null) return;
+
+            switch (message.action) {
+                case REQUEST_NETS:
+                    sendNets(player, desk, -1);
+                    break;
+                case CREATE_NET:
+                    SecurityNet created = desk.createNet(PrivateKeys.sanitiseName(message.name));
+                    if (created != null) {
+                        MonitorAccess.setTerminal(player, message.deskPos, created.id);
+                        sendNets(player, desk, created.id);
+                    }
+                    break;
+                case REQUEST_DEVICES:
+                    SecurityNet net = desk.getNet(message.netId);
+                    if (net == null) return;
+                    MonitorAccess.setTerminal(player, message.deskPos, net.id);
+                    sendDevices(player, desk, net);
+                    break;
+                case BIND_KEY:
+                    bindKey(player, desk, message);
+                    break;
+                case UNLINK_KEY:
+                    unlinkKey(player, desk, message.netId);
+                    break;
+                case RENAME_KEY:
+                    renameKey(player, desk, message.netId, message.name);
+                    break;
+                case DELETE_NET:
+                    deleteNet(player, desk, message.netId);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private static void sendNets(EntityPlayerMP player, TileEntityMonitorDesk desk, int createdNetId) {
+            List<SecurityNetSummary> nets = new ArrayList<>();
+            for (SecurityNet net : desk.getNets()) {
+                nets.add(new SecurityNetSummary(net.id, net.displayName(), net.getDevices().size()));
+            }
+            ModNetwork.INSTANCE.sendTo(new MessageMonitorNets(
+                    desk.getPos(), createdNetId, nets), player);
+        }
+
+        private static void sendDevices(EntityPlayerMP player, TileEntityMonitorDesk desk,
+                                        SecurityNet net) {
+            List<com.ntmdoors.monitor.MonitorDevice> devices =
+                    new ArrayList<>(net.getDevices());
+            boolean changed = devices.removeIf(
+                    device -> !com.ntmdoors.monitor.MonitorDevice.stillValid(player.world, device));
+            if (changed) desk.setNetDevices(net.id, devices);
+
+            ModNetwork.INSTANCE.sendTo(new MessageMonitorDevices(
+                    desk.getPos(), net.id, net.displayName(), net.getLinkedKeyName(), devices), player);
+        }
+
+        private static void bindKey(EntityPlayerMP player, TileEntityMonitorDesk desk,
+                                    MessageMonitorNetRequest message) {
+            SecurityNet net = desk.getNet(message.netId);
+            if (net == null) {
+                keyResult(player, desk, message.netId, MessageMonitorKeyResult.NO_NET, "");
+                return;
+            }
+
+            EnumHand hand = message.hand == 1 ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND;
+            ItemStack stack = player.getHeldItem(hand);
+            if (!(stack.getItem() instanceof ItemTerminalRelayKey)) {
+                keyResult(player, desk, net.id, MessageMonitorKeyResult.NO_KEY, net.getLinkedKeyName());
+                return;
+            }
+
+            TerminalKeyData.Link existing = TerminalKeyData.getLink(stack);
+            if (existing != null && !(existing.desk.equals(desk.getPos())
+                    && existing.dimension == player.world.provider.getDimension()
+                    && existing.netId == net.id)) {
+                keyResult(player, desk, net.id, MessageMonitorKeyResult.KEY_ALREADY_LINKED,
+                        net.getLinkedKeyName());
+                return;
+            }
+
+            if (net.hasLinkedKey()) {
+                if (existing == null || !existing.keyId.equals(net.getLinkedKeyId())) {
+                    keyResult(player, desk, net.id, MessageMonitorKeyResult.NET_ALREADY_LINKED,
+                            net.getLinkedKeyName());
+                    return;
+                }
+                keyResult(player, desk, net.id, MessageMonitorKeyResult.BOUND,
+                        net.getLinkedKeyName());
+                return;
+            }
+
+            String keyId = existing == null ? UUID.randomUUID().toString() : existing.keyId;
+            String keyName = stack.hasDisplayName() ? stack.getDisplayName() : "Terminal Relay Key";
+            TerminalKeyData.setLink(stack, desk.getPos(), player.world.provider.getDimension(),
+                    net.id, keyId);
+            TerminalKeyData.clearSession(stack);
+            desk.linkKey(net.id, keyId, keyName);
+            HeldItems.sync(player);
+            keyResult(player, desk, net.id, MessageMonitorKeyResult.BOUND, keyName);
+        }
+
+        private static void unlinkKey(EntityPlayerMP player, TileEntityMonitorDesk desk, int netId) {
+            SecurityNet net = desk.getNet(netId);
+            if (net == null) {
+                keyResult(player, desk, netId, MessageMonitorKeyResult.NO_NET, "");
+                return;
+            }
+            String keyId = net.getLinkedKeyId();
+            desk.unlinkKey(netId);
+            clearKeyLink(player, keyId);
+            clearPendingSession(player);
+            HeldItems.sync(player);
+            keyResult(player, desk, netId, MessageMonitorKeyResult.UNLINKED, "");
+        }
+
+        private static void renameKey(EntityPlayerMP player, TileEntityMonitorDesk desk,
+                                      int netId, String name) {
+            SecurityNet net = desk.getNet(netId);
+            if (net == null || !net.hasLinkedKey()) {
+                keyResult(player, desk, netId, MessageMonitorKeyResult.NO_KEY,
+                        net == null ? "" : net.getLinkedKeyName());
+                return;
+            }
+            String clean = PrivateKeys.sanitiseName(name);
+            if (clean.isEmpty()) clean = "Terminal Relay Key";
+            desk.linkKey(netId, net.getLinkedKeyId(), clean);
+            renameLinkedKey(player, net.getLinkedKeyId(), clean);
+            keyResult(player, desk, netId, MessageMonitorKeyResult.RENAMED, clean);
+        }
+
+        private static void deleteNet(EntityPlayerMP player, TileEntityMonitorDesk desk, int netId) {
+            SecurityNet net = desk.getNet(netId);
+            if (net == null) {
+                sendNets(player, desk, -1);
+                return;
+            }
+
+            String keyId = net.getLinkedKeyId();
+            if (!keyId.isEmpty()) {
+                unlinkKeyEverywhere(player, keyId);
+            }
+            desk.removeNet(netId);
+            sendNets(player, desk, -1);
+        }
+
+        /** Clears a stale net link from every online player's matching Terminal Relay Key. */
+        private static void unlinkKeyEverywhere(EntityPlayerMP player, String keyId) {
+            if (keyId == null || keyId.isEmpty()) return;
+            MinecraftServer server = player.getServer();
+            if (server == null) {
+                clearKeyLink(player, keyId);
+                return;
+            }
+            for (EntityPlayerMP online : server.getPlayerList().getPlayers()) {
+                clearKeyLink(online, keyId);
+            }
+        }
+
+        private static void clearKeyLink(EntityPlayerMP player, String keyId) {
+            if (keyId == null || keyId.isEmpty()) return;
+            boolean changed = false;
+            for (ItemStack stack : player.inventory.mainInventory) {
+                if (stack.getItem() instanceof ItemTerminalRelayKey
+                        && keyId.equals(linkId(stack))) {
+                    TerminalKeyData.clearLink(stack);
+                    TerminalKeyData.clearSession(stack);
+                    changed = true;
+                }
+            }
+            ItemStack off = player.getHeldItemOffhand();
+            if (off.getItem() instanceof ItemTerminalRelayKey && keyId.equals(linkId(off))) {
+                TerminalKeyData.clearLink(off);
+                TerminalKeyData.clearSession(off);
+                changed = true;
+            }
+            if (changed) HeldItems.sync(player);
+        }
+
+        private static void renameLinkedKey(EntityPlayerMP player, String keyId, String name) {
+            if (keyId == null || keyId.isEmpty()) return;
+            for (ItemStack stack : player.inventory.mainInventory) {
+                if (stack.getItem() instanceof ItemTerminalRelayKey
+                        && keyId.equals(linkId(stack))) {
+                    stack.setStackDisplayName(name);
+                }
+            }
+            ItemStack off = player.getHeldItemOffhand();
+            if (off.getItem() instanceof ItemTerminalRelayKey && keyId.equals(linkId(off))) {
+                off.setStackDisplayName(name);
+            }
+            HeldItems.sync(player);
+        }
+
+        private static void clearPendingSession(EntityPlayerMP player) {
+            TerminalKeyData.Session session = TerminalKeyData.getSession(player.getHeldItemMainhand());
+            if (session != null) TerminalKeyData.clearSession(player.getHeldItemMainhand());
+            TerminalKeyData.Session off = TerminalKeyData.getSession(player.getHeldItemOffhand());
+            if (off != null) TerminalKeyData.clearSession(player.getHeldItemOffhand());
+        }
+
+        private static String linkId(ItemStack stack) {
+            TerminalKeyData.Link link = TerminalKeyData.getLink(stack);
+            return link == null ? "" : link.keyId;
+        }
+
+        private static void keyResult(EntityPlayerMP player, TileEntityMonitorDesk desk,
+                                      int netId, int result, String keyName) {
+            ModNetwork.INSTANCE.sendTo(new MessageMonitorKeyResult(
+                    desk.getPos(), netId, result, keyName), player);
+        }
+    }
+}

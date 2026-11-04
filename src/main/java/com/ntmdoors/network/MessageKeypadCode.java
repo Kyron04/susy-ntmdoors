@@ -1,5 +1,7 @@
 package com.ntmdoors.network;
 
+import com.ntmdoors.monitor.MonitorAccess;
+
 import com.ntmdoors.item.ItemRedstoneRelayKey;
 import com.ntmdoors.tile.TileEntityDoorKeypad;
 import io.netty.buffer.ByteBuf;
@@ -52,8 +54,9 @@ public class MessageKeypadCode implements IMessage {
 
         private static void apply(EntityPlayerMP player, MessageKeypadCode message) {
             if (message.pos == null) return;
-            if (!ItemRedstoneRelayKey.isHeldBy(player)) return;
-            if (!NetworkUtil.isWithinReach(player, message.pos)) return;
+            boolean remote = MonitorAccess.isRemoteAuthorized(player, message.pos);
+            if (!remote && !ItemRedstoneRelayKey.isHeldBy(player)) return;
+            if (!MonitorAccess.canAccess(player, message.pos)) return;
 
             TileEntity te = player.world.getTileEntity(message.pos);
             if (!(te instanceof TileEntityDoorKeypad)) return;

@@ -398,6 +398,11 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         return scannerPos != null && boundScanners.contains(scannerPos);
     }
 
+    /** Scanners controlling this door, in binding order. Server-side data. */
+    public List<BlockPos> getBoundScanners() {
+        return new ArrayList<>(boundScanners);
+    }
+
     /** Adds a scanner to this door. A door may be controlled by several scanners. */
     public void bindToScanner(BlockPos scannerPos) {
         if (scannerPos == null) return;

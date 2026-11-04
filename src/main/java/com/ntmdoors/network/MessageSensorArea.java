@@ -1,5 +1,7 @@
 package com.ntmdoors.network;
 
+import com.ntmdoors.monitor.MonitorAccess;
+
 import com.ntmdoors.tile.TileEntityMotionSensor;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -57,12 +59,13 @@ public class MessageSensorArea implements IMessage {
 
         private static void apply(EntityPlayerMP player, MessageSensorArea message) {
             if (message.pos == null) return;
-            if (!NetworkUtil.isWithinReach(player, message.pos)) return;
+            if (!MonitorAccess.canAccess(player, message.pos)) return;
 
             TileEntity te = player.world.getTileEntity(message.pos);
             if (!(te instanceof TileEntityMotionSensor)) return;
             TileEntityMotionSensor sensor = (TileEntityMotionSensor) te;
-            if (!sensor.hasConsoleAccess(player)) return;
+            boolean remote = MonitorAccess.isRemoteAuthorized(player, message.pos);
+            if (!remote && !sensor.hasConsoleAccess(player)) return;
 
             if (message.clear) {
                 if (sensor.clearArea()) {

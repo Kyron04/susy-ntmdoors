@@ -1,5 +1,7 @@
 package com.ntmdoors.network;
 
+import com.ntmdoors.monitor.MonitorAccess;
+
 import com.ntmdoors.item.ItemBiometricOperatorKeycard;
 import com.ntmdoors.item.ItemOperatorKeycard;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
@@ -58,13 +60,14 @@ public class MessageScannerCode implements IMessage {
 
         private static void submit(EntityPlayerMP player, MessageScannerCode message) {
             if (message.pos == null) return;
+            boolean remote = MonitorAccess.isRemoteAuthorized(player, message.pos);
             ItemStack card = operatorCard(player);
-            if (card.isEmpty()) {
+            if (card.isEmpty() && !remote) {
                 result(player, message.pos, MessageScannerCodeResult.DENIED);
                 return;
             }
-            // Same reach as the screen: a scanner one block away plus some slack.
-            if (!NetworkUtil.isWithinReach(player, message.pos)) {
+            // Same reach as the screen, or the linked Security terminal's remote context.
+            if (!MonitorAccess.canAccess(player, message.pos)) {
                 result(player, message.pos, MessageScannerCodeResult.DENIED);
                 return;
             }
@@ -82,8 +85,9 @@ public class MessageScannerCode implements IMessage {
             }
 
             // A biometric operator card is personal: with holder matching on, a stolen card cannot
-            // buy its way into the settings with the right code.
-            if (scanner.isMatchHolder() && Biometrics.isBound(card)
+            // buy its way into the settings with the right code. A remote terminal visit without a
+            // card is still gated by the scanner's security code below.
+            if (!card.isEmpty() && scanner.isMatchHolder() && Biometrics.isBound(card)
                     && !Biometrics.isOwnedBy(card, player)) {
                 player.sendStatusMessage(new TextComponentTranslation("ntmdoors.msg.scanner_denied"), true);
                 result(player, message.pos, MessageScannerCodeResult.DENIED);

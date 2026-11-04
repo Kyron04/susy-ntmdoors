@@ -108,6 +108,7 @@ abstract class GuiCodePad extends GuiPanelScreen {
     @Override
     protected void keyTyped(char typedChar, int keyCode) throws IOException {
         if (keyCode == Keyboard.KEY_ESCAPE) {
+            if (MonitorReturnContext.handleEscape()) return;
             mc.displayGuiScreen(null);
             return;
         }

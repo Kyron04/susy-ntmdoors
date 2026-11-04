@@ -7,6 +7,8 @@ import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.hlblocks.HLBlocksOreDict;
 import com.ntmdoors.door.DoorDecls;
 import com.ntmdoors.gui.GuiHandler;
+import com.ntmdoors.monitor.MonitorDevice;
+import com.ntmdoors.monitor.SecurityNetSummary;
 import com.ntmdoors.network.ModNetwork;
 import com.ntmdoors.tile.TileEntityDoorGeneric;
 import com.ntmdoors.tile.TileEntityDoorKeypad;
@@ -24,6 +26,8 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+
+import java.util.List;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
@@ -120,6 +124,31 @@ public class CommonProxy {
 
     /** Client only: route a password result back into the open monitor terminal. */
     public void handleMonitorState(BlockPos pos, int result, boolean hasPassword, boolean passwordSkipped) {
+    }
+
+    /** Client only: route one Security net's device list into the open terminal. */
+    public void handleMonitorDevices(BlockPos pos, int netId, String netName,
+                                     String linkedKeyName, List<MonitorDevice> devices) {
+    }
+
+    /** Client only: route the Security net landing rows into the open terminal. */
+    public void handleMonitorNets(BlockPos pos, int createdNetId, List<SecurityNetSummary> nets) {
+    }
+
+    /** Client only: route a net key bind/unlink/rename result into the open terminal. */
+    public void handleMonitorKeyResult(BlockPos pos, int netId, int result, String keyName) {
+    }
+
+    /** Client only: open the name prompt for a device being added to a Terminal Relay Key. */
+    public void openDeviceNameGui(EnumHand hand, BlockPos pos, String defaultName, String typeName) {
+    }
+
+    /** Client only: open a confirmed linked device's screen from the Security list. */
+    public void openLinkedDeviceGui(MonitorDevice device) {
+    }
+
+    /** Client only: route the scanner lookup for a clicked door back into the Security screen. */
+    public void handleMonitorDoorScannerResult(BlockPos doorPos, BlockPos scannerPos, int result) {
     }
 
     /** Client only: show or hide the blue bound-area projection for one sensor. */

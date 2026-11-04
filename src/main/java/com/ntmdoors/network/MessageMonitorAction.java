@@ -10,8 +10,8 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 /**
- * Client to server: set, skip or check the password for one monitor desk. The client sends the
- * SHA-256 hash rather than the plain password; the server only stores and compares hashes.
+ * Client to server: password actions for one monitor desk. The client sends the SHA-256 hash rather
+ * than the plain password; the server only stores and compares hashes.
  */
 public class MessageMonitorAction implements IMessage {
 

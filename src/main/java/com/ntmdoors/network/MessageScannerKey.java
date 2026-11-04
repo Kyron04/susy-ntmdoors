@@ -1,5 +1,7 @@
 package com.ntmdoors.network;
 
+import com.ntmdoors.monitor.MonitorAccess;
+
 import com.ntmdoors.item.ItemOperatorKeycard;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
 import com.ntmdoors.util.Biometrics;
@@ -64,12 +66,16 @@ public class MessageScannerKey implements IMessage {
 
         private static void apply(EntityPlayerMP player, MessageScannerKey message) {
             if (message.pos == null || message.value == null || message.value.isEmpty()) return;
-            if (!NetworkUtil.isWithinReach(player, message.pos)) return;
+            if (!MonitorAccess.canAccess(player, message.pos)) return;
 
             TileEntity te = player.world.getTileEntity(message.pos);
             if (!(te instanceof TileEntityKeycardScanner)) return;
             TileEntityKeycardScanner scanner = (TileEntityKeycardScanner) te;
-            if (!scanner.hasConsoleAccess(player)) return;
+            boolean remote = MonitorAccess.isRemoteAuthorized(player, message.pos);
+            if (!scanner.hasConsoleAccess(player)
+                    && !(remote && scanner.hasBoundDoors() && scanner.hasCodeSessionFor(player))) {
+                return;
+            }
 
             if (!message.assign) {
                 if (message.biometric) scanner.unassignId(message.value);

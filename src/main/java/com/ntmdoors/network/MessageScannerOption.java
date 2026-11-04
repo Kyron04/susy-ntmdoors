@@ -1,5 +1,7 @@
 package com.ntmdoors.network;
 
+import com.ntmdoors.monitor.MonitorAccess;
+
 import com.ntmdoors.tile.TileEntityKeycardScanner;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -75,12 +77,16 @@ public class MessageScannerOption implements IMessage {
         private static void apply(EntityPlayerMP player, MessageScannerOption message) {
             if (message.pos == null) return;
             if (message.option < 0 || message.option >= OPTION_COUNT) return;
-            if (!NetworkUtil.isWithinReach(player, message.pos)) return;
+            if (!MonitorAccess.canAccess(player, message.pos)) return;
 
             TileEntity te = player.world.getTileEntity(message.pos);
             if (!(te instanceof TileEntityKeycardScanner)) return;
             TileEntityKeycardScanner scanner = (TileEntityKeycardScanner) te;
-            if (!scanner.hasConsoleAccess(player)) return;
+            boolean remote = MonitorAccess.isRemoteAuthorized(player, message.pos);
+            if (!scanner.hasConsoleAccess(player)
+                    && !(remote && scanner.hasBoundDoors() && scanner.hasCodeSessionFor(player))) {
+                return;
+            }
             // Raising lockdown mid-stroke would fight the door, so settings wait for a still door.
             // The Redstone event switches do not touch a door, so they stay editable.
             boolean redstone = message.option >= REDSTONE_SCAN_FAIL;

@@ -1,6 +1,7 @@
 package com.ntmdoors.proxy;
 
 import com.ntmdoors.NTMDoors;
+import com.ntmdoors.client.GuiDeviceName;
 import com.ntmdoors.client.GuiDocumentsFolder;
 import com.ntmdoors.client.GuiKeycardViewer;
 import com.ntmdoors.client.GuiKeypadSecurityCode;
@@ -27,6 +28,8 @@ import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.DoorDecls;
 import com.ntmdoors.door.ObjBounds;
 import com.ntmdoors.item.ItemDocumentsFolder;
+import com.ntmdoors.monitor.MonitorDevice;
+import com.ntmdoors.monitor.SecurityNetSummary;
 import com.ntmdoors.tile.TileEntityDoorGeneric;
 import com.ntmdoors.tile.TileEntityDoorKeypad;
 import com.ntmdoors.tile.TileEntityKeycardProgrammer;
@@ -132,6 +135,79 @@ public class ClientProxy extends CommonProxy {
                 openMonitorGui(pos, hasPassword, passwordSkipped);
             } else if (mc.currentScreen instanceof GuiMonitor) {
                 ((GuiMonitor) mc.currentScreen).handleServerResult(result, hasPassword);
+            }
+        });
+    }
+
+    @Override
+    public void handleMonitorDevices(BlockPos pos, int netId, String netName,
+                                     String linkedKeyName, List<MonitorDevice> devices) {
+        Minecraft mc = Minecraft.getMinecraft();
+        mc.addScheduledTask(() -> {
+            if (mc.currentScreen instanceof GuiMonitor) {
+                ((GuiMonitor) mc.currentScreen).handleDevices(
+                        pos, netId, netName, linkedKeyName, devices);
+            }
+        });
+    }
+
+    @Override
+    public void handleMonitorNets(BlockPos pos, int createdNetId, List<SecurityNetSummary> nets) {
+        Minecraft mc = Minecraft.getMinecraft();
+        mc.addScheduledTask(() -> {
+            if (mc.currentScreen instanceof GuiMonitor) {
+                ((GuiMonitor) mc.currentScreen).handleNets(pos, createdNetId, nets);
+            }
+        });
+    }
+
+    @Override
+    public void handleMonitorKeyResult(BlockPos pos, int netId, int result, String keyName) {
+        Minecraft mc = Minecraft.getMinecraft();
+        mc.addScheduledTask(() -> {
+            if (mc.currentScreen instanceof GuiMonitor) {
+                ((GuiMonitor) mc.currentScreen).handleKeyResult(pos, netId, result, keyName);
+            }
+        });
+    }
+
+    @Override
+    public void openDeviceNameGui(EnumHand hand, BlockPos pos, String defaultName, String typeName) {
+        Minecraft.getMinecraft().displayGuiScreen(
+                new GuiDeviceName(hand, pos, defaultName, typeName));
+    }
+
+    @Override
+    public void openLinkedDeviceGui(MonitorDevice device) {
+        if (device == null) return;
+        Minecraft mc = Minecraft.getMinecraft();
+        switch (device.type) {
+            case KEYPAD:
+                mc.displayGuiScreen(new GuiKeypadSecurityCode(device.pos));
+                break;
+            case SCANNER:
+                mc.displayGuiScreen(new GuiScannerCode(device.pos));
+                break;
+            case MOTION_SENSOR:
+                mc.displayGuiScreen(new GuiMotionSensor(device.pos));
+                break;
+            case REDSTONE_GATE:
+                mc.displayGuiScreen(new GuiRedstoneGate(device.pos));
+                break;
+            case SPEAKER:
+                mc.displayGuiScreen(new GuiSpeaker(device.pos));
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
+    public void handleMonitorDoorScannerResult(BlockPos doorPos, BlockPos scannerPos, int result) {
+        Minecraft mc = Minecraft.getMinecraft();
+        mc.addScheduledTask(() -> {
+            if (mc.currentScreen instanceof GuiMonitor) {
+                ((GuiMonitor) mc.currentScreen).handleDoorScanner(doorPos, scannerPos, result);
             }
         });
     }
