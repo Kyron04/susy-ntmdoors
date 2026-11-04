@@ -1,6 +1,9 @@
 package com.ntmdoors.block;
 
 import com.ntmdoors.NTMDoors;
+import com.ntmdoors.network.MessageMonitorState;
+import com.ntmdoors.network.ModNetwork;
+import com.ntmdoors.tile.TileEntityMonitorDesk;
 import com.ntmdoors.util.Facings;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
@@ -11,8 +14,11 @@ import net.minecraft.block.properties.PropertyEnum;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -25,10 +31,12 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 /**
  * One cell of a small monitor desk. The bottom layer is the solid desk; the middle layer carries
- * the monitors and uses the same half-depth collision wall as the six-monitor desk. There is no
- * tile entity and no per-tick logic.
+ * the monitors and uses the same half-depth collision wall as the six-monitor desk. A single
+ * tickless tile entity on the bottom core stores the terminal password; there is no per-tick logic.
  */
 public class BlockMonitorDesk extends Block {
 
@@ -124,6 +132,41 @@ public class BlockMonitorDesk extends Block {
 
     public BlockPos offset(BlockMonitorSetup.Column column, EnumFacing facing) {
         return desk.offset(this, column, facing);
+    }
+
+    /** Only the bottom core cell owns the desk's password tile entity. */
+    @Override
+    public boolean hasTileEntity(IBlockState state) {
+        return layer == BlockMonitorSetup.Layer.BOTTOM
+                && state.getValue(columnProperty()) == desk.coreColumn();
+    }
+
+    @Nullable
+    @Override
+    public TileEntity createTileEntity(World world, IBlockState state) {
+        return hasTileEntity(state) ? new TileEntityMonitorDesk() : null;
+    }
+
+    /**
+     * Right-clicking a monitor cell asks the server to open the terminal. The desk row stays inert
+     * so the keyboard, mousepad and tabletop keep their normal block/item interactions, and
+     * sneaking bypasses the screen so blocks can still be placed against the monitors.
+     */
+    @Override
+    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player,
+                                    EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+        if (layer == BlockMonitorSetup.Layer.BOTTOM || player.isSneaking()) return false;
+        if (!world.isRemote && player instanceof EntityPlayerMP) {
+            BlockPos core = pos.subtract(offset(state.getValue(columnProperty()),
+                    state.getValue(FACING)));
+            TileEntityMonitorDesk monitor = TileEntityMonitorDesk.at(world, core);
+            if (monitor != null) {
+                ModNetwork.INSTANCE.sendTo(new MessageMonitorState(core,
+                        MessageMonitorState.OPEN, monitor.hasPassword(),
+                        monitor.isPasswordSkipped()), (EntityPlayerMP) player);
+            }
+        }
+        return true;
     }
 
     @Override

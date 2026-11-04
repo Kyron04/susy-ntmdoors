@@ -192,8 +192,12 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   keyboard, mouse and mousepad. It places as one item, faces the player, and reserves its full
   3x3x1 footprint; breaking any part removes the whole desk. The bottom row is solid, while the
   two upper rows use a half-depth collision wall over the monitors so the player can stand and jump
-  on the front half of the desk but cannot walk through the screens. There are no controls or
-  redstone events yet.
+  on the front half of the desk but cannot walk through the screens. Right-clicking any monitor
+  cell opens the black-and-orange terminal: the first open offers to set a per-desk password,
+  later opens require it, and the unlocked screen lists Security, Opencomputers and Factory.
+  Passwords are stored as SHA-256 hashes on a tickless tile entity on the desk core and are checked
+  server-side. The desk/keyboard row stays inert, and sneak-right-click still lets blocks be
+  placed against the monitors. There are no redstone events yet.
   The desk is split into nine cell models so every element stays inside the 1.12 model limits;
   the supplied 15-degree side-monitor yaw is rounded to 22.5 degrees, the closest legal JSON
   angle. Three block types (bottom/middle/top) each carry three columns, so the part and facing
@@ -203,7 +207,9 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   3x2x1 with the open right-middle cell left free), `Dual Monitor Setup (short table)`
   (`ntmdoors:dual_monitor_setup_2x2`, 2x2x1), and `Monitor` (`ntmdoors:single_monitor_setup`,
   2x2x1). They place as one item, face the player, use the same half-depth monitor hitbox and
-  break-any-cell dismantle, and have no controls or redstone events yet.
+  break-any-cell dismantle. Every monitor cell opens the same password-gated terminal and task
+  list; each desk keeps its own password hash. The desk row stays inert, and sneak-right-click
+  remains available for placing blocks. There are no redstone events yet.
 * Redstone Gate (`ntmdoors:redstone_gate`): a full-cube redstone component with separate off and on
   textures. It starts off, turns on while it receives redstone power or a wireless pulse, and emits
   a full-strength signal while on. A wireless event keeps it powered for its configured duration;

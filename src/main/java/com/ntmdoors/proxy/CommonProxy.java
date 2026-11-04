@@ -14,6 +14,7 @@ import com.ntmdoors.tile.TileEntityDoorPart;
 import com.ntmdoors.tile.TileEntityBiometricSafe;
 import com.ntmdoors.tile.TileEntityKeycardProgrammer;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
+import com.ntmdoors.tile.TileEntityMonitorDesk;
 import com.ntmdoors.tile.TileEntityMotionSensor;
 import com.ntmdoors.tile.TileEntityRedstoneGate;
 import com.ntmdoors.tile.TileEntitySafe;
@@ -44,6 +45,7 @@ public class CommonProxy {
         registerTileEntity(TileEntityRedstoneGate.class, "redstone_gate");
         registerTileEntity(TileEntitySpeaker.class, "speaker");
         registerTileEntity(TileEntityMotionSensor.class, "motion_sensor");
+        registerTileEntity(TileEntityMonitorDesk.class, "monitor_desk");
         // Read the OBJ group bounds used by moving collision boxes now, so the first collision
         // query on a door never has to touch the filesystem.
         for (DoorDecl d : DoorDecls.ALL) d.prepareGeometry();
@@ -110,6 +112,14 @@ public class CommonProxy {
 
     /** Client only: open the Motion Sensor console. */
     public void openMotionSensorGui(BlockPos pos) {
+    }
+
+    /** Client only: open the monitor terminal for the desk core with its current password state. */
+    public void openMonitorGui(BlockPos pos, boolean hasPassword, boolean passwordSkipped) {
+    }
+
+    /** Client only: route a password result back into the open monitor terminal. */
+    public void handleMonitorState(BlockPos pos, int result, boolean hasPassword, boolean passwordSkipped) {
     }
 
     /** Client only: show or hide the blue bound-area projection for one sensor. */

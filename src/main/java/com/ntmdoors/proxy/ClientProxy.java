@@ -4,8 +4,10 @@ import com.ntmdoors.NTMDoors;
 import com.ntmdoors.client.GuiDocumentsFolder;
 import com.ntmdoors.client.GuiKeycardViewer;
 import com.ntmdoors.client.GuiKeypadSecurityCode;
+import com.ntmdoors.client.GuiMonitor;
 import com.ntmdoors.client.GuiMotionSensor;
 import com.ntmdoors.client.GuiRedstoneGate;
+import com.ntmdoors.network.MessageMonitorState;
 import com.ntmdoors.client.MotionSensorOverlay;
 import com.ntmdoors.client.RenderMotionSensorArea;
 import com.ntmdoors.client.GuiRelayKeyName;
@@ -115,6 +117,23 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void openMotionSensorGui(BlockPos pos) {
         Minecraft.getMinecraft().displayGuiScreen(new GuiMotionSensor(pos));
+    }
+
+    @Override
+    public void openMonitorGui(BlockPos pos, boolean hasPassword, boolean passwordSkipped) {
+        Minecraft.getMinecraft().displayGuiScreen(new GuiMonitor(pos, hasPassword, passwordSkipped));
+    }
+
+    @Override
+    public void handleMonitorState(BlockPos pos, int result, boolean hasPassword, boolean passwordSkipped) {
+        Minecraft mc = Minecraft.getMinecraft();
+        mc.addScheduledTask(() -> {
+            if (result == MessageMonitorState.OPEN) {
+                openMonitorGui(pos, hasPassword, passwordSkipped);
+            } else if (mc.currentScreen instanceof GuiMonitor) {
+                ((GuiMonitor) mc.currentScreen).handleServerResult(result, hasPassword);
+            }
+        });
     }
 
     @Override

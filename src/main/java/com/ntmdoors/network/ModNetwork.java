@@ -50,6 +50,10 @@ public final class ModNetwork {
                 Side.SERVER);
         INSTANCE.registerMessage(MessageSensorArea.Handler.class, MessageSensorArea.class, 20,
                 Side.SERVER);
+        INSTANCE.registerMessage(MessageMonitorAction.Handler.class, MessageMonitorAction.class, 21,
+                Side.SERVER);
+        INSTANCE.registerMessage(MessageMonitorState.Handler.class, MessageMonitorState.class, 22,
+                Side.CLIENT);
     }
 
     private ModNetwork() {
