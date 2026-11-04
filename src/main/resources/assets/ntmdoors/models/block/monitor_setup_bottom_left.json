@@ -1,4 +1,4 @@
-﻿{
+{
     "parent":  "block/block",
     "gui_light":  "front",
     "ambientocclusion":  true,
@@ -124,6 +124,97 @@
                                                                16
                                                            ]
                                                 },
+                                       "down":  {
+                                                    "texture":  "#frame",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      3,
+                                      12,
+                                      13
+                                  ],
+                         "to":  [
+                                    16,
+                                    14,
+                                    15
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#frame",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#frame",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "down":  {
+                                                    "texture":  "#frame",
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               16
+                                                           ]
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      3,
+                                      1,
+                                      13
+                                  ],
+                         "to":  [
+                                    16,
+                                    3,
+                                    15
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#frame",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#frame",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "up":  {
+                                                  "texture":  "#frame",
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             16
+                                                         ]
+                                              },
                                        "down":  {
                                                     "texture":  "#frame",
                                                     "uv":  [

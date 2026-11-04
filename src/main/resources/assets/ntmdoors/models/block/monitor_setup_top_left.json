@@ -1,4 +1,4 @@
-﻿{
+{
     "parent":  "block/block",
     "gui_light":  "front",
     "ambientocclusion":  true,
@@ -145,66 +145,6 @@
                                               },
                                        "down":  {
                                                     "texture":  "#bezel",
-                                                    "uv":  [
-                                                               0,
-                                                               0,
-                                                               16,
-                                                               16
-                                                           ]
-                                                }
-                                   },
-                         "rotation":  {
-                                          "origin":  [
-                                                         10,
-                                                         -32,
-                                                         11.55
-                                                     ],
-                                          "axis":  "y",
-                                          "angle":  -22.5,
-                                          "rescale":  false
-                                      }
-                     },
-                     {
-                         "from":  [
-                                      9.4,
-                                      3,
-                                      10.8
-                                  ],
-                         "to":  [
-                                    10.6,
-                                    5,
-                                    11.3
-                                ],
-                         "faces":  {
-                                       "east":  {
-                                                    "texture":  "#frame",
-                                                    "uv":  [
-                                                               0,
-                                                               0,
-                                                               16,
-                                                               16
-                                                           ]
-                                                },
-                                       "west":  {
-                                                    "texture":  "#frame",
-                                                    "uv":  [
-                                                               0,
-                                                               0,
-                                                               16,
-                                                               16
-                                                           ]
-                                                },
-                                       "up":  {
-                                                  "texture":  "#frame",
-                                                  "uv":  [
-                                                             0,
-                                                             0,
-                                                             16,
-                                                             16
-                                                         ]
-                                              },
-                                       "down":  {
-                                                    "texture":  "#frame",
                                                     "uv":  [
                                                                0,
                                                                0,
