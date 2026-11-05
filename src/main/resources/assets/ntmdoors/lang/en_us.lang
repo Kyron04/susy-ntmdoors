@@ -357,3 +357,7 @@ ntmdoors.msg.terminal_net_missing=That security net is missing
 ntmdoors.msg.system_shutdown=System shutdown is active
 ntmdoors.msg.system_lockdown=System lockdown is active
 ntmdoors.msg.scanner_disabled=Scanner disabled
+
+tile.ntmdoors.test_door.name=Test Door
+tile.ntmdoors.test_door_locked.name=Test Door (Locked)
+tile.ntmdoors.test_door_security.name=Test Door (Security)
