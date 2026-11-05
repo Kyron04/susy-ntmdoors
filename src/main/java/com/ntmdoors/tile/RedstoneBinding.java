@@ -133,10 +133,6 @@ public final class RedstoneBinding {
         applyHold();
     }
 
-    public boolean isHolding() {
-        return holdMode != HoldMode.NONE;
-    }
-
     private void applyHold() {
         World world = host.getWorld();
         if (world == null || world.isRemote) return;

@@ -1,6 +1,5 @@
 package com.ntmdoors.concrete;
 
-import com.ntmdoors.NTMDoors;
 import com.ntmdoors.item.ItemBlockConcreteVariant;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
@@ -176,18 +175,8 @@ public final class ConcreteSet {
         return Collections.unmodifiableCollection(STAIRS.values());
     }
 
-    public static List<StairSpec> stairSpecs() {
-        return Collections.unmodifiableList(STAIR_SPECS);
-    }
-
     public static List<SlabGroup> slabGroups() {
         return Collections.unmodifiableList(SLAB_GROUPS);
-    }
-
-    public static Collection<Block> allSlabs() {
-        List<Block> result = new ArrayList<>();
-        for (SlabGroup group : SLAB_GROUPS) result.add(group.single);
-        return Collections.unmodifiableList(result);
     }
 
     private static BlockConcreteVariant cube(String name, float hardness, float resistance) {

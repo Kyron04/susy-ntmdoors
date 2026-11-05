@@ -95,6 +95,8 @@ public class GuiDocumentsFolder extends GuiScreen {
     private int desiredX;
     private int caretLineHint = -1;
     private int cursorCounter;
+    private final GuiKeyRepeat repeat = new GuiKeyRepeat();
+    private boolean repeating;
     private float guiScale = 1F;
     private int screenLeft;
     private int screenTop;
@@ -123,13 +125,14 @@ public class GuiDocumentsFolder extends GuiScreen {
         screenTop = (height - Math.round(PANEL_HEIGHT * guiScale)) / 2;
         left = 0;
         top = 0;
-        Keyboard.enableRepeatEvents(true);
+        // The editor handles repeats itself; window-system repeat events are ignored below.
+        repeat.clear();
         desiredX = caretX();
     }
 
     @Override
     public void onGuiClosed() {
-        Keyboard.enableRepeatEvents(false);
+        repeat.clear();
         save();
         super.onGuiClosed();
     }
@@ -138,6 +141,28 @@ public class GuiDocumentsFolder extends GuiScreen {
     public void updateScreen() {
         super.updateScreen();
         cursorCounter++;
+        updateRepeat();
+    }
+
+    private void updateRepeat() {
+        if (!repeat.update()) return;
+        repeating = true;
+        try {
+            keyTyped(repeat.typedChar(), repeat.keyCode());
+        } catch (IOException ignored) {
+            // The editor's key handler does not do I/O; keep the repeat loop alive regardless.
+        } finally {
+            repeating = false;
+        }
+    }
+
+    private void rememberRepeat(char typedChar, int keyCode) {
+        if (repeating || GuiScreen.isCtrlKeyDown()) return;
+        if (keyCode == Keyboard.KEY_BACK || keyCode == Keyboard.KEY_DELETE
+                || keyCode == Keyboard.KEY_TAB
+                || (typedChar >= ' ' && ChatAllowedCharacters.isAllowedCharacter(typedChar))) {
+            repeat.press(keyCode, typedChar);
+        }
     }
 
     private int toLocalX(int screenX) {
@@ -376,6 +401,7 @@ public class GuiDocumentsFolder extends GuiScreen {
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+        repeat.clear();
         int localX = toLocalX(mouseX);
         int localY = toLocalY(mouseY);
         if (mouseButton == 0) {
@@ -430,8 +456,12 @@ public class GuiDocumentsFolder extends GuiScreen {
 
     @Override
     protected void keyTyped(char typedChar, int keyCode) throws IOException {
+        if (!repeating && Keyboard.isRepeatEvent()) return;
         if (renaming) {
-            if (handleRenameKey(typedChar, keyCode)) return;
+            if (handleRenameKey(typedChar, keyCode)) {
+                rememberRepeat(typedChar, keyCode);
+                return;
+            }
             super.keyTyped(typedChar, keyCode);
             return;
         }
@@ -469,10 +499,12 @@ public class GuiDocumentsFolder extends GuiScreen {
         }
         if (keyCode == Keyboard.KEY_BACK) {
             backspace();
+            rememberRepeat(typedChar, keyCode);
             return;
         }
         if (keyCode == Keyboard.KEY_DELETE) {
             delete();
+            rememberRepeat(typedChar, keyCode);
             return;
         }
         if (keyCode == Keyboard.KEY_RETURN || keyCode == Keyboard.KEY_NUMPADENTER) {
@@ -481,6 +513,7 @@ public class GuiDocumentsFolder extends GuiScreen {
         }
         if (keyCode == Keyboard.KEY_TAB) {
             insert("    ");
+            rememberRepeat(typedChar, keyCode);
             return;
         }
         if (keyCode == Keyboard.KEY_PRIOR) {
@@ -497,6 +530,7 @@ public class GuiDocumentsFolder extends GuiScreen {
         }
         if (typedChar >= ' ' && ChatAllowedCharacters.isAllowedCharacter(typedChar)) {
             insert(String.valueOf(typedChar));
+            rememberRepeat(typedChar, keyCode);
             return;
         }
         super.keyTyped(typedChar, keyCode);
@@ -525,6 +559,7 @@ public class GuiDocumentsFolder extends GuiScreen {
     private void switchPage(int target) {
         int next = Math.max(0, Math.min(ItemDocumentsFolder.PAGE_COUNT - 1, target));
         if (next == page) return;
+        repeat.clear();
         page = next;
         caret = pages[page].length();
         caretLineHint = -1;
@@ -615,6 +650,7 @@ public class GuiDocumentsFolder extends GuiScreen {
     // ------------------------------------------------------------ folder name
 
     private void startRename() {
+        repeat.clear();
         renaming = true;
         renameText = folderName;
         renameCaret = renameText.length();
@@ -622,6 +658,7 @@ public class GuiDocumentsFolder extends GuiScreen {
     }
 
     private void commitRename() {
+        repeat.clear();
         folderName = ItemDocumentsFolder.cleanName(renameText);
         renaming = false;
         renameText = "";
@@ -638,6 +675,7 @@ public class GuiDocumentsFolder extends GuiScreen {
     }
 
     private void cancelRename() {
+        repeat.clear();
         renaming = false;
         renameText = "";
         renameCaret = 0;

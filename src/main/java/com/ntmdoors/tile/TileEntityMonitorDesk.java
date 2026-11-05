@@ -2,6 +2,8 @@ package com.ntmdoors.tile;
 
 import com.ntmdoors.block.BlockMonitorDesk;
 import com.ntmdoors.block.BlockMonitorSetup;
+import com.ntmdoors.client.BackupLoopSound;
+import com.ntmdoors.item.ItemTerminalBackupKey;
 import com.ntmdoors.monitor.MonitorDevice;
 import com.ntmdoors.monitor.MonitorDisplay;
 import com.ntmdoors.monitor.MonitorWallpaper;
@@ -9,21 +11,34 @@ import com.ntmdoors.monitor.NotepadDocument;
 import com.ntmdoors.monitor.SecurityEvents;
 import com.ntmdoors.monitor.SecurityNet;
 import com.ntmdoors.monitor.SecurityNetSummary;
+import com.ntmdoors.monitor.TerminalBackupData;
 import com.ntmdoors.network.NetworkUtil;
+import com.ntmdoors.util.ModSounds;
 import com.ntmdoors.util.MonitorPasswords;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.InventoryHelper;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,9 +49,9 @@ import java.util.UUID;
 
 /**
  * Per-desk terminal state. There is exactly one tile entity per monitor desk, on the bottom core
- * cell; it is tickless and stores the password hash, the "no password" choice and the named
- * Security nets. Each net owns its own confirmed device list and at most one linked Terminal Relay
- * Key.
+ * cell; it stores the password hash, the "no password" choice, the named Security nets and the
+ * terminal backup slots. Each net owns its own confirmed device list and at most one linked
+ * Terminal Relay Key. The tile only ticks while a backup copy or its success hold is active.
  *
  * <p>The full NBT (world save) keeps the hash and the nets. The update tag sent to clients carries
  * the password flags plus a compact display snapshot for each physical screen. The hash itself
@@ -45,6 +60,33 @@ import java.util.UUID;
 public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable {
 
     public static final int MAX_SCREENS = 6;
+
+    public static final int BACKUP_SLOT_LEFT = 0;
+    public static final int BACKUP_SLOT_RIGHT = 1;
+    public static final int BACKUP_SLOT_COUNT = 2;
+    /** Ten seconds of backup time, matching the programmer and its five progress frames. */
+    public static final int BACKUP_TICKS = 20 * 10;
+    private static final int BACKUP_SUCCESS_HOLD_TICKS = 10;
+    private static final int BACKUP_NOTICE_TICKS = 80;
+    private static final float BACKUP_VOLUME = 0.8F;
+    private static final float BACKUP_LOOP_VOLUME = BACKUP_VOLUME / 2F;
+
+    /** Why the current backup slots cannot start a copy. */
+    public enum BackupFailure {
+        NONE,
+        EMPTY,
+        INVALID_ITEM,
+        NO_DATA,
+        TARGET_NOT_FRESH
+    }
+
+    /** Why the key in the restore slot cannot restore this terminal. */
+    public enum RestoreFailure {
+        NONE,
+        EMPTY,
+        INVALID_ITEM,
+        NO_DATA
+    }
 
     public TileEntityMonitorDesk() {
         for (int i = 0; i < MAX_SCREENS; i++) {
@@ -63,13 +105,27 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
     private boolean passwordSkipped;
     private final List<SecurityNet> nets = new ArrayList<>();
     private final List<NotepadDocument> notepadDocuments = new ArrayList<>();
-    private final int[] screenPages = new int[MAX_SCREENS];
     private final String[] screenWallpapers = new String[MAX_SCREENS];
     private int nextNetId;
     private int nextNotepadId;
-    private int syncedNetCount;
-    private int syncedDeviceCount;
-    private int syncedEventMask;
+    private int displayRevision;
+
+    // Two terminal-key slots used by the backup console. They are separate from the Security nets
+    // and are persisted with the desk so a key cannot be lost by closing the screen.
+    private final ItemStack[] backupSlots = {ItemStack.EMPTY, ItemStack.EMPTY};
+    private final BackupInventory backupInventory = new BackupInventory();
+    private boolean backupActive;
+    private boolean restoreMode;
+    private int backupTicks;
+    private boolean backupSuccess;
+    private int successTicks;
+    private int lastSyncedBackupFrame = -1;
+    private String backupNotice = "";
+    private int backupNoticeTicks;
+
+    @SideOnly(Side.CLIENT)
+    @Nullable
+    private BackupLoopSound backupSound;
 
     // One independent terminal page per physical screen.
     private final int[] displayStages = new int[MAX_SCREENS];
@@ -122,6 +178,11 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
         return passwordSkipped;
     }
 
+    /** Increments whenever a client receives a new display snapshot. */
+    public int getDisplayRevision() {
+        return displayRevision;
+    }
+
     /** Server side: stores the already-hashed password and clears the "skipped" choice. */
     public boolean setPasswordHash(String hash) {
         if (world == null || world.isRemote || !MonitorPasswords.isValidHash(hash)) return false;
@@ -145,34 +206,384 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
         return passwordSet && MonitorPasswords.matches(passwordHash, hash);
     }
 
-    /** Server side: removes the password and allows the setup prompt to appear again. */
-    public boolean clearPassword() {
+    // ------------------------------------------------------------ terminal backup
+
+    /** The two-slot inventory shown by the backup console. */
+    public IInventory getBackupInventory() {
+        return backupInventory;
+    }
+
+    public ItemStack getBackupSlot(int index) {
+        return index >= 0 && index < BACKUP_SLOT_COUNT ? backupSlots[index] : ItemStack.EMPTY;
+    }
+
+    public static boolean isBackupKey(ItemStack stack) {
+        return !stack.isEmpty() && stack.getItem() instanceof ItemTerminalBackupKey;
+    }
+
+    /** Client and server: validates a source/target key pair without changing either stack. */
+    public static BackupFailure getBackupFailure(ItemStack source, ItemStack target) {
+        if (source.isEmpty() || target.isEmpty()) return BackupFailure.EMPTY;
+        if (!isBackupKey(source) || !isBackupKey(target)) return BackupFailure.INVALID_ITEM;
+        if (!TerminalBackupData.hasBackup(source)) return BackupFailure.NO_DATA;
+        NBTTagCompound targetTag = target.getTagCompound();
+        if (targetTag != null && !targetTag.isEmpty()) return BackupFailure.TARGET_NOT_FRESH;
+        return BackupFailure.NONE;
+    }
+
+    /** Server side: validates the current backup slots. */
+    public BackupFailure getBackupFailure() {
+        return getBackupFailure(backupSlots[BACKUP_SLOT_LEFT], backupSlots[BACKUP_SLOT_RIGHT]);
+    }
+
+    /** Client and server: checks a key without changing it. */
+    public static RestoreFailure getRestoreFailure(ItemStack source) {
+        if (source.isEmpty()) return RestoreFailure.EMPTY;
+        if (!isBackupKey(source)) return RestoreFailure.INVALID_ITEM;
+        if (!TerminalBackupData.hasBackup(source)) return RestoreFailure.NO_DATA;
+        return RestoreFailure.NONE;
+    }
+
+    /** Server side: validates the current restore slot. */
+    public RestoreFailure getRestoreFailure() {
+        return getRestoreFailure(backupSlots[BACKUP_SLOT_LEFT]);
+    }
+
+    /**
+     * Server side: writes this desk's terminal data onto the key in the left slot. The key keeps
+     * its item identity; only its backup tag is replaced.
+     */
+    public boolean uploadBackupToDrive() {
         if (world == null || world.isRemote) return false;
-        passwordHash = "";
-        passwordSet = false;
-        passwordSkipped = false;
+        if (backupActive) {
+            setBackupNotice("Operation already running");
+            return false;
+        }
+
+        ItemStack source = backupSlots[BACKUP_SLOT_LEFT];
+        if (!isBackupKey(source)) {
+            setBackupNotice("Insert a Terminal Backup Key");
+            return false;
+        }
+
+        NBTTagCompound snapshot = createBackupSnapshot();
+        if (!TerminalBackupData.write(source, snapshot, world.provider.getDimension(), pos)) {
+            setBackupNotice("Terminal data is too large");
+            return false;
+        }
+
+        backupSuccess = false;
+        successTicks = 0;
+        lastSyncedBackupFrame = -1;
+        restoreMode = false;
+        markDirty();
+        setBackupNotice("Uploaded " + nets.size() + " nets, "
+                + notepadDocuments.size() + " documents");
+        return true;
+    }
+
+    /** Server side: starts the ten-second copy from the left key to the fresh right key. */
+    public boolean startBackup() {
+        if (world == null || world.isRemote || backupActive) return false;
+        if (getBackupFailure() != BackupFailure.NONE) return false;
+
+        backupActive = true;
+        restoreMode = false;
+        backupSuccess = false;
+        backupTicks = BACKUP_TICKS;
+        successTicks = 0;
+        lastSyncedBackupFrame = 0;
+        backupNotice = "";
+        backupNoticeTicks = 0;
         sync();
         return true;
+    }
+
+    /** Server side: starts the ten-second restore from the key in the left slot. */
+    public boolean startRestore() {
+        if (world == null || world.isRemote || backupActive) return false;
+        if (getRestoreFailure() != RestoreFailure.NONE) return false;
+        if (TerminalBackupData.read(backupSlots[BACKUP_SLOT_LEFT]) == null) {
+            setBackupNotice("Backup key is unreadable");
+            return false;
+        }
+
+        backupActive = true;
+        restoreMode = true;
+        backupSuccess = false;
+        backupTicks = BACKUP_TICKS;
+        successTicks = 0;
+        lastSyncedBackupFrame = 0;
+        backupNotice = "";
+        backupNoticeTicks = 0;
+        sync();
+        return true;
+    }
+
+    public boolean isBackingUp() {
+        return backupActive;
+    }
+
+    public boolean isRestoreMode() {
+        return restoreMode;
+    }
+
+    public boolean isBackupSuccess() {
+        return backupSuccess;
+    }
+
+    /** 0..1 progress, including the brief full-bar state after success. */
+    public float getBackupProgress() {
+        if (backupSuccess) return 1F;
+        if (!backupActive) return 0F;
+        return 1F - (float) backupTicks / (float) BACKUP_TICKS;
+    }
+
+    /** Index into the five supplied GUI frames: 0, 25, 50, 75 or 100 percent. */
+    public int getBackupFrame() {
+        int frame = (int) (getBackupProgress() * 4F);
+        return Math.max(0, Math.min(4, frame));
+    }
+
+    public String getBackupNotice() {
+        return backupNoticeTicks > 0 ? backupNotice : "";
+    }
+
+    /** Builds the uncompressed terminal snapshot stored on a backup key. */
+    public NBTTagCompound createBackupSnapshot() {
+        NBTTagCompound snapshot = new NBTTagCompound();
+        snapshot.setInteger("Schema", TerminalBackupData.SCHEMA);
+        snapshot.setString("PasswordHash", passwordHash);
+        snapshot.setBoolean("PasswordSet", passwordSet);
+        snapshot.setBoolean("PasswordSkipped", passwordSkipped);
+
+        NBTTagList netList = new NBTTagList();
+        for (SecurityNet net : nets) netList.appendTag(net.toNBT());
+        snapshot.setTag("SecurityNets", netList);
+        snapshot.setInteger("NextNetId", nextNetId);
+
+        NBTTagList noteList = new NBTTagList();
+        for (NotepadDocument document : notepadDocuments) {
+            noteList.appendTag(document.toNBT());
+        }
+        snapshot.setTag("Notepad", noteList);
+        snapshot.setInteger("NextNotepadId", nextNotepadId);
+
+        // Screen states include the per-screen wallpapers and the last stable terminal page.
+        writeScreenStates(snapshot, false);
+        return snapshot;
+    }
+
+    private void setBackupNotice(String notice) {
+        backupNotice = notice == null ? "" : notice;
+        backupNoticeTicks = backupNotice.isEmpty() ? 0 : BACKUP_NOTICE_TICKS;
+        sync();
+    }
+
+    /** Server side: advances the copy bar, then copies the source key's NBT to the target key. */
+    private void updateBackup() {
+        if (backupActive) {
+            if (backupTicks > 0) backupTicks--;
+            if (backupTicks <= 0) {
+                if (restoreMode) {
+                    completeRestore();
+                } else {
+                    completeBackup();
+                }
+            } else {
+                int frame = getBackupFrame();
+                if (frame != lastSyncedBackupFrame) {
+                    lastSyncedBackupFrame = frame;
+                    sync();
+                }
+            }
+        } else if (backupSuccess) {
+            if (successTicks > 0) successTicks--;
+            if (successTicks <= 0) {
+                backupSuccess = false;
+                lastSyncedBackupFrame = -1;
+                sync();
+            }
+        }
+
+        if (backupNoticeTicks > 0) {
+            backupNoticeTicks--;
+            if (backupNoticeTicks == 0) {
+                backupNotice = "";
+                sync();
+            }
+        }
+    }
+
+    private void completeBackup() {
+        if (getBackupFailure() != BackupFailure.NONE) {
+            cancelBackup(true);
+            return;
+        }
+
+        ItemStack source = backupSlots[BACKUP_SLOT_LEFT];
+        ItemStack target = backupSlots[BACKUP_SLOT_RIGHT];
+        NBTTagCompound sourceTag = source.getTagCompound();
+        if (sourceTag == null || sourceTag.isEmpty()) {
+            cancelBackup(true);
+            return;
+        }
+
+        target.setTagCompound(sourceTag.copy());
+        markDirty();
+
+        backupActive = false;
+        backupTicks = 0;
+        backupSuccess = true;
+        successTicks = BACKUP_SUCCESS_HOLD_TICKS;
+        lastSyncedBackupFrame = 4;
+        backupNotice = "Backup copied";
+        backupNoticeTicks = BACKUP_NOTICE_TICKS;
+        world.playSound(null, pos, ModSounds.SCANNER_BUTTON3, SoundCategory.BLOCKS,
+                BACKUP_VOLUME, 1F);
+        sync();
+    }
+
+    private void completeRestore() {
+        if (getRestoreFailure() != RestoreFailure.NONE) {
+            cancelBackup(true);
+            return;
+        }
+
+        ItemStack source = backupSlots[BACKUP_SLOT_LEFT];
+        NBTTagCompound snapshot = TerminalBackupData.read(source);
+        if (snapshot == null) {
+            cancelBackup(true);
+            setBackupNotice("Backup key is unreadable");
+            return;
+        }
+        if (!applyBackupSnapshot(snapshot)) {
+            cancelBackup(true);
+            return;
+        }
+
+        backupActive = false;
+        backupTicks = 0;
+        restoreMode = true;
+        backupSuccess = true;
+        successTicks = BACKUP_SUCCESS_HOLD_TICKS;
+        lastSyncedBackupFrame = 4;
+        backupNotice = "Terminal restored";
+        backupNoticeTicks = BACKUP_NOTICE_TICKS;
+        world.playSound(null, pos, ModSounds.SCANNER_BUTTON3, SoundCategory.BLOCKS,
+                BACKUP_VOLUME, 1F);
+        sync();
+    }
+
+    /**
+     * Reuses the world-save reader for a snapshot. The saved x/y/z must be replaced with this
+     * desk's position so the live tile entity is not moved to the source desk.
+     */
+    private boolean applyBackupSnapshot(NBTTagCompound snapshot) {
+        if (snapshot == null || world == null || world.isRemote) return false;
+        String currentHash = passwordHash;
+        boolean currentSet = passwordSet;
+        boolean currentSkipped = passwordSkipped;
+
+        NBTTagCompound copy = snapshot.copy();
+        // A snapshot is terminal data, not desk storage or live client cache.
+        copy.removeTag("BackupItems");
+        copy.removeTag("BackupActive");
+        copy.removeTag("BackupRestoreMode");
+        copy.removeTag("BackupTicks");
+        copy.removeTag("BackupSuccess");
+        copy.removeTag("BackupSuccessTicks");
+        copy.removeTag("BackupNotice");
+        copy.removeTag("BackupNoticeTicks");
+        copy.removeTag("DisplayNets");
+        copy.removeTag("DisplayNetData");
+        copy.removeTag("DisplayNotepadNames");
+        copy.removeTag("DisplayNotepadTexts");
+        copy.setInteger("x", pos.getX());
+        copy.setInteger("y", pos.getY());
+        copy.setInteger("z", pos.getZ());
+        readFromNBT(copy);
+
+        // Backups made before password support did not capture the lock; keep the current one.
+        if (!copy.hasKey("PasswordSet")) {
+            passwordHash = currentHash;
+            passwordSet = currentSet;
+            passwordSkipped = currentSkipped;
+        }
+
+        // Reuse the normal load-time validation for restored screen/net/document ids.
+        onLoad();
+        displayRevision++;
+        return true;
+    }
+
+    /** Cancels a running backup; playSound is false when the block is being removed. */
+    private void cancelBackup(boolean playSound) {
+        if (!backupActive && !backupSuccess) return;
+        boolean wasActive = backupActive;
+        backupActive = false;
+        backupTicks = 0;
+        backupSuccess = false;
+        successTicks = 0;
+        lastSyncedBackupFrame = -1;
+        if (playSound && wasActive && world != null) {
+            world.playSound(null, pos, ModSounds.SCANNER_BUTTON8, SoundCategory.BLOCKS,
+                    BACKUP_VOLUME, 1F);
+        }
+        markDirty();
+        if (world != null && !world.isRemote) sync();
+    }
+
+    private void onBackupSlotChanged() {
+        if (world == null || world.isRemote) return;
+        if (backupActive) {
+            cancelBackup(true);
+            setBackupNotice("Operation cancelled");
+        } else if (backupSuccess) {
+            backupSuccess = false;
+            successTicks = 0;
+            lastSyncedBackupFrame = -1;
+            sync();
+        }
+    }
+
+    // ------------------------------------------------------------ backup sound
+
+    @SideOnly(Side.CLIENT)
+    private void updateClientSound() {
+        if (backupActive) {
+            if (backupSound == null) {
+                backupSound = new BackupLoopSound(this, this::isBackingUp,
+                        ModSounds.SCANNER_BELL1, BACKUP_LOOP_VOLUME);
+                Minecraft.getMinecraft().getSoundHandler().playSound(backupSound);
+            }
+        } else {
+            stopClientSound();
+        }
+    }
+
+    @SideOnly(Side.CLIENT)
+    private void stopClientSound() {
+        if (backupSound == null) return;
+        SoundHandler handler = Minecraft.getMinecraft().getSoundHandler();
+        if (handler != null) handler.stopSound(backupSound);
+        backupSound = null;
+    }
+
+    @Override
+    public void invalidate() {
+        if (world != null && world.isRemote) stopClientSound();
+        super.invalidate();
+    }
+
+    @Override
+    public void onChunkUnload() {
+        if (world != null && world.isRemote) stopClientSound();
+        super.onChunkUnload();
     }
 
     public List<SecurityNet> getNets() {
         return Collections.unmodifiableList(nets);
-    }
-
-    public int getScreenPage(int index) {
-        if (index < 0 || index >= screenPages.length) return 0;
-        return screenPages[index];
-    }
-
-    /** Server side: changes what one physical screen displays. */
-    public boolean setScreenPage(int index, int page) {
-        if (world == null || world.isRemote) return false;
-        if (index < 0 || index >= screenPages.length || screenPages[index] == page) {
-            return false;
-        }
-        screenPages[index] = page;
-        sync();
-        return true;
     }
 
     /** The cosmetic wallpaper shown by one physical screen; empty means the terminal page. */
@@ -194,18 +605,6 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
         return true;
     }
 
-    public int getSyncedNetCount() {
-        return syncedNetCount;
-    }
-
-    public int getSyncedDeviceCount() {
-        return syncedDeviceCount;
-    }
-
-    public int getSyncedEventMask() {
-        return syncedEventMask;
-    }
-
     public int getScreenStage(int index) {
         return index >= 0 && index < MAX_SCREENS
                 ? displayStages[index] : MonitorDisplay.DEFAULT_STAGE;
@@ -221,10 +620,6 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
 
     public boolean getScreenEventsTab(int index) {
         return index >= 0 && index < MAX_SCREENS && displayEventsTabs[index];
-    }
-
-    public boolean isScreenViewing(int index) {
-        return index >= 0 && index < MAX_SCREENS && displayViewing[index];
     }
 
     public int getScreenNetsScroll(int index) {
@@ -366,7 +761,12 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
     /** Clears stale live-view flags if a viewer left the desk or logged out. */
     @Override
     public void update() {
-        if (world == null || world.isRemote) return;
+        if (world == null) return;
+        if (world.isRemote) {
+            updateClientSound();
+            return;
+        }
+        updateBackup();
         boolean changed = false;
         for (int i = 0; i < MAX_SCREENS; i++) {
             if (!displayViewing[i]) continue;
@@ -431,16 +831,6 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
         if (net == null) return false;
         net.setDevices(newDevices);
         SecurityEvents.updateDesk(this);
-        sync();
-        return true;
-    }
-
-    /** Server side: changes one net's display name. */
-    public boolean setNetName(int netId, String name) {
-        if (world != null && world.isRemote) return false;
-        SecurityNet net = getNet(netId);
-        if (net == null) return false;
-        net.setName(name);
         sync();
         return true;
     }
@@ -604,17 +994,141 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
         }
     }
 
-    /** Legacy first-net view, used only by pre-net migration paths. */
-    public List<MonitorDevice> getDevices() {
-        SecurityNet net = getNet(0);
-        return net == null ? Collections.emptyList() : net.getDevices();
+    /** Drops both backup keys into the world when the desk is broken. */
+    public void dropBackupContents(World world, BlockPos pos) {
+        cancelBackup(false);
+        for (int i = 0; i < BACKUP_SLOT_COUNT; i++) {
+            ItemStack stack = backupSlots[i];
+            if (stack.isEmpty()) continue;
+            InventoryHelper.spawnItemStack(world, pos.getX() + 0.5D, pos.getY() + 0.5D,
+                    pos.getZ() + 0.5D, stack);
+            backupSlots[i] = ItemStack.EMPTY;
+        }
+        markDirty();
     }
 
-    /** Legacy first-net view, used only by pre-net migration paths. */
-    public boolean setDevices(List<MonitorDevice> newDevices) {
-        SecurityNet net = getNet(0);
-        if (net == null) net = createNet("");
-        return net != null && setNetDevices(net.id, newDevices);
+    /** Inventory adapter for the two backup slots; the container and slots only see this view. */
+    private final class BackupInventory implements IInventory {
+
+        @Override
+        public int getSizeInventory() {
+            return BACKUP_SLOT_COUNT;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return backupSlots[BACKUP_SLOT_LEFT].isEmpty()
+                    && backupSlots[BACKUP_SLOT_RIGHT].isEmpty();
+        }
+
+        @Override
+        public ItemStack getStackInSlot(int index) {
+            return getBackupSlot(index);
+        }
+
+        @Override
+        public ItemStack decrStackSize(int index, int count) {
+            if (index < 0 || index >= BACKUP_SLOT_COUNT) return ItemStack.EMPTY;
+            ItemStack stack = backupSlots[index];
+            if (stack.isEmpty()) return ItemStack.EMPTY;
+
+            ItemStack taken = stack.splitStack(count);
+            if (stack.isEmpty()) backupSlots[index] = ItemStack.EMPTY;
+            if (!taken.isEmpty()) onBackupSlotChanged();
+            markDirty();
+            return taken;
+        }
+
+        @Override
+        public ItemStack removeStackFromSlot(int index) {
+            if (index < 0 || index >= BACKUP_SLOT_COUNT) return ItemStack.EMPTY;
+            ItemStack stack = backupSlots[index];
+            backupSlots[index] = ItemStack.EMPTY;
+            if (!stack.isEmpty()) {
+                onBackupSlotChanged();
+                markDirty();
+            }
+            return stack;
+        }
+
+        @Override
+        public void setInventorySlotContents(int index, ItemStack stack) {
+            if (index < 0 || index >= BACKUP_SLOT_COUNT) return;
+            backupSlots[index] = stack == null ? ItemStack.EMPTY : stack;
+            if (!backupSlots[index].isEmpty()
+                    && backupSlots[index].getCount() > getInventoryStackLimit()) {
+                backupSlots[index].setCount(getInventoryStackLimit());
+            }
+            onBackupSlotChanged();
+            markDirty();
+        }
+
+        @Override
+        public int getInventoryStackLimit() {
+            return 1;
+        }
+
+        @Override
+        public void markDirty() {
+            TileEntityMonitorDesk.this.markDirty();
+        }
+
+        @Override
+        public boolean isUsableByPlayer(EntityPlayer player) {
+            return world != null && world.getTileEntity(pos) == TileEntityMonitorDesk.this
+                    && player.getDistanceSq(pos.getX() + 0.5D, pos.getY() + 0.5D,
+                    pos.getZ() + 0.5D) <= 64D;
+        }
+
+        @Override
+        public void openInventory(EntityPlayer player) {
+        }
+
+        @Override
+        public void closeInventory(EntityPlayer player) {
+        }
+
+        @Override
+        public boolean isItemValidForSlot(int index, ItemStack stack) {
+            return isBackupKey(stack);
+        }
+
+        @Override
+        public int getField(int id) {
+            return 0;
+        }
+
+        @Override
+        public void setField(int id, int value) {
+        }
+
+        @Override
+        public int getFieldCount() {
+            return 0;
+        }
+
+        @Override
+        public void clear() {
+            boolean hadItem = !isEmpty();
+            Arrays.fill(backupSlots, ItemStack.EMPTY);
+            if (hadItem) onBackupSlotChanged();
+            markDirty();
+        }
+
+        @Override
+        public String getName() {
+            return "container.ntmdoors.terminal_backup";
+        }
+
+        @Override
+        public boolean hasCustomName() {
+            return false;
+        }
+
+        @Override
+        public ITextComponent getDisplayName() {
+            return new TextComponentTranslation(getName());
+        }
     }
 
     @Override
@@ -632,12 +1146,29 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
         }
         tag.setTag("Notepad", notepad);
         tag.setInteger("NextNotepadId", nextNotepadId);
-        tag.setIntArray("ScreenPages", screenPages);
         tag.setInteger("NextNetId", nextNetId);
         writeScreenStates(tag, false);
-        // Keep the old single-list tag populated so an older build still sees net one.
-        tag.setTag("Devices", MonitorDevice.toNBTList(getDevices()));
+        writeBackupState(tag);
         return tag;
+    }
+
+    private void writeBackupState(NBTTagCompound tag) {
+        NBTTagList items = new NBTTagList();
+        for (int i = 0; i < BACKUP_SLOT_COUNT; i++) {
+            if (backupSlots[i].isEmpty()) continue;
+            NBTTagCompound entry = new NBTTagCompound();
+            entry.setByte("Slot", (byte) i);
+            backupSlots[i].writeToNBT(entry);
+            items.appendTag(entry);
+        }
+        tag.setTag("BackupItems", items);
+        tag.setBoolean("BackupActive", backupActive);
+        tag.setBoolean("BackupRestoreMode", restoreMode);
+        tag.setInteger("BackupTicks", backupTicks);
+        tag.setBoolean("BackupSuccess", backupSuccess);
+        tag.setInteger("BackupSuccessTicks", successTicks);
+        tag.setString("BackupNotice", backupNotice);
+        tag.setInteger("BackupNoticeTicks", backupNoticeTicks);
     }
 
     @Override
@@ -653,6 +1184,25 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
             passwordSet = !passwordHash.isEmpty();
         }
         passwordSkipped = tag.getBoolean("PasswordSkipped");
+        if (tag.hasKey("BackupItems", Constants.NBT.TAG_LIST)) {
+            Arrays.fill(backupSlots, ItemStack.EMPTY);
+            NBTTagList backupItems = tag.getTagList("BackupItems", Constants.NBT.TAG_COMPOUND);
+            for (int i = 0; i < backupItems.tagCount(); i++) {
+                NBTTagCompound entry = backupItems.getCompoundTagAt(i);
+                int slot = entry.getByte("Slot") & 0xFF;
+                if (slot >= 0 && slot < BACKUP_SLOT_COUNT) {
+                    backupSlots[slot] = new ItemStack(entry);
+                }
+            }
+        }
+        backupActive = tag.getBoolean("BackupActive");
+        restoreMode = tag.getBoolean("BackupRestoreMode");
+        backupTicks = tag.getInteger("BackupTicks");
+        backupSuccess = tag.getBoolean("BackupSuccess");
+        successTicks = tag.getInteger("BackupSuccessTicks");
+        backupNotice = tag.getString("BackupNotice");
+        backupNoticeTicks = tag.getInteger("BackupNoticeTicks");
+        lastSyncedBackupFrame = -1;
         if (tag.hasKey("Notepad", Constants.NBT.TAG_LIST)) {
             notepadDocuments.clear();
             NBTTagList notes = tag.getTagList("Notepad", Constants.NBT.TAG_COMPOUND);
@@ -665,16 +1215,6 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
                 if (document.id >= nextNotepadId) nextNotepadId = document.id + 1;
             }
         }
-        if (tag.hasKey("ScreenPages")) {
-            int[] pages = tag.getIntArray("ScreenPages");
-            for (int i = 0; i < screenPages.length && i < pages.length; i++) {
-                screenPages[i] = pages[i];
-            }
-        }
-        syncedNetCount = tag.getInteger("NetCount");
-        syncedDeviceCount = tag.getInteger("DeviceCount");
-        syncedEventMask = tag.getInteger("EventMask");
-
         displayNets.clear();
         if (tag.hasKey("DisplayNets", Constants.NBT.TAG_LIST)) {
             NBTTagList displayList = tag.getTagList("DisplayNets", Constants.NBT.TAG_COMPOUND);
@@ -821,6 +1361,7 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
         for (SecurityNet net : nets) {
             if (net.id >= nextNetId) nextNetId = net.id + 1;
         }
+        displayRevision++;
     }
 
     /** Clients get the password flags, screen pages and the live display snapshot. */
@@ -832,16 +1373,13 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
         tag.setInteger("z", pos.getZ());
         tag.setBoolean("PasswordSet", passwordSet);
         tag.setBoolean("PasswordSkipped", passwordSkipped);
-        int deviceCount = 0;
-        int eventMask = 0;
-        for (SecurityNet net : nets) {
-            deviceCount += net.getDevices().size();
-            eventMask |= net.getEventMask();
-        }
-        tag.setInteger("NetCount", nets.size());
-        tag.setInteger("DeviceCount", deviceCount);
-        tag.setInteger("EventMask", eventMask);
-        tag.setIntArray("ScreenPages", screenPages);
+        tag.setBoolean("BackupActive", backupActive);
+        tag.setBoolean("BackupRestoreMode", restoreMode);
+        tag.setInteger("BackupTicks", backupTicks);
+        tag.setBoolean("BackupSuccess", backupSuccess);
+        tag.setInteger("BackupSuccessTicks", successTicks);
+        tag.setString("BackupNotice", backupNotice);
+        tag.setInteger("BackupNoticeTicks", backupNoticeTicks);
         writeDisplaySync(tag);
         return tag;
     }
@@ -879,38 +1417,59 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
     private void writeDisplaySync(NBTTagCompound tag) {
         writeScreenStates(tag, true);
 
-        NBTTagList netList = new NBTTagList();
-        for (SecurityNet net : nets) {
-            NBTTagCompound netTag = new NBTTagCompound();
-            netTag.setInteger("Id", net.id);
-            netTag.setString("Name", net.displayName());
-            netTag.setInteger("DeviceCount", net.getDevices().size());
-            netList.appendTag(netTag);
-        }
-        tag.setTag("DisplayNets", netList);
-
-        NBTTagList dataList = new NBTTagList();
-        Set<Integer> included = new HashSet<>();
+        boolean securityVisible = false;
         for (int i = 0; i < MAX_SCREENS; i++) {
-            int netId = displayNetIds[i];
-            if (netId < 0 || !included.add(netId)) continue;
-            SecurityNet selected = getNet(netId);
-            if (selected == null) continue;
-            NBTTagCompound data = new NBTTagCompound();
-            data.setInteger("Id", selected.id);
-            data.setString("Name", selected.displayName());
-            data.setInteger("EventMask", selected.getEventMask());
-            data.setString("KeyName", selected.getLinkedKeyName());
-            List<MonitorDevice> devices = selected.getDevices();
-            int limit = Math.min(devices.size(), 64);
-            NBTTagList deviceList = new NBTTagList();
-            for (int j = 0; j < limit; j++) {
-                deviceList.appendTag(devices.get(j).toNBT());
+            int stage = displayStages[i];
+            if (stage == MonitorDisplay.STAGE_SECURITY_HOME
+                    || stage == MonitorDisplay.STAGE_SECURITY
+                    || stage == MonitorDisplay.STAGE_DELETE_NET) {
+                securityVisible = true;
+                break;
             }
-            data.setTag("Devices", deviceList);
-            dataList.appendTag(data);
         }
-        tag.setTag("DisplayNetData", dataList);
+        if (securityVisible) {
+            NBTTagList netList = new NBTTagList();
+            for (SecurityNet net : nets) {
+                NBTTagCompound netTag = new NBTTagCompound();
+                netTag.setInteger("Id", net.id);
+                netTag.setString("Name", net.displayName());
+                netTag.setInteger("DeviceCount", net.getDevices().size());
+                netList.appendTag(netTag);
+            }
+            tag.setTag("DisplayNets", netList);
+
+            NBTTagList dataList = new NBTTagList();
+            Set<Integer> included = new HashSet<>();
+            for (int i = 0; i < MAX_SCREENS; i++) {
+                int netId = displayNetIds[i];
+                if (netId < 0 || !included.add(netId)) continue;
+                SecurityNet selected = getNet(netId);
+                if (selected == null) continue;
+                NBTTagCompound data = new NBTTagCompound();
+                data.setInteger("Id", selected.id);
+                data.setString("Name", selected.displayName());
+                data.setInteger("EventMask", selected.getEventMask());
+                data.setString("KeyName", selected.getLinkedKeyName());
+                List<MonitorDevice> devices = selected.getDevices();
+                int limit = Math.min(devices.size(), 64);
+                NBTTagList deviceList = new NBTTagList();
+                for (int j = 0; j < limit; j++) {
+                    deviceList.appendTag(devices.get(j).toNBT());
+                }
+                data.setTag("Devices", deviceList);
+                dataList.appendTag(data);
+            }
+            tag.setTag("DisplayNetData", dataList);
+        }
+
+        boolean notepadVisible = false;
+        for (int i = 0; i < MAX_SCREENS; i++) {
+            if (displayStages[i] == MonitorDisplay.STAGE_NOTEPAD) {
+                notepadVisible = true;
+                break;
+            }
+        }
+        if (!notepadVisible) return;
 
         NBTTagList noteNames = new NBTTagList();
         for (NotepadDocument document : notepadDocuments) {

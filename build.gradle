@@ -45,6 +45,8 @@ repositories {
 dependencies {
     // Chisel is the only required mod dependency; its carving registry supplies the chisel groups.
     deobfCompile 'curse.maven:chisel-235279:2915375'
+    // Chisel requires CTM at runtime; keep it on the dev client classpath.
+    deobfCompile 'curse.maven:ctm-267602:2915363'
 }
 
 processResources {
@@ -72,6 +74,40 @@ processResources {
         into 'assets/ntmdoors/textures/display'
         rename { String name -> name.toLowerCase().replace(' ', '_') }
     }
+
+    // Model and blockstate JSON files are heavily pretty-printed for editing. Strip that
+    // whitespace from the packaged copies; Minecraft's parser does not need it.
+    doLast {
+        fileTree("$buildDir/resources/main/assets") {
+            include '**/*.json'
+        }.each { minifyJson(it) }
+    }
+}
+
+def minifyJson(File file) {
+    String text = file.getText('UTF-8')
+    StringBuilder out = new StringBuilder(text.length())
+    boolean inString = false
+    boolean escaped = false
+    for (int i = 0; i < text.length(); i++) {
+        char c = text.charAt(i)
+        if (inString) {
+            out.append(c)
+            if (escaped) {
+                escaped = false
+            } else if (c == '\\') {
+                escaped = true
+            } else if (c == '"') {
+                inString = false
+            }
+        } else if (c == '"') {
+            inString = true
+            out.append(c)
+        } else if (!Character.isWhitespace(c)) {
+            out.append(c)
+        }
+    }
+    file.setText(out.toString(), 'UTF-8')
 }
 
 jar {

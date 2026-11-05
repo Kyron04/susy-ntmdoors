@@ -4,7 +4,7 @@ Standalone port of the HBM's Nuclear Tech Mod door system and concrete building 
 1.12.2. The implementation and the included door, concrete and HL Blocks assets are used under the
 LGPL-3.0. See `LICENSE.LESSER` and `NOTICE` for attribution and source information.
 
-Current release: **1.0.36**
+Current development version: see `gradle.properties` (`mod_version`).
 
 Source design reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
 
@@ -19,7 +19,9 @@ required at runtime. The Gradle wrapper is included, so:
 
 The jar version lives in `gradle.properties` (`mod_version`). Every successful `build` writes its
 jar with that version and then bumps the patch number, so the next jar is never the same version.
-Pass `-PnoVersionBump` to rebuild the current version without advancing it.
+Pass `-PnoVersionBump` to rebuild the current version without advancing it. The build strips
+insignificant whitespace from packaged model and blockstate JSON; the source files stay formatted
+for editing.
 
 ## What is implemented
 * Multiblock doors of any footprint, placed in one click, rotate with the player, removed as one piece
@@ -108,8 +110,9 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   The screen shows `Keycard Programmer N4` over `Insert keycard`, drawn live with the font renderer
   like the scanner's. Right clicking opens a three-page GUI: page one has the `Relay Key` /
   `Operator Keycard` and `Relay Key` / `RFID Card` binding rows, where Bind instantly copies the
-  Relay Key's private key onto the card and keeps any keys the card already holds, page two has the RFID card
-  slot plus seven colour squares that swap the card's cosmetic colour, and page three is the
+  Relay Key's private key onto the card and keeps any keys the card already holds, page two has the
+  RFID card slot plus a scrollable two-row palette of every non-privileged, non-biometric card
+  style, and page three is the
   `Legacy Backup Programmer` with a used source slot on the left, a fresh target slot on the right,
   a `Backup` button and a five-frame ten-second progress bar. A backup copies the source item's NBT
   to the target: Relay → Relay, Relay → Operator and Operator → Operator are allowed, Operator →
@@ -220,7 +223,14 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   screen; a saved wallpaper steps aside while the notebook is shown and returns on the task
   menu. Up to 16 documents of 8192 characters each are stored in the desk's world NBT and
   shared by everyone using that terminal.
-* Terminal Backup: present in the task list as a placeholder until its backup flow is specified.
+* Terminal Backup: opens a task page with `Initiate backup` and `Restore backup`. `Initiate backup`
+  opens a programmer-style console: put a Terminal Backup Key in the left slot, press `Upload` to
+  write every Security net, device binding, notepad document, wallpaper, saved screen page and the
+  terminal password hash onto that key, then put a blank Terminal Backup Key in the right slot and
+  press `Backup`. The copy takes ten seconds and uses the same progress bar, loop and completion
+  chime as the keycard programmer's legacy backup. `Restore backup` opens the same console with a
+  single key slot; press `Restore` to overwrite the current terminal with the key's saved data. The
+  backup key is not consumed.
 * Smaller monitor desks use the same sliced-cell approach and behaviour: `3 Monitor Setup`
   (`ntmdoors:triple_monitor_setup`, 3x2x1), `Dual Monitor Setup` (`ntmdoors:dual_monitor_setup`,
   3x2x1 with the open right-middle cell left free), `Dual Monitor Setup (short table)`
@@ -258,6 +268,8 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   to that net; `Rename` changes the linked key's display name and `Unlink` clears the link.
   `Delete net` asks for confirmation, then removes the net and its device list and unlinks its key.
   A `Devices` / `Events` tab row switches between the device list and per-net event controls.
+  Door rows carry `Open` and `Close` buttons that control that door directly, including doors with no
+  scanner or keypad binding; the terminal bypasses those local locks.
   `System Shutdown` idles every device in the net; `System Lockdown` closes all net doors and keeps
   them shut; `Trigger Alarms` sounds every speaker; and `Disable Keypads`, `Disable Scanners`,
   `Disable Sensors` and `Disable Redstone Gates` switch off those device families. `Close all
@@ -272,6 +284,9 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   device screen returns to that net's linked-device list. The terminal uses the supplied
   mouse-click sound for its buttons and rows. Starting at a different desk discards an unconfirmed
   session.
+* Terminal Backup Key (`ntmdoors:terminal_backup_key`): a black and red USB key for the terminal
+  backup system. A blank key shows no data; an uploaded key lists its saved net and document counts
+  in the tooltip.
 * Both safes and the keycard scanner have a third `Redstone` page with a red panel tint and
   scrolling. Its event toggles start off; enabling one pulses every linked gate for that gate's
   configured activation duration.
@@ -292,12 +307,14 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   `ntmdoors:engine_room_keycard`, `ntmdoors:terminal_keycard`,
   `ntmdoors:terragroup_labs_access_keycard`): five fixed-name cards, each with its own 16x16 sprite
   and a line of flavour text. They behave exactly like the colour cards - the programmer copies
-  private keys onto them and the scanner reads them - but they are not part of the recolour palette.
+  private keys onto them and the scanner reads them - and they are selectable from the programmer's
+  second-page card palette.
 * SCP access cards (`ntmdoors:scp_level_0_keycard` through `ntmdoors:scp_level_5_keycard`): six
   fixed-clearance cards in grey, yellow, amber, orange, dark orange and red, with `Level 1` to
   `Level 6 clearance` tooltips. Also included is `ntmdoors:googa_security_keycard`, whose tooltip
   reads `Security is goog` and whose name is gold. They use the same private-key storage, programmer
-  binding, holder and scanner behaviour as the other cards, and are not recolourable.
+  binding, holder and scanner behaviour as the other cards, and are selectable from the programmer's
+  second-page card palette.
 * Operator Keycard (`ntmdoors:operator_keycard`): a dark card with an orange stripe and three orange
   dots. It shares the RFID hand-display model and, aimed at a bound scanner, opens that scanner's
   security code screen; anywhere else sneak right-click opens the same private-key viewer as a

@@ -21,9 +21,6 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class TileEntitySpeaker extends TileEntitySynced implements ITickable, RedstoneBindingHost {
 
     public static final int SOUND_AIR_RAID = 0;
-    public static final int SOUND_FACILITY = 1;
-    public static final int SOUND_INDUSTRIAL = 2;
-    public static final int SOUND_EAS = 3;
     public static final int SOUND_COUNT = 4;
 
     public static final int MIN_RANGE = 1;

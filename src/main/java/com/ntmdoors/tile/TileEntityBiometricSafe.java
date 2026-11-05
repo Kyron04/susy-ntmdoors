@@ -48,10 +48,6 @@ public class TileEntityBiometricSafe extends TileEntitySafe {
         return !ownerUuid.isEmpty();
     }
 
-    public String getOwnerUuid() {
-        return ownerUuid;
-    }
-
     public String getOwnerName() {
         return ownerName;
     }

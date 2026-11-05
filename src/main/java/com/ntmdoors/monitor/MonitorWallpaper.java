@@ -7,8 +7,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Shared description of the cosmetic wallpapers a monitor screen can show.
@@ -37,6 +39,7 @@ public final class MonitorWallpaper {
     }
 
     private static final List<Builtin> BUILTINS;
+    private static final Map<String, Builtin> BUILTIN_BY_ID;
 
     static {
         List<Builtin> builtins = new ArrayList<>();
@@ -46,6 +49,9 @@ public final class MonitorWallpaper {
         builtins.add(new Builtin("world_map", "WORLD MAP"));
         builtins.add(new Builtin("windows_error", "WINDOWS ERROR"));
         BUILTINS = Collections.unmodifiableList(builtins);
+        Map<String, Builtin> byId = new HashMap<>();
+        for (Builtin builtin : builtins) byId.put(builtin.id, builtin);
+        BUILTIN_BY_ID = Collections.unmodifiableMap(byId);
     }
 
     public static List<Builtin> builtins() {
@@ -54,11 +60,7 @@ public final class MonitorWallpaper {
 
     @Nullable
     public static Builtin builtinById(String id) {
-        if (id == null) return null;
-        for (Builtin builtin : BUILTINS) {
-            if (builtin.id.equals(id)) return builtin;
-        }
-        return null;
+        return id == null ? null : BUILTIN_BY_ID.get(id);
     }
 
     public static String builtin(String id) {
@@ -93,7 +95,8 @@ public final class MonitorWallpaper {
     @Nullable
     public static ResourceLocation texture(@Nullable String value) {
         String id = builtinId(value);
-        Builtin builtin = builtinById(id);
+        if (id == null) return null;
+        Builtin builtin = BUILTIN_BY_ID.get(id);
         return builtin == null ? null : builtin.texture;
     }
 

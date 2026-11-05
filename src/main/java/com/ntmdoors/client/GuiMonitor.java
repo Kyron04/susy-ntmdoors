@@ -8,6 +8,7 @@ import com.ntmdoors.monitor.MonitorWallpaper;
 import com.ntmdoors.monitor.SecurityNet;
 import com.ntmdoors.monitor.SecurityNetSummary;
 import com.ntmdoors.network.MessageMonitorAction;
+import com.ntmdoors.network.MessageMonitorBackupOpen;
 import com.ntmdoors.network.MessageMonitorDoorScanner;
 import com.ntmdoors.network.MessageMonitorDisplay;
 import com.ntmdoors.network.MessageMonitorDoorScannerResult;
@@ -63,7 +64,8 @@ public class GuiMonitor extends GuiScreen {
         NAME_NET(MonitorDisplay.STAGE_NAME_NET),
         NAME_KEY(MonitorDisplay.STAGE_NAME_KEY),
         DELETE_NET(MonitorDisplay.STAGE_DELETE_NET),
-        DISPLAY(MonitorDisplay.STAGE_DISPLAY);
+        DISPLAY(MonitorDisplay.STAGE_DISPLAY),
+        BACKUP(MonitorDisplay.STAGE_BACKUP);
 
         private final int id;
 
@@ -121,10 +123,14 @@ public class GuiMonitor extends GuiScreen {
     private static final int ROW_HEIGHT = 26;
     private static final int ROW_GAP = 6;
     private static final int SECURITY_ROW_HEIGHT = 28;
+    private static final int DOOR_BUTTON_WIDTH = 38;
+    private static final int DOOR_BUTTON_HEIGHT = 15;
+    private static final int DOOR_BUTTON_GAP = 4;
     private static final int DISPLAY_TAB_HEIGHT = 18;
     private static final int DISPLAY_TILE_GAP = 8;
     private static final int DISPLAY_TILE_HEIGHT = 78;
     private static final int DISPLAY_URL_LENGTH = MonitorWallpaper.MAX_URL_LENGTH;
+    private static final int BACKUP_OPTION_HEIGHT = 36;
 
     private final BlockPos origin;
     private final int screenIndex;
@@ -222,6 +228,15 @@ public class GuiMonitor extends GuiScreen {
         GuiMonitor gui = new GuiMonitor(origin, hasPassword, true, screenIndex);
         gui.resumeApplied = true;
         gui.openSecurityNet(netId, netName);
+        return gui;
+    }
+
+    /** Reopens the terminal directly on the Terminal Backup task. */
+    public static GuiMonitor forBackup(BlockPos origin, boolean hasPassword,
+                                       boolean passwordSkipped, int screenIndex) {
+        GuiMonitor gui = new GuiMonitor(origin, hasPassword, passwordSkipped, screenIndex);
+        gui.resumeApplied = true;
+        gui.openBackupMenu();
         return gui;
     }
 
@@ -405,6 +420,7 @@ public class GuiMonitor extends GuiScreen {
         if (stage == Stage.SECURITY) return securityLoading ? "LOADING" : "SECURITY";
         if (stage == Stage.NAME_NET || stage == Stage.NAME_KEY) return "SECURITY";
         if (stage == Stage.DELETE_NET) return "CONFIRM";
+        if (stage == Stage.BACKUP) return "BACKUP";
         if (stage == Stage.MENU) return hasPassword ? "ONLINE" : "OPEN";
         if (stage == Stage.ENTER) return "LOCKED";
         return "SETUP";
@@ -441,11 +457,15 @@ public class GuiMonitor extends GuiScreen {
             case DISPLAY:
                 drawDisplayPage(mouseX, mouseY);
                 break;
+            case BACKUP:
+                drawBackupPage(mouseX, mouseY);
+                break;
             default:
                 break;
         }
         if (stage != Stage.SECURITY && stage != Stage.SECURITY_HOME
-                && stage != Stage.DELETE_NET && stage != Stage.DISPLAY) {
+                && stage != Stage.DELETE_NET && stage != Stage.DISPLAY
+                && stage != Stage.BACKUP) {
             drawStatusLine(statusY());
         }
     }
@@ -596,6 +616,73 @@ public class GuiMonitor extends GuiScreen {
             int thumbY = barTop + (barHeight - thumb) * menuScroll / maxScroll;
             drawRect(barX, thumbY, barX + 2, thumbY + thumb, ORANGE);
         }
+    }
+
+    // ------------------------------------------------------------ terminal backup
+
+    private void openBackupMenu() {
+        stage = Stage.BACKUP;
+        selectedTask = 5;
+        waiting = false;
+        error = "";
+    }
+
+    private void drawBackupPage(int mouseX, int mouseY) {
+        int centerX = centerX();
+        int width = backupOptionWidth();
+        int x = backupOptionX();
+        int top = backupOptionTop();
+
+        drawCenteredString(fontRenderer, "TERMINAL BACKUP", centerX, top - 38, ORANGE_LIGHT);
+        drawCenteredString(fontRenderer, "Choose an operation", centerX, top - 20, MUTED);
+
+        drawBackupOption(x, backupOptionY(0), width, "Initiate backup",
+                "Copy this terminal's data onto a key.", mouseX, mouseY);
+        drawBackupOption(x, backupOptionY(1), width, "Restore backup",
+                "Restore terminal data from a key.", mouseX, mouseY);
+
+        drawButton("Back", contentLeft, contentBottom - 24, 64, BUTTON_HEIGHT,
+                isHovering(mouseX, mouseY, contentLeft, contentBottom - 24,
+                        64, BUTTON_HEIGHT));
+    }
+
+    private void drawBackupOption(int x, int y, int width, String title, String subtitle,
+                                  int mouseX, int mouseY) {
+        boolean hover = isHovering(mouseX, mouseY, x, y, width, BACKUP_OPTION_HEIGHT);
+        int border = hover ? ORANGE : ORANGE_DIM;
+        drawRect(x, y, x + width, y + BACKUP_OPTION_HEIGHT, hover ? ROW_HOVER : ROW_BG);
+        drawRect(x, y, x + width, y + 1, border);
+        drawRect(x, y + BACKUP_OPTION_HEIGHT - 1, x + width, y + BACKUP_OPTION_HEIGHT, border);
+        drawRect(x, y, x + 1, y + BACKUP_OPTION_HEIGHT, border);
+        drawRect(x + width - 1, y, x + width, y + BACKUP_OPTION_HEIGHT, border);
+        fontRenderer.drawString(fontRenderer.trimStringToWidth(title, width - 24),
+                x + 12, y + 7, hover ? ORANGE_LIGHT : TEXT);
+        fontRenderer.drawString(fontRenderer.trimStringToWidth(subtitle, width - 24),
+                x + 12, y + 21, MUTED);
+        if (hover) fontRenderer.drawString(">", x + width - 14, y + 14, ORANGE);
+    }
+
+    private int backupOptionWidth() {
+        return Math.max(170, Math.min(380, contentRight - contentLeft - 40));
+    }
+
+    private int backupOptionX() {
+        return centerX() - backupOptionWidth() / 2;
+    }
+
+    private int backupOptionTop() {
+        int available = contentBottom - contentTop;
+        int total = BACKUP_OPTION_HEIGHT * 2 + 8;
+        return contentTop + Math.max(38, (available - total) / 2 - 10);
+    }
+
+    private int backupOptionY(int index) {
+        return backupOptionTop() + index * (BACKUP_OPTION_HEIGHT + 8);
+    }
+
+    private void openBackupConsole(boolean restore) {
+        TerminalBackupContext.set(origin, screenIndex);
+        ModNetwork.INSTANCE.sendToServer(new MessageMonitorBackupOpen(origin, restore));
     }
 
     // ------------------------------------------------------------ display wallpapers
@@ -1116,11 +1203,25 @@ public class GuiMonitor extends GuiScreen {
                 drawRect(rowLeft, y, rowRight, y + 1, ORANGE_DIM);
 
                 MonitorDevice device = securityDevices.get(index);
-                String name = fontRenderer.trimStringToWidth(device.name, rowRight - rowLeft - 12);
+                boolean door = device.type == MonitorDevice.Type.DOOR;
+                int textRight = door ? doorOpenX(rowRight) - 4 : rowRight - 12;
+                String name = fontRenderer.trimStringToWidth(device.name,
+                        Math.max(24, textRight - rowLeft - 6));
                 drawString(fontRenderer, name, rowLeft + 6, y + 4,
                         hover ? ORANGE_LIGHT : TEXT);
                 drawString(fontRenderer, device.type.displayName(), rowLeft + 6, y + 15, MUTED);
-                if (hover) drawString(fontRenderer, ">", rowRight - 8, y + 9, ORANGE);
+                if (door) {
+                    drawButton("Open", doorOpenX(rowRight), doorButtonY(y),
+                            DOOR_BUTTON_WIDTH, DOOR_BUTTON_HEIGHT,
+                            isHovering(mouseX, mouseY, doorOpenX(rowRight), doorButtonY(y),
+                                    DOOR_BUTTON_WIDTH, DOOR_BUTTON_HEIGHT));
+                    drawButton("Close", doorCloseX(rowRight), doorButtonY(y),
+                            DOOR_BUTTON_WIDTH, DOOR_BUTTON_HEIGHT,
+                            isHovering(mouseX, mouseY, doorCloseX(rowRight), doorButtonY(y),
+                                    DOOR_BUTTON_WIDTH, DOOR_BUTTON_HEIGHT));
+                } else if (hover) {
+                    drawString(fontRenderer, ">", rowRight - 8, y + 9, ORANGE);
+                }
             }
             drawListScrollbar(rowsTop, rowsBottom, visible, maxScroll,
                     securityDevices.size(), securityScroll);
@@ -1427,6 +1528,8 @@ public class GuiMonitor extends GuiScreen {
                         else if (index == 4) {
                             mc.displayGuiScreen(new GuiNotepad(origin, screenIndex,
                                     hasPassword, passwordSkipped));
+                        } else if (index == 5) {
+                            openBackupMenu();
                         }
                         return;
                     }
@@ -1434,6 +1537,27 @@ public class GuiMonitor extends GuiScreen {
             } else if (stage == Stage.DISPLAY) {
                 handleDisplayClick(mouseX, mouseY);
                 return;
+            } else if (stage == Stage.BACKUP) {
+                int x = backupOptionX();
+                int width = backupOptionWidth();
+                if (isHovering(mouseX, mouseY, x, backupOptionY(0),
+                        width, BACKUP_OPTION_HEIGHT)) {
+                    playClick();
+                    openBackupConsole(false);
+                    return;
+                }
+                if (isHovering(mouseX, mouseY, x, backupOptionY(1),
+                        width, BACKUP_OPTION_HEIGHT)) {
+                    playClick();
+                    openBackupConsole(true);
+                    return;
+                }
+                if (isHovering(mouseX, mouseY, contentLeft, contentBottom - 24,
+                        64, BUTTON_HEIGHT)) {
+                    playClick();
+                    stage = Stage.MENU;
+                    return;
+                }
             } else if (stage == Stage.SECURITY_HOME) {
                 if (isHovering(mouseX, mouseY, contentLeft, contentBottom - 24,
                         64, BUTTON_HEIGHT)) {
@@ -1573,10 +1697,26 @@ public class GuiMonitor extends GuiScreen {
                     int index = securityScroll + i;
                     if (index >= securityDevices.size()) break;
                     int y = rowsTop + i * SECURITY_ROW_HEIGHT;
+                    MonitorDevice device = securityDevices.get(index);
+                    if (device.type == MonitorDevice.Type.DOOR) {
+                        int buttonY = doorButtonY(y);
+                        if (isHovering(mouseX, mouseY, doorOpenX(rowRight), buttonY,
+                                DOOR_BUTTON_WIDTH, DOOR_BUTTON_HEIGHT)) {
+                            playClick();
+                            sendDoorAction(device, true);
+                            return;
+                        }
+                        if (isHovering(mouseX, mouseY, doorCloseX(rowRight), buttonY,
+                                DOOR_BUTTON_WIDTH, DOOR_BUTTON_HEIGHT)) {
+                            playClick();
+                            sendDoorAction(device, false);
+                            return;
+                        }
+                    }
                     if (isHovering(mouseX, mouseY, rowLeft, y,
                             rowRight - rowLeft, SECURITY_ROW_HEIGHT - 2)) {
                         playClick();
-                        openDevice(securityDevices.get(index));
+                        openDevice(device);
                         return;
                     }
                 }
@@ -1660,6 +1800,10 @@ public class GuiMonitor extends GuiScreen {
                 stage = Stage.MENU;
                 displayNotice = "";
                 displayUrlFocused = false;
+                return;
+            }
+            if (stage == Stage.BACKUP) {
+                stage = Stage.MENU;
                 return;
             }
             super.keyTyped(typedChar, keyCode);
@@ -1925,6 +2069,18 @@ public class GuiMonitor extends GuiScreen {
         int total = visible * ROW_HEIGHT + (visible - 1) * ROW_GAP;
         int pad = menuShowHeading() ? 42 : 30;
         return contentTop + Math.max(pad, (height - total) / 2);
+    }
+
+    private int doorCloseX(int rowRight) {
+        return rowRight - 6 - DOOR_BUTTON_WIDTH;
+    }
+
+    private int doorOpenX(int rowRight) {
+        return doorCloseX(rowRight) - DOOR_BUTTON_GAP - DOOR_BUTTON_WIDTH;
+    }
+
+    private int doorButtonY(int rowY) {
+        return rowY + 6;
     }
 
     private int securityListLeft() {
@@ -2237,6 +2393,20 @@ public class GuiMonitor extends GuiScreen {
         ModNetwork.INSTANCE.sendToServer(new MessageMonitorNetRequest(
                 origin, MessageMonitorNetRequest.TOGGLE_EVENT, selectedNetId, "", 0,
                 index, enabled));
+    }
+
+    private void sendDoorAction(MonitorDevice device, boolean open) {
+        if (device == null || selectedNetId < 0) return;
+        if (open && (securityEvents[SecurityNet.EVENT_SYSTEM_SHUTDOWN]
+                || securityEvents[SecurityNet.EVENT_SYSTEM_LOCKDOWN])) {
+            securityNotice = "Blocked by system event";
+            return;
+        }
+        securityNotice = "";
+        ModNetwork.INSTANCE.sendToServer(new MessageMonitorNetRequest(
+                origin, open ? MessageMonitorNetRequest.OPEN_DOOR
+                        : MessageMonitorNetRequest.CLOSE_DOOR,
+                selectedNetId, "", 0, device.pos));
     }
 
     private void runDoorAction(boolean open) {

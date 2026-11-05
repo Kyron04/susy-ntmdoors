@@ -41,6 +41,7 @@ import com.ntmdoors.item.ItemRelayKey;
 import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.item.ItemSafeBindingKey;
 import com.ntmdoors.item.ItemScrewdriver;
+import com.ntmdoors.item.ItemTerminalBackupKey;
 import com.ntmdoors.item.ItemTerminalRelayKey;
 import com.ntmdoors.util.ModSounds;
 import net.minecraft.block.Block;
@@ -144,7 +145,7 @@ public class ModContent {
     public static final ItemRfidCard YELLOW_RFID_CARD = new ItemRfidCard("yellow_rfid_card");
     /** Themed cards with a fixed name, sprite and description; otherwise ordinary RFID cards. */
     public static final ItemRfidCard BLUE_MARKING_CARD =
-            new ItemNamedRfidCard("keycard_blue_marking", "Samitar's office.");
+            new ItemNamedRfidCard("keycard_blue_marking", "Sanitar's office.");
     public static final ItemRfidCard LABYRINTH_KEYCARD =
             new ItemNamedRfidCard("labyrinth_keycard", "Something is under Shoreline.");
     public static final ItemRfidCard ENGINE_ROOM_KEYCARD =
@@ -191,11 +192,22 @@ public class ModContent {
     public static final ItemMotionRelayKey MOTION_RELAY_KEY = new ItemMotionRelayKey();
     /** Orange and grey key reserved for binding devices to the Security Terminal. */
     public static final ItemTerminalRelayKey TERMINAL_RELAY_KEY = new ItemTerminalRelayKey();
+    /** Black and red USB key reserved for the terminal backup system. */
+    public static final ItemTerminalBackupKey TERMINAL_BACKUP_KEY = new ItemTerminalBackupKey();
 
-    /** The seven cosmetic RFID colours, in the order the programmer's second page shows them. */
-    public static final List<ItemRfidCard> COLOUR_CARDS = Collections.unmodifiableList(Arrays.asList(
+    /**
+     * Every non-privileged, non-biometric RFID card the programmer's second page can produce:
+     * the seven colours, the five Tarkov cards, the six SCP clearance cards and Googa.
+     * Operator, Creative and Biometric cards are deliberately excluded.
+     */
+    public static final List<ItemRfidCard> PROGRAMMER_CARDS = Collections.unmodifiableList(Arrays.asList(
             RED_RFID_CARD, VIOLET_RFID_CARD, GREEN_RFID_CARD, BLUE_RFID_CARD,
-            BLACK_RFID_CARD, ORANGE_RFID_CARD, YELLOW_RFID_CARD));
+            BLACK_RFID_CARD, ORANGE_RFID_CARD, YELLOW_RFID_CARD,
+            BLUE_MARKING_CARD, LABYRINTH_KEYCARD, ENGINE_ROOM_KEYCARD, TERMINAL_KEYCARD,
+            TERRAGROUP_LABS_KEYCARD,
+            SCP_LEVEL_0_KEYCARD, SCP_LEVEL_1_KEYCARD, SCP_LEVEL_2_KEYCARD,
+            SCP_LEVEL_3_KEYCARD, SCP_LEVEL_4_KEYCARD, SCP_LEVEL_5_KEYCARD,
+            GOOGA_SECURITY_KEYCARD));
 
     /** Blank first, then the colour variants and the themed cards in creative-tab order. */
     public static final List<ItemRfidCard> RFID_CARDS = Collections.unmodifiableList(Arrays.asList(
@@ -300,6 +312,7 @@ public class ModContent {
         // New relay keys go last so previously saved numeric item IDs do not shift.
         e.getRegistry().register(MOTION_RELAY_KEY);
         e.getRegistry().register(TERMINAL_RELAY_KEY);
+        e.getRegistry().register(TERMINAL_BACKUP_KEY);
         // New monitor desk items go last for the same reason.
         e.getRegistry().register(new ItemMonitorDesk(TRIPLE_MONITOR_SETUP, TRIPLE_MONITOR_DESK)
                 .setRegistryName(TRIPLE_MONITOR_SETUP.getRegistryName())

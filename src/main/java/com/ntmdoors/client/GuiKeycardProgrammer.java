@@ -15,6 +15,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
@@ -23,8 +24,8 @@ import java.util.List;
 
 /**
  * Three-page keycard programmer GUI, styled after the in-game mockups: a light metal frame around a
- * dark panel, outlined item slots and a paged footer. Page one binds cards, page two re-colours an
- * RFID card and page three is the legacy backup console.
+ * dark panel, outlined item slots and a paged footer. Page one binds cards, page two changes an
+ * RFID card's style from the scrollable card palette and page three is the legacy backup console.
  */
 @SideOnly(Side.CLIENT)
 public class GuiKeycardProgrammer extends GuiContainer {
@@ -47,6 +48,7 @@ public class GuiKeycardProgrammer extends GuiContainer {
 
     private final TileEntityKeycardProgrammer tile;
     private int page;
+    private int colourScroll;
     private String status = "";
     private int statusTicks;
     private final int[] originalX;
@@ -75,22 +77,75 @@ public class GuiKeycardProgrammer extends GuiContainer {
     private void updateSlotPositions() {
         for (Slot slot : this.inventorySlots.inventorySlots) {
             int index = slot.slotNumber;
-            if (index >= 0 && index < this.originalX.length) {
-                if (isSlotVisible(slot)) {
-                    slot.xPos = this.originalX[index];
-                    slot.yPos = this.originalY[index];
-                } else {
+            if (index < 0 || index >= this.originalX.length) continue;
+
+            if (isColourSlot(index)) {
+                if (!isSlotVisible(slot)) {
                     slot.xPos = -10000 - index;
                     slot.yPos = -10000;
+                    continue;
                 }
+                int colourIndex = index - ContainerKeycardProgrammer.COLOUR_SLOT_START;
+                int col = colourIndex % ContainerKeycardProgrammer.COLOUR_COLUMNS;
+                int row = colourIndex / ContainerKeycardProgrammer.COLOUR_COLUMNS - colourScroll;
+                slot.xPos = ContainerKeycardProgrammer.COLOUR_FIRST_X
+                        + col * ContainerKeycardProgrammer.COLOUR_STEP;
+                slot.yPos = ContainerKeycardProgrammer.COLOUR_Y
+                        + row * ContainerKeycardProgrammer.COLOUR_ROW_STEP;
+                continue;
+            }
+
+            if (isSlotVisible(slot)) {
+                slot.xPos = this.originalX[index];
+                slot.yPos = this.originalY[index];
+            } else {
+                slot.xPos = -10000 - index;
+                slot.yPos = -10000;
             }
         }
+    }
+
+    private static boolean isColourSlot(int index) {
+        return index >= ContainerKeycardProgrammer.COLOUR_SLOT_START
+                && index < ContainerKeycardProgrammer.COLOUR_SLOT_START
+                + ContainerKeycardProgrammer.COLOUR_SLOT_COUNT;
+    }
+
+    private static int colourRows() {
+        return (ContainerKeycardProgrammer.COLOUR_SLOT_COUNT
+                + ContainerKeycardProgrammer.COLOUR_COLUMNS - 1)
+                / ContainerKeycardProgrammer.COLOUR_COLUMNS;
+    }
+
+    private void changeColourScroll(int delta) {
+        int max = Math.max(0, colourRows() - ContainerKeycardProgrammer.COLOUR_VISIBLE_ROWS);
+        int next = Math.max(0, Math.min(max, colourScroll + delta));
+        if (next == colourScroll) return;
+        colourScroll = next;
+        updateSlotPositions();
     }
 
     @Override
     public void updateScreen() {
         super.updateScreen();
         if (statusTicks > 0) statusTicks--;
+    }
+
+    @Override
+    public void handleMouseInput() throws IOException {
+        super.handleMouseInput();
+        if (page != 1) return;
+        int wheel = Mouse.getEventDWheel();
+        if (wheel == 0) return;
+
+        int mouseX = Mouse.getEventX() * width / mc.displayWidth;
+        int mouseY = height - Mouse.getEventY() * height / mc.displayHeight - 1;
+        int left = guiLeft + 8;
+        int right = guiLeft + 168;
+        int top = guiTop + 64;
+        int bottom = guiTop + 102;
+        if (mouseX < left || mouseX >= right || mouseY < top || mouseY >= bottom) return;
+        changeColourScroll(wheel > 0 ? -1 : 1);
     }
 
     @Override
@@ -169,9 +224,26 @@ public class GuiKeycardProgrammer extends GuiContainer {
     private void drawPageTwo(int mouseX, int mouseY) {
         drawRect(8, 62, 168, 63, 0xFF6A6A6E);
         drawRect(8, 63, 168, 64, 0xFF08080A);
-        drawRect(8, 100, 168, 101, 0xFF6A6A6E);
-        drawRect(8, 101, 168, 102, 0xFF08080A);
+        drawRect(8, 101, 168, 102, 0xFF6A6A6E);
+        drawRect(8, 102, 168, 103, 0xFF08080A);
+        drawColourScrollbar();
         drawPageButtons(mouseX, mouseY);
+    }
+
+    private void drawColourScrollbar() {
+        int rows = colourRows();
+        if (rows <= ContainerKeycardProgrammer.COLOUR_VISIBLE_ROWS) return;
+
+        int trackX = 164;
+        int top = ContainerKeycardProgrammer.COLOUR_Y;
+        int bottom = top + (ContainerKeycardProgrammer.COLOUR_VISIBLE_ROWS - 1)
+                * ContainerKeycardProgrammer.COLOUR_ROW_STEP + 16;
+        drawRect(trackX, top, trackX + 2, bottom, 0xFF08080A);
+        int maxScroll = rows - ContainerKeycardProgrammer.COLOUR_VISIBLE_ROWS;
+        int thumb = Math.max(10, (bottom - top)
+                * ContainerKeycardProgrammer.COLOUR_VISIBLE_ROWS / rows);
+        int thumbY = top + (bottom - top - thumb) * colourScroll / maxScroll;
+        drawRect(trackX, thumbY, trackX + 2, thumbY + thumb, 0xFFB4B4B4);
     }
 
     private void drawPageThree(int mouseX, int mouseY) {
@@ -373,7 +445,12 @@ public class GuiKeycardProgrammer extends GuiContainer {
         if (index == 4) return page == 1;
         if (index >= ContainerKeycardProgrammer.COLOUR_SLOT_START
                 && index < ContainerKeycardProgrammer.COLOUR_SLOT_START + ContainerKeycardProgrammer.COLOUR_SLOT_COUNT) {
-            return page == 1;
+            if (page != 1) return false;
+            int row = (index - ContainerKeycardProgrammer.COLOUR_SLOT_START)
+                    / ContainerKeycardProgrammer.COLOUR_COLUMNS;
+            int visibleRow = row - colourScroll;
+            return visibleRow >= 0
+                    && visibleRow < ContainerKeycardProgrammer.COLOUR_VISIBLE_ROWS;
         }
         if (index >= ContainerKeycardProgrammer.LEGACY_SLOT_START
                 && index < ContainerKeycardProgrammer.LEGACY_SLOT_START + ContainerKeycardProgrammer.LEGACY_SLOT_COUNT) {
@@ -450,6 +527,7 @@ public class GuiKeycardProgrammer extends GuiContainer {
 
     private void changePage(int delta) {
         page = (page + delta + PAGE_COUNT) % PAGE_COUNT;
+        colourScroll = 0;
         statusTicks = 0;
         updateSlotPositions();
         // Keep the client container's prediction in step with the server's shift-click routing.

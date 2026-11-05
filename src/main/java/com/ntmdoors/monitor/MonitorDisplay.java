@@ -23,7 +23,8 @@ public final class MonitorDisplay {
     public static final int STAGE_DELETE_NET = 9;
     public static final int STAGE_DISPLAY = 10;
     public static final int STAGE_NOTEPAD = 11;
-    public static final int STAGE_COUNT = 12;
+    public static final int STAGE_BACKUP = 12;
+    public static final int STAGE_COUNT = 13;
 
     /** The first page a fresh desk shows before anyone has opened the terminal. */
     public static final int DEFAULT_STAGE = STAGE_MENU;

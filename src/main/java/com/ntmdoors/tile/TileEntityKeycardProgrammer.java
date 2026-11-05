@@ -4,7 +4,6 @@ import com.ntmdoors.client.BackupLoopSound;
 import com.ntmdoors.item.ItemBiometricKeycard;
 import com.ntmdoors.item.ItemBiometricRelayKey;
 import com.ntmdoors.item.ItemCreativeKeycard;
-import com.ntmdoors.item.ItemNamedRfidCard;
 import com.ntmdoors.item.ItemOperatorKeycard;
 import com.ntmdoors.item.ItemRelayKey;
 import com.ntmdoors.item.ItemRfidCard;
@@ -209,11 +208,10 @@ public class TileEntityKeycardProgrammer extends TileEntitySynced implements IIn
                 && !(stack.getItem() instanceof ItemCreativeKeycard);
     }
 
-    /** A plain card whose colour may change; biometric and fixed-name cards keep their sprite. */
+    /** A non-privileged card whose style may change; biometric cards keep their identity sprite. */
     public static boolean isRecolourable(ItemStack stack) {
         return isPlainCard(stack)
-                && !(stack.getItem() instanceof ItemBiometricKeycard)
-                && !(stack.getItem() instanceof ItemNamedRfidCard);
+                && !(stack.getItem() instanceof ItemBiometricKeycard);
     }
 
     /** Either item accepted by the Legacy Backup Programmer. */
@@ -486,7 +484,8 @@ public class TileEntityKeycardProgrammer extends TileEntitySynced implements IIn
     private void updateClientSound() {
         if (backupActive) {
             if (backupSound == null) {
-                backupSound = new BackupLoopSound(this, ModSounds.SCANNER_BELL1, BACKUP_LOOP_VOLUME);
+                backupSound = new BackupLoopSound(this, this::isBackingUp,
+                        ModSounds.SCANNER_BELL1, BACKUP_LOOP_VOLUME);
                 Minecraft.getMinecraft().getSoundHandler().playSound(backupSound);
             }
         } else {

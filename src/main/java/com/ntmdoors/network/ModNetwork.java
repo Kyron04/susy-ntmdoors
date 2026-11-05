@@ -76,6 +76,8 @@ public final class ModNetwork {
                 MessageNotepadAction.class, 32, Side.SERVER);
         INSTANCE.registerMessage(MessageNotepadData.Handler.class,
                 MessageNotepadData.class, 33, Side.CLIENT);
+        INSTANCE.registerMessage(MessageMonitorBackupOpen.Handler.class,
+                MessageMonitorBackupOpen.class, 34, Side.SERVER);
     }
 
     private ModNetwork() {

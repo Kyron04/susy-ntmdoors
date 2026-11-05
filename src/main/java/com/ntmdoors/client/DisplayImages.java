@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Client-side texture cache for the cosmetic monitor wallpapers.
@@ -37,12 +38,12 @@ public final class DisplayImages {
     private static final int CONNECT_TIMEOUT_MS = 10_000;
     private static final int READ_TIMEOUT_MS = 15_000;
 
-    private static final Map<String, Remote> REMOTE = new HashMap<>();
+    private static final Map<String, Remote> REMOTE = new ConcurrentHashMap<>();
     private static final Map<ResourceLocation, Boolean> BUILTIN_EXISTS = new HashMap<>();
 
     private static final class Remote {
         private final ResourceLocation location;
-        private boolean started;
+        private volatile boolean started;
         private volatile boolean ready;
         private volatile boolean failed;
 
@@ -111,19 +112,13 @@ public final class DisplayImages {
     }
 
     private static Remote remote(String url) {
-        synchronized (REMOTE) {
-            Remote remote = REMOTE.get(url);
-            if (remote == null) {
-                remote = new Remote(new ResourceLocation("ntmdoors",
-                        "remote_display/" + sha1(url)));
-                REMOTE.put(url, remote);
-            }
-            return remote;
-        }
+        return REMOTE.computeIfAbsent(url, key -> new Remote(new ResourceLocation(
+                "ntmdoors", "remote_display/" + sha1(key))));
     }
 
     private static void start(Remote remote, String url) {
-        synchronized (REMOTE) {
+        if (remote.started) return;
+        synchronized (remote) {
             if (remote.started) return;
             remote.started = true;
         }

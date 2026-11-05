@@ -3,8 +3,10 @@ package com.ntmdoors.gui;
 import com.ntmdoors.client.GuiKeycardHolder;
 import com.ntmdoors.client.GuiKeycardProgrammer;
 import com.ntmdoors.client.GuiSafe;
+import com.ntmdoors.client.GuiTerminalBackup;
 import com.ntmdoors.item.ItemKeycardHolder;
 import com.ntmdoors.tile.TileEntityKeycardProgrammer;
+import com.ntmdoors.tile.TileEntityMonitorDesk;
 import com.ntmdoors.tile.TileEntitySafe;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -25,6 +27,8 @@ public class GuiHandler implements IGuiHandler {
     public static final int KEYCARD_PROGRAMMER = 0;
     public static final int KEYCARD_HOLDER = 2;
     public static final int SAFE = 3;
+    public static final int TERMINAL_BACKUP = 4;
+    public static final int TERMINAL_BACKUP_RESTORE = 5;
 
     @Nullable
     @Override
@@ -45,6 +49,12 @@ public class GuiHandler implements IGuiHandler {
             TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
             if (!(te instanceof TileEntitySafe)) return null;
             return new ContainerSafe(player.inventory, (TileEntitySafe) te);
+        }
+        if (id == TERMINAL_BACKUP || id == TERMINAL_BACKUP_RESTORE) {
+            TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
+            if (!(te instanceof TileEntityMonitorDesk)) return null;
+            return new ContainerTerminalBackup(player.inventory, (TileEntityMonitorDesk) te,
+                    id == TERMINAL_BACKUP_RESTORE);
         }
         return null;
     }
@@ -68,6 +78,12 @@ public class GuiHandler implements IGuiHandler {
             TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
             if (!(te instanceof TileEntitySafe)) return null;
             return new GuiSafe(player.inventory, (TileEntitySafe) te);
+        }
+        if (id == TERMINAL_BACKUP || id == TERMINAL_BACKUP_RESTORE) {
+            TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
+            if (!(te instanceof TileEntityMonitorDesk)) return null;
+            return new GuiTerminalBackup(player.inventory, (TileEntityMonitorDesk) te,
+                    id == TERMINAL_BACKUP_RESTORE);
         }
         return null;
     }

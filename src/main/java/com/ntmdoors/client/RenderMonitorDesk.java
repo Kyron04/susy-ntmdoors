@@ -28,7 +28,8 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,9 +45,35 @@ public class RenderMonitorDesk extends TileEntitySpecialRenderer<TileEntityMonit
 
     private static final int GUI_WIDTH = 512;
     private static final int GUI_HEIGHT = 384;
-    private static final Map<BlockPos, GuiMonitor[]> DISPLAY_GUIS = new HashMap<>();
-    private static final Map<BlockPos, GuiNotepad[]> NOTEPAD_DISPLAY_GUIS = new HashMap<>();
+    private static final Map<BlockPos, GuiMonitor[]> DISPLAY_GUIS = boundedCache();
+    private static final Map<BlockPos, GuiNotepad[]> NOTEPAD_DISPLAY_GUIS = boundedCache();
+    private static final Map<BlockPos, int[]> DISPLAY_REVISIONS = boundedCache();
+    private static final Map<BlockPos, int[]> NOTEPAD_REVISIONS = boundedCache();
+    private static final Map<BlockPos, CachedScreens> SCREEN_CACHE = boundedCache();
     private static World displayWorld;
+
+    /** Keeps a long session from retaining GUI pages for every desk ever rendered. */
+    private static <V> Map<BlockPos, V> boundedCache() {
+        return new LinkedHashMap<BlockPos, V>(16, 0.75F, true) {
+            @Override
+            protected boolean removeEldestEntry(Map.Entry<BlockPos, V> eldest) {
+                return size() > 64;
+            }
+        };
+    }
+
+    /** The desk geometry only changes when a monitor cell is placed or broken. */
+    private static final class CachedScreens {
+        private final IBlockState coreState;
+        private final List<Screen> screens;
+        private final long checkedAt;
+
+        private CachedScreens(IBlockState coreState, List<Screen> screens, long checkedAt) {
+            this.coreState = coreState;
+            this.screens = screens;
+            this.checkedAt = checkedAt;
+        }
+    }
 
     private static final class Screen {
         private final BlockPos pos;
@@ -83,11 +110,11 @@ public class RenderMonitorDesk extends TileEntitySpecialRenderer<TileEntityMonit
                        float partialTicks, int destroyStage, float alpha) {
         if (te.getWorld() == null) return;
         if (te.getWorld() != displayWorld) {
-            DISPLAY_GUIS.clear();
+            clearDisplayCache();
             displayWorld = te.getWorld();
         }
         IBlockState coreState = te.getWorld().getBlockState(te.getPos());
-        List<Screen> screens = collectScreens(te, coreState);
+        List<Screen> screens = screensFor(te, coreState);
         if (screens.isEmpty()) return;
 
         boolean lighting = GL11.glIsEnabled(GL11.GL_LIGHTING);
@@ -124,6 +151,19 @@ public class RenderMonitorDesk extends TileEntitySpecialRenderer<TileEntityMonit
         if (!depth) GlStateManager.disableDepth();
         if (lighting) GlStateManager.enableLighting();
         GlStateManager.popMatrix();
+    }
+
+    /** Reuses the previous screen list until the core state changes or one second passes. */
+    private static List<Screen> screensFor(TileEntityMonitorDesk te, IBlockState coreState) {
+        CachedScreens cached = SCREEN_CACHE.get(te.getPos());
+        long now = te.getWorld().getTotalWorldTime();
+        if (cached != null && cached.coreState.equals(coreState)
+                && now - cached.checkedAt < 20L) {
+            return cached.screens;
+        }
+        List<Screen> screens = collectScreens(te, coreState);
+        SCREEN_CACHE.put(te.getPos(), new CachedScreens(coreState, screens, now));
+        return screens;
     }
 
     private static List<Screen> collectScreens(TileEntityMonitorDesk te, IBlockState coreState) {
@@ -287,9 +327,6 @@ public class RenderMonitorDesk extends TileEntitySpecialRenderer<TileEntityMonit
     private void renderScreen(TileEntityMonitorDesk te, Screen screen,
                               double coreX, double coreY, double coreZ,
                               float partialTicks) {
-        int page = te.getScreenPage(screen.pageIndex);
-        if (page != 0) return;
-
         double cellX = coreX + screen.pos.getX() - te.getPos().getX();
         double cellY = coreY + screen.pos.getY() - te.getPos().getY();
         double cellZ = coreZ + screen.pos.getZ() - te.getPos().getZ();
@@ -497,12 +534,24 @@ public class RenderMonitorDesk extends TileEntitySpecialRenderer<TileEntityMonit
             DISPLAY_GUIS.put(te.getPos(), guis);
         }
         GuiMonitor gui = guis[screenIndex];
+        boolean created = false;
         if (gui == null) {
             gui = GuiMonitor.forDisplay(te.getPos(), screenIndex);
             guis[screenIndex] = gui;
+            created = true;
         }
         gui.ensureDisplaySize(GUI_WIDTH, GUI_HEIGHT);
-        configureDisplay(te, gui, screenIndex);
+        int[] revisions = DISPLAY_REVISIONS.get(te.getPos());
+        if (revisions == null) {
+            revisions = new int[TileEntityMonitorDesk.MAX_SCREENS];
+            Arrays.fill(revisions, -1);
+            DISPLAY_REVISIONS.put(te.getPos(), revisions);
+        }
+        int revision = te.getDisplayRevision();
+        if (created || revisions[screenIndex] != revision) {
+            configureDisplay(te, gui, screenIndex);
+            revisions[screenIndex] = revision;
+        }
         gui.setDisplayTicks((int) (te.getWorld().getTotalWorldTime() & 0x7FFFFFFFL));
         drawGuiIntoPanel(screen, gui, partialTicks);
     }
@@ -518,14 +567,26 @@ public class RenderMonitorDesk extends TileEntitySpecialRenderer<TileEntityMonit
             NOTEPAD_DISPLAY_GUIS.put(te.getPos(), guis);
         }
         GuiNotepad gui = guis[screenIndex];
+        boolean created = false;
         if (gui == null) {
             gui = GuiNotepad.forDisplay(te.getPos(), screenIndex);
             guis[screenIndex] = gui;
+            created = true;
         }
         gui.ensureDisplaySize(GUI_WIDTH, GUI_HEIGHT);
+        int[] revisions = NOTEPAD_REVISIONS.get(te.getPos());
+        if (revisions == null) {
+            revisions = new int[TileEntityMonitorDesk.MAX_SCREENS];
+            Arrays.fill(revisions, -1);
+            NOTEPAD_REVISIONS.put(te.getPos(), revisions);
+        }
+        int revision = te.getDisplayRevision();
+        if (created || revisions[screenIndex] != revision) {
+            gui.setDisplayData(te.getDisplayNotepadDocuments(),
+                    te.getScreenNotepadDocId(screenIndex));
+            revisions[screenIndex] = revision;
+        }
         gui.setDisplayTicks((int) (te.getWorld().getTotalWorldTime() & 0x7FFFFFFFL));
-        gui.setDisplayData(te.getDisplayNotepadDocuments(),
-                te.getScreenNotepadDocId(screenIndex));
         drawGuiIntoPanel(screen, gui, partialTicks);
     }
 
@@ -604,6 +665,9 @@ public class RenderMonitorDesk extends TileEntitySpecialRenderer<TileEntityMonit
     public static void clearDisplayCache() {
         DISPLAY_GUIS.clear();
         NOTEPAD_DISPLAY_GUIS.clear();
+        DISPLAY_REVISIONS.clear();
+        NOTEPAD_REVISIONS.clear();
+        SCREEN_CACHE.clear();
         displayWorld = null;
     }
 }

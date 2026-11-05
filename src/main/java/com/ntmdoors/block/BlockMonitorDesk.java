@@ -173,6 +173,12 @@ public class BlockMonitorDesk extends Block {
 
     @Override
     public void breakBlock(World world, BlockPos pos, IBlockState state) {
+        if (!world.isRemote) {
+            TileEntity tile = world.getTileEntity(pos);
+            if (tile instanceof TileEntityMonitorDesk) {
+                ((TileEntityMonitorDesk) tile).dropBackupContents(world, pos);
+            }
+        }
         if (!world.isRemote && !DISMANTLING.get()) {
             EnumFacing facing = state.getValue(FACING);
             BlockPos corePos = pos.subtract(offset(state.getValue(columnProperty()), facing));

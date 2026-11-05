@@ -17,9 +17,9 @@ import java.util.function.Predicate;
 
 /**
  * Container for the keycard programmer. Page one has the two binding rows, page two has the
- * cosmetic RFID colour picker and page three is the legacy backup console. Its left and right slots
- * both accept Relay Keys and Operator Keycards. All pages live in one container; the GUI only draws
- * and accepts clicks for the slots that belong to the page currently on screen.
+ * scrollable RFID card-style palette and page three is the legacy backup console. Its left and
+ * right slots both accept Relay Keys and Operator Keycards. All pages live in one container; the
+ * GUI only draws and accepts clicks for the slots that belong to the page currently on screen.
  */
 public class ContainerKeycardProgrammer extends Container {
 
@@ -49,14 +49,17 @@ public class ContainerKeycardProgrammer extends Container {
     public static final int BACKUP_BAR_WIDTH = 128;
     public static final int BACKUP_BAR_HEIGHT = 12;
     public static final int COLOUR_FIRST_X = 11;
-    public static final int COLOUR_Y = 78;
+    public static final int COLOUR_Y = 66;
     public static final int COLOUR_STEP = 22;
+    public static final int COLOUR_ROW_STEP = 18;
+    public static final int COLOUR_COLUMNS = 7;
+    public static final int COLOUR_VISIBLE_ROWS = 2;
     public static final int PLAYER_X = 8;
     public static final int PLAYER_Y = 148;
     public static final int HOTBAR_Y = 208;
 
     public static final int COLOUR_SLOT_START = 5;
-    public static final int COLOUR_SLOT_COUNT = 7;
+    public static final int COLOUR_SLOT_COUNT = ModContent.PROGRAMMER_CARDS.size();
     public static final int LEGACY_SLOT_START = COLOUR_SLOT_START + COLOUR_SLOT_COUNT;
     public static final int LEGACY_SLOT_COUNT = 2;
     /** Machine storage slots 0..4 hold pages one and two; the colour squares are display-only. */
@@ -78,15 +81,16 @@ public class ContainerKeycardProgrammer extends Container {
             TileEntityKeycardProgrammer::isOperator;
     private static final Predicate<ItemStack> RFID_ONLY =
             TileEntityKeycardProgrammer::isPlainCard;
-    /** Page two's card slot: biometric and fixed-name cards keep their sprite, so no recolour. */
+    /** Page two's card slot: any non-privileged, non-biometric RFID card. */
     private static final Predicate<ItemStack> RECOLOUR_ONLY =
             TileEntityKeycardProgrammer::isRecolourable;
     private static final Predicate<ItemStack> LEGACY_ONLY =
             TileEntityKeycardProgrammer::isLegacyInput;
 
     private final TileEntityKeycardProgrammer tile;
-    /** Backing inventory for the seven display-only colour slots. */
-    private final IInventory colourInventory = new InventoryBasic("keycard_colours", false, COLOUR_SLOT_COUNT);
+    /** Backing inventory for the display-only programmer card palette. */
+    private final IInventory colourInventory =
+            new InventoryBasic("keycard_colours", false, COLOUR_SLOT_COUNT);
     /** Which page the client shows; shift-clicking fills only slots from that page. */
     private int page;
 
@@ -105,9 +109,11 @@ public class ContainerKeycardProgrammer extends Container {
                 SLOT_RFID_TWO_X, SLOT_RFID_TWO_Y, RECOLOUR_ONLY));
 
         for (int i = 0; i < COLOUR_SLOT_COUNT; i++) {
+            int col = i % COLOUR_COLUMNS;
+            int row = i / COLOUR_COLUMNS;
             addSlotToContainer(new SlotColourOption(colourInventory, i,
-                    COLOUR_FIRST_X + i * COLOUR_STEP, COLOUR_Y,
-                    new ItemStack(ModContent.COLOUR_CARDS.get(i))));
+                    COLOUR_FIRST_X + col * COLOUR_STEP, COLOUR_Y + row * COLOUR_ROW_STEP,
+                    new ItemStack(ModContent.PROGRAMMER_CARDS.get(i))));
         }
 
         addSlotToContainer(new SlotProgrammer(tile, TileEntityKeycardProgrammer.SLOT_LEGACY_LEFT,
@@ -166,7 +172,7 @@ public class ContainerKeycardProgrammer extends Container {
             return;
         }
 
-        ItemStack result = new ItemStack(ModContent.COLOUR_CARDS.get(colour), 1);
+        ItemStack result = new ItemStack(ModContent.PROGRAMMER_CARDS.get(colour), 1);
         if (card.hasTagCompound()) {
             result.setTagCompound(card.getTagCompound().copy());
         }

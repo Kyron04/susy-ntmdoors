@@ -74,10 +74,6 @@ public final class TerminalKeyData {
         return new Session(desk, dimension, netId, devices);
     }
 
-    public static boolean hasSession(ItemStack stack) {
-        return getSession(stack) != null;
-    }
-
     /** Starts a session for one net, copying that net's confirmed devices into the pending list. */
     public static void start(ItemStack stack, BlockPos desk, int dimension, int netId,
                              List<MonitorDevice> existingDevices) {
@@ -131,10 +127,6 @@ public final class TerminalKeyData {
         if (keyId.isEmpty()) return null;
         return new Link(BlockPos.fromLong(tag.getLong(LINK_DESK)),
                 tag.getInteger(LINK_DIM), tag.getInteger(LINK_NET), keyId);
-    }
-
-    public static boolean hasLink(ItemStack stack) {
-        return getLink(stack) != null;
     }
 
     public static void setLink(ItemStack stack, BlockPos desk, int dimension, int netId,

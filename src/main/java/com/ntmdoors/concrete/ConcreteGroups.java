@@ -35,10 +35,6 @@ public final class ConcreteGroups {
             return name;
         }
 
-        public List<ItemStack> items() {
-            return items;
-        }
-
         public List<IBlockState> states() {
             return states;
         }

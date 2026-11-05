@@ -7,7 +7,6 @@ import com.ntmdoors.network.MessageNotepadAction;
 import com.ntmdoors.network.ModNetwork;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -79,6 +78,8 @@ public class GuiNotepad extends GuiScreen {
     private int editorScroll;
     private int ticks;
     private boolean requested;
+    private final GuiKeyRepeat repeat = new GuiKeyRepeat();
+    private boolean repeating;
 
     private List<NotepadDocument> documents = new ArrayList<>();
     private int selectedId = -1;
@@ -124,6 +125,10 @@ public class GuiNotepad extends GuiScreen {
     @Override
     public void initGui() {
         super.initGui();
+        if (!passive) {
+            // The editor handles repeats itself; window-system repeat events are ignored below.
+            repeat.clear();
+        }
         if (passive) {
             guiWidth = width;
             guiHeight = height;
@@ -148,6 +153,34 @@ public class GuiNotepad extends GuiScreen {
         }
     }
 
+    @Override
+    public void onGuiClosed() {
+        if (!passive) {
+            repeat.clear();
+        }
+        super.onGuiClosed();
+    }
+
+    private void updateRepeat() {
+        if (!repeat.update()) return;
+        repeating = true;
+        try {
+            keyTyped(repeat.typedChar(), repeat.keyCode());
+        } catch (IOException ignored) {
+            // The editor's key handler does not do I/O; keep the repeat loop alive regardless.
+        } finally {
+            repeating = false;
+        }
+    }
+
+    private void rememberRepeat(char typedChar, int keyCode) {
+        if (repeating || GuiScreen.isCtrlKeyDown()) return;
+        if (keyCode == Keyboard.KEY_BACK || keyCode == Keyboard.KEY_DELETE
+                || (typedChar >= 32 && typedChar != 127)) {
+            repeat.press(keyCode, typedChar);
+        }
+    }
+
     private void updateLayout() {
         int offset = (int) (sidebarWidth * (1F - sidebarProgress));
         int sidebarRight = guiLeft + sidebarWidth - offset;
@@ -166,6 +199,7 @@ public class GuiNotepad extends GuiScreen {
         super.updateScreen();
         ticks++;
         if (passive) return;
+        updateRepeat();
         float target = sidebarOpen ? 1F : 0F;
         if (Math.abs(sidebarProgress - target) > 0.02F) {
             sidebarProgress += (target - sidebarProgress) * 0.35F;
@@ -442,6 +476,7 @@ public class GuiNotepad extends GuiScreen {
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+        repeat.clear();
         if (mouseButton != 0) return;
         if (modal != Modal.NONE) {
             handleModalClick(mouseX, mouseY);
@@ -588,8 +623,10 @@ public class GuiNotepad extends GuiScreen {
 
     @Override
     protected void keyTyped(char typedChar, int keyCode) throws IOException {
+        if (!repeating && Keyboard.isRepeatEvent()) return;
         if (modal != Modal.NONE) {
             if (keyCode == Keyboard.KEY_ESCAPE) {
+                repeat.clear();
                 modal = Modal.NONE;
                 exiting = false;
                 pendingDocId = -1;
@@ -597,6 +634,7 @@ public class GuiNotepad extends GuiScreen {
             }
             if (modal == Modal.RENAME) {
                 if (keyCode == Keyboard.KEY_RETURN || keyCode == Keyboard.KEY_NUMPADENTER) {
+                    repeat.clear();
                     String name = NotepadDocument.cleanName(modalInput.toString());
                     modal = Modal.NONE;
                     send(MessageNotepadAction.RENAME, modalDocId, name);
@@ -606,6 +644,7 @@ public class GuiNotepad extends GuiScreen {
                     if (modalInput.length() > 0) {
                         modalInput.deleteCharAt(modalInput.length() - 1);
                     }
+                    rememberRepeat(typedChar, keyCode);
                     return;
                 }
                 if (GuiScreen.isCtrlKeyDown()) {
@@ -628,6 +667,7 @@ public class GuiNotepad extends GuiScreen {
                 if (typedChar >= 32 && typedChar != 127
                         && modalInput.length() < NotepadDocument.MAX_NAME_LENGTH) {
                     modalInput.append(typedChar);
+                    rememberRepeat(typedChar, keyCode);
                 }
             }
             return;
@@ -653,6 +693,7 @@ public class GuiNotepad extends GuiScreen {
                 cursor--;
                 markDirty();
             }
+            rememberRepeat(typedChar, keyCode);
             return;
         }
         if (keyCode == Keyboard.KEY_DELETE) {
@@ -660,6 +701,7 @@ public class GuiNotepad extends GuiScreen {
                 text.deleteCharAt(cursor);
                 markDirty();
             }
+            rememberRepeat(typedChar, keyCode);
             return;
         }
         if (keyCode == Keyboard.KEY_LEFT) {
@@ -688,6 +730,7 @@ public class GuiNotepad extends GuiScreen {
         }
         if (typedChar >= 32 && typedChar != 127 && text.length() < NotepadDocument.MAX_TEXT_LENGTH) {
             insert(String.valueOf(typedChar));
+            rememberRepeat(typedChar, keyCode);
         }
     }
 

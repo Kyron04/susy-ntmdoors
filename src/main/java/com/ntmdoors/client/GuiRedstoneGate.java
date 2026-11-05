@@ -25,7 +25,6 @@ public class GuiRedstoneGate extends GuiScreen {
 
     private static final int COLOUR = 0xFFE8E8E8;
     private static final int MUTED = 0xFFAFAFAF;
-    private static final int DIM = 0xFF8A8A8A;
     private static final int HEADING = 0xFFF0C0C0;
     private static final int RULE = 0xFF4A4A4E;
 

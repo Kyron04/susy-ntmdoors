@@ -1,11 +1,13 @@
 package com.ntmdoors.network;
 
 import com.ntmdoors.monitor.MonitorAccess;
+import com.ntmdoors.monitor.MonitorDevice;
 import com.ntmdoors.monitor.SecurityEvents;
 import com.ntmdoors.monitor.SecurityNet;
 import com.ntmdoors.monitor.SecurityNetSummary;
 import com.ntmdoors.monitor.TerminalKeyData;
 import com.ntmdoors.item.ItemTerminalRelayKey;
+import com.ntmdoors.tile.TileEntityDoorGeneric;
 import com.ntmdoors.tile.TileEntityMonitorDesk;
 import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.PrivateKeys;
@@ -13,6 +15,7 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
@@ -39,6 +42,8 @@ public class MessageMonitorNetRequest implements IMessage {
     public static final int TOGGLE_EVENT = 7;
     public static final int CLOSE_ALL_DOORS = 8;
     public static final int OPEN_ALL_DOORS = 9;
+    public static final int OPEN_DOOR = 10;
+    public static final int CLOSE_DOOR = 11;
 
     private BlockPos deskPos;
     private int action;
@@ -47,6 +52,7 @@ public class MessageMonitorNetRequest implements IMessage {
     private int hand;
     private int eventId = -1;
     private boolean eventValue;
+    private BlockPos devicePos;
 
     public MessageMonitorNetRequest() {
     }
@@ -66,6 +72,12 @@ public class MessageMonitorNetRequest implements IMessage {
         this.eventValue = eventValue;
     }
 
+    public MessageMonitorNetRequest(BlockPos deskPos, int action, int netId, String name, int hand,
+                                    BlockPos devicePos) {
+        this(deskPos, action, netId, name, hand, -1, false);
+        this.devicePos = devicePos;
+    }
+
     @Override
     public void fromBytes(ByteBuf buf) {
         deskPos = NetworkUtil.readPos(buf);
@@ -75,6 +87,7 @@ public class MessageMonitorNetRequest implements IMessage {
         hand = buf.readByte();
         eventId = buf.readByte();
         eventValue = buf.readBoolean();
+        devicePos = NetworkUtil.readPos(buf);
     }
 
     @Override
@@ -86,6 +99,7 @@ public class MessageMonitorNetRequest implements IMessage {
         buf.writeByte(hand);
         buf.writeByte(eventId);
         buf.writeBoolean(eventValue);
+        NetworkUtil.writePos(buf, devicePos);
     }
 
     public static class Handler implements IMessageHandler<MessageMonitorNetRequest, IMessage> {
@@ -140,6 +154,12 @@ public class MessageMonitorNetRequest implements IMessage {
                     break;
                 case OPEN_ALL_DOORS:
                     openAllDoors(player, desk, message.netId);
+                    break;
+                case OPEN_DOOR:
+                    setDoor(player, desk, message, true);
+                    break;
+                case CLOSE_DOOR:
+                    setDoor(player, desk, message, false);
                     break;
                 default:
                     break;
@@ -200,6 +220,32 @@ public class MessageMonitorNetRequest implements IMessage {
                                          int netId) {
             SecurityNet net = desk.getNet(netId);
             if (net != null) SecurityEvents.openAllDoors(player.world, net);
+        }
+
+        /** Server side: opens or closes one door that is part of the selected net. */
+        private static void setDoor(EntityPlayerMP player, TileEntityMonitorDesk desk,
+                                    MessageMonitorNetRequest message, boolean open) {
+            SecurityNet net = desk.getNet(message.netId);
+            if (net == null || message.devicePos == null) return;
+
+            boolean known = false;
+            for (MonitorDevice device : net.getDevices()) {
+                if (device.type == MonitorDevice.Type.DOOR
+                        && device.pos.equals(message.devicePos)) {
+                    known = true;
+                    break;
+                }
+            }
+            if (!known || !player.world.isBlockLoaded(message.devicePos)) return;
+
+            TileEntity te = player.world.getTileEntity(message.devicePos);
+            if (!(te instanceof TileEntityDoorGeneric)) return;
+            TileEntityDoorGeneric door = (TileEntityDoorGeneric) te;
+            if (open) {
+                door.openForSystem();
+            } else {
+                door.closeForSystem();
+            }
         }
 
         private static void bindKey(EntityPlayerMP player, TileEntityMonitorDesk desk,

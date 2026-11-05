@@ -1,7 +1,6 @@
 package com.ntmdoors.monitor;
 
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
@@ -44,10 +43,6 @@ public final class SecurityNet {
 
     public String displayName() {
         return name.isEmpty() ? "Security net " + (id + 1) : name;
-    }
-
-    public void setName(@Nullable String name) {
-        this.name = name == null ? "" : name;
     }
 
     public List<MonitorDevice> getDevices() {

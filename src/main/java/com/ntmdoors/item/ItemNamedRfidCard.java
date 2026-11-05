@@ -13,8 +13,9 @@ import java.util.List;
  * RFID card with a fixed name and a line of flavour text.
  *
  * <p>It behaves exactly like a normal colour card: the programmer can copy private keys and a
- * biometric identity onto it, scanners accept it, and sneak right-click opens the key viewer. It is
- * simply not part of the recolour palette, so its themed sprite and description stay put.</p>
+ * biometric identity onto it, scanners accept it, and sneak right-click opens the key viewer. Its
+ * themed sprite and description stick to the card until the programmer's second-page palette is
+ * used to change its style.</p>
  */
 public class ItemNamedRfidCard extends ItemRfidCard {
 
