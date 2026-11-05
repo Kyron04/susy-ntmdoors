@@ -1,6 +1,7 @@
 package com.ntmdoors.tile;
 
 import com.ntmdoors.block.BlockRedstoneGate;
+import com.ntmdoors.monitor.SecurityEvents;
 import com.ntmdoors.util.BlockPositions;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
@@ -55,6 +56,7 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
     private long pulseEnd;
     /** While positive, neighbor changes are ignored so the gate cannot read its own output back. */
     private int inputSettleTicks;
+    private boolean systemIdle;
     /** Temporary off-state used to test whether an inverted gate has a real external input. */
     private int invertProbeTicks;
     /** Ignore the neighbor updates caused by our own output changing. */
@@ -243,6 +245,7 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
     /** Server side: starts a wireless activation window. */
     public void pulse() {
         if (getWorld() == null || getWorld().isRemote || stayActive) return;
+        if (isSystemIdle()) return;
         long end = getWorld().getTotalWorldTime() + activeTicks;
         if (end > pulseEnd) pulseEnd = end;
         inputSettleTicks = 0;
@@ -257,8 +260,15 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
         return getWorld() != null && pulseEnd > getWorld().getTotalWorldTime();
     }
 
+    private boolean isSystemIdle() {
+        World world = getWorld();
+        return world != null && (SecurityEvents.isShutdown(world, pos)
+                || SecurityEvents.isGateDisabled(world, pos));
+    }
+
     public void onNeighborChanged() {
         if (getWorld() == null || getWorld().isRemote) return;
+        if (isSystemIdle()) return;
         if (inputSettleTicks > 0 || invertProbeTicks > 0 || ignoreNeighborTicks > 0) return;
         if (stayActive) {
             setPowered(true);
@@ -278,6 +288,23 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
     public void update() {
         World world = getWorld();
         if (world == null || world.isRemote) return;
+
+        if (isSystemIdle()) {
+            if (!systemIdle) {
+                systemIdle = true;
+                pulseEnd = 0;
+                inputSettleTicks = 0;
+                invertProbeTicks = 0;
+                holds.clear();
+            }
+            if (isPoweredOn()) setPowered(false);
+            return;
+        }
+        if (systemIdle) {
+            systemIdle = false;
+            refreshPower();
+            ignoreNeighborTicks = 1;
+        }
 
         if (!holds.isEmpty()) {
             long now = world.getTotalWorldTime();
@@ -344,6 +371,10 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
 
     private void refreshPower() {
         if (getWorld() == null || getWorld().isRemote) return;
+        if (isSystemIdle()) {
+            setPowered(false);
+            return;
+        }
         if (stayActive) {
             setPowered(true);
             return;

@@ -68,6 +68,14 @@ public final class ModNetwork {
                 MessageMonitorNets.class, 28, Side.CLIENT);
         INSTANCE.registerMessage(MessageMonitorKeyResult.Handler.class,
                 MessageMonitorKeyResult.class, 29, Side.CLIENT);
+        INSTANCE.registerMessage(MessageMonitorDisplay.Handler.class,
+                MessageMonitorDisplay.class, 30, Side.SERVER);
+        INSTANCE.registerMessage(MessageMonitorWallpaper.Handler.class,
+                MessageMonitorWallpaper.class, 31, Side.SERVER);
+        INSTANCE.registerMessage(MessageNotepadAction.Handler.class,
+                MessageNotepadAction.class, 32, Side.SERVER);
+        INSTANCE.registerMessage(MessageNotepadData.Handler.class,
+                MessageNotepadData.class, 33, Side.CLIENT);
     }
 
     private ModNetwork() {

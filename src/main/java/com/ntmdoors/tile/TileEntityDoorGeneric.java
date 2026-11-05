@@ -5,6 +5,7 @@ import com.ntmdoors.client.DoorLoopSound;
 import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.DoorState;
 import com.ntmdoors.item.ItemCreativeKeycard;
+import com.ntmdoors.monitor.SecurityEvents;
 import com.ntmdoors.util.BlockPositions;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -144,6 +145,12 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
     public void update() {
         boolean client = world != null && world.isRemote;
         if (!client) tickAutoClose();
+        if (!client && state != DoorState.CLOSED
+                && (world.getTotalWorldTime() & 15L) == 0
+                && (SecurityEvents.isLockdown(world, pos)
+                || SecurityEvents.isShutdown(world, pos))) {
+            closeForSystem();
+        }
         if (passUpdatePending && !client) {
             passUpdatePending = false;
             updatePassState(state == DoorState.OPEN);
@@ -305,6 +312,11 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
      */
     public void request(boolean wantOpen, boolean override) {
         if (world == null || world.isRemote) return;
+        if (wantOpen && (SecurityEvents.isShutdown(world, pos)
+                || SecurityEvents.isLockdown(world, pos))) {
+            closeForSystem();
+            return;
+        }
         if (wantOpen && !override && isLockedDown()) return;
         DoorDecl d = getDecl();
         if (d == null || !d.linkAdjacent) {
@@ -312,6 +324,47 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
             return;
         }
         for (TileEntityDoorGeneric door : linkedGroup()) door.requestSelf(wantOpen);
+    }
+
+    /**
+     * Server side: enforces a Security net shutdown/lockdown. Unlike a normal close request this
+     * cancels an in-progress opening immediately instead of waiting for the door to finish opening.
+     */
+    public void closeForSystem() {
+        if (world == null || world.isRemote) return;
+        DoorDecl d = getDecl();
+        if (d == null || !d.linkAdjacent) {
+            closeNow();
+            return;
+        }
+        for (TileEntityDoorGeneric door : linkedGroup()) door.closeNow();
+    }
+
+    /** Server side: opens the door regardless of locks, keypads or scanner state. */
+    public void openForSystem() {
+        if (world == null || world.isRemote) return;
+        if (SecurityEvents.isShutdown(world, pos) || SecurityEvents.isLockdown(world, pos)) return;
+        DoorDecl d = getDecl();
+        if (d == null || !d.linkAdjacent) {
+            openNow();
+            return;
+        }
+        for (TileEntityDoorGeneric door : linkedGroup()) door.openNow();
+    }
+
+    private void closeNow() {
+        queuedOpen = null;
+        if (state == DoorState.OPEN || state == DoorState.OPENING) {
+            startMove(DoorState.CLOSING);
+        }
+    }
+
+    private void openNow() {
+        queuedOpen = null;
+        autoCloseTicks = 0;
+        if (state == DoorState.CLOSED || state == DoorState.CLOSING) {
+            startMove(DoorState.OPENING);
+        }
     }
 
     /**
@@ -562,7 +615,18 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
     public void onPlayerUse(EntityPlayer player) {
         if (getDecl() == null) return;
 
-        // Debug card: bypasses locks, security, keypad bindings, lockdowns and redstone alike.
+        if (SecurityEvents.isShutdown(world, pos)) {
+            if (state != DoorState.CLOSED) closeForSystem();
+            reject(player, "ntmdoors.msg.system_shutdown");
+            return;
+        }
+        if (SecurityEvents.isLockdown(world, pos)) {
+            if (state != DoorState.CLOSED) closeForSystem();
+            reject(player, "ntmdoors.msg.system_lockdown");
+            return;
+        }
+
+        // Debug card: bypasses ordinary locks, security, keypad bindings and redstone alike.
         if (ItemCreativeKeycard.isHeldBy(player)) {
             boolean opening = state == DoorState.CLOSED;
             toggleOverride();

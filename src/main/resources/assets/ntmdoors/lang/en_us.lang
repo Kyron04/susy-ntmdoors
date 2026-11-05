@@ -354,3 +354,6 @@ ntmdoors.msg.terminal_binding_confirmed_net=Terminal binding confirmed for %s: %
 ntmdoors.msg.terminal_key_linked=Key is already linked
 ntmdoors.msg.terminal_no_net=This terminal has no security net
 ntmdoors.msg.terminal_net_missing=That security net is missing
+ntmdoors.msg.system_shutdown=System shutdown is active
+ntmdoors.msg.system_lockdown=System lockdown is active
+ntmdoors.msg.scanner_disabled=Scanner disabled

@@ -1,6 +1,7 @@
 package com.ntmdoors.network;
 
 import com.ntmdoors.monitor.MonitorAccess;
+import com.ntmdoors.monitor.SecurityEvents;
 import com.ntmdoors.monitor.SecurityNet;
 import com.ntmdoors.monitor.SecurityNetSummary;
 import com.ntmdoors.monitor.TerminalKeyData;
@@ -35,22 +36,34 @@ public class MessageMonitorNetRequest implements IMessage {
     public static final int UNLINK_KEY = 4;
     public static final int RENAME_KEY = 5;
     public static final int DELETE_NET = 6;
+    public static final int TOGGLE_EVENT = 7;
+    public static final int CLOSE_ALL_DOORS = 8;
+    public static final int OPEN_ALL_DOORS = 9;
 
     private BlockPos deskPos;
     private int action;
     private int netId;
     private String name;
     private int hand;
+    private int eventId = -1;
+    private boolean eventValue;
 
     public MessageMonitorNetRequest() {
     }
 
     public MessageMonitorNetRequest(BlockPos deskPos, int action, int netId, String name, int hand) {
+        this(deskPos, action, netId, name, hand, -1, false);
+    }
+
+    public MessageMonitorNetRequest(BlockPos deskPos, int action, int netId, String name, int hand,
+                                    int eventId, boolean eventValue) {
         this.deskPos = deskPos;
         this.action = action;
         this.netId = netId;
         this.name = name;
         this.hand = hand;
+        this.eventId = eventId;
+        this.eventValue = eventValue;
     }
 
     @Override
@@ -60,6 +73,8 @@ public class MessageMonitorNetRequest implements IMessage {
         netId = buf.readInt();
         name = ByteBufUtils.readUTF8String(buf);
         hand = buf.readByte();
+        eventId = buf.readByte();
+        eventValue = buf.readBoolean();
     }
 
     @Override
@@ -69,6 +84,8 @@ public class MessageMonitorNetRequest implements IMessage {
         buf.writeInt(netId);
         ByteBufUtils.writeUTF8String(buf, name == null ? "" : name);
         buf.writeByte(hand);
+        buf.writeByte(eventId);
+        buf.writeBoolean(eventValue);
     }
 
     public static class Handler implements IMessageHandler<MessageMonitorNetRequest, IMessage> {
@@ -115,6 +132,15 @@ public class MessageMonitorNetRequest implements IMessage {
                 case DELETE_NET:
                     deleteNet(player, desk, message.netId);
                     break;
+                case TOGGLE_EVENT:
+                    toggleEvent(player, desk, message.netId, message.eventId, message.eventValue);
+                    break;
+                case CLOSE_ALL_DOORS:
+                    closeAllDoors(player, desk, message.netId);
+                    break;
+                case OPEN_ALL_DOORS:
+                    openAllDoors(player, desk, message.netId);
+                    break;
                 default:
                     break;
             }
@@ -131,14 +157,49 @@ public class MessageMonitorNetRequest implements IMessage {
 
         private static void sendDevices(EntityPlayerMP player, TileEntityMonitorDesk desk,
                                         SecurityNet net) {
+            sendDevices(player, desk, net, true);
+        }
+
+        private static void sendDevices(EntityPlayerMP player, TileEntityMonitorDesk desk,
+                                        SecurityNet net, boolean prune) {
             List<com.ntmdoors.monitor.MonitorDevice> devices =
                     new ArrayList<>(net.getDevices());
-            boolean changed = devices.removeIf(
-                    device -> !com.ntmdoors.monitor.MonitorDevice.stillValid(player.world, device));
-            if (changed) desk.setNetDevices(net.id, devices);
+            if (prune) {
+                boolean changed = devices.removeIf(
+                        device -> !com.ntmdoors.monitor.MonitorDevice.stillValid(
+                                player.world, device));
+                if (changed) desk.setNetDevices(net.id, devices);
+            }
 
             ModNetwork.INSTANCE.sendTo(new MessageMonitorDevices(
-                    desk.getPos(), net.id, net.displayName(), net.getLinkedKeyName(), devices), player);
+                    desk.getPos(), net.id, net.displayName(), net.getLinkedKeyName(),
+                    net.getEventMask(), devices), player);
+        }
+
+        private static void toggleEvent(EntityPlayerMP player, TileEntityMonitorDesk desk,
+                                        int netId, int eventId, boolean enabled) {
+            if (eventId < 0 || eventId >= SecurityNet.EVENT_COUNT) return;
+            SecurityNet net = desk.getNet(netId);
+            if (net == null) return;
+            desk.setNetEvent(netId, eventId, enabled);
+            if (enabled && (eventId == SecurityNet.EVENT_SYSTEM_SHUTDOWN
+                    || eventId == SecurityNet.EVENT_SYSTEM_LOCKDOWN)) {
+                SecurityEvents.closeAllDoors(player.world, net);
+            }
+            // Never prune or rewrite the binding list as part of an event toggle.
+            sendDevices(player, desk, net, false);
+        }
+
+        private static void closeAllDoors(EntityPlayerMP player, TileEntityMonitorDesk desk,
+                                          int netId) {
+            SecurityNet net = desk.getNet(netId);
+            if (net != null) SecurityEvents.closeAllDoors(player.world, net);
+        }
+
+        private static void openAllDoors(EntityPlayerMP player, TileEntityMonitorDesk desk,
+                                         int netId) {
+            SecurityNet net = desk.getNet(netId);
+            if (net != null) SecurityEvents.openAllDoors(player.world, net);
         }
 
         private static void bindKey(EntityPlayerMP player, TileEntityMonitorDesk desk,

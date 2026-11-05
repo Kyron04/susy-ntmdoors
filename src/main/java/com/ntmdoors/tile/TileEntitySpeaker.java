@@ -1,6 +1,7 @@
 package com.ntmdoors.tile;
 
 import com.ntmdoors.client.SpeakerLoopSound;
+import com.ntmdoors.monitor.SecurityEvents;
 import com.ntmdoors.util.ModSounds;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundHandler;
@@ -43,6 +44,8 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
     private int range = DEFAULT_RANGE;
     private int volume = DEFAULT_VOLUME;
     private boolean powered;
+    private boolean systemIdle;
+    private boolean systemAlarm;
 
     @SideOnly(Side.CLIENT)
     private SpeakerLoopSound loopSound;
@@ -153,6 +156,7 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
     /** Server side: called by the block when a neighbouring redstone component changes. */
     public void onNeighborChanged() {
         if (world == null || world.isRemote) return;
+        if (SecurityEvents.isShutdown(world, pos)) return;
         updatePower(world.isBlockPowered(pos));
     }
 
@@ -162,6 +166,24 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
         if (world.isRemote) {
             updateClientSound();
             return;
+        }
+
+        if (SecurityEvents.isShutdown(world, pos)) {
+            if (!systemIdle || systemAlarm || powered) {
+                systemIdle = true;
+                systemAlarm = false;
+                redstoneBinding.clearHold();
+                powered = false;
+                sync();
+            }
+            return;
+        }
+        systemIdle = false;
+
+        boolean alarm = SecurityEvents.isAlarm(world, pos);
+        if (systemAlarm != alarm) {
+            systemAlarm = alarm;
+            sync();
         }
 
         updatePower(world.isBlockPowered(pos));
@@ -177,7 +199,7 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
 
     @SideOnly(Side.CLIENT)
     private void updateClientSound() {
-        if (!enabled || !powered || volume <= 0 || range <= 0) {
+        if (!enabled || (!powered && !systemAlarm) || volume <= 0 || range <= 0) {
             stopClientSound();
             return;
         }
@@ -243,6 +265,7 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
         tag.setInteger("range", range);
         tag.setInteger("volume", volume);
         tag.setBoolean("powered", powered);
+        tag.setBoolean("systemAlarm", systemAlarm);
         redstoneBinding.writeToNBT(tag);
         return tag;
     }
@@ -255,6 +278,7 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
         range = tag.hasKey("range") ? clampRange(tag.getInteger("range")) : DEFAULT_RANGE;
         volume = tag.hasKey("volume") ? clampVolume(tag.getInteger("volume")) : DEFAULT_VOLUME;
         powered = tag.getBoolean("powered");
+        systemAlarm = tag.getBoolean("systemAlarm");
         redstoneBinding.readFromNBT(tag);
     }
 }

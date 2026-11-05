@@ -17,12 +17,15 @@ public final class MonitorReturnContext {
     @Nullable
     private static BlockPos terminal;
     private static boolean terminalHasPassword;
+    private static int terminalScreenIndex;
     private static int terminalNetId = -1;
     private static String terminalNetName = "";
 
-    public static void set(BlockPos origin, boolean hasPassword, int netId, String netName) {
+    public static void set(BlockPos origin, boolean hasPassword, int screenIndex,
+                           int netId, String netName) {
         terminal = origin == null ? null : origin.toImmutable();
         terminalHasPassword = hasPassword;
+        terminalScreenIndex = screenIndex;
         terminalNetId = netId;
         terminalNetName = netName == null ? "" : netName;
     }
@@ -32,11 +35,12 @@ public final class MonitorReturnContext {
         if (terminal == null) return false;
         BlockPos origin = terminal;
         boolean hasPassword = terminalHasPassword;
+        int screenIndex = terminalScreenIndex;
         int netId = terminalNetId;
         String netName = terminalNetName;
         terminal = null;
         Minecraft.getMinecraft().displayGuiScreen(
-                GuiMonitor.forSecurity(origin, hasPassword, netId, netName));
+                GuiMonitor.forSecurity(origin, hasPassword, screenIndex, netId, netName));
         return true;
     }
 

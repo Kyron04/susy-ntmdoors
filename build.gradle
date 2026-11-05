@@ -62,6 +62,16 @@ processResources {
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
     }
+
+    // Cosmetic monitor wallpapers. Drop the source images in source-art/display using the
+    // names listed in its README; they are packaged under textures/display.
+    from('source-art/display') {
+        include '*.png'
+        include '*.jpg'
+        include '*.jpeg'
+        into 'assets/ntmdoors/textures/display'
+        rename { String name -> name.toLowerCase().replace(' ', '_') }
+    }
 }
 
 jar {

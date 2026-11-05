@@ -27,15 +27,22 @@ public class MessageMonitorState implements IMessage {
     private int result;
     private boolean hasPassword;
     private boolean passwordSkipped;
+    private int screenIndex = -1;
 
     public MessageMonitorState() {
     }
 
     public MessageMonitorState(BlockPos pos, int result, boolean hasPassword, boolean passwordSkipped) {
+        this(pos, result, hasPassword, passwordSkipped, -1);
+    }
+
+    public MessageMonitorState(BlockPos pos, int result, boolean hasPassword,
+                               boolean passwordSkipped, int screenIndex) {
         this.pos = pos;
         this.result = result;
         this.hasPassword = hasPassword;
         this.passwordSkipped = passwordSkipped;
+        this.screenIndex = screenIndex;
     }
 
     @Override
@@ -44,6 +51,7 @@ public class MessageMonitorState implements IMessage {
         result = buf.readByte();
         hasPassword = buf.readBoolean();
         passwordSkipped = buf.readBoolean();
+        screenIndex = buf.readByte();
     }
 
     @Override
@@ -52,6 +60,7 @@ public class MessageMonitorState implements IMessage {
         buf.writeByte(result);
         buf.writeBoolean(hasPassword);
         buf.writeBoolean(passwordSkipped);
+        buf.writeByte(screenIndex);
     }
 
     public static class Handler implements IMessageHandler<MessageMonitorState, IMessage> {
@@ -60,7 +69,7 @@ public class MessageMonitorState implements IMessage {
         public IMessage onMessage(MessageMonitorState message, MessageContext ctx) {
             if (message.pos == null) return null;
             NTMDoors.proxy.handleMonitorState(message.pos, message.result,
-                    message.hasPassword, message.passwordSkipped);
+                    message.hasPassword, message.passwordSkipped, message.screenIndex);
             return null;
         }
     }

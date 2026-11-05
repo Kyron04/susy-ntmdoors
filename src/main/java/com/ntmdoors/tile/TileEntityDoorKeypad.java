@@ -2,6 +2,7 @@ package com.ntmdoors.tile;
 
 import com.ntmdoors.block.BlockDoorKeypad;
 import com.ntmdoors.door.DoorState;
+import com.ntmdoors.monitor.SecurityEvents;
 import com.ntmdoors.util.Codes;
 import com.ntmdoors.util.Facings;
 import com.ntmdoors.util.ModSounds;
@@ -350,6 +351,8 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable,
     /** Server side: opens every controlled door through a scanner lockdown. */
     public void forceOpenDoors() {
         if (world == null || world.isRemote) return;
+        if (SecurityEvents.isShutdown(world, pos)
+                || SecurityEvents.isKeypadDisabled(world, pos)) return;
         for (TileEntityDoorGeneric door : controlDoors()) {
             door.request(true, true);
             door.closeAfter(0);
@@ -415,6 +418,13 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable,
 
         world.playSound(null, pos, SoundEvents.UI_BUTTON_CLICK,
                 SoundCategory.BLOCKS, 0.5F, 0.9F + world.rand.nextFloat() * 0.2F);
+
+        if (SecurityEvents.isShutdown(world, pos)
+                || SecurityEvents.isKeypadDisabled(world, pos)) {
+            showFeedback(Feedback.DENIED);
+            sync();
+            return;
+        }
 
         // Any key dismisses the "Reset code?" prompt; the key then acts normally.
         if (mode == Mode.RESET_CONFIRM) {

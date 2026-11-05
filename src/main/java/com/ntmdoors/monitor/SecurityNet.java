@@ -15,11 +15,27 @@ import java.util.List;
  */
 public final class SecurityNet {
 
+    public static final int EVENT_SYSTEM_SHUTDOWN = 0;
+    public static final int EVENT_SYSTEM_LOCKDOWN = 1;
+    public static final int EVENT_TRIGGER_ALARMS = 2;
+    public static final int EVENT_DISABLE_KEYPADS = 3;
+    public static final int EVENT_DISABLE_SCANNERS = 4;
+    public static final int EVENT_DISABLE_SENSORS = 5;
+    public static final int EVENT_DISABLE_REDSTONE_GATES = 6;
+    public static final int EVENT_COUNT = 7;
+
     public final int id;
     private String name;
     private final List<MonitorDevice> devices = new ArrayList<>();
     private String linkedKeyId = "";
     private String linkedKeyName = "";
+    private boolean systemShutdown;
+    private boolean systemLockdown;
+    private boolean triggerAlarms;
+    private boolean disableKeypads;
+    private boolean disableScanners;
+    private boolean disableSensors;
+    private boolean disableRedstoneGates;
 
     public SecurityNet(int id, @Nullable String name) {
         this.id = id;
@@ -65,6 +81,65 @@ public final class SecurityNet {
         linkedKeyName = "";
     }
 
+    public boolean getEventEnabled(int eventId) {
+        switch (eventId) {
+            case EVENT_SYSTEM_SHUTDOWN:
+                return systemShutdown;
+            case EVENT_SYSTEM_LOCKDOWN:
+                return systemLockdown;
+            case EVENT_TRIGGER_ALARMS:
+                return triggerAlarms;
+            case EVENT_DISABLE_KEYPADS:
+                return disableKeypads;
+            case EVENT_DISABLE_SCANNERS:
+                return disableScanners;
+            case EVENT_DISABLE_SENSORS:
+                return disableSensors;
+            case EVENT_DISABLE_REDSTONE_GATES:
+                return disableRedstoneGates;
+            default:
+                return false;
+        }
+    }
+
+    /** Server side: stores one Events tab toggle. Event behavior is handled separately. */
+    public void setEventEnabled(int eventId, boolean enabled) {
+        switch (eventId) {
+            case EVENT_SYSTEM_SHUTDOWN:
+                systemShutdown = enabled;
+                break;
+            case EVENT_SYSTEM_LOCKDOWN:
+                systemLockdown = enabled;
+                break;
+            case EVENT_TRIGGER_ALARMS:
+                triggerAlarms = enabled;
+                break;
+            case EVENT_DISABLE_KEYPADS:
+                disableKeypads = enabled;
+                break;
+            case EVENT_DISABLE_SCANNERS:
+                disableScanners = enabled;
+                break;
+            case EVENT_DISABLE_SENSORS:
+                disableSensors = enabled;
+                break;
+            case EVENT_DISABLE_REDSTONE_GATES:
+                disableRedstoneGates = enabled;
+                break;
+            default:
+                break;
+        }
+    }
+
+    /** Bit mask used by the client and the persistent event index. */
+    public int getEventMask() {
+        int mask = 0;
+        for (int i = 0; i < EVENT_COUNT; i++) {
+            if (getEventEnabled(i)) mask |= 1 << i;
+        }
+        return mask;
+    }
+
     public NBTTagCompound toNBT() {
         NBTTagCompound tag = new NBTTagCompound();
         tag.setInteger("Id", id);
@@ -72,6 +147,13 @@ public final class SecurityNet {
         tag.setTag("Devices", MonitorDevice.toNBTList(devices));
         tag.setString("LinkedKeyId", linkedKeyId);
         tag.setString("LinkedKeyName", linkedKeyName);
+        tag.setBoolean("SystemShutdown", systemShutdown);
+        tag.setBoolean("SystemLockdown", systemLockdown);
+        tag.setBoolean("TriggerAlarms", triggerAlarms);
+        tag.setBoolean("DisableKeypads", disableKeypads);
+        tag.setBoolean("DisableScanners", disableScanners);
+        tag.setBoolean("DisableSensors", disableSensors);
+        tag.setBoolean("DisableRedstoneGates", disableRedstoneGates);
         return tag;
     }
 
@@ -85,6 +167,13 @@ public final class SecurityNet {
         }
         net.linkedKeyId = tag.getString("LinkedKeyId");
         net.linkedKeyName = tag.getString("LinkedKeyName");
+        net.systemShutdown = tag.getBoolean("SystemShutdown");
+        net.systemLockdown = tag.getBoolean("SystemLockdown");
+        net.triggerAlarms = tag.getBoolean("TriggerAlarms");
+        net.disableKeypads = tag.getBoolean("DisableKeypads");
+        net.disableScanners = tag.getBoolean("DisableScanners");
+        net.disableSensors = tag.getBoolean("DisableSensors");
+        net.disableRedstoneGates = tag.getBoolean("DisableRedstoneGates");
         return net;
     }
 }

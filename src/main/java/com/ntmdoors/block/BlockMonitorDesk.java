@@ -1,6 +1,7 @@
 package com.ntmdoors.block;
 
 import com.ntmdoors.NTMDoors;
+import com.ntmdoors.monitor.SecurityEvents;
 import com.ntmdoors.network.MessageMonitorState;
 import com.ntmdoors.network.ModNetwork;
 import com.ntmdoors.tile.TileEntityMonitorDesk;
@@ -161,9 +162,10 @@ public class BlockMonitorDesk extends Block {
                     state.getValue(FACING)));
             TileEntityMonitorDesk monitor = TileEntityMonitorDesk.at(world, core);
             if (monitor != null) {
+                int screenIndex = state.getValue(columnProperty()).ordinal();
                 ModNetwork.INSTANCE.sendTo(new MessageMonitorState(core,
                         MessageMonitorState.OPEN, monitor.hasPassword(),
-                        monitor.isPasswordSkipped()), (EntityPlayerMP) player);
+                        monitor.isPasswordSkipped(), screenIndex), (EntityPlayerMP) player);
             }
         }
         return true;
@@ -174,6 +176,7 @@ public class BlockMonitorDesk extends Block {
         if (!world.isRemote && !DISMANTLING.get()) {
             EnumFacing facing = state.getValue(FACING);
             BlockPos corePos = pos.subtract(offset(state.getValue(columnProperty()), facing));
+            SecurityEvents.removeDesk(world, corePos);
             DISMANTLING.set(true);
             try {
                 for (BlockMonitorDesk block : desk.blocks()) {

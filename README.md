@@ -194,14 +194,33 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   two upper rows use a half-depth collision wall over the monitors so the player can stand and jump
   on the front half of the desk but cannot walk through the screens. Right-clicking any monitor
   cell opens the black-and-orange terminal: the first open offers to set a per-desk password,
-  later opens require it, and the unlocked screen lists Security, Opencomputers and Factory.
-  Passwords are stored as SHA-256 hashes on a tickless tile entity on the desk core and are checked
-  server-side. The desk/keyboard row stays inert, and sneak-right-click still lets blocks be
-  placed against the monitors. There are no redstone events yet.
+  later opens require it, and the unlocked screen lists Security, Opencomputers, Factory, Display,
+  Notepad and Terminal Backup. Passwords are stored as SHA-256 hashes on a tile entity on the desk
+  core and are checked server-side. Every page carries an `EXIT` button in the footer. The
+  desk/keyboard row stays inert, and sneak-right-click still lets blocks be placed against the
+  monitors. There are no redstone events yet.
   The desk is split into nine cell models so every element stays inside the 1.12 model limits;
   the supplied 15-degree side-monitor yaw is rounded to 22.5 degrees, the closest legal JSON
   angle. Three block types (bottom/middle/top) each carry three columns, so the part and facing
   fit in the four metadata bits and no tile entity is needed.
+* Display (`Display` in the terminal task list): a cosmetic wallpaper chooser for each physical
+  monitor panel. The built-in tab shows five packaged images plus a `Terminal` tile that
+  restores the normal terminal page. Selecting a tile applies it immediately to the screen that
+  was clicked. The custom tab accepts a direct `http://` or `https://` PNG/JPG URL; each viewing
+  client downloads it locally (8 MB / 4096 px limits) and static images only, so video and
+  animated GIFs are not supported. The choice is stored on the desk and survives restarts.
+  Built-in source images live in `source-art/display/` and are packaged under
+  `assets/ntmdoors/textures/display/` by the build.
+* Notepad (`Notepad` in the terminal task list): a shared multi-document editor stored on the
+  desk. The sliding left sidebar lists documents, creates new ones, and renames or deletes the
+  selected document. Notes open as a blank paper page with keyboard editing, wrapped lines and
+  scrolling; `Save` is at the bottom right and `EXIT` is in the title bar. Closing or switching
+  documents with unsaved changes offers `Save`, `Discard` and `Cancel`. Leaving the terminal with
+  `EXIT` keeps the current document and the document list displayed on the physical monitor
+  screen; a saved wallpaper steps aside while the notebook is shown and returns on the task
+  menu. Up to 16 documents of 8192 characters each are stored in the desk's world NBT and
+  shared by everyone using that terminal.
+* Terminal Backup: present in the task list as a placeholder until its backup flow is specified.
 * Smaller monitor desks use the same sliced-cell approach and behaviour: `3 Monitor Setup`
   (`ntmdoors:triple_monitor_setup`, 3x2x1), `Dual Monitor Setup` (`ntmdoors:dual_monitor_setup`,
   3x2x1 with the open right-middle cell left free), `Dual Monitor Setup (short table)`
@@ -238,6 +257,14 @@ Pass `-PnoVersionBump` to rebuild the current version without advancing it.
   page has a Terminal Relay Key slot: hold a key, click the slot, then press `Bind` to link the key
   to that net; `Rename` changes the linked key's display name and `Unlink` clears the link.
   `Delete net` asks for confirmation, then removes the net and its device list and unlinks its key.
+  A `Devices` / `Events` tab row switches between the device list and per-net event controls.
+  `System Shutdown` idles every device in the net; `System Lockdown` closes all net doors and keeps
+  them shut; `Trigger Alarms` sounds every speaker; and `Disable Keypads`, `Disable Scanners`,
+  `Disable Sensors` and `Disable Redstone Gates` switch off those device families. `Close all
+  doors` and `Open all doors` are one-shot actions. Event state is stored in the world save and
+  stays enforced while the desk chunk is unloaded; toggling never changes device bindings. Each
+  physical screen renders a passive `SECURITY` status panel with net and device counts plus the
+  active event state; clicking any screen opens the normal terminal GUI.
   A key links to one net at a time and a net accepts one key; starting a linked key at another desk
   reports `Key is already linked`. Clicking a linked device opens its screen remotely while the
   player remains at the terminal; keypads and scanners still ask for their security codes. A

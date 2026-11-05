@@ -6,6 +6,7 @@ import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.DoorState;
 import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.item.ItemRfidCard;
+import com.ntmdoors.monitor.SecurityEvents;
 import com.ntmdoors.util.Biometrics;
 import com.ntmdoors.util.BlockPositions;
 import com.ntmdoors.util.Codes;
@@ -479,6 +480,8 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
      */
     public void forceOpenDoors() {
         if (world == null || world.isRemote) return;
+        if (SecurityEvents.isShutdown(world, pos)
+                || SecurityEvents.isScannerDisabled(world, pos)) return;
         for (BlockPos doorPos : boundDoors) {
             TileEntity te = world.getTileEntity(doorPos);
             if (!(te instanceof TileEntityDoorGeneric)) continue;
@@ -794,6 +797,14 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
 
     /** Server side: starts a scan for the cards the player is holding right now. */
     public void useCard(EntityPlayer player) {
+        if (SecurityEvents.isShutdown(world, pos)) {
+            msg(player, "ntmdoors.msg.system_shutdown");
+            return;
+        }
+        if (SecurityEvents.isScannerDisabled(world, pos)) {
+            msg(player, "ntmdoors.msg.scanner_disabled");
+            return;
+        }
         if (state == State.SCANNING) return;
         scanningPlayer = player.getUniqueID();
         // Freeze the cards: the one-second read must judge what was held when it started, not
@@ -809,7 +820,8 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
 
     private void resolveScan() {
         EntityPlayer player = scanningPlayer == null ? null : world.getPlayerEntityByUUID(scanningPlayer);
-        boolean blocked = lockdown || lockedOut;
+        boolean blocked = lockdown || lockedOut || SecurityEvents.isShutdown(world, pos)
+                || SecurityEvents.isScannerDisabled(world, pos);
         boolean granted = player != null && (scanCreative || (!blocked && holdsAssignedKey(player)));
 
         if (granted) {

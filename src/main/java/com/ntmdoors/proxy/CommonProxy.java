@@ -8,6 +8,7 @@ import com.ntmdoors.hlblocks.HLBlocksOreDict;
 import com.ntmdoors.door.DoorDecls;
 import com.ntmdoors.gui.GuiHandler;
 import com.ntmdoors.monitor.MonitorDevice;
+import com.ntmdoors.monitor.NotepadDocument;
 import com.ntmdoors.monitor.SecurityNetSummary;
 import com.ntmdoors.network.ModNetwork;
 import com.ntmdoors.tile.TileEntityDoorGeneric;
@@ -118,17 +119,25 @@ public class CommonProxy {
     public void openMotionSensorGui(BlockPos pos) {
     }
 
-    /** Client only: open the monitor terminal for the desk core with its current password state. */
-    public void openMonitorGui(BlockPos pos, boolean hasPassword, boolean passwordSkipped) {
+    /** Client only: open one screen's monitor terminal with its current password state. */
+    public void openMonitorGui(BlockPos pos, boolean hasPassword, boolean passwordSkipped,
+                               int screenIndex) {
     }
 
     /** Client only: route a password result back into the open monitor terminal. */
-    public void handleMonitorState(BlockPos pos, int result, boolean hasPassword, boolean passwordSkipped) {
+    public void handleMonitorState(BlockPos pos, int result, boolean hasPassword,
+                                   boolean passwordSkipped, int screenIndex) {
     }
 
     /** Client only: route one Security net's device list into the open terminal. */
     public void handleMonitorDevices(BlockPos pos, int netId, String netName,
-                                     String linkedKeyName, List<MonitorDevice> devices) {
+                                     String linkedKeyName, int eventMask,
+                                     List<MonitorDevice> devices) {
+    }
+
+    /** Client only: route the shared notepad state into the open Notepad screen. */
+    public void handleNotepadData(BlockPos pos, int focusId,
+                                  List<NotepadDocument> documents) {
     }
 
     /** Client only: route the Security net landing rows into the open terminal. */

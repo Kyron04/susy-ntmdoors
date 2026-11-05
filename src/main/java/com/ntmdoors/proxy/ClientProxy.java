@@ -7,6 +7,7 @@ import com.ntmdoors.client.GuiKeycardViewer;
 import com.ntmdoors.client.GuiKeypadSecurityCode;
 import com.ntmdoors.client.GuiMonitor;
 import com.ntmdoors.client.GuiMotionSensor;
+import com.ntmdoors.client.GuiNotepad;
 import com.ntmdoors.client.GuiRedstoneGate;
 import com.ntmdoors.network.MessageMonitorState;
 import com.ntmdoors.client.MotionSensorOverlay;
@@ -24,16 +25,19 @@ import com.ntmdoors.client.RenderDoorItem;
 import com.ntmdoors.client.RenderDoorKeypad;
 import com.ntmdoors.client.RenderKeycardProgrammer;
 import com.ntmdoors.client.RenderKeycardScanner;
+import com.ntmdoors.client.RenderMonitorDesk;
 import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.DoorDecls;
 import com.ntmdoors.door.ObjBounds;
 import com.ntmdoors.item.ItemDocumentsFolder;
 import com.ntmdoors.monitor.MonitorDevice;
+import com.ntmdoors.monitor.NotepadDocument;
 import com.ntmdoors.monitor.SecurityNetSummary;
 import com.ntmdoors.tile.TileEntityDoorGeneric;
 import com.ntmdoors.tile.TileEntityDoorKeypad;
 import com.ntmdoors.tile.TileEntityKeycardProgrammer;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
+import com.ntmdoors.tile.TileEntityMonitorDesk;
 import com.ntmdoors.tile.TileEntityMotionSensor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IReloadableResourceManager;
@@ -60,6 +64,7 @@ public class ClientProxy extends CommonProxy {
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityKeycardScanner.class, new RenderKeycardScanner());
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityKeycardProgrammer.class, new RenderKeycardProgrammer());
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMotionSensor.class, new RenderMotionSensorArea());
+        ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMonitorDesk.class, new RenderMonitorDesk());
     }
 
     @Override
@@ -123,16 +128,19 @@ public class ClientProxy extends CommonProxy {
     }
 
     @Override
-    public void openMonitorGui(BlockPos pos, boolean hasPassword, boolean passwordSkipped) {
-        Minecraft.getMinecraft().displayGuiScreen(new GuiMonitor(pos, hasPassword, passwordSkipped));
+    public void openMonitorGui(BlockPos pos, boolean hasPassword, boolean passwordSkipped,
+                               int screenIndex) {
+        Minecraft.getMinecraft().displayGuiScreen(
+                new GuiMonitor(pos, hasPassword, passwordSkipped, screenIndex));
     }
 
     @Override
-    public void handleMonitorState(BlockPos pos, int result, boolean hasPassword, boolean passwordSkipped) {
+    public void handleMonitorState(BlockPos pos, int result, boolean hasPassword,
+                                   boolean passwordSkipped, int screenIndex) {
         Minecraft mc = Minecraft.getMinecraft();
         mc.addScheduledTask(() -> {
             if (result == MessageMonitorState.OPEN) {
-                openMonitorGui(pos, hasPassword, passwordSkipped);
+                openMonitorGui(pos, hasPassword, passwordSkipped, screenIndex);
             } else if (mc.currentScreen instanceof GuiMonitor) {
                 ((GuiMonitor) mc.currentScreen).handleServerResult(result, hasPassword);
             }
@@ -141,12 +149,24 @@ public class ClientProxy extends CommonProxy {
 
     @Override
     public void handleMonitorDevices(BlockPos pos, int netId, String netName,
-                                     String linkedKeyName, List<MonitorDevice> devices) {
+                                     String linkedKeyName, int eventMask,
+                                     List<MonitorDevice> devices) {
         Minecraft mc = Minecraft.getMinecraft();
         mc.addScheduledTask(() -> {
             if (mc.currentScreen instanceof GuiMonitor) {
                 ((GuiMonitor) mc.currentScreen).handleDevices(
-                        pos, netId, netName, linkedKeyName, devices);
+                        pos, netId, netName, linkedKeyName, eventMask, devices);
+            }
+        });
+    }
+
+    @Override
+    public void handleNotepadData(BlockPos pos, int focusId,
+                                  List<NotepadDocument> documents) {
+        Minecraft mc = Minecraft.getMinecraft();
+        mc.addScheduledTask(() -> {
+            if (mc.currentScreen instanceof GuiNotepad) {
+                ((GuiNotepad) mc.currentScreen).handleData(pos, focusId, documents);
             }
         });
     }

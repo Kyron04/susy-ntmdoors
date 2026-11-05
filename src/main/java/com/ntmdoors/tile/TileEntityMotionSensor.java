@@ -4,6 +4,7 @@ import com.ntmdoors.block.BlockMotionSensor;
 import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.item.ItemMotionRelayKey;
 import com.ntmdoors.item.ItemRfidCard;
+import com.ntmdoors.monitor.SecurityEvents;
 import com.ntmdoors.util.Biometrics;
 import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.PrivateKeys;
@@ -96,6 +97,7 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
     private EnumFacing projectionFacing;
 
     private int scanTicks;
+    private boolean systemIdle;
     private BlockMotionSensor.Status status = BlockMotionSensor.Status.IDLE;
 
     // ------------------------------------------------------------ state / options
@@ -471,6 +473,22 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
     @Override
     public void update() {
         if (world == null || world.isRemote) return;
+        if (SecurityEvents.isShutdown(world, pos)
+                || SecurityEvents.isSensorDisabled(world, pos)) {
+            if (!systemIdle) {
+                systemIdle = true;
+                entitiesInside.clear();
+                redstoneBinding.clearHold();
+                setStatus(areaBound ? BlockMotionSensor.Status.IDLE
+                        : BlockMotionSensor.Status.MAINTENANCE);
+            }
+            return;
+        }
+        if (systemIdle) {
+            systemIdle = false;
+            redstoneBinding.clearHold();
+            scanTicks = 0;
+        }
         redstoneBinding.update();
         if (++scanTicks < SCAN_INTERVAL) return;
         scanTicks = 0;

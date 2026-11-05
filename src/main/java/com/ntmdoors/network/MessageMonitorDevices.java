@@ -21,17 +21,20 @@ public class MessageMonitorDevices implements IMessage {
     private int netId;
     private String netName;
     private String linkedKeyName;
+    private int eventMask;
     private List<MonitorDevice> devices = new ArrayList<>();
 
     public MessageMonitorDevices() {
     }
 
     public MessageMonitorDevices(BlockPos deskPos, int netId, String netName,
-                                 String linkedKeyName, List<MonitorDevice> devices) {
+                                 String linkedKeyName, int eventMask,
+                                 List<MonitorDevice> devices) {
         this.deskPos = deskPos;
         this.netId = netId;
         this.netName = netName;
         this.linkedKeyName = linkedKeyName;
+        this.eventMask = eventMask;
         this.devices = new ArrayList<>(devices);
     }
 
@@ -41,6 +44,7 @@ public class MessageMonitorDevices implements IMessage {
         netId = buf.readInt();
         netName = ByteBufUtils.readUTF8String(buf);
         linkedKeyName = ByteBufUtils.readUTF8String(buf);
+        eventMask = buf.readInt();
         int count = Math.min(buf.readUnsignedShort(), MAX_DEVICES);
         devices = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
@@ -57,6 +61,7 @@ public class MessageMonitorDevices implements IMessage {
         buf.writeInt(netId);
         ByteBufUtils.writeUTF8String(buf, netName == null ? "" : netName);
         ByteBufUtils.writeUTF8String(buf, linkedKeyName == null ? "" : linkedKeyName);
+        buf.writeInt(eventMask);
         int count = Math.min(devices.size(), MAX_DEVICES);
         buf.writeShort(count);
         for (int i = 0; i < count; i++) {
@@ -73,7 +78,8 @@ public class MessageMonitorDevices implements IMessage {
         public IMessage onMessage(MessageMonitorDevices message, MessageContext ctx) {
             if (message.deskPos != null) {
                 NTMDoors.proxy.handleMonitorDevices(message.deskPos, message.netId,
-                        message.netName, message.linkedKeyName, message.devices);
+                        message.netName, message.linkedKeyName, message.eventMask,
+                        message.devices);
             }
             return null;
         }

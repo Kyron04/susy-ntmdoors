@@ -3,18 +3,25 @@ package com.ntmdoors.client;
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.item.ItemTerminalRelayKey;
 import com.ntmdoors.monitor.MonitorDevice;
+import com.ntmdoors.monitor.MonitorDisplay;
+import com.ntmdoors.monitor.MonitorWallpaper;
+import com.ntmdoors.monitor.SecurityNet;
 import com.ntmdoors.monitor.SecurityNetSummary;
 import com.ntmdoors.network.MessageMonitorAction;
 import com.ntmdoors.network.MessageMonitorDoorScanner;
+import com.ntmdoors.network.MessageMonitorDisplay;
 import com.ntmdoors.network.MessageMonitorDoorScannerResult;
 import com.ntmdoors.network.MessageMonitorKeyResult;
 import com.ntmdoors.network.MessageMonitorNetRequest;
 import com.ntmdoors.network.MessageMonitorState;
+import com.ntmdoors.network.MessageMonitorWallpaper;
 import com.ntmdoors.network.ModNetwork;
 import com.ntmdoors.registry.ModContent;
+import com.ntmdoors.tile.TileEntityMonitorDesk;
 import com.ntmdoors.util.ModSounds;
 import com.ntmdoors.util.MonitorPasswords;
 import com.ntmdoors.util.PrivateKeys;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
@@ -46,19 +53,44 @@ import java.util.List;
 public class GuiMonitor extends GuiScreen {
 
     private enum Stage {
-        ASK,
-        SET,
-        CONFIRM,
-        ENTER,
-        MENU,
-        SECURITY_HOME,
-        SECURITY,
-        NAME_NET,
-        NAME_KEY,
-        DELETE_NET
+        ASK(MonitorDisplay.STAGE_ASK),
+        SET(MonitorDisplay.STAGE_SET),
+        CONFIRM(MonitorDisplay.STAGE_CONFIRM),
+        ENTER(MonitorDisplay.STAGE_ENTER),
+        MENU(MonitorDisplay.STAGE_MENU),
+        SECURITY_HOME(MonitorDisplay.STAGE_SECURITY_HOME),
+        SECURITY(MonitorDisplay.STAGE_SECURITY),
+        NAME_NET(MonitorDisplay.STAGE_NAME_NET),
+        NAME_KEY(MonitorDisplay.STAGE_NAME_KEY),
+        DELETE_NET(MonitorDisplay.STAGE_DELETE_NET),
+        DISPLAY(MonitorDisplay.STAGE_DISPLAY);
+
+        private final int id;
+
+        Stage(int id) {
+            this.id = id;
+        }
+
+        private static Stage byId(int id) {
+            for (Stage stage : values()) {
+                if (stage.id == id) return stage;
+            }
+            return MENU;
+        }
     }
 
-    private static final String[] TASKS = {"Security", "Opencomputers", "Factory"};
+    private static final String[] TASKS = {
+            "Security", "Opencomputers", "Factory", "Display", "Notepad", "Terminal Backup"
+    };
+    private static final String[] SECURITY_EVENTS = {
+            "System Shutdown", "System Lockdown", "Trigger Alarms",
+            "Disable Keypads", "Disable Scanners", "Disable Sensors",
+            "Disable Redstone Gates"
+    };
+    private static final String[] SECURITY_ACTIONS = {
+            "Close all doors", "Open all doors"
+    };
+    private static final int SECURITY_TAB_HEIGHT = 18;
 
     private static final int ORANGE = 0xFFFF8A00;
     private static final int ORANGE_LIGHT = 0xFFFFB454;
@@ -81,17 +113,26 @@ public class GuiMonitor extends GuiScreen {
     private static final int ROW_HOVER = 0xFF241200;
 
     private static final int TITLE_HEIGHT = 20;
+    private static final int CLOSE_BUTTON_SIZE = 12;
     private static final int FOOTER_HEIGHT = 20;
     private static final int TITLE_TEXT_Y = 10;
     private static final int FIELD_HEIGHT = 20;
     private static final int BUTTON_HEIGHT = 20;
-    private static final int ROW_HEIGHT = 30;
-    private static final int ROW_GAP = 8;
+    private static final int ROW_HEIGHT = 26;
+    private static final int ROW_GAP = 6;
     private static final int SECURITY_ROW_HEIGHT = 28;
+    private static final int DISPLAY_TAB_HEIGHT = 18;
+    private static final int DISPLAY_TILE_GAP = 8;
+    private static final int DISPLAY_TILE_HEIGHT = 78;
+    private static final int DISPLAY_URL_LENGTH = MonitorWallpaper.MAX_URL_LENGTH;
 
     private final BlockPos origin;
+    private final int screenIndex;
+    private final boolean passive;
 
     private boolean hasPassword;
+    private boolean passwordSkipped;
+    private boolean resumeApplied;
     private Stage stage;
 
     private final StringBuilder password = new StringBuilder();
@@ -100,21 +141,38 @@ public class GuiMonitor extends GuiScreen {
     private boolean waiting;
     private int ticks;
     private int selectedTask = -1;
+    private int menuScroll;
     private final List<MonitorDevice> securityDevices = new ArrayList<>();
     private final List<SecurityNetSummary> securityNets = new ArrayList<>();
     private boolean securityLoading;
     private boolean netsLoading;
     private int securityScroll;
     private int netsScroll;
+    private int eventsScroll;
     private String securityNotice = "";
     private BlockPos pendingDoor;
     private int selectedNetId = -1;
     private String selectedNetName = "";
+    private boolean securityEventsTab;
+    private final boolean[] securityEvents = new boolean[SecurityNet.EVENT_COUNT];
+    private boolean displayCustomTab;
+    private String displayWallpaper = "";
+    private final StringBuilder displayUrl = new StringBuilder();
+    private String displayNotice = "";
+    private boolean displayUrlFocused;
+
     private String linkedKeyName = "";
     private int pendingKeyHand = -1;
     private final StringBuilder nameInput = new StringBuilder();
     private Stage nameReturnStage = Stage.SECURITY_HOME;
     private boolean deleteRequested;
+
+    private int lastSentStage = Integer.MIN_VALUE;
+    private int lastSentNetId = Integer.MIN_VALUE;
+    private boolean lastSentEventsTab;
+    private int lastSentNetsScroll = Integer.MIN_VALUE;
+    private int lastSentSecurityScroll = Integer.MIN_VALUE;
+    private int lastSentEventsScroll = Integer.MIN_VALUE;
 
     private int guiWidth;
     private int guiHeight;
@@ -129,16 +187,40 @@ public class GuiMonitor extends GuiScreen {
     private int buttonX;
     private int buttonWidth;
 
-    public GuiMonitor(BlockPos origin, boolean hasPassword, boolean passwordSkipped) {
+    public GuiMonitor(BlockPos origin, boolean hasPassword, boolean passwordSkipped,
+                      int screenIndex) {
+        this(origin, hasPassword, passwordSkipped, screenIndex, false);
+    }
+
+    private GuiMonitor(BlockPos origin, boolean hasPassword, boolean passwordSkipped,
+                       int screenIndex, boolean passive) {
         this.origin = origin;
+        this.screenIndex = screenIndex;
+        this.passwordSkipped = passwordSkipped;
         this.hasPassword = hasPassword;
+        this.passive = passive;
         this.stage = hasPassword ? Stage.ENTER : passwordSkipped ? Stage.MENU : Stage.ASK;
+    }
+
+    /** A detached terminal page used by the physical monitor renderer. */
+    public static GuiMonitor forDisplay(BlockPos origin, int screenIndex) {
+        return new GuiMonitor(origin, true, true, screenIndex, true);
+    }
+
+    /** Reopens an already-unlocked terminal on its task menu. */
+    public static GuiMonitor reopened(BlockPos origin, boolean hasPassword,
+                                      boolean passwordSkipped, int screenIndex) {
+        GuiMonitor gui = new GuiMonitor(origin, hasPassword, passwordSkipped, screenIndex);
+        gui.resumeApplied = true;
+        gui.stage = Stage.MENU;
+        return gui;
     }
 
     /** Reopens an already-unlocked terminal directly on one net's device list. */
     public static GuiMonitor forSecurity(BlockPos origin, boolean hasPassword,
-                                         int netId, String netName) {
-        GuiMonitor gui = new GuiMonitor(origin, hasPassword, true);
+                                         int screenIndex, int netId, String netName) {
+        GuiMonitor gui = new GuiMonitor(origin, hasPassword, true, screenIndex);
+        gui.resumeApplied = true;
         gui.openSecurityNet(netId, netName);
         return gui;
     }
@@ -146,12 +228,21 @@ public class GuiMonitor extends GuiScreen {
     @Override
     public void initGui() {
         super.initGui();
-        int maxWidth = Math.max(1, this.width - 8);
-        int maxHeight = Math.max(1, this.height - 8);
-        this.guiWidth = Math.min(maxWidth, Math.max(160, this.width * 9 / 10));
-        this.guiHeight = Math.min(maxHeight, Math.max(120, this.height * 9 / 10));
-        this.guiLeft = (this.width - this.guiWidth) / 2;
-        this.guiTop = (this.height - this.guiHeight) / 2;
+        if (passive) {
+            // Physical monitor screens are already bounded by the block model. Use the whole
+            // panel so the terminal does not render as a small window with black margins.
+            this.guiWidth = this.width;
+            this.guiHeight = this.height;
+            this.guiLeft = 0;
+            this.guiTop = 0;
+        } else {
+            int maxWidth = Math.max(1, this.width - 8);
+            int maxHeight = Math.max(1, this.height - 8);
+            this.guiWidth = Math.min(maxWidth, Math.max(160, this.width * 9 / 10));
+            this.guiHeight = Math.min(maxHeight, Math.max(120, this.height * 9 / 10));
+            this.guiLeft = (this.width - this.guiWidth) / 2;
+            this.guiTop = (this.height - this.guiHeight) / 2;
+        }
 
         int screenLeft = guiLeft + 6;
         int screenRight = guiLeft + guiWidth - 6;
@@ -166,6 +257,20 @@ public class GuiMonitor extends GuiScreen {
         this.fieldX = (contentLeft + contentRight - fieldWidth) / 2;
         this.buttonWidth = Math.max(70, Math.min(110, contentRight - contentLeft - 60));
         this.buttonX = (contentLeft + contentRight - buttonWidth) / 2;
+        if (!passive) {
+            // Force the first update tick to publish the current page to the desk screens.
+            this.lastSentStage = Integer.MIN_VALUE;
+            if (!resumeApplied) {
+                resumeApplied = true;
+                if (hasPassword) {
+                    stage = Stage.ENTER;
+                } else if (passwordSkipped) {
+                    applyResumeState();
+                } else {
+                    stage = Stage.ASK;
+                }
+            }
+        }
     }
 
     @Override
@@ -177,25 +282,61 @@ public class GuiMonitor extends GuiScreen {
     public void updateScreen() {
         super.updateScreen();
         ticks++;
+        if (!passive) {
+            publishDisplayState(true);
+        }
+    }
+
+    @Override
+    public void onGuiClosed() {
+        super.onGuiClosed();
+        if (!passive) {
+            publishDisplayState(false);
+        }
     }
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        drawDefaultBackground();
+        if (!passive) {
+            drawDefaultBackground();
+        }
         GlStateManager.color(1F, 1F, 1F, 1F);
-        drawFrame();
+        drawFrame(mouseX, mouseY);
         drawContent(mouseX, mouseY);
+    }
+
+    /** Sends the live page to the desk when it changes, or marks the desk idle on close. */
+    private void publishDisplayState(boolean viewing) {
+        if (mc.player == null) return;
+        if (viewing
+                && stage.id == lastSentStage
+                && selectedNetId == lastSentNetId
+                && securityEventsTab == lastSentEventsTab
+                && netsScroll == lastSentNetsScroll
+                && securityScroll == lastSentSecurityScroll
+                && eventsScroll == lastSentEventsScroll) {
+            return;
+        }
+        lastSentStage = stage.id;
+        lastSentNetId = selectedNetId;
+        lastSentEventsTab = securityEventsTab;
+        lastSentNetsScroll = netsScroll;
+        lastSentSecurityScroll = securityScroll;
+        lastSentEventsScroll = eventsScroll;
+        ModNetwork.INSTANCE.sendToServer(new MessageMonitorDisplay(origin, screenIndex, viewing,
+                stage.id, selectedNetId, securityEventsTab,
+                netsScroll, securityScroll, eventsScroll));
     }
 
     // ------------------------------------------------------------ frame
 
-    private void drawFrame() {
+    private void drawFrame(int mouseX, int mouseY) {
         int left = guiLeft;
         int top = guiTop;
         int right = left + guiWidth;
         int bottom = top + guiHeight;
 
-        drawRect(left - 2, top - 2, right + 2, bottom + 2, BLACK);
+        if (!passive) drawRect(left - 2, top - 2, right + 2, bottom + 2, BLACK);
         drawRect(left, top, right, bottom, CASING_DARK);
         drawRect(left + 2, top + 2, right - 2, bottom - 2, CASING);
         drawRect(left + 2, top + 2, right - 2, top + 3, CASING_LIGHT);
@@ -215,9 +356,27 @@ public class GuiMonitor extends GuiScreen {
         drawRect(innerLeft, top + 5, innerRight, titleBottom, TITLE_BG);
         drawRect(innerLeft, titleBottom - 1, innerRight, titleBottom, ORANGE);
         fontRenderer.drawString("Monitor", innerLeft + 6, top + TITLE_TEXT_Y, ORANGE_LIGHT);
+        int statusRight = innerRight - 6 - (passive ? 0 : CLOSE_BUTTON_SIZE + 6);
         String status = statusText();
-        fontRenderer.drawString(status, innerRight - 6 - fontRenderer.getStringWidth(status),
+        fontRenderer.drawString(status, statusRight - fontRenderer.getStringWidth(status),
                 top + TITLE_TEXT_Y, MUTED);
+        if (!passive) {
+            int closeX = closeButtonX();
+            int closeY = closeButtonY();
+            boolean hover = isHovering(mouseX, mouseY, closeX, closeY,
+                    CLOSE_BUTTON_SIZE, CLOSE_BUTTON_SIZE);
+            drawRect(closeX, closeY, closeX + CLOSE_BUTTON_SIZE,
+                    closeY + CLOSE_BUTTON_SIZE, hover ? BUTTON_HOVER : BUTTON_BG);
+            int border = hover ? ORANGE : ORANGE_DIM;
+            drawRect(closeX, closeY, closeX + CLOSE_BUTTON_SIZE, closeY + 1, border);
+            drawRect(closeX, closeY + CLOSE_BUTTON_SIZE - 1, closeX + CLOSE_BUTTON_SIZE,
+                    closeY + CLOSE_BUTTON_SIZE, border);
+            drawRect(closeX, closeY, closeX + 1, closeY + CLOSE_BUTTON_SIZE, border);
+            drawRect(closeX + CLOSE_BUTTON_SIZE - 1, closeY, closeX + CLOSE_BUTTON_SIZE,
+                    closeY + CLOSE_BUTTON_SIZE, border);
+            drawCenteredString(fontRenderer, "X", closeX + CLOSE_BUTTON_SIZE / 2,
+                    closeY + 2, hover ? ORANGE_LIGHT : ORANGE);
+        }
 
         int screenTop = titleBottom + 1;
         int screenBottom = bottom - 5 - FOOTER_HEIGHT;
@@ -234,6 +393,10 @@ public class GuiMonitor extends GuiScreen {
         if (stage == Stage.ENTER && !waiting) led = ORANGE_DIM;
         drawRect(innerLeft + 6, footerTop + 8, innerLeft + 10, footerTop + 12, led);
         drawRect(innerLeft + 11, footerTop + 9, innerLeft + 13, footerTop + 11, ORANGE_DIM);
+        if (!passive) {
+            drawButton("EXIT", quickExitX(), quickExitY(), 44, 14,
+                    isHovering(mouseX, mouseY, quickExitX(), quickExitY(), 44, 14));
+        }
     }
 
     private String statusText() {
@@ -275,11 +438,14 @@ public class GuiMonitor extends GuiScreen {
             case DELETE_NET:
                 drawDeleteConfirm(mouseX, mouseY);
                 break;
+            case DISPLAY:
+                drawDisplayPage(mouseX, mouseY);
+                break;
             default:
                 break;
         }
         if (stage != Stage.SECURITY && stage != Stage.SECURITY_HOME
-                && stage != Stage.DELETE_NET) {
+                && stage != Stage.DELETE_NET && stage != Stage.DISPLAY) {
             drawStatusLine(statusY());
         }
     }
@@ -391,16 +557,21 @@ public class GuiMonitor extends GuiScreen {
         int width = menuWidth();
         int x = centerX - width / 2;
         int start = menuStart();
+        int visible = menuVisibleRows();
+        int maxScroll = menuMaxScroll();
+        if (menuScroll > maxScroll) menuScroll = maxScroll;
 
         if (menuShowHeading()) {
             drawCenteredString(fontRenderer, "TASKS", centerX, start - 42, ORANGE_LIGHT);
             drawCenteredString(fontRenderer, "Select a module", centerX, start - 24, MUTED);
         }
 
-        for (int i = 0; i < TASKS.length; i++) {
+        for (int i = 0; i < visible; i++) {
+            int index = menuScroll + i;
+            if (index >= TASKS.length) break;
             int y = start + i * (ROW_HEIGHT + ROW_GAP);
             boolean hover = isHovering(mouseX, mouseY, x, y, width, ROW_HEIGHT);
-            boolean selected = selectedTask == i;
+            boolean selected = selectedTask == index;
             int fill = hover || selected ? ROW_HOVER : ROW_BG;
             int border = hover || selected ? ORANGE : ORANGE_DIM;
 
@@ -411,10 +582,344 @@ public class GuiMonitor extends GuiScreen {
             drawRect(x + width - 1, y, x + width, y + ROW_HEIGHT, border);
             if (selected) drawRect(x + 1, y + 1, x + 4, y + ROW_HEIGHT - 1, ORANGE);
 
-            fontRenderer.drawString(TASKS[i], x + 14, y + 11,
+            String label = fontRenderer.trimStringToWidth(TASKS[index], width - 34);
+            fontRenderer.drawString(label, x + 14, y + 9,
                     hover || selected ? ORANGE_LIGHT : TEXT);
-            if (hover || selected) fontRenderer.drawString(">", x + width - 14, y + 11, ORANGE);
+            if (hover || selected) fontRenderer.drawString(">", x + width - 14, y + 9, ORANGE);
         }
+        if (maxScroll > 0) {
+            int barX = x + width + 4;
+            int barTop = start;
+            int barHeight = visible * (ROW_HEIGHT + ROW_GAP) - ROW_GAP;
+            drawRect(barX, barTop, barX + 2, barTop + barHeight, 0xFF050505);
+            int thumb = Math.max(10, barHeight * visible / TASKS.length);
+            int thumbY = barTop + (barHeight - thumb) * menuScroll / maxScroll;
+            drawRect(barX, thumbY, barX + 2, thumbY + thumb, ORANGE);
+        }
+    }
+
+    // ------------------------------------------------------------ display wallpapers
+
+    private void openDisplay() {
+        stage = Stage.DISPLAY;
+        displayCustomTab = false;
+        displayNotice = "";
+        displayUrl.setLength(0);
+        displayWallpaper = currentWallpaper();
+        if (MonitorWallpaper.isUrl(displayWallpaper)) {
+            displayCustomTab = true;
+            String url = MonitorWallpaper.urlOf(displayWallpaper);
+            if (url != null) displayUrl.append(url);
+        }
+        displayUrlFocused = displayCustomTab;
+    }
+
+    private String currentWallpaper() {
+        if (mc.world == null) return "";
+        net.minecraft.tileentity.TileEntity tile = mc.world.getTileEntity(origin);
+        if (!(tile instanceof TileEntityMonitorDesk)) return "";
+        return ((TileEntityMonitorDesk) tile).getScreenWallpaper(screenIndex);
+    }
+
+    private int displayTabWidth() {
+        return Math.max(54, Math.min(110, (contentRight - contentLeft - 4) / 2));
+    }
+
+    private int displayGridTop() {
+        return contentTop + DISPLAY_TAB_HEIGHT + 10;
+    }
+
+    private int displayGridBottom() {
+        return contentBottom - 30;
+    }
+
+    private int displayCellWidth() {
+        int columns = 3;
+        return Math.max(40, (contentRight - contentLeft
+                - (columns - 1) * DISPLAY_TILE_GAP) / columns);
+    }
+
+    private int displayCellHeight() {
+        int rows = 2;
+        int available = displayGridBottom() - displayGridTop();
+        int height = (available - (rows - 1) * DISPLAY_TILE_GAP) / rows;
+        return Math.max(30, Math.min(DISPLAY_TILE_HEIGHT, height));
+    }
+
+    private int displayTileX(int index) {
+        return contentLeft + (index % 3) * (displayCellWidth() + DISPLAY_TILE_GAP);
+    }
+
+    private int displayTileY(int index) {
+        return displayGridTop() + (index / 3) * (displayCellHeight() + DISPLAY_TILE_GAP);
+    }
+
+    private void drawDisplayPage(int mouseX, int mouseY) {
+        int tabWidth = displayTabWidth();
+        drawTab("BUILT-IN", contentLeft, contentTop, tabWidth, DISPLAY_TAB_HEIGHT,
+                !displayCustomTab,
+                isHovering(mouseX, mouseY, contentLeft, contentTop, tabWidth, DISPLAY_TAB_HEIGHT));
+        drawTab("CUSTOM", contentLeft + tabWidth + 4, contentTop, tabWidth, DISPLAY_TAB_HEIGHT,
+                displayCustomTab,
+                isHovering(mouseX, mouseY, contentLeft + tabWidth + 4, contentTop,
+                        tabWidth, DISPLAY_TAB_HEIGHT));
+        drawRect(contentLeft + tabWidth * 2 + 4, contentTop + DISPLAY_TAB_HEIGHT - 1,
+                contentRight, contentTop + DISPLAY_TAB_HEIGHT, ORANGE_DIM);
+
+        if (displayCustomTab) {
+            drawDisplayCustomTab(mouseX, mouseY);
+        } else {
+            drawDisplayBuiltinTab(mouseX, mouseY);
+        }
+
+        drawButton("Back", contentLeft, contentBottom - 24, 64, BUTTON_HEIGHT,
+                isHovering(mouseX, mouseY, contentLeft, contentBottom - 24,
+                        64, BUTTON_HEIGHT));
+        if (!displayNotice.isEmpty()) {
+            String notice = fontRenderer.trimStringToWidth(displayNotice,
+                    contentRight - contentLeft - 80);
+            drawString(fontRenderer, notice,
+                    contentRight - fontRenderer.getStringWidth(notice),
+                    contentTop + 4, ORANGE_ERROR);
+        }
+    }
+
+    private void drawDisplayBuiltinTab(int mouseX, int mouseY) {
+        java.util.List<MonitorWallpaper.Builtin> builtins = MonitorWallpaper.builtins();
+        int total = builtins.size() + 1;
+        for (int i = 0; i < total; i++) {
+            String value = i == 0 ? "" : MonitorWallpaper.builtin(builtins.get(i - 1).id);
+            int x = displayTileX(i);
+            int y = displayTileY(i);
+            int width = displayCellWidth();
+            int height = displayCellHeight();
+            boolean hover = isHovering(mouseX, mouseY, x, y, width, height);
+            boolean selected = displayWallpaper.equals(value);
+            drawWallpaperTile(x, y, width, height, value, selected, hover);
+        }
+    }
+
+    private void drawWallpaperTile(int x, int y, int width, int height,
+                                   String value, boolean selected, boolean hover) {
+        int fill = selected ? 0xFF1A0E04 : hover ? ROW_HOVER : ROW_BG;
+        int border = selected || hover ? ORANGE : ORANGE_DIM;
+        drawRect(x, y, x + width, y + height, fill);
+        drawRect(x, y, x + width, y + 1, border);
+        drawRect(x, y + height - 1, x + width, y + height, border);
+        drawRect(x, y, x + 1, y + height, border);
+        drawRect(x + width - 1, y, x + width, y + height, border);
+
+        int imageX = x + 5;
+        int imageY = y + 5;
+        int imageWidth = Math.max(1, width - 10);
+        int imageHeight = Math.max(1, height - 23);
+        drawRect(imageX, imageY, imageX + imageWidth, imageY + imageHeight, 0xFF020202);
+
+        if (value.isEmpty()) {
+            int cx = imageX + imageWidth / 2;
+            int cy = imageY + imageHeight / 2;
+            drawRect(cx - 14, cy - 9, cx + 14, cy + 9, 0xFF0A0A0A);
+            drawRect(cx - 12, cy - 7, cx + 12, cy + 7, 0xFF241200);
+            drawCenteredString(fontRenderer, "TERMINAL", cx, y + height - 14,
+                    selected ? ORANGE_LIGHT : TEXT);
+        } else {
+            String id = MonitorWallpaper.builtinId(value);
+            boolean exists = id != null && DisplayImages.builtinExists(id);
+            if (exists) {
+                net.minecraft.util.ResourceLocation texture = MonitorWallpaper.texture(value);
+                if (texture != null) {
+                    GlStateManager.color(1F, 1F, 1F, 1F);
+                    mc.getTextureManager().bindTexture(texture);
+                    drawModalRectWithCustomSizedTexture(imageX, imageY, 0F, 0F,
+                            imageWidth, imageHeight, imageWidth, imageHeight);
+                }
+            } else {
+                drawCenteredString(fontRenderer, "MISSING", imageX + imageWidth / 2,
+                        imageY + imageHeight / 2 - 4, ORANGE_ERROR);
+            }
+            String label = MonitorWallpaper.label(value);
+            String shown = fontRenderer.trimStringToWidth(label, width - 12);
+            drawCenteredString(fontRenderer, shown, x + width / 2, y + height - 14,
+                    selected ? ORANGE_LIGHT : hover ? TEXT : MUTED);
+        }
+
+        if (selected) {
+            drawRect(x + 1, y + 1, x + 4, y + height - 1, ORANGE);
+        }
+    }
+
+    private void drawDisplayCustomTab(int mouseX, int mouseY) {
+        int top = displayGridTop();
+        drawString(fontRenderer, "IMAGE URL", contentLeft, top - 2, ORANGE);
+        int fieldY = top + 14;
+        drawDisplayUrlField(fieldY);
+
+        int buttonY = fieldY + FIELD_HEIGHT + 8;
+        drawButton("Apply", contentLeft, buttonY, 70, BUTTON_HEIGHT,
+                isHovering(mouseX, mouseY, contentLeft, buttonY, 70, BUTTON_HEIGHT));
+        drawButton("Paste", contentLeft + 78, buttonY, 70, BUTTON_HEIGHT,
+                isHovering(mouseX, mouseY, contentLeft + 78, buttonY, 70, BUTTON_HEIGHT));
+        drawButton("Clear", contentLeft + 156, buttonY, 70, BUTTON_HEIGHT,
+                isHovering(mouseX, mouseY, contentLeft + 156, buttonY, 70, BUTTON_HEIGHT));
+
+        int infoY = buttonY + 30;
+        drawString(fontRenderer, "Direct PNG or JPG URL.", contentLeft, infoY, MUTED);
+        drawString(fontRenderer, "Static images only, no video.",
+                contentLeft, infoY + 12, MUTED);
+        drawString(fontRenderer, "Downloaded by each viewer's client.",
+                contentLeft, infoY + 24, MUTED);
+        if (MonitorWallpaper.isUrl(displayWallpaper)) {
+            String current = "ACTIVE: " + MonitorWallpaper.urlOf(displayWallpaper);
+            drawString(fontRenderer, fontRenderer.trimStringToWidth(
+                            current, contentRight - contentLeft),
+                    contentLeft, infoY + 42, ORANGE_LIGHT);
+        }
+    }
+
+    private void drawDisplayUrlField(int y) {
+        int width = contentRight - contentLeft;
+        int border = displayUrlFocused ? ORANGE : ORANGE_DIM;
+        drawRect(contentLeft - 1, y - 1, contentLeft + width + 1, y + FIELD_HEIGHT + 1, border);
+        drawRect(contentLeft, y, contentLeft + width, y + FIELD_HEIGHT, FIELD_BG);
+        drawRect(contentLeft, y + FIELD_HEIGHT - 1, contentLeft + width,
+                y + FIELD_HEIGHT, 0xFF1A0E04);
+
+        String text = fontRenderer.trimStringToWidth(displayUrl.toString(), width - 16);
+        int textY = y + (FIELD_HEIGHT - 8) / 2;
+        if (!text.isEmpty()) {
+            fontRenderer.drawString(text, contentLeft + 8, textY, TEXT);
+        }
+        if (displayUrlFocused && (ticks / 10) % 2 == 0) {
+            int cursorX = contentLeft + 8 + fontRenderer.getStringWidth(text);
+            drawRect(cursorX, y + 4, cursorX + 1, y + FIELD_HEIGHT - 4, ORANGE_LIGHT);
+        }
+    }
+
+    private void handleDisplayClick(int mouseX, int mouseY) {
+        int tabWidth = displayTabWidth();
+        if (isHovering(mouseX, mouseY, contentLeft, contentTop, tabWidth, DISPLAY_TAB_HEIGHT)) {
+            playClick();
+            displayCustomTab = false;
+            displayUrlFocused = false;
+            displayNotice = "";
+            return;
+        }
+        if (isHovering(mouseX, mouseY, contentLeft + tabWidth + 4, contentTop,
+                tabWidth, DISPLAY_TAB_HEIGHT)) {
+            playClick();
+            displayCustomTab = true;
+            displayUrlFocused = true;
+            displayNotice = "";
+            return;
+        }
+        if (isHovering(mouseX, mouseY, contentLeft, contentBottom - 24,
+                64, BUTTON_HEIGHT)) {
+            playClick();
+            stage = Stage.MENU;
+            displayNotice = "";
+            displayUrlFocused = false;
+            return;
+        }
+
+        if (!displayCustomTab) {
+            java.util.List<MonitorWallpaper.Builtin> builtins = MonitorWallpaper.builtins();
+            int total = builtins.size() + 1;
+            for (int i = 0; i < total; i++) {
+                int x = displayTileX(i);
+                int y = displayTileY(i);
+                if (isHovering(mouseX, mouseY, x, y, displayCellWidth(), displayCellHeight())) {
+                    playClick();
+                    String value = i == 0 ? "" : MonitorWallpaper.builtin(builtins.get(i - 1).id);
+                    applyWallpaper(value);
+                    return;
+                }
+            }
+            return;
+        }
+
+        int top = displayGridTop();
+        int fieldY = top + 14;
+        if (isHovering(mouseX, mouseY, contentLeft, fieldY,
+                contentRight - contentLeft, FIELD_HEIGHT)) {
+            displayUrlFocused = true;
+            return;
+        }
+        int buttonY = fieldY + FIELD_HEIGHT + 8;
+        if (isHovering(mouseX, mouseY, contentLeft, buttonY, 70, BUTTON_HEIGHT)) {
+            playClick();
+            applyDisplayUrl();
+            return;
+        }
+        if (isHovering(mouseX, mouseY, contentLeft + 78, buttonY, 70, BUTTON_HEIGHT)) {
+            playClick();
+            pasteDisplayUrl();
+            return;
+        }
+        if (isHovering(mouseX, mouseY, contentLeft + 156, buttonY, 70, BUTTON_HEIGHT)) {
+            playClick();
+            displayUrl.setLength(0);
+            applyWallpaper("");
+            return;
+        }
+        displayUrlFocused = false;
+    }
+
+    private void handleDisplayKey(char typedChar, int keyCode) {
+        if (displayCustomTab) {
+            if (keyCode == Keyboard.KEY_RETURN || keyCode == Keyboard.KEY_NUMPADENTER) {
+                applyDisplayUrl();
+                return;
+            }
+            if (keyCode == Keyboard.KEY_BACK || keyCode == Keyboard.KEY_DELETE) {
+                if (displayUrl.length() > 0) {
+                    displayUrl.deleteCharAt(displayUrl.length() - 1);
+                }
+                return;
+            }
+            if (GuiScreen.isCtrlKeyDown()) {
+                if (keyCode == Keyboard.KEY_V) pasteDisplayUrl();
+                return;
+            }
+            if (typedChar > 32 && typedChar != 127
+                    && displayUrl.length() < DISPLAY_URL_LENGTH) {
+                displayUrl.append(typedChar);
+            }
+            return;
+        }
+        if (keyCode == Keyboard.KEY_TAB) {
+            displayCustomTab = true;
+            displayUrlFocused = true;
+            displayNotice = "";
+        }
+    }
+
+    private void applyDisplayUrl() {
+        String value = displayUrl.toString().trim();
+        if (!MonitorWallpaper.isValidHttpUrl(value)) {
+            displayNotice = "Use an http:// or https:// image URL";
+            return;
+        }
+        applyWallpaper(MonitorWallpaper.url(value));
+    }
+
+    private void pasteDisplayUrl() {
+        String clip = GuiScreen.getClipboardString();
+        if (clip == null) return;
+        displayUrl.setLength(0);
+        for (int i = 0; i < clip.length() && displayUrl.length() < DISPLAY_URL_LENGTH; i++) {
+            char c = clip.charAt(i);
+            if (c > 32 && c != 127) displayUrl.append(c);
+        }
+        displayUrlFocused = true;
+    }
+
+    private void applyWallpaper(String value) {
+        String normalized = MonitorWallpaper.normalize(value);
+        displayWallpaper = normalized;
+        displayNotice = normalized.isEmpty() ? "Terminal display restored" : "Display applied";
+        displayUrlFocused = false;
+        ModNetwork.INSTANCE.sendToServer(new MessageMonitorWallpaper(
+                origin, screenIndex, normalized));
     }
 
     private void drawSecurityHome(int mouseX, int mouseY) {
@@ -493,28 +998,74 @@ public class GuiMonitor extends GuiScreen {
     }
 
     private void drawSecurity(int mouseX, int mouseY) {
+        drawSecurityTabs(mouseX, mouseY);
+        if (securityEventsTab) {
+            drawSecurityEvents(mouseX, mouseY);
+        } else {
+            drawSecurityDevices(mouseX, mouseY);
+        }
+
+        drawButton("Back", contentLeft, contentBottom - 24, 64, BUTTON_HEIGHT,
+                isHovering(mouseX, mouseY, contentLeft, contentBottom - 24, 64, BUTTON_HEIGHT));
+        int deleteWidth = deleteNetButtonWidth();
+        drawDangerButton("Delete net", deleteNetButtonX(), contentBottom - 24,
+                deleteWidth, BUTTON_HEIGHT,
+                isHovering(mouseX, mouseY, deleteNetButtonX(), contentBottom - 24,
+                        deleteWidth, BUTTON_HEIGHT));
+        if (!securityEventsTab) drawKeySlotItem();
+    }
+
+    private void drawSecurityTabs(int mouseX, int mouseY) {
+        int width = securityTabWidth();
+        drawTab("DEVICES", securityTabX(0), contentTop, width, SECURITY_TAB_HEIGHT,
+                !securityEventsTab,
+                isHovering(mouseX, mouseY, securityTabX(0), contentTop,
+                        width, SECURITY_TAB_HEIGHT));
+        drawTab("EVENTS", securityTabX(1), contentTop, width, SECURITY_TAB_HEIGHT,
+                securityEventsTab,
+                isHovering(mouseX, mouseY, securityTabX(1), contentTop,
+                        width, SECURITY_TAB_HEIGHT));
+        drawRect(securityTabX(1) + width, contentTop + SECURITY_TAB_HEIGHT - 1,
+                contentRight, contentTop + SECURITY_TAB_HEIGHT, ORANGE_DIM);
+    }
+
+    private void drawTab(String label, int x, int y, int width, int height,
+                         boolean selected, boolean hover) {
+        drawRect(x, y, x + width, y + height,
+                selected ? BUTTON_HOVER : hover ? ROW_HOVER : ROW_BG);
+        int border = selected ? ORANGE : ORANGE_DIM;
+        drawRect(x, y, x + width, y + 1, border);
+        drawRect(x, y + height - 1, x + width, y + height, border);
+        drawRect(x, y, x + 1, y + height, border);
+        drawRect(x + width - 1, y, x + width, y + height, border);
+        drawCenteredString(fontRenderer, label, x + width / 2, y + (height - 8) / 2,
+                selected ? ORANGE_LIGHT : hover ? TEXT : MUTED);
+    }
+
+    private void drawSecurityDevices(int mouseX, int mouseY) {
         int listLeft = securityListLeft();
         int listRight = securityListRight();
         int listTop = securityListTop();
         int listBottom = securityListBottom();
         int leftWidth = Math.max(0, listLeft - contentLeft - 10);
+        int leftTop = securityContentTop();
 
         String netName = fontRenderer.trimStringToWidth(
                 selectedNetName.isEmpty() ? "Security net" : selectedNetName, leftWidth);
-        drawString(fontRenderer, netName, contentLeft, contentTop + 4, ORANGE_LIGHT);
-        drawRect(contentLeft, contentTop + 18, contentLeft + leftWidth, contentTop + 19, ORANGE_DIM);
+        drawString(fontRenderer, netName, contentLeft, leftTop + 4, ORANGE_LIGHT);
+        drawRect(contentLeft, leftTop + 18, contentLeft + leftWidth, leftTop + 19, ORANGE_DIM);
         String count = securityDevices.size() + (securityDevices.size() == 1 ? " device" : " devices");
-        drawString(fontRenderer, count, contentLeft, contentTop + 28, TEXT);
-        drawString(fontRenderer, "TERMINAL KEY", contentLeft, contentTop + 42, MUTED);
+        drawString(fontRenderer, count, contentLeft, leftTop + 28, TEXT);
+        drawString(fontRenderer, "TERMINAL KEY", contentLeft, leftTop + 42, MUTED);
 
         String keyName = currentKeyName();
         String shownKey = keyName.isEmpty() ? "No key linked"
                 : fontRenderer.trimStringToWidth(keyName, leftWidth);
-        drawString(fontRenderer, shownKey, contentLeft, contentTop + 54,
+        drawString(fontRenderer, shownKey, contentLeft, leftTop + 54,
                 keyName.isEmpty() ? MUTED : TEXT);
         drawKeySlotFrame();
 
-        int keyButtonY = contentTop + 84;
+        int keyButtonY = leftTop + 84;
         if (!linkedKeyName.isEmpty()) {
             int button = Math.max(36, Math.min(56, (leftWidth - 4) / 2));
             drawButton("Rename", contentLeft, keyButtonY, button, 16,
@@ -530,7 +1081,7 @@ public class GuiMonitor extends GuiScreen {
         }
         if (!securityNotice.isEmpty()) {
             drawString(fontRenderer, fontRenderer.trimStringToWidth(securityNotice, leftWidth),
-                    contentLeft, contentTop + 104, ORANGE_ERROR);
+                    contentLeft, leftTop + 104, ORANGE_ERROR);
         }
 
         drawRect(listLeft, listTop, listRight, listBottom, 0xFF060606);
@@ -574,15 +1125,103 @@ public class GuiMonitor extends GuiScreen {
             drawListScrollbar(rowsTop, rowsBottom, visible, maxScroll,
                     securityDevices.size(), securityScroll);
         }
+    }
 
-        drawButton("Back", contentLeft, contentBottom - 24, 64, BUTTON_HEIGHT,
-                isHovering(mouseX, mouseY, contentLeft, contentBottom - 24, 64, BUTTON_HEIGHT));
-        int deleteWidth = deleteNetButtonWidth();
-        drawDangerButton("Delete net", deleteNetButtonX(), contentBottom - 24,
-                deleteWidth, BUTTON_HEIGHT,
-                isHovering(mouseX, mouseY, deleteNetButtonX(), contentBottom - 24,
-                        deleteWidth, BUTTON_HEIGHT));
-        drawKeySlotItem();
+    private void drawSecurityEvents(int mouseX, int mouseY) {
+        int listLeft = securityListLeft();
+        int listRight = securityListRight();
+        int listTop = securityListTop();
+        int listBottom = securityListBottom();
+        int leftWidth = Math.max(0, listLeft - contentLeft - 10);
+        int leftTop = securityContentTop();
+
+        String netName = fontRenderer.trimStringToWidth(
+                selectedNetName.isEmpty() ? "Security net" : selectedNetName, leftWidth);
+        drawString(fontRenderer, netName, contentLeft, leftTop + 4, ORANGE_LIGHT);
+        drawRect(contentLeft, leftTop + 18, contentLeft + leftWidth, leftTop + 19, ORANGE_DIM);
+        drawString(fontRenderer, "Event controls", contentLeft, leftTop + 28, MUTED);
+        drawString(fontRenderer, SECURITY_EVENTS.length + " toggles",
+                contentLeft, leftTop + 42, TEXT);
+        drawString(fontRenderer, SECURITY_ACTIONS.length + " actions",
+                contentLeft, leftTop + 54, TEXT);
+        drawString(fontRenderer, "Saved per net.", contentLeft, leftTop + 74, MUTED);
+        drawString(fontRenderer, "Use the switches", contentLeft, leftTop + 84, MUTED);
+        if (!securityNotice.isEmpty()) {
+            drawString(fontRenderer, fontRenderer.trimStringToWidth(securityNotice, leftWidth),
+                    contentLeft, leftTop + 104, ORANGE_ERROR);
+        }
+
+        drawRect(listLeft, listTop, listRight, listBottom, 0xFF060606);
+        drawRect(listLeft, listTop, listRight, listTop + 1, ORANGE_DIM);
+        drawRect(listLeft, listBottom - 1, listRight, listBottom, ORANGE_DIM);
+        drawString(fontRenderer, "EVENTS", listLeft + 8, listTop + 6, ORANGE);
+
+        int rowsTop = securityRowsTop();
+        int rowsBottom = securityRowsBottom();
+        int visible = securityVisibleRows();
+        int total = SECURITY_EVENTS.length + SECURITY_ACTIONS.length;
+        int maxScroll = Math.max(0, total - visible);
+        if (eventsScroll > maxScroll) eventsScroll = maxScroll;
+        int rowLeft = listLeft + 6;
+        int rowRight = listRight - 8;
+        for (int i = 0; i < visible; i++) {
+            int index = eventsScroll + i;
+            if (index >= total) break;
+            int y = rowsTop + i * SECURITY_ROW_HEIGHT;
+            boolean hover = isHovering(mouseX, mouseY, rowLeft, y,
+                    rowRight - rowLeft, SECURITY_ROW_HEIGHT - 2);
+            if (index < SECURITY_EVENTS.length) {
+                boolean enabled = securityEvents[index];
+                drawRect(rowLeft, y, rowRight, y + SECURITY_ROW_HEIGHT - 2,
+                        hover ? ROW_HOVER : ROW_BG);
+                drawRect(rowLeft, y, rowRight, y + 1, ORANGE_DIM);
+                String label = fontRenderer.trimStringToWidth(
+                        SECURITY_EVENTS[index], rowRight - rowLeft - 72);
+                drawString(fontRenderer, label, rowLeft + 6, y + 4,
+                        hover ? ORANGE_LIGHT : TEXT);
+                String state = enabled ? "ON" : "OFF";
+                int stateX = rowRight - 42 - fontRenderer.getStringWidth(state);
+                drawString(fontRenderer, state, stateX, y + 9,
+                        enabled ? ORANGE_LIGHT : MUTED);
+                drawToggleSwitch(rowRight - 34, y + 8, enabled, hover);
+            } else {
+                drawEventActionRow(index - SECURITY_EVENTS.length, y,
+                        rowLeft, rowRight, hover);
+            }
+        }
+        drawListScrollbar(rowsTop, rowsBottom, visible, maxScroll, total, eventsScroll);
+    }
+
+    private void drawEventActionRow(int actionIndex, int y, int rowLeft, int rowRight,
+                                    boolean hover) {
+        boolean blocked = actionIndex == 1
+                && (securityEvents[SecurityNet.EVENT_SYSTEM_SHUTDOWN]
+                || securityEvents[SecurityNet.EVENT_SYSTEM_LOCKDOWN]);
+        drawRect(rowLeft, y, rowRight, y + SECURITY_ROW_HEIGHT - 2,
+                hover ? ROW_HOVER : ROW_BG);
+        drawRect(rowLeft, y, rowRight, y + 1, ORANGE_DIM);
+        String label = fontRenderer.trimStringToWidth(
+                SECURITY_ACTIONS[actionIndex], rowRight - rowLeft - 64);
+        drawString(fontRenderer, label, rowLeft + 6, y + 4,
+                blocked ? MUTED : hover ? ORANGE_LIGHT : TEXT);
+        String state = blocked ? "BLOCKED" : "RUN";
+        drawString(fontRenderer, state,
+                rowRight - 6 - fontRenderer.getStringWidth(state), y + 9,
+                blocked ? ORANGE_ERROR : hover ? ORANGE_LIGHT : ORANGE);
+    }
+
+    private void drawToggleSwitch(int x, int y, boolean on, boolean hover) {
+        int width = 26;
+        int height = 12;
+        drawRect(x, y, x + width, y + height, on ? 0xFF3A1A00 : 0xFF160C04);
+        int border = on ? ORANGE : hover ? ORANGE_LIGHT : ORANGE_DIM;
+        drawRect(x, y, x + width, y + 1, border);
+        drawRect(x, y + height - 1, x + width, y + height, border);
+        drawRect(x, y, x + 1, y + height, border);
+        drawRect(x + width - 1, y, x + width, y + height, border);
+        int knobX = on ? x + width - 12 : x + 2;
+        drawRect(knobX, y + 2, knobX + 10, y + height - 2,
+                on ? ORANGE_LIGHT : hover ? ORANGE : MUTED);
     }
 
     private void drawListScrollbar(int rowsTop, int rowsBottom, int visible, int maxScroll,
@@ -624,7 +1263,7 @@ public class GuiMonitor extends GuiScreen {
 
     private void drawKeySlotFrame() {
         int x = contentLeft;
-        int y = contentTop + 64;
+        int y = securityContentTop() + 64;
         drawRect(x - 1, y - 1, x + 19, y + 19, ORANGE_DIM);
         drawRect(x, y, x + 18, y + 18, FIELD_BG);
         drawRect(x, y, x + 18, y + 1, 0xFF1A0E04);
@@ -635,7 +1274,8 @@ public class GuiMonitor extends GuiScreen {
         if (key.isEmpty()) return;
         RenderHelper.enableGUIStandardItemLighting();
         GlStateManager.enableDepth();
-        mc.getRenderItem().renderItemAndEffectIntoGUI(key, contentLeft + 1, contentTop + 65);
+        mc.getRenderItem().renderItemAndEffectIntoGUI(key, contentLeft + 1,
+                securityContentTop() + 65);
         RenderHelper.disableStandardItemLighting();
         GlStateManager.disableDepth();
         GlStateManager.enableTexture2D();
@@ -728,6 +1368,19 @@ public class GuiMonitor extends GuiScreen {
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+        if (mouseButton == 0 && !passive
+                && isHovering(mouseX, mouseY, closeButtonX(), closeButtonY(),
+                        CLOSE_BUTTON_SIZE, CLOSE_BUTTON_SIZE)) {
+            playClick();
+            mc.displayGuiScreen(null);
+            return;
+        }
+        if (mouseButton == 0 && !passive
+                && isHovering(mouseX, mouseY, quickExitX(), quickExitY(), 44, 14)) {
+            playClick();
+            mc.displayGuiScreen(null);
+            return;
+        }
         if (mouseButton == 0 && !waiting) {
             if (stage == Stage.ASK) {
                 int centerX = centerX();
@@ -761,15 +1414,26 @@ public class GuiMonitor extends GuiScreen {
                 int width = menuWidth();
                 int x = centerX() - width / 2;
                 int start = menuStart();
-                for (int i = 0; i < TASKS.length; i++) {
+                int visible = menuVisibleRows();
+                for (int i = 0; i < visible; i++) {
+                    int index = menuScroll + i;
+                    if (index >= TASKS.length) break;
                     int y = start + i * (ROW_HEIGHT + ROW_GAP);
                     if (isHovering(mouseX, mouseY, x, y, width, ROW_HEIGHT)) {
                         playClick();
-                        selectedTask = i;
-                        if (i == 0) openSecurityHome();
+                        selectedTask = index;
+                        if (index == 0) openSecurityHome();
+                        else if (index == 3) openDisplay();
+                        else if (index == 4) {
+                            mc.displayGuiScreen(new GuiNotepad(origin, screenIndex,
+                                    hasPassword, passwordSkipped));
+                        }
                         return;
                     }
                 }
+            } else if (stage == Stage.DISPLAY) {
+                handleDisplayClick(mouseX, mouseY);
+                return;
             } else if (stage == Stage.SECURITY_HOME) {
                 if (isHovering(mouseX, mouseY, contentLeft, contentBottom - 24,
                         64, BUTTON_HEIGHT)) {
@@ -800,11 +1464,26 @@ public class GuiMonitor extends GuiScreen {
                     }
                 }
             } else if (stage == Stage.SECURITY) {
+                int tabWidth = securityTabWidth();
+                if (isHovering(mouseX, mouseY, securityTabX(0), contentTop,
+                        tabWidth, SECURITY_TAB_HEIGHT)) {
+                    playClick();
+                    securityEventsTab = false;
+                    securityNotice = "";
+                    return;
+                }
+                if (isHovering(mouseX, mouseY, securityTabX(1), contentTop,
+                        tabWidth, SECURITY_TAB_HEIGHT)) {
+                    playClick();
+                    securityEventsTab = true;
+                    securityNotice = "";
+                    return;
+                }
+
                 if (isHovering(mouseX, mouseY, contentLeft, contentBottom - 24,
                         64, BUTTON_HEIGHT)) {
                     playClick();
-                    stage = Stage.SECURITY_HOME;
-                    securityNotice = "";
+                    waiting = false;
                     pendingDoor = null;
                     pendingKeyHand = -1;
                     error = "";
@@ -820,7 +1499,32 @@ public class GuiMonitor extends GuiScreen {
                     return;
                 }
 
-                if (isHovering(mouseX, mouseY, contentLeft, contentTop + 64, 18, 18)) {
+                if (securityEventsTab) {
+                    int rowLeft = securityListLeft() + 6;
+                    int rowRight = securityListRight() - 8;
+                    int rowsTop = securityRowsTop();
+                    int visible = securityVisibleRows();
+                    int total = SECURITY_EVENTS.length + SECURITY_ACTIONS.length;
+                    for (int i = 0; i < visible; i++) {
+                        int index = eventsScroll + i;
+                        if (index >= total) break;
+                        int y = rowsTop + i * SECURITY_ROW_HEIGHT;
+                        if (isHovering(mouseX, mouseY, rowLeft, y,
+                                rowRight - rowLeft, SECURITY_ROW_HEIGHT - 2)) {
+                            playClick();
+                            if (index < SECURITY_EVENTS.length) {
+                                toggleSecurityEvent(index);
+                            } else {
+                                runDoorAction(index - SECURITY_EVENTS.length == 1);
+                            }
+                            return;
+                        }
+                    }
+                    return;
+                }
+
+                int leftTop = securityContentTop();
+                if (isHovering(mouseX, mouseY, contentLeft, leftTop + 64, 18, 18)) {
                     if (linkedKeyName.isEmpty()) {
                         playClick();
                         pendingKeyHand = heldTerminalKeyHand();
@@ -830,7 +1534,7 @@ public class GuiMonitor extends GuiScreen {
                 }
 
                 int leftWidth = Math.max(0, securityListLeft() - contentLeft - 10);
-                int keyButtonY = contentTop + 84;
+                int keyButtonY = leftTop + 84;
                 if (!linkedKeyName.isEmpty()) {
                     int button = Math.max(36, Math.min(56, (leftWidth - 4) / 2));
                     if (isHovering(mouseX, mouseY, contentLeft, keyButtonY, button, 16)) {
@@ -952,11 +1656,21 @@ public class GuiMonitor extends GuiScreen {
                 error = "";
                 return;
             }
+            if (stage == Stage.DISPLAY) {
+                stage = Stage.MENU;
+                displayNotice = "";
+                displayUrlFocused = false;
+                return;
+            }
             super.keyTyped(typedChar, keyCode);
             return;
         }
 
         if (waiting) return;
+        if (stage == Stage.DISPLAY) {
+            handleDisplayKey(typedChar, keyCode);
+            return;
+        }
         if (stage == Stage.NAME_NET || stage == Stage.NAME_KEY) {
             if (keyCode == Keyboard.KEY_RETURN || keyCode == Keyboard.KEY_NUMPADENTER) {
                 submitName();
@@ -978,11 +1692,13 @@ public class GuiMonitor extends GuiScreen {
         }
         if (stage == Stage.SECURITY) {
             if (keyCode == Keyboard.KEY_UP) {
-                scrollSecurity(-1);
+                if (securityEventsTab) scrollEvents(-1);
+                else scrollSecurity(-1);
                 return;
             }
             if (keyCode == Keyboard.KEY_DOWN) {
-                scrollSecurity(1);
+                if (securityEventsTab) scrollEvents(1);
+                else scrollSecurity(1);
                 return;
             }
             super.keyTyped(typedChar, keyCode);
@@ -1001,6 +1717,16 @@ public class GuiMonitor extends GuiScreen {
             return;
         }
         if (stage == Stage.ASK || stage == Stage.MENU) {
+            if (stage == Stage.MENU) {
+                if (keyCode == Keyboard.KEY_UP) {
+                    scrollMenu(-1);
+                    return;
+                }
+                if (keyCode == Keyboard.KEY_DOWN) {
+                    scrollMenu(1);
+                    return;
+                }
+            }
             super.keyTyped(typedChar, keyCode);
             return;
         }
@@ -1087,22 +1813,25 @@ public class GuiMonitor extends GuiScreen {
 
         switch (result) {
             case MessageMonitorState.SET_OK:
-                stage = Stage.MENU;
+                this.passwordSkipped = false;
                 password.setLength(0);
                 firstPassword = "";
                 error = "";
                 selectedTask = -1;
+                applyResumeState();
                 break;
             case MessageMonitorState.SKIP_OK:
-                stage = Stage.MENU;
+                this.passwordSkipped = true;
                 password.setLength(0);
                 firstPassword = "";
                 error = "";
+                applyResumeState();
                 break;
             case MessageMonitorState.CHECK_OK:
-                stage = Stage.MENU;
+                this.passwordSkipped = false;
                 password.setLength(0);
                 error = "";
+                applyResumeState();
                 break;
             case MessageMonitorState.WRONG_PASSWORD:
                 stage = Stage.ENTER;
@@ -1130,6 +1859,22 @@ public class GuiMonitor extends GuiScreen {
         return (contentTop + contentBottom) / 2;
     }
 
+    private int closeButtonX() {
+        return guiLeft + guiWidth - 5 - 6 - CLOSE_BUTTON_SIZE;
+    }
+
+    private int closeButtonY() {
+        return guiTop + 9;
+    }
+
+    private int quickExitX() {
+        return guiLeft + guiWidth - 53;
+    }
+
+    private int quickExitY() {
+        return guiTop + guiHeight - 22;
+    }
+
     private int passwordFieldY() {
         int min = contentTop + 44;
         int max = contentBottom - 75;
@@ -1147,18 +1892,37 @@ public class GuiMonitor extends GuiScreen {
     }
 
     private int menuWidth() {
-        return Math.max(120, Math.min(360, contentRight - contentLeft - 40));
+        int max = passive ? 420 : 360;
+        return Math.max(120, Math.min(max, contentRight - contentLeft - 40));
+    }
+
+    private int menuVisibleRows() {
+        int height = contentBottom - contentTop;
+        int available = Math.max(1, height - 30);
+        int stride = ROW_HEIGHT + ROW_GAP;
+        return Math.max(1, Math.min(TASKS.length,
+                (available + ROW_GAP) / stride));
+    }
+
+    private int menuMaxScroll() {
+        return Math.max(0, TASKS.length - menuVisibleRows());
+    }
+
+    private void scrollMenu(int delta) {
+        menuScroll = Math.max(0, Math.min(menuMaxScroll(), menuScroll + delta));
     }
 
     private boolean menuShowHeading() {
         int height = contentBottom - contentTop;
-        int total = TASKS.length * ROW_HEIGHT + (TASKS.length - 1) * ROW_GAP;
+        int visible = menuVisibleRows();
+        int total = visible * ROW_HEIGHT + (visible - 1) * ROW_GAP;
         return height >= total + 51;
     }
 
     private int menuStart() {
         int height = contentBottom - contentTop;
-        int total = TASKS.length * ROW_HEIGHT + (TASKS.length - 1) * ROW_GAP;
+        int visible = menuVisibleRows();
+        int total = visible * ROW_HEIGHT + (visible - 1) * ROW_GAP;
         int pad = menuShowHeading() ? 42 : 30;
         return contentTop + Math.max(pad, (height - total) / 2);
     }
@@ -1173,8 +1937,20 @@ public class GuiMonitor extends GuiScreen {
         return contentRight;
     }
 
+    private int securityContentTop() {
+        return contentTop + SECURITY_TAB_HEIGHT + 4;
+    }
+
+    private int securityTabWidth() {
+        return Math.max(54, Math.min(88, (contentRight - contentLeft - 4) / 2));
+    }
+
+    private int securityTabX(int index) {
+        return contentLeft + index * (securityTabWidth() + 4);
+    }
+
     private int securityListTop() {
-        return contentTop + 24;
+        return contentTop + 24 + (stage == Stage.SECURITY ? SECURITY_TAB_HEIGHT + 4 : 0);
     }
 
     private int securityListBottom() {
@@ -1209,6 +1985,75 @@ public class GuiMonitor extends GuiScreen {
         return contentRight - deleteNetButtonWidth();
     }
 
+    private void resetSecurityEvents() {
+        securityEventsTab = false;
+        eventsScroll = 0;
+        for (int i = 0; i < securityEvents.length; i++) {
+            securityEvents[i] = false;
+        }
+    }
+
+    /** Restores this monitor's last stable page after the password gate. */
+    private void applyResumeState() {
+        if (passive || mc.world == null) return;
+        net.minecraft.tileentity.TileEntity tile = mc.world.getTileEntity(origin);
+        if (!(tile instanceof TileEntityMonitorDesk)) {
+            stage = Stage.MENU;
+            return;
+        }
+        TileEntityMonitorDesk desk = (TileEntityMonitorDesk) tile;
+        int stageId = desk.getScreenResumeStage(screenIndex);
+        int netId = desk.getScreenResumeNetId(screenIndex);
+        boolean eventsTab = desk.getScreenResumeEventsTab(screenIndex);
+        int netsScroll = desk.getScreenResumeNetsScroll(screenIndex);
+        int securityScroll = desk.getScreenResumeSecurityScroll(screenIndex);
+        int eventsScroll = desk.getScreenResumeEventsScroll(screenIndex);
+
+        switch (stageId) {
+            case MonitorDisplay.STAGE_SECURITY:
+                if (netId >= 0) {
+                    openSecurityNet(netId, displayNetName(desk, netId));
+                    securityEventsTab = eventsTab;
+                    this.securityScroll = securityScroll;
+                    this.eventsScroll = eventsScroll;
+                } else {
+                    openSecurityHome();
+                    this.netsScroll = netsScroll;
+                }
+                break;
+            case MonitorDisplay.STAGE_SECURITY_HOME:
+            case MonitorDisplay.STAGE_NAME_NET:
+                openSecurityHome();
+                this.netsScroll = netsScroll;
+                break;
+            case MonitorDisplay.STAGE_NAME_KEY:
+            case MonitorDisplay.STAGE_DELETE_NET:
+                if (netId >= 0) {
+                    openSecurityNet(netId, displayNetName(desk, netId));
+                    securityEventsTab = eventsTab;
+                    this.securityScroll = securityScroll;
+                    this.eventsScroll = eventsScroll;
+                } else {
+                    openSecurityHome();
+                    this.netsScroll = netsScroll;
+                }
+                break;
+            case MonitorDisplay.STAGE_MENU:
+            default:
+                stage = Stage.MENU;
+                break;
+        }
+    }
+
+    private static String displayNetName(TileEntityMonitorDesk desk, int netId) {
+        MonitorDisplay.NetData data = desk.getDisplayNetData(netId);
+        if (data != null) return data.name;
+        for (SecurityNetSummary net : desk.getDisplayNets()) {
+            if (net.id == netId) return net.name;
+        }
+        return "";
+    }
+
     private void openSecurityHome() {
         stage = Stage.SECURITY_HOME;
         netsLoading = true;
@@ -1223,6 +2068,7 @@ public class GuiMonitor extends GuiScreen {
         nameInput.setLength(0);
         waiting = false;
         deleteRequested = false;
+        resetSecurityEvents();
         error = "";
         ModNetwork.INSTANCE.sendToServer(new MessageMonitorNetRequest(origin,
                 MessageMonitorNetRequest.REQUEST_NETS, -1, "", 0));
@@ -1241,6 +2087,7 @@ public class GuiMonitor extends GuiScreen {
         linkedKeyName = "";
         waiting = false;
         deleteRequested = false;
+        resetSecurityEvents();
         error = "";
         ModNetwork.INSTANCE.sendToServer(new MessageMonitorNetRequest(origin,
                 MessageMonitorNetRequest.REQUEST_DEVICES, netId, "", 0));
@@ -1248,6 +2095,35 @@ public class GuiMonitor extends GuiScreen {
 
     private void openDevice(MonitorDevice device) {
         if (device == null) return;
+        if (securityEvents[SecurityNet.EVENT_SYSTEM_SHUTDOWN]) {
+            securityNotice = "System shutdown";
+            return;
+        }
+        if (device.type == MonitorDevice.Type.DOOR
+                && securityEvents[SecurityNet.EVENT_SYSTEM_LOCKDOWN]) {
+            securityNotice = "System lockdown";
+            return;
+        }
+        if (device.type == MonitorDevice.Type.KEYPAD
+                && securityEvents[SecurityNet.EVENT_DISABLE_KEYPADS]) {
+            securityNotice = "Keypad disabled";
+            return;
+        }
+        if (device.type == MonitorDevice.Type.SCANNER
+                && securityEvents[SecurityNet.EVENT_DISABLE_SCANNERS]) {
+            securityNotice = "Scanner disabled";
+            return;
+        }
+        if (device.type == MonitorDevice.Type.MOTION_SENSOR
+                && securityEvents[SecurityNet.EVENT_DISABLE_SENSORS]) {
+            securityNotice = "Sensor disabled";
+            return;
+        }
+        if (device.type == MonitorDevice.Type.REDSTONE_GATE
+                && securityEvents[SecurityNet.EVENT_DISABLE_REDSTONE_GATES]) {
+            securityNotice = "Gate disabled";
+            return;
+        }
         if (mc.world == null || !mc.world.isBlockLoaded(device.pos)) {
             securityNotice = "Not loaded";
             return;
@@ -1260,7 +2136,8 @@ public class GuiMonitor extends GuiScreen {
         }
         securityNotice = "";
         pendingDoor = null;
-        MonitorReturnContext.set(origin, hasPassword, selectedNetId, selectedNetName);
+        MonitorReturnContext.set(origin, hasPassword, screenIndex,
+                selectedNetId, selectedNetName);
         NTMDoors.proxy.openLinkedDeviceGui(device);
     }
 
@@ -1285,7 +2162,8 @@ public class GuiMonitor extends GuiScreen {
                 return;
             }
             securityNotice = "";
-            MonitorReturnContext.set(origin, hasPassword, selectedNetId, selectedNetName);
+            MonitorReturnContext.set(origin, hasPassword, screenIndex,
+                    selectedNetId, selectedNetName);
             NTMDoors.proxy.openScannerCodeGui(scannerPos);
             return;
         }
@@ -1351,6 +2229,30 @@ public class GuiMonitor extends GuiScreen {
                 origin, MessageMonitorNetRequest.DELETE_NET, selectedNetId, "", 0));
     }
 
+    private void toggleSecurityEvent(int index) {
+        if (index < 0 || index >= securityEvents.length || selectedNetId < 0) return;
+        securityNotice = "";
+        boolean enabled = !securityEvents[index];
+        securityEvents[index] = enabled;
+        ModNetwork.INSTANCE.sendToServer(new MessageMonitorNetRequest(
+                origin, MessageMonitorNetRequest.TOGGLE_EVENT, selectedNetId, "", 0,
+                index, enabled));
+    }
+
+    private void runDoorAction(boolean open) {
+        if (selectedNetId < 0) return;
+        if (open && (securityEvents[SecurityNet.EVENT_SYSTEM_SHUTDOWN]
+                || securityEvents[SecurityNet.EVENT_SYSTEM_LOCKDOWN])) {
+            securityNotice = "Blocked by system event";
+            return;
+        }
+        securityNotice = open ? "Opening doors" : "Closing doors";
+        ModNetwork.INSTANCE.sendToServer(new MessageMonitorNetRequest(
+                origin, open ? MessageMonitorNetRequest.OPEN_ALL_DOORS
+                        : MessageMonitorNetRequest.CLOSE_ALL_DOORS,
+                selectedNetId, "", 0));
+    }
+
     private void playClick() {
         if (mc.player != null) mc.player.playSound(ModSounds.GUI_CLICK, 0.5F, 1F);
     }
@@ -1373,6 +2275,7 @@ public class GuiMonitor extends GuiScreen {
             pendingDoor = null;
             securityDevices.clear();
             securityScroll = 0;
+            resetSecurityEvents();
             nameInput.setLength(0);
             securityNotice = "Security net deleted";
             error = "";
@@ -1396,11 +2299,15 @@ public class GuiMonitor extends GuiScreen {
 
     /** Called by the client proxy when the server sends one net's devices. */
     public void handleDevices(BlockPos pos, int netId, String netName,
-                              String linkedKeyName, List<MonitorDevice> devices) {
+                              String linkedKeyName, int eventMask,
+                              List<MonitorDevice> devices) {
         if (stage != Stage.SECURITY || pos == null || !pos.equals(origin)) return;
         if (netId != selectedNetId) return;
         selectedNetName = netName == null ? "" : netName;
         this.linkedKeyName = linkedKeyName == null ? "" : linkedKeyName;
+        for (int i = 0; i < securityEvents.length; i++) {
+            securityEvents[i] = (eventMask & (1 << i)) != 0;
+        }
         securityDevices.clear();
         if (devices != null) securityDevices.addAll(devices);
         securityLoading = false;
@@ -1464,13 +2371,118 @@ public class GuiMonitor extends GuiScreen {
         netsScroll = Math.max(0, Math.min(netsMaxScroll(), netsScroll + delta * amount));
     }
 
+    private int eventsMaxScroll() {
+        int total = SECURITY_EVENTS.length + SECURITY_ACTIONS.length;
+        return Math.max(0, total - securityVisibleRows());
+    }
+
+    private void scrollEvents(int delta) {
+        int amount = GuiScreen.isShiftKeyDown() ? 3 : 1;
+        eventsScroll = Math.max(0, Math.min(eventsMaxScroll(),
+                eventsScroll + delta * amount));
+    }
+
     @Override
     public void handleMouseInput() throws IOException {
         super.handleMouseInput();
         int wheel = Mouse.getEventDWheel();
         if (wheel == 0) return;
-        if (stage == Stage.SECURITY) scrollSecurity(wheel > 0 ? -1 : 1);
-        else if (stage == Stage.SECURITY_HOME) scrollNets(wheel > 0 ? -1 : 1);
+        if (stage == Stage.SECURITY) {
+            if (securityEventsTab) scrollEvents(wheel > 0 ? -1 : 1);
+            else scrollSecurity(wheel > 0 ? -1 : 1);
+        } else if (stage == Stage.SECURITY_HOME) {
+            scrollNets(wheel > 0 ? -1 : 1);
+        } else if (stage == Stage.MENU) {
+            scrollMenu(wheel > 0 ? -1 : 1);
+        }
+    }
+
+    // ------------------------------------------------------------ passive display
+
+    /** Keeps a detached display page sized to the physical screen texture. */
+    public void ensureDisplaySize(int width, int height) {
+        Minecraft mc = Minecraft.getMinecraft();
+        if (this.width != width || this.height != height
+                || this.fontRenderer != mc.fontRenderer) {
+            setWorldAndResolution(mc, width, height);
+        }
+    }
+
+    public void setDisplayTicks(int ticks) {
+        this.ticks = ticks;
+    }
+
+    public void setDisplayPasswordState(boolean hasPassword) {
+        this.hasPassword = hasPassword;
+    }
+
+    public void setDisplayScroll(int netsScroll, int securityScroll, int eventsScroll) {
+        this.netsScroll = Math.max(0, netsScroll);
+        this.securityScroll = Math.max(0, securityScroll);
+        this.eventsScroll = Math.max(0, eventsScroll);
+    }
+
+    public void showDisplayStage(int stageId) {
+        this.stage = Stage.byId(stageId);
+        this.netsLoading = false;
+        this.securityLoading = false;
+        this.waiting = false;
+        this.error = "";
+        this.securityNotice = "";
+        this.pendingDoor = null;
+        this.pendingKeyHand = -1;
+        this.deleteRequested = false;
+        this.selectedTask = -1;
+        this.selectedNetId = -1;
+        this.selectedNetName = "";
+        this.linkedKeyName = "";
+        this.nameInput.setLength(0);
+        this.password.setLength(0);
+        this.firstPassword = "";
+        this.securityEventsTab = false;
+        this.resetSecurityEvents();
+        this.displayCustomTab = false;
+        this.displayWallpaper = "";
+        this.displayUrl.setLength(0);
+        this.displayNotice = "";
+        this.displayUrlFocused = false;
+    }
+
+    public void showDisplayWallpaper(String wallpaper) {
+        showDisplayStage(MonitorDisplay.STAGE_DISPLAY);
+        this.displayWallpaper = wallpaper == null ? "" : wallpaper;
+        if (MonitorWallpaper.isUrl(this.displayWallpaper)) {
+            this.displayCustomTab = true;
+            String url = MonitorWallpaper.urlOf(this.displayWallpaper);
+            if (url != null) this.displayUrl.append(url);
+        }
+    }
+
+    public void showDisplayHome(List<SecurityNetSummary> nets) {
+        showDisplayStage(MonitorDisplay.STAGE_SECURITY_HOME);
+        this.securityNets.clear();
+        if (nets != null) this.securityNets.addAll(nets);
+        this.netsLoading = false;
+    }
+
+    public void showDisplayNet(int netId, String netName, List<MonitorDevice> devices,
+                               int eventMask, String keyName, boolean eventsTab) {
+        showDisplayStage(MonitorDisplay.STAGE_SECURITY);
+        this.selectedNetId = netId;
+        this.selectedNetName = netName == null ? "" : netName;
+        this.securityDevices.clear();
+        if (devices != null) this.securityDevices.addAll(devices);
+        for (int i = 0; i < this.securityEvents.length; i++) {
+            this.securityEvents[i] = (eventMask & (1 << i)) != 0;
+        }
+        this.linkedKeyName = keyName == null ? "" : keyName;
+        this.securityEventsTab = eventsTab;
+        this.securityLoading = false;
+    }
+
+    public void showDisplayDelete(String netName) {
+        showDisplayStage(MonitorDisplay.STAGE_DELETE_NET);
+        this.selectedNetName = netName == null ? "" : netName;
     }
 
     private boolean isHovering(int mouseX, int mouseY, int x, int y, int width, int height) {
