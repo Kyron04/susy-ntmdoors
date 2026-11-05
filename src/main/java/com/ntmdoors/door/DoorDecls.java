@@ -441,21 +441,6 @@ public final class DoorDecls {
             .sounds(null, SND_WGH_START, SND_WGH_STOP)
             .anim("Door", PartAnim.translate(0, 2.25, 0, 0F, 1F)));
 
-    /** Test door: 3x3 containment door with a red/white texture. */
-    public static final DoorDecl TEST_DOOR = reg(new DoorDecl("test_door")
-            .footprint(-1, 1, 0, 2, 0, 0).times(40, 40).strength(25F, 4000F)
-            .movingGroup("Door")
-            .open(box(-1.5, 0, -0.5, -1.25, 3, 0.0),
-                    box(1.25, 0, -0.5, 1.5, 3, 0.0),
-                    box(-1.25, 2.25, -0.5, 1.25, 3, 0.0))
-            .openSelectionOnly(box(-1.5, 0, -0.5, 1.5, 0.125, 0.0))
-            .modelPath("models/doors/qe_containment.obj", "textures/models/doors/test_door.png")
-            .modelYaw(90F)
-            .modelOffset(0.25, 0, 0)
-            .clipY(Double.NEGATIVE_INFINITY, 3)
-            .sounds(null, SND_WGH_START, SND_WGH_STOP)
-            .anim("Door", PartAnim.translate(0, 2.25, 0, 0F, 1F)));
-
     /** 1x7 roller shutter (HBM's standalone roller blast door). */
     public static final DoorDecl BLAST_DOOR = reg(new DoorDecl("blast_door")
             .footprint(0, 0, 0, 6, 0, 0).times(100, 100).strength(30F, 5000F)
@@ -541,6 +526,24 @@ public final class DoorDecls {
             // The closed model includes the arm above y=30 and the animation raises it another
             // 18 blocks. A small render box made those parts disappear from some camera angles.
             .renderRadius(64));
+
+    /**
+     * Test door: 3x3 containment door with a red/white texture. Registered last so adding this
+     * example does not shift the numeric block/item IDs of any existing door.
+     */
+    public static final DoorDecl TEST_DOOR = reg(new DoorDecl("test_door")
+            .footprint(-1, 1, 0, 2, 0, 0).times(40, 40).strength(25F, 4000F)
+            .movingGroup("Door")
+            .open(box(-1.5, 0, -0.5, -1.25, 3, 0.0),
+                    box(1.25, 0, -0.5, 1.5, 3, 0.0),
+                    box(-1.25, 2.25, -0.5, 1.25, 3, 0.0))
+            .openSelectionOnly(box(-1.5, 0, -0.5, 1.5, 0.125, 0.0))
+            .modelPath("models/doors/qe_containment.obj", "textures/models/doors/test_door.png")
+            .modelYaw(90F)
+            .modelOffset(0.25, 0, 0)
+            .clipY(Double.NEGATIVE_INFINITY, 3)
+            .sounds(null, SND_WGH_START, SND_WGH_STOP)
+            .anim("Door", PartAnim.translate(0, 2.25, 0, 0F, 1F)));
 
     private DoorDecls() {
     }
