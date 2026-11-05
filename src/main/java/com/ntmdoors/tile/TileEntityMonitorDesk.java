@@ -137,6 +137,8 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
     private final int[] displaySecurityScrolls = new int[MAX_SCREENS];
     private final int[] displayEventsScrolls = new int[MAX_SCREENS];
     private final UUID[] displayViewers = new UUID[MAX_SCREENS];
+    /** Number of screens with a live viewer; lets an idle desk skip its whole tick loop. */
+    private int viewingScreens;
 
     // The last stable page, kept separately so a lock screen or prompt can be shown without
     // losing the page the monitor should reopen on.
@@ -185,7 +187,10 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
 
     /** Server side: stores the already-hashed password and clears the "skipped" choice. */
     public boolean setPasswordHash(String hash) {
-        if (world == null || world.isRemote || !MonitorPasswords.isValidHash(hash)) return false;
+        if (world == null || world.isRemote || passwordSet
+                || !MonitorPasswords.isValidHash(hash)) {
+            return false;
+        }
         passwordHash = hash;
         passwordSet = true;
         passwordSkipped = false;
@@ -195,7 +200,7 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
 
     /** Server side: the player chose not to protect this desk. */
     public boolean skipPasswordSetup() {
-        if (world == null || world.isRemote) return false;
+        if (world == null || world.isRemote || passwordSet || passwordSkipped) return false;
         passwordSkipped = true;
         sync();
         return true;
@@ -710,10 +715,22 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
             displaySecurityScrolls[screenIndex] = Math.max(0, securityScroll);
             displayEventsScrolls[screenIndex] = Math.max(0, eventsScroll);
         }
+        boolean wasViewing = displayViewing[screenIndex];
         displayViewing[screenIndex] = viewing;
+        if (wasViewing != viewing) {
+            viewingScreens = Math.max(0, viewingScreens + (viewing ? 1 : -1));
+        }
         displayViewers[screenIndex] = viewing ? viewer : null;
         sync();
         return true;
+    }
+
+    private void refreshViewingCount() {
+        int count = 0;
+        for (boolean viewing : displayViewing) {
+            if (viewing) count++;
+        }
+        viewingScreens = count;
     }
 
     private static boolean isStableStage(int stage) {
@@ -766,7 +783,10 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
             updateClientSound();
             return;
         }
-        updateBackup();
+        if (backupActive || backupSuccess || backupNoticeTicks > 0) {
+            updateBackup();
+        }
+        if (viewingScreens <= 0) return;
         boolean changed = false;
         for (int i = 0; i < MAX_SCREENS; i++) {
             if (!displayViewing[i]) continue;
@@ -775,6 +795,7 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
             if (player == null || player.world != world || !NetworkUtil.isWithinReach(player, pos)) {
                 displayViewing[i] = false;
                 displayViewers[i] = null;
+                viewingScreens = Math.max(0, viewingScreens - 1);
                 if (!isStableStage(displayStages[i])) restoreResumeDisplay(i);
                 changed = true;
             }
@@ -893,7 +914,8 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
         SecurityNet net = getNet(netId);
         if (net == null) return false;
         net.linkKey(keyId, keyName);
-        markDirty();
+        // Notify clients as well: the linked key name is drawn on the physical monitors.
+        sync();
         return true;
     }
 
@@ -903,7 +925,7 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
         SecurityNet net = getNet(netId);
         if (net == null) return false;
         net.unlinkKey();
-        markDirty();
+        sync();
         return true;
     }
 
@@ -1267,6 +1289,7 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
                 displayNotepadDocIds[i] = -1;
                 displayEventsTabs[i] = false;
                 displayViewing[i] = false;
+                displayViewers[i] = null;
                 displayNetsScrolls[i] = 0;
                 displaySecurityScrolls[i] = 0;
                 displayEventsScrolls[i] = 0;
@@ -1361,6 +1384,7 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
         for (SecurityNet net : nets) {
             if (net.id >= nextNetId) nextNetId = net.id + 1;
         }
+        refreshViewingCount();
         displayRevision++;
     }
 

@@ -318,6 +318,11 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
             return;
         }
         if (wantOpen && !override && isLockedDown()) return;
+        // Net-wide events outrank every local control, including a scanner's override.
+        if (wantOpen && (SecurityEvents.isShutdown(world, pos)
+                || SecurityEvents.isLockdown(world, pos))) {
+            return;
+        }
         DoorDecl d = getDecl();
         if (d == null || !d.linkAdjacent) {
             requestSelf(wantOpen);

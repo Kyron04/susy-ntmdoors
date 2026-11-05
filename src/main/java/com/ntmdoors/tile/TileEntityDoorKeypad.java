@@ -420,6 +420,7 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable,
                 SoundCategory.BLOCKS, 0.5F, 0.9F + world.rand.nextFloat() * 0.2F);
 
         if (SecurityEvents.isShutdown(world, pos)
+                || SecurityEvents.isLockdown(world, pos)
                 || SecurityEvents.isKeypadDisabled(world, pos)) {
             showFeedback(Feedback.DENIED);
             sync();
@@ -544,8 +545,13 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable,
             // A keypad that was configured before its door existed adopts the door on first use.
             if (!door.isKeypadBound()) door.bindKeypadCode(storedCode);
             if (!entered.equals(door.getKeypadCode())) continue;
-            // A scanner lockdown outranks the keypad; report a denial rather than a silent success.
-            if (door.isLockedDown()) continue;
+            // A scanner or net-wide lockdown outranks the keypad; report a denial rather than a
+            // silent success.
+            if (door.isLockedDown()
+                    || SecurityEvents.isLockdown(world, door.getPos())
+                    || SecurityEvents.isShutdown(world, door.getPos())) {
+                continue;
+            }
             door.toggle();
             toggled = true;
         }

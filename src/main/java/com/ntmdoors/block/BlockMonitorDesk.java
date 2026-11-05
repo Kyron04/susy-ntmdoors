@@ -19,11 +19,13 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
@@ -262,5 +264,12 @@ public class BlockMonitorDesk extends Block {
     @Override
     public Item getItemDropped(IBlockState state, java.util.Random rand, int fortune) {
         return Item.getItemFromBlock(desk.core());
+    }
+
+    /** Middle-clicking any cell should pick the desk item, not an itemless middle block. */
+    @Override
+    public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world,
+                                  BlockPos pos, EntityPlayer player) {
+        return new ItemStack(desk.core());
     }
 }

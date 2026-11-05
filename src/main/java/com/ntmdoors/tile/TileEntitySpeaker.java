@@ -47,9 +47,9 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
     @SideOnly(Side.CLIENT)
     private SpeakerLoopSound loopSound;
     @SideOnly(Side.CLIENT)
-    private int loopSoundIndex = -1;
+    private int loopSoundIndex;
     @SideOnly(Side.CLIENT)
-    private float loopVolume = -1F;
+    private float loopVolume;
 
     public boolean isEnabled() {
         return enabled;

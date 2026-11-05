@@ -481,6 +481,7 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
     public void forceOpenDoors() {
         if (world == null || world.isRemote) return;
         if (SecurityEvents.isShutdown(world, pos)
+                || SecurityEvents.isLockdown(world, pos)
                 || SecurityEvents.isScannerDisabled(world, pos)) return;
         for (BlockPos doorPos : boundDoors) {
             TileEntity te = world.getTileEntity(doorPos);
@@ -801,6 +802,10 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
             msg(player, "ntmdoors.msg.system_shutdown");
             return;
         }
+        if (SecurityEvents.isLockdown(world, pos)) {
+            msg(player, "ntmdoors.msg.system_lockdown");
+            return;
+        }
         if (SecurityEvents.isScannerDisabled(world, pos)) {
             msg(player, "ntmdoors.msg.scanner_disabled");
             return;
@@ -821,6 +826,7 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
     private void resolveScan() {
         EntityPlayer player = scanningPlayer == null ? null : world.getPlayerEntityByUUID(scanningPlayer);
         boolean blocked = lockdown || lockedOut || SecurityEvents.isShutdown(world, pos)
+                || SecurityEvents.isLockdown(world, pos)
                 || SecurityEvents.isScannerDisabled(world, pos);
         boolean granted = player != null && (scanCreative || (!blocked && holdsAssignedKey(player)));
 

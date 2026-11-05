@@ -21,7 +21,11 @@ public final class MonitorReturnEvents {
 
     @SubscribeEvent
     public static void onWorldUnload(WorldEvent.Unload event) {
-        if (event.getWorld().isRemote) RenderMonitorDesk.clearDisplayCache();
+        if (event.getWorld().isRemote) {
+            RenderMonitorDesk.clearDisplayCache();
+            MotionSensorOverlay.clear();
+            DisplayImages.clear();
+        }
     }
 
     private MonitorReturnEvents() {

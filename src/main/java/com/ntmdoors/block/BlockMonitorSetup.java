@@ -20,12 +20,14 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
@@ -185,6 +187,12 @@ public class BlockMonitorSetup extends Block {
         if (!world.isRemote && !DISMANTLING.get()) {
             EnumFacing facing = state.getValue(FACING);
             BlockPos corePos = pos.subtract(offset(state.getValue(COLUMN), facing));
+            // The backup keys live on the core cell. Drop them before the dismantle loop removes
+            // the core, otherwise breaking any cell of the desk would destroy them.
+            TileEntity tile = world.getTileEntity(corePos);
+            if (tile instanceof TileEntityMonitorDesk) {
+                ((TileEntityMonitorDesk) tile).dropBackupContents(world, corePos);
+            }
             SecurityEvents.removeDesk(world, corePos);
             DISMANTLING.set(true);
             try {
@@ -266,5 +274,12 @@ public class BlockMonitorSetup extends Block {
     @Override
     public Item getItemDropped(IBlockState state, java.util.Random rand, int fortune) {
         return Item.getItemFromBlock(ModContent.MONITOR_SETUP);
+    }
+
+    /** Middle-clicking any cell should pick the desk item, not an itemless upper block. */
+    @Override
+    public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world,
+                                  BlockPos pos, EntityPlayer player) {
+        return new ItemStack(ModContent.MONITOR_SETUP);
     }
 }

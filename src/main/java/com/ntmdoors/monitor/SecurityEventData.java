@@ -68,23 +68,24 @@ public final class SecurityEventData extends WorldSavedData {
                         bits = mask & (SecurityEvents.SHUTDOWN | SecurityEvents.LOCKDOWN);
                         break;
                     case KEYPAD:
-                        bits = mask & (SecurityEvents.SHUTDOWN
+                        bits = mask & (SecurityEvents.SHUTDOWN | SecurityEvents.LOCKDOWN
                                 | SecurityEvents.DISABLE_KEYPADS);
                         break;
                     case SCANNER:
-                        bits = mask & (SecurityEvents.SHUTDOWN
+                        bits = mask & (SecurityEvents.SHUTDOWN | SecurityEvents.LOCKDOWN
                                 | SecurityEvents.DISABLE_SCANNERS);
                         break;
                     case MOTION_SENSOR:
-                        bits = mask & (SecurityEvents.SHUTDOWN
+                        bits = mask & (SecurityEvents.SHUTDOWN | SecurityEvents.LOCKDOWN
                                 | SecurityEvents.DISABLE_SENSORS);
                         break;
                     case REDSTONE_GATE:
-                        bits = mask & (SecurityEvents.SHUTDOWN
+                        bits = mask & (SecurityEvents.SHUTDOWN | SecurityEvents.LOCKDOWN
                                 | SecurityEvents.DISABLE_GATES);
                         break;
                     case SPEAKER:
-                        bits = mask & (SecurityEvents.SHUTDOWN | SecurityEvents.ALARMS);
+                        bits = mask & (SecurityEvents.SHUTDOWN | SecurityEvents.LOCKDOWN
+                                | SecurityEvents.ALARMS);
                         break;
                     default:
                         bits = 0;

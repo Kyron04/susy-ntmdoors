@@ -201,11 +201,12 @@ for editing.
   Notepad and Terminal Backup. Passwords are stored as SHA-256 hashes on a tile entity on the desk
   core and are checked server-side. Every page carries an `EXIT` button in the footer. The
   desk/keyboard row stays inert, and sneak-right-click still lets blocks be placed against the
-  monitors. There are no redstone events yet.
+  monitors. Security-net events provide the redstone side of the terminal, including shutdown,
+  lockdown, alarms, and per-family device disables.
   The desk is split into nine cell models so every element stays inside the 1.12 model limits;
   the supplied 15-degree side-monitor yaw is rounded to 22.5 degrees, the closest legal JSON
   angle. Three block types (bottom/middle/top) each carry three columns, so the part and facing
-  fit in the four metadata bits and no tile entity is needed.
+  fit in the four metadata bits; the bottom core carries the terminal tile entity.
 * Display (`Display` in the terminal task list): a cosmetic wallpaper chooser for each physical
   monitor panel. The built-in tab shows five packaged images plus a `Terminal` tile that
   restores the normal terminal page. Selecting a tile applies it immediately to the screen that
@@ -238,7 +239,7 @@ for editing.
   2x2x1). They place as one item, face the player, use the same half-depth monitor hitbox and
   break-any-cell dismantle. Every monitor cell opens the same password-gated terminal and task
   list; each desk keeps its own password hash. The desk row stays inert, and sneak-right-click
-  remains available for placing blocks. There are no redstone events yet.
+  remains available for placing blocks. Security-net events are shared with the larger desk.
 * Redstone Gate (`ntmdoors:redstone_gate`): a full-cube redstone component with separate off and on
   textures. It starts off, turns on while it receives redstone power or a wireless pulse, and emits
   a full-strength signal while on. A wireless event keeps it powered for its configured duration;

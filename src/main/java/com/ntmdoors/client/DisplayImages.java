@@ -22,6 +22,8 @@ import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Client-side texture cache for the cosmetic monitor wallpapers.
@@ -40,6 +42,12 @@ public final class DisplayImages {
 
     private static final Map<String, Remote> REMOTE = new ConcurrentHashMap<>();
     private static final Map<ResourceLocation, Boolean> BUILTIN_EXISTS = new HashMap<>();
+    /** Two daemon workers; one thread per URL could be abused by a server full of unique URLs. */
+    private static final ExecutorService DOWNLOADER = Executors.newFixedThreadPool(2, task -> {
+        Thread thread = new Thread(task, "NTMDoors display image loader");
+        thread.setDaemon(true);
+        return thread;
+    });
 
     private static final class Remote {
         private final ResourceLocation location;
@@ -50,6 +58,18 @@ public final class DisplayImages {
         private Remote(ResourceLocation location) {
             this.location = location;
         }
+    }
+
+    /** Frees dynamic URL textures and cached probes when the client leaves a world. */
+    public static void clear() {
+        Minecraft mc = Minecraft.getMinecraft();
+        for (Remote remote : REMOTE.values()) {
+            if (remote.ready && mc.getTextureManager() != null) {
+                mc.getTextureManager().deleteTexture(remote.location);
+            }
+        }
+        REMOTE.clear();
+        BUILTIN_EXISTS.clear();
     }
 
     /** Returns the texture location for a stored wallpaper, or null for the terminal page. */
@@ -122,10 +142,7 @@ public final class DisplayImages {
             if (remote.started) return;
             remote.started = true;
         }
-        Thread thread = new Thread(() -> download(remote, url),
-                "NTMDoors display image loader");
-        thread.setDaemon(true);
-        thread.start();
+        DOWNLOADER.execute(() -> download(remote, url));
     }
 
     private static void download(Remote remote, String url) {
@@ -156,6 +173,8 @@ public final class DisplayImages {
             }
 
             Minecraft.getMinecraft().addScheduledTask(() -> {
+                // The world may have unloaded while the image was downloading.
+                if (REMOTE.get(url) != remote) return;
                 try {
                     DynamicTexture texture = new DynamicTexture(image);
                     Minecraft.getMinecraft().getTextureManager().loadTexture(remote.location, texture);

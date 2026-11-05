@@ -254,7 +254,7 @@ public class ContainerKeycardProgrammer extends Container {
                 }
                 return false;
             case 1:
-                return RFID_ONLY.test(stack)
+                return RECOLOUR_ONLY.test(stack)
                         && mergeInto(stack, TileEntityKeycardProgrammer.SLOT_RFID_PAGE_TWO);
             case 2:
                 if (TileEntityKeycardProgrammer.isLegacyInput(stack)) {

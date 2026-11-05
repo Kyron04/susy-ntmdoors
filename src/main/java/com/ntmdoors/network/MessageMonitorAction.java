@@ -72,8 +72,8 @@ public class MessageMonitorAction implements IMessage {
                             ? MessageMonitorState.SET_OK : MessageMonitorState.INVALID;
                     break;
                 case SKIP_PASSWORD:
-                    monitor.skipPasswordSetup();
-                    result = MessageMonitorState.SKIP_OK;
+                    result = monitor.skipPasswordSetup()
+                            ? MessageMonitorState.SKIP_OK : MessageMonitorState.INVALID;
                     break;
                 case CHECK_PASSWORD:
                     result = monitor.checkPasswordHash(message.passwordHash)

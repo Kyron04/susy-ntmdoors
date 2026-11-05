@@ -978,12 +978,15 @@ public class GuiNotepad extends GuiScreen {
         while (from < end) {
             int fit = from;
             int lastSpace = -1;
+            int width = 0;
             while (fit < end) {
                 char c = text.charAt(fit);
                 if (c == ' ') lastSpace = fit;
-                if (fontRenderer.getStringWidth(text.substring(from, fit + 1)) > textWidth) {
-                    break;
-                }
+                // Incremental widths avoid allocating and re-measuring a substring for every
+                // character, which made long single-line notes quadratic on every keystroke.
+                int charWidth = fontRenderer.getCharWidth(c);
+                if (width + charWidth > textWidth) break;
+                width += charWidth;
                 fit++;
             }
             if (fit == from) fit = from + 1;
