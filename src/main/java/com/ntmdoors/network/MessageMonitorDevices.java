@@ -51,7 +51,9 @@ public class MessageMonitorDevices implements IMessage {
             MonitorDevice.Type type = MonitorDevice.Type.byId(buf.readByte());
             BlockPos pos = BlockPos.fromLong(buf.readLong());
             String name = ByteBufUtils.readUTF8String(buf);
-            devices.add(new MonitorDevice(type, pos, name));
+            boolean enabled = buf.readBoolean();
+            boolean loaded = buf.readBoolean();
+            devices.add(new MonitorDevice(type, pos, name, enabled, loaded));
         }
     }
 
@@ -69,6 +71,8 @@ public class MessageMonitorDevices implements IMessage {
             buf.writeByte(device.type.ordinal());
             buf.writeLong(device.pos.toLong());
             ByteBufUtils.writeUTF8String(buf, device.name);
+            buf.writeBoolean(device.enabled);
+            buf.writeBoolean(device.loaded);
         }
     }
 

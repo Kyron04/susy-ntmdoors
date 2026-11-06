@@ -107,7 +107,9 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable,
     public enum Feedback {
         NONE, CODE_SET, RESET_DONE, SUCCESS, DENIED, CODE_SYNCED,
         /** The adjoining door can never be driven by a keypad (security, or scanner-controlled). */
-        UNABLE;
+        UNABLE,
+        /** Switched off from the Security net; key presses are ignored. */
+        DISABLED;
 
         private static final Feedback[] VALUES = values();
 
@@ -163,6 +165,8 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable,
     private final List<BlockPos> boundDoors = new ArrayList<>();
     /** Synced link count so clients can draw the confirmation without receiving positions. */
     private int doorCount;
+    /** Security-net switch. Off ignores every key press without firing the fail event. */
+    private boolean enabled = true;
 
     /** Two minutes to edit the keypad after entering its security code. */
     private static final int CODE_SESSION_TICKS = 20 * 120;
@@ -227,6 +231,27 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable,
     /** True once the pad has a code or at least one linked door. Locks the binding mode. */
     public boolean isBound() {
         return hasStoredCode() || doorCount > 0;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    /** Server side: switches the keypad on or off from the Security net. */
+    public boolean setEnabled(boolean value) {
+        if (world == null || world.isRemote || enabled == value) return false;
+        enabled = value;
+        if (!value) {
+            entry = "";
+            feedback = Feedback.DISABLED;
+            feedbackTicks = 20;
+            blackScreenTicks = 0;
+        } else {
+            feedback = Feedback.NONE;
+            feedbackTicks = 0;
+        }
+        sync();
+        return true;
     }
 
     // ------------------------------------------------------------ redstone events / gate links
@@ -351,6 +376,7 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable,
     /** Server side: opens every controlled door through a scanner lockdown. */
     public void forceOpenDoors() {
         if (world == null || world.isRemote) return;
+        if (!enabled) return;
         if (SecurityEvents.isShutdown(world, pos)
                 || SecurityEvents.isKeypadDisabled(world, pos)) return;
         for (TileEntityDoorGeneric door : controlDoors()) {
@@ -415,6 +441,12 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable,
         if (id < 0 || id >= BUTTONS) return;
         if (cooldowns[id] > 0) return;
         cooldowns[id] = BUTTON_COOLDOWN_TICKS;
+
+        if (!enabled) {
+            showFeedback(Feedback.DISABLED);
+            sync();
+            return;
+        }
 
         world.playSound(null, pos, SoundEvents.UI_BUTTON_CLICK,
                 SoundCategory.BLOCKS, 0.5F, 0.9F + world.rand.nextFloat() * 0.2F);
@@ -716,6 +748,7 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable,
                 break;
             case DENIED:
             case UNABLE:
+            case DISABLED:
                 world.playSound(null, pos, ModSounds.SCANNER_BUTTON8,
                         SoundCategory.BLOCKS, FEEDBACK_VOLUME, 1F);
                 break;
@@ -985,6 +1018,7 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable,
         tag.setBoolean("linking", linking);
         tag.setBoolean("pendingConfirm", pendingConfirm);
         tag.setInteger("doorCount", doorCount);
+        tag.setBoolean("enabled", enabled);
         tag.setBoolean("onFail", redstoneEvents[RS_FAIL]);
         tag.setBoolean("onSuccess", redstoneEvents[RS_SUCCESS]);
         redstoneBinding.writeToNBT(tag);
@@ -1052,6 +1086,7 @@ public class TileEntityDoorKeypad extends TileEntitySynced implements ITickable,
             boundDoors.add(new BlockPos(link.getInteger("x"), link.getInteger("y"), link.getInteger("z")));
         }
         doorCount = tag.hasKey("doorCount") ? tag.getInteger("doorCount") : boundDoors.size();
+        enabled = !tag.hasKey("enabled") || tag.getBoolean("enabled");
         redstoneEvents[RS_FAIL] = tag.getBoolean("onFail");
         redstoneEvents[RS_SUCCESS] = tag.getBoolean("onSuccess");
         redstoneBinding.readFromNBT(tag);

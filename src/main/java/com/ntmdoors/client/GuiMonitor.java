@@ -1205,7 +1205,10 @@ public class GuiMonitor extends GuiScreen {
 
                 MonitorDevice device = securityDevices.get(index);
                 boolean door = device.type == MonitorDevice.Type.DOOR;
-                int textRight = door ? doorOpenX(rowRight) - 4 : rowRight - 12;
+                String offline = !door && !device.loaded ? "OFFLINE" : null;
+                int textRight = door ? doorOpenX(rowRight) - 4
+                        : device.loaded ? deviceToggleHitX(rowRight) - 4
+                        : rowRight - 8 - fontRenderer.getStringWidth(offline) - 4;
                 String name = fontRenderer.trimStringToWidth(device.name,
                         Math.max(24, textRight - rowLeft - 6));
                 drawString(fontRenderer, name, rowLeft + 6, y + 4,
@@ -1220,8 +1223,16 @@ public class GuiMonitor extends GuiScreen {
                             DOOR_BUTTON_WIDTH, DOOR_BUTTON_HEIGHT,
                             isHovering(mouseX, mouseY, doorCloseX(rowRight), doorButtonY(y),
                                     DOOR_BUTTON_WIDTH, DOOR_BUTTON_HEIGHT));
-                } else if (hover) {
-                    drawString(fontRenderer, ">", rowRight - 8, y + 9, ORANGE);
+                } else if (device.loaded) {
+                    String state = device.enabled ? "ON" : "OFF";
+                    int stateX = rowRight - 42 - fontRenderer.getStringWidth(state);
+                    drawString(fontRenderer, state, stateX, y + 9,
+                            device.enabled ? ORANGE_LIGHT : MUTED);
+                    drawToggleSwitch(deviceToggleX(rowRight), deviceToggleY(y),
+                            device.enabled, hover);
+                } else {
+                    drawString(fontRenderer, offline,
+                            rowRight - 8 - fontRenderer.getStringWidth(offline), y + 9, MUTED);
                 }
             }
             drawListScrollbar(rowsTop, rowsBottom, visible, maxScroll,
@@ -1721,6 +1732,11 @@ public class GuiMonitor extends GuiScreen {
                             sendDoorAction(device, false);
                             return;
                         }
+                    } else if (device.loaded && isHovering(mouseX, mouseY,
+                            deviceToggleHitX(rowRight), y + 6, 58, 16)) {
+                        playClick();
+                        sendDeviceToggle(device, !device.enabled);
+                        return;
                     }
                     if (isHovering(mouseX, mouseY, rowLeft, y,
                             rowRight - rowLeft, SECURITY_ROW_HEIGHT - 2)) {
@@ -2092,6 +2108,19 @@ public class GuiMonitor extends GuiScreen {
         return rowY + 6;
     }
 
+    private int deviceToggleX(int rowRight) {
+        return rowRight - 34;
+    }
+
+    private int deviceToggleY(int rowY) {
+        return rowY + 8;
+    }
+
+    /** The switch plus its ON/OFF label, so a click anywhere in the state block toggles. */
+    private int deviceToggleHitX(int rowRight) {
+        return rowRight - 66;
+    }
+
     private int securityListLeft() {
         int total = contentRight - contentLeft;
         int leftWidth = Math.max(80, Math.min(150, total * 35 / 100));
@@ -2402,6 +2431,14 @@ public class GuiMonitor extends GuiScreen {
         ModNetwork.INSTANCE.sendToServer(new MessageMonitorNetRequest(
                 origin, MessageMonitorNetRequest.TOGGLE_EVENT, selectedNetId, "", 0,
                 index, enabled));
+    }
+
+    private void sendDeviceToggle(MonitorDevice device, boolean enabled) {
+        if (device == null || selectedNetId < 0 || !device.loaded) return;
+        securityNotice = enabled ? "Device enabled" : "Device disabled";
+        ModNetwork.INSTANCE.sendToServer(new MessageMonitorNetRequest(
+                origin, MessageMonitorNetRequest.TOGGLE_DEVICE, selectedNetId, "", 0,
+                device.pos, enabled));
     }
 
     private void sendDoorAction(MonitorDevice device, boolean open) {

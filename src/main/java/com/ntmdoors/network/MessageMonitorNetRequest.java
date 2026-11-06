@@ -44,6 +44,7 @@ public class MessageMonitorNetRequest implements IMessage {
     public static final int OPEN_ALL_DOORS = 9;
     public static final int OPEN_DOOR = 10;
     public static final int CLOSE_DOOR = 11;
+    public static final int TOGGLE_DEVICE = 12;
 
     private BlockPos deskPos;
     private int action;
@@ -75,6 +76,12 @@ public class MessageMonitorNetRequest implements IMessage {
     public MessageMonitorNetRequest(BlockPos deskPos, int action, int netId, String name, int hand,
                                     BlockPos devicePos) {
         this(deskPos, action, netId, name, hand, -1, false);
+        this.devicePos = devicePos;
+    }
+
+    public MessageMonitorNetRequest(BlockPos deskPos, int action, int netId, String name, int hand,
+                                    BlockPos devicePos, boolean enabled) {
+        this(deskPos, action, netId, name, hand, -1, enabled);
         this.devicePos = devicePos;
     }
 
@@ -161,6 +168,9 @@ public class MessageMonitorNetRequest implements IMessage {
                 case CLOSE_DOOR:
                     setDoor(player, desk, message, false);
                     break;
+                case TOGGLE_DEVICE:
+                    toggleDevice(player, desk, message);
+                    break;
                 default:
                     break;
             }
@@ -191,9 +201,16 @@ public class MessageMonitorNetRequest implements IMessage {
                 if (changed) desk.setNetDevices(net.id, devices);
             }
 
+            List<MonitorDevice> views = new ArrayList<>(devices.size());
+            for (MonitorDevice device : devices) {
+                boolean loaded = player.world.isBlockLoaded(device.pos);
+                boolean enabled = !loaded || MonitorDevice.isEnabled(player.world, device);
+                views.add(device.withState(enabled, loaded));
+            }
+
             ModNetwork.INSTANCE.sendTo(new MessageMonitorDevices(
                     desk.getPos(), net.id, net.displayName(), net.getLinkedKeyName(),
-                    net.getEventMask(), devices), player);
+                    net.getEventMask(), views), player);
         }
 
         private static void toggleEvent(EntityPlayerMP player, TileEntityMonitorDesk desk,
@@ -246,6 +263,27 @@ public class MessageMonitorNetRequest implements IMessage {
             } else {
                 door.closeForSystem();
             }
+        }
+
+        /** Server side: enables or disables one non-door device that is part of the selected net. */
+        private static void toggleDevice(EntityPlayerMP player, TileEntityMonitorDesk desk,
+                                         MessageMonitorNetRequest message) {
+            SecurityNet net = desk.getNet(message.netId);
+            if (net == null || message.devicePos == null) return;
+
+            MonitorDevice target = null;
+            for (MonitorDevice device : net.getDevices()) {
+                if (device.type != MonitorDevice.Type.DOOR
+                        && device.pos.equals(message.devicePos)) {
+                    target = device;
+                    break;
+                }
+            }
+            if (target == null || !player.world.isBlockLoaded(target.pos)) return;
+
+            MonitorDevice.setEnabled(player.world, target, message.eventValue);
+            // Keep the binding list untouched; the refreshed device list carries the new state.
+            sendDevices(player, desk, net, false);
         }
 
         private static void bindKey(EntityPlayerMP player, TileEntityMonitorDesk desk,

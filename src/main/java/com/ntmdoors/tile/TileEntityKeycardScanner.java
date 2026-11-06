@@ -134,6 +134,8 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
 
     /** Manual emergency lock: the bound doors stay shut and no card opens them. */
     private boolean lockdown;
+    /** Security-net switch. Off ignores card, key and biometric scans. */
+    private boolean enabled = true;
     /** Automatic protection: repeated failures lock the reader for a few minutes. */
     private boolean lockoutMode;
     /** Access switches. Each one disables its own auth method, not the other. */
@@ -390,6 +392,26 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         return true;
     }
 
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    /** Server side: switches the scanner on or off from the Security net. */
+    public boolean setEnabled(boolean value) {
+        if (world == null || world.isRemote || enabled == value) return false;
+        enabled = value;
+        if (!value && state == State.SCANNING) {
+            state = State.IDLE;
+            ticks = 0;
+            scanningPlayer = null;
+            scanMain = ItemStack.EMPTY;
+            scanOff = ItemStack.EMPTY;
+            scanCreative = false;
+        }
+        sync();
+        return true;
+    }
+
     public boolean isLockoutMode() {
         return lockoutMode;
     }
@@ -479,7 +501,7 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
      * lockdown, and clears the auto-close so it stays open until something closes it.
      */
     public void forceOpenDoors() {
-        if (world == null || world.isRemote) return;
+        if (world == null || world.isRemote || !enabled) return;
         if (SecurityEvents.isShutdown(world, pos)
                 || SecurityEvents.isLockdown(world, pos)
                 || SecurityEvents.isScannerDisabled(world, pos)) return;
@@ -798,6 +820,10 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
 
     /** Server side: starts a scan for the cards the player is holding right now. */
     public void useCard(EntityPlayer player) {
+        if (!enabled) {
+            msg(player, "ntmdoors.msg.scanner_disabled");
+            return;
+        }
         if (SecurityEvents.isShutdown(world, pos)) {
             msg(player, "ntmdoors.msg.system_shutdown");
             return;
@@ -825,7 +851,7 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
 
     private void resolveScan() {
         EntityPlayer player = scanningPlayer == null ? null : world.getPlayerEntityByUUID(scanningPlayer);
-        boolean blocked = lockdown || lockedOut || SecurityEvents.isShutdown(world, pos)
+        boolean blocked = !enabled || lockdown || lockedOut || SecurityEvents.isShutdown(world, pos)
                 || SecurityEvents.isLockdown(world, pos)
                 || SecurityEvents.isScannerDisabled(world, pos);
         boolean granted = player != null && (scanCreative || (!blocked && holdsAssignedKey(player)));
@@ -1038,6 +1064,7 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
     /** The option switches, shared by the save tag and the client sync tag. */
     private void writeOptions(NBTTagCompound tag) {
         tag.setBoolean("matchHolder", matchHolder);
+        tag.setBoolean("enabled", enabled);
         tag.setBoolean("lockdown", lockdown);
         tag.setBoolean("lockoutMode", lockoutMode);
         tag.setBoolean("ignoreKeys", ignoreKeys);
@@ -1050,6 +1077,7 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
     private void readOptions(NBTTagCompound tag) {
         // Holder matching defaults on, so a scanner saved before this option existed keeps it.
         matchHolder = !tag.hasKey("matchHolder") || tag.getBoolean("matchHolder");
+        enabled = !tag.hasKey("enabled") || tag.getBoolean("enabled");
         lockdown = tag.getBoolean("lockdown");
         lockoutMode = tag.getBoolean("lockoutMode");
         ignoreKeys = tag.getBoolean("ignoreKeys");

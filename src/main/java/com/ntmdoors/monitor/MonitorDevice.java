@@ -74,15 +74,33 @@ public final class MonitorDevice {
     public final Type type;
     public final BlockPos pos;
     public final String name;
+    /**
+     * Runtime view state sent to the terminal. It is not part of the saved net entry: the device
+     * tile remains the source of truth. Unloaded devices keep the default so old NBT stays valid.
+     */
+    public final boolean enabled;
+    public final boolean loaded;
 
     public MonitorDevice(Type type, BlockPos pos, @Nullable String name) {
+        this(type, pos, name, true, true);
+    }
+
+    public MonitorDevice(Type type, BlockPos pos, @Nullable String name,
+                         boolean enabled, boolean loaded) {
         this.type = type;
         this.pos = pos.toImmutable();
         this.name = name == null || name.isEmpty() ? type.displayName() : name;
+        this.enabled = enabled;
+        this.loaded = loaded;
     }
 
     public MonitorDevice withName(String name) {
-        return new MonitorDevice(type, pos, name);
+        return new MonitorDevice(type, pos, name, enabled, loaded);
+    }
+
+    /** A copy carrying the live tile state for the terminal list. */
+    public MonitorDevice withState(boolean enabled, boolean loaded) {
+        return new MonitorDevice(type, pos, name, enabled, loaded);
     }
 
     public boolean matches(MonitorDevice other) {
@@ -174,6 +192,57 @@ public final class MonitorDevice {
                     state.getValue(BlockMonitorDesk.FACING)));
         }
         return null;
+    }
+
+    /** Doors use their Open/Close buttons; the other five families have an enabled state. */
+    public static boolean supportsToggle(MonitorDevice device) {
+        return device != null && device.type != Type.DOOR;
+    }
+
+    /** Reads the live enabled state from the device tile. Doors always report enabled. */
+    public static boolean isEnabled(World world, MonitorDevice device) {
+        if (device == null || device.type == Type.DOOR || world == null) return true;
+        TileEntity te = world.getTileEntity(device.pos);
+        if (te instanceof TileEntityDoorKeypad) {
+            return ((TileEntityDoorKeypad) te).isEnabled();
+        }
+        if (te instanceof TileEntityKeycardScanner) {
+            return ((TileEntityKeycardScanner) te).isEnabled();
+        }
+        if (te instanceof TileEntityMotionSensor) {
+            return ((TileEntityMotionSensor) te).isEnabled();
+        }
+        if (te instanceof TileEntityRedstoneGate) {
+            return ((TileEntityRedstoneGate) te).isEnabled();
+        }
+        if (te instanceof TileEntitySpeaker) {
+            return ((TileEntitySpeaker) te).isEnabled();
+        }
+        return true;
+    }
+
+    /** Server side: changes the live enabled state of one linked device. */
+    public static boolean setEnabled(World world, MonitorDevice device, boolean enabled) {
+        if (device == null || device.type == Type.DOOR || world == null || world.isRemote) {
+            return false;
+        }
+        TileEntity te = world.getTileEntity(device.pos);
+        if (te instanceof TileEntityDoorKeypad) {
+            return ((TileEntityDoorKeypad) te).setEnabled(enabled);
+        }
+        if (te instanceof TileEntityKeycardScanner) {
+            return ((TileEntityKeycardScanner) te).setEnabled(enabled);
+        }
+        if (te instanceof TileEntityMotionSensor) {
+            return ((TileEntityMotionSensor) te).setEnabled(enabled);
+        }
+        if (te instanceof TileEntityRedstoneGate) {
+            return ((TileEntityRedstoneGate) te).setEnabled(enabled);
+        }
+        if (te instanceof TileEntitySpeaker) {
+            return ((TileEntitySpeaker) te).setEnabled(enabled);
+        }
+        return false;
     }
 
     /**

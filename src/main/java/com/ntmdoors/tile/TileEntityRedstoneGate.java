@@ -62,6 +62,8 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
     /** Ignore the neighbor updates caused by our own output changing. */
     private int ignoreNeighborTicks;
 
+    /** Security-net switch. Off forces the output low and ignores input and wireless pulses. */
+    private boolean enabled = true;
     /** Hold the gate active until this setting is turned off from the gate screen. */
     private boolean stayActive;
     /** Powered when there is no input, unpowered when an input is present. */
@@ -242,6 +244,30 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
 
     // ------------------------------------------------------------ activation
 
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    /** Server side: switches the gate on or off from the Security net. */
+    public boolean setEnabled(boolean value) {
+        if (getWorld() == null || getWorld().isRemote || enabled == value) return false;
+        enabled = value;
+        if (!value) {
+            pulseEnd = 0;
+            holds.clear();
+            inputSettleTicks = 0;
+            invertProbeTicks = 0;
+            ignoreNeighborTicks = 1;
+            systemIdle = true;
+            setPowered(false);
+        } else {
+            ignoreNeighborTicks = 1;
+            refreshPower();
+        }
+        sync();
+        return true;
+    }
+
     /** Server side: starts a wireless activation window. */
     public void pulse() {
         if (getWorld() == null || getWorld().isRemote || stayActive) return;
@@ -262,7 +288,7 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
 
     private boolean isSystemIdle() {
         World world = getWorld();
-        return world != null && (SecurityEvents.isShutdown(world, pos)
+        return world != null && (!enabled || SecurityEvents.isShutdown(world, pos)
                 || SecurityEvents.isGateDisabled(world, pos));
     }
 
@@ -351,6 +377,11 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
     @Override
     public void onLoad() {
         if (getWorld() == null || getWorld().isRemote) return;
+        if (!enabled) {
+            systemIdle = true;
+            setPowered(false);
+            return;
+        }
         if (stayActive) {
             setPowered(true);
         } else if (invert && !isPulsing()) {
@@ -406,6 +437,7 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
         super.writeToNBT(tag);
         tag.setString("boundDevices", BlockPositions.encodeList(boundDevices));
         tag.setLong("wirelessPulseEnd", pulseEnd);
+        tag.setBoolean("enabled", enabled);
         tag.setBoolean("stayActive", stayActive);
         tag.setBoolean("invert", invert);
         tag.setInteger("activeTicks", activeTicks);
@@ -425,6 +457,7 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
         } else {
             pulseEnd = 0;
         }
+        enabled = !tag.hasKey("enabled") || tag.getBoolean("enabled");
         stayActive = tag.getBoolean("stayActive");
         invert = tag.getBoolean("invert");
         activeTicks = tag.hasKey("activeTicks")

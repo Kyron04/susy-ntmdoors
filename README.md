@@ -270,7 +270,9 @@ for editing.
   `Delete net` asks for confirmation, then removes the net and its device list and unlinks its key.
   A `Devices` / `Events` tab row switches between the device list and per-net event controls.
   Door rows carry `Open` and `Close` buttons that control that door directly, including doors with no
-  scanner or keypad binding; the terminal bypasses those local locks.
+  scanner or keypad binding; the terminal bypasses those local locks. Every other device row has an
+  `ON` / `OFF` switch: off makes a keypad or scanner ignore input, stops a motion sensor detecting,
+  forces a Redstone Gate output low, and mutes a speaker. The switch state is saved on the device.
   `System Shutdown` idles every device in the net; `System Lockdown` closes all net doors and keeps
   them shut; `Trigger Alarms` sounds every speaker; and `Disable Keypads`, `Disable Scanners`,
   `Disable Sensors` and `Disable Redstone Gates` switch off those device families. `Close all

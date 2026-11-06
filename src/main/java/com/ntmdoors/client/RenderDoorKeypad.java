@@ -177,6 +177,12 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
                     line1 = "Unable to bound";
                     color = 0xFFFF0800;
                     break;
+                case DISABLED:
+                    line1 = "Keypad";
+                    line2 = "Disabled";
+                    color = 0xFFFF0800;
+                    twoLines = true;
+                    break;
                 default: // DENIED
                     line1 = "Access";
                     line2 = "Denied";
