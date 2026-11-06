@@ -211,18 +211,11 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
         } else if (invert && isPoweredOn()) {
             startInvertProbe();
         } else {
-            boolean active = isPulsing() || isHeld()
-                    || BlockRedstoneGate.isReceivingPower(getWorld(), pos);
-            if (active) {
-                refreshPower();
-                ignoreNeighborTicks = 1;
-            } else {
-                // Do not read the input while the gate is still powering its own top dust. Drop
-                // the output first and let the attached wire settle for a tick.
-                inputSettleTicks = INPUT_SETTLE_TICKS;
-                ignoreNeighborTicks = 1;
-                setPowered(false);
-            }
+            // Drop the output first and let the attached wire settle for a tick. Reading the input
+            // while the gate is still powering its own top dust would keep it latched on.
+            inputSettleTicks = INPUT_SETTLE_TICKS;
+            ignoreNeighborTicks = 1;
+            setPowered(false);
         }
         return true;
     }
