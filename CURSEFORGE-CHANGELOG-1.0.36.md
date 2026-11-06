@@ -66,6 +66,7 @@
 - Fixed a dedicated-server speaker crash caused by client-only field initialisation.
 - Fixed net-wide lockdown gaps in scanners, keypads and redstone requests.
 - Fixed terminal passwords being overwritable by repeating the setup action.
+- Fixed the Security key-slot display leaving depth testing disabled while the physical monitor screen was drawn. This could make a nearby multi-part door or hatch render with all of its faces visible, looking like a green crystal, after closing the terminal.
 - Fixed upper monitor cells not giving the desk item on middle-click.
 - Made idle monitor desks skip their entire screen tick loop.
 - Removed quadratic Notepad line wrapping on long lines.

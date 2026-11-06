@@ -148,7 +148,8 @@ public class RenderMonitorDesk extends TileEntitySpecialRenderer<TileEntityMonit
         GlStateManager.enableCull();
         GlStateManager.disableBlend();
         GlStateManager.depthMask(depthWrite);
-        if (!depth) GlStateManager.disableDepth();
+        if (depth) GlStateManager.enableDepth();
+        else GlStateManager.disableDepth();
         if (lighting) GlStateManager.enableLighting();
         GlStateManager.popMatrix();
     }
@@ -598,6 +599,8 @@ public class RenderMonitorDesk extends TileEntitySpecialRenderer<TileEntityMonit
         float z = screen.z / 16F - 0.5F - 0.009F;
 
         boolean alpha = GL11.glIsEnabled(GL11.GL_ALPHA_TEST);
+        boolean depth = GL11.glIsEnabled(GL11.GL_DEPTH_TEST);
+        boolean lighting = GL11.glIsEnabled(GL11.GL_LIGHTING);
 
         GlStateManager.pushMatrix();
         // The world projection stays active. Mapping the GUI's 512x384 coordinates into the
@@ -619,8 +622,12 @@ public class RenderMonitorDesk extends TileEntitySpecialRenderer<TileEntityMonit
                 GlStateManager.DestFactor.ZERO);
         gui.drawScreen(-1, -1, partialTicks);
         GlStateManager.depthMask(depthWrite);
+        if (depth) GlStateManager.enableDepth();
+        else GlStateManager.disableDepth();
         if (alpha) GlStateManager.enableAlpha();
         else GlStateManager.disableAlpha();
+        if (lighting) GlStateManager.enableLighting();
+        else GlStateManager.disableLighting();
         GlStateManager.popMatrix();
         GlStateManager.color(1F, 1F, 1F, 1F);
         GlStateManager.enableTexture2D();

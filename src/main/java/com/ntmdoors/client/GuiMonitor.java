@@ -33,6 +33,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -1373,12 +1374,20 @@ public class GuiMonitor extends GuiScreen {
     private void drawKeySlotItem() {
         ItemStack key = keyDisplayStack();
         if (key.isEmpty()) return;
+        // This page is also drawn into the physical monitor screen while the world is being
+        // rendered. Never leave depth testing disabled: the next world renderer would draw its
+        // faces without a depth buffer and a nearby multi-part model would look like a crystal.
+        boolean depth = GL11.glIsEnabled(GL11.GL_DEPTH_TEST);
+        boolean lighting = GL11.glIsEnabled(GL11.GL_LIGHTING);
         RenderHelper.enableGUIStandardItemLighting();
         GlStateManager.enableDepth();
         mc.getRenderItem().renderItemAndEffectIntoGUI(key, contentLeft + 1,
                 securityContentTop() + 65);
         RenderHelper.disableStandardItemLighting();
-        GlStateManager.disableDepth();
+        if (depth) GlStateManager.enableDepth();
+        else GlStateManager.disableDepth();
+        if (lighting) GlStateManager.enableLighting();
+        else GlStateManager.disableLighting();
         GlStateManager.enableTexture2D();
         GlStateManager.color(1F, 1F, 1F, 1F);
     }

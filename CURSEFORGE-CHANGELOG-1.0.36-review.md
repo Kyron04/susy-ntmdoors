@@ -1,8 +1,8 @@
 # NTM Doors — CurseForge review changelog
 
-**New file:** `ntmdoors-1.0.36.jar` (internal build 1.0.146; rename the CF file version if desired)  
+**New file:** `ntmdoors-1.0.36.jar` (internal build 1.0.148; rename the CF file version if desired)  
 **Baseline:** public **1.0.36** (internal build 1.0.36)  
-**SHA-256:** `433200B45B284084AE7DD95402D9C8FD9E16AA2075C2CCBBBDDA7D4EA1D43159`
+**SHA-256:** `2FD45B24F1D71BB1E044CBA59D53192218F69ECDA54787294987E9679B5D3C61`
 
 This is the cumulative change set since the public 1.0.36 release. The baseline jar was rebuilt
 from the public 1.0.36 source revision so both sides use the same build system. The comparison
@@ -105,6 +105,9 @@ in the baseline, with 186 new entries and 610 updated entries.
   (`NoSuchFieldError: loopSoundIndex`).
 - Fixed net-wide lockdown gaps in scanners, keypads and redstone requests.
 - Fixed terminal passwords being overwritable by repeating the setup action.
+- Fixed the Security key-slot display leaving depth testing disabled while the physical monitor
+  screen was drawn. This could make a nearby multi-part door or hatch render with every face
+  visible (looking like a green crystal) after closing the terminal.
 - Fixed upper monitor cells not giving the desk item on middle-click.
 - Made idle monitor desks skip their entire screen tick loop.
 - Removed quadratic Notepad line wrapping on long lines.
