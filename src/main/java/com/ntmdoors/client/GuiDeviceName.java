@@ -60,7 +60,6 @@ public class GuiDeviceName extends GuiScreen {
         if (field == null) {
             field = new GuiTextField(0, fontRenderer, left + 16, top + 64, PANEL_WIDTH - 32, 18);
             field.setMaxStringLength(PrivateKeys.NAME_LENGTH);
-            field.setEnableBackgroundDrawing(false);
             field.setTextColor(TEXT);
             field.setDisabledTextColour(MUTED);
             field.setCanLoseFocus(false);
@@ -73,6 +72,9 @@ public class GuiDeviceName extends GuiScreen {
             field.width = PANEL_WIDTH - 32;
             field.height = 18;
         }
+        // The field's own background gives the text the standard 4px side padding and
+        // vertical centering. The orange frame is drawn over it afterwards.
+        field.setEnableBackgroundDrawing(true);
         field.setFocused(true);
     }
 
@@ -102,10 +104,11 @@ public class GuiDeviceName extends GuiScreen {
                 left + 16, top + 32, MUTED);
         drawString(fontRenderer, "Name", left + 16, top + 50, ORANGE);
 
-        drawRect(field.x - 1, field.y - 1, field.x + field.width + 1, field.y + field.height + 1,
-                ORANGE);
         drawRect(field.x, field.y, field.x + field.width, field.y + field.height, FIELD_BG);
         field.drawTextBox();
+        // Cover the field's default grey border with the orange frame.
+        drawRect(field.x - 1, field.y - 1, field.x + field.width + 1, field.y + field.height + 1,
+                ORANGE);
 
         int saveX = left + 16;
         int cancelX = left + PANEL_WIDTH - 16 - 128;
