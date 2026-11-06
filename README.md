@@ -29,7 +29,7 @@ for editing.
 * Redstone from any cell of the door (edge triggered), right click toggle
 * Every door is also registered as a locked copy named `<door>_locked`, and as a `<door>_security`
   copy that only a keycard scanner (or the Creative Keycard directly) can open. Normal and locked
-  doors respond to redstone; security doors refuse it, as do hand clicks. All 16 doors, including
+  doors respond to redstone; security doors refuse it, as do hand clicks. All 17 doors, including
   both silo hatches, now have a security variant. Security doors take three real hours to mine with
   any tool, and keypads may bind and drive locked doors exactly like normal ones; security doors
   are off limits to keypads.
@@ -37,10 +37,10 @@ for editing.
   (walk through when open, click-through gaps)
 * OBJ renderer (TESR) with per-group translate/rotate animations, X/Y/Z clipping and sounds
 * 3D door item rendering (inventory, hand, ground) from the same OBJ model, matching HBM's door item renderer
-* 16 multiblock OBJ doors: `vault_door`, `sliding_blast_door`, `qe_sliding_door`, `qe_sliding_panel`,
+* 17 multiblock OBJ doors: `vault_door`, `sliding_blast_door`, `qe_sliding_door`, `qe_sliding_panel`,
   `fire_door`, `secure_access_door`, `sliding_seal_door`, `round_airlock_door`, `silo_hatch`,
-  `silo_hatch_large`, `large_vehicle_door`, `qe_containment`, `blast_door`, `cargo_door`,
-  `water_door`, and `transition_seal`, plus a `_locked` copy of each
+  `silo_hatch_large`, `large_vehicle_door`, `qe_containment`, `blast_shutter`, `blast_door`,
+  `cargo_door`, `water_door`, and `transition_seal`, plus a `_locked` copy of each
 * Screwdriver: sneak + right click on a door with alternate skins cycles through them; right click
   a keypad to start its code-reset sequence; sneak + right click an unused keypad cycles its
   binding mode. Every interaction the tool handles plays `button9`, so nearby players hear the
