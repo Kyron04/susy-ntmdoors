@@ -363,3 +363,7 @@ ntmdoors.msg.scanner_disabled=Scanner disabled
 tile.ntmdoors.test_door.name=Test Door
 tile.ntmdoors.test_door_locked.name=Test Door (Locked)
 tile.ntmdoors.test_door_security.name=Test Door (Security)
+
+tile.ntmdoors.blast_shutter.name=Blast Shutter
+tile.ntmdoors.blast_shutter_locked.name=Blast Shutter (Locked)
+tile.ntmdoors.blast_shutter_security.name=Blast Shutter (Security)

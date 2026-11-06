@@ -1,0 +1,142 @@
+{
+    "parent":  "block/block",
+    "gui_light":  "front",
+    "ambientocclusion":  true,
+    "textures":  {
+                     "particle":  "ntmdoors:blocks/shutter_plate",
+                     "plate":  "ntmdoors:blocks/shutter_plate",
+                     "rib":  "ntmdoors:blocks/shutter_rib",
+                     "post":  "ntmdoors:blocks/shutter_post",
+                     "piston":  "ntmdoors:blocks/shutter_piston",
+                     "hazard":  "ntmdoors:blocks/shutter_hazard",
+                     "seal":  "ntmdoors:blocks/shutter_seal"
+                 },
+    "elements":  [
+                     {
+                         "name":  "frame",
+                         "from":  [
+                                      0,
+                                      13,
+                                      5.75
+                                  ],
+                         "to":  [
+                                    16,
+                                    16,
+                                    10.25
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#post",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                3
+                                                            ]
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#post",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                3
+                                                            ]
+                                                 },
+                                       "up":  {
+                                                  "texture":  "#post",
+                                                  "uv":  [
+                                                             0,
+                                                             5.75,
+                                                             16,
+                                                             10.25
+                                                         ]
+                                              },
+                                       "down":  {
+                                                    "texture":  "#post",
+                                                    "uv":  [
+                                                               0,
+                                                               5.75,
+                                                               16,
+                                                               10.25
+                                                           ]
+                                                }
+                                   }
+                     },
+                     {
+                         "name":  "plate",
+                         "from":  [
+                                      0,
+                                      0,
+                                      7.25
+                                  ],
+                         "to":  [
+                                    16,
+                                    11,
+                                    8.75
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#plate",
+                                                     "uv":  [
+                                                                0,
+                                                                5,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#plate",
+                                                     "uv":  [
+                                                                0,
+                                                                5,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 }
+                                   }
+                     },
+                     {
+                         "name":  "plate",
+                         "from":  [
+                                      0,
+                                      11,
+                                      6.8
+                                  ],
+                         "to":  [
+                                    16,
+                                    13,
+                                    9.2
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#rib",
+                                                     "uv":  [
+                                                                0,
+                                                                3,
+                                                                16,
+                                                                5
+                                                            ]
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#rib",
+                                                     "uv":  [
+                                                                0,
+                                                                3,
+                                                                16,
+                                                                5
+                                                            ]
+                                                 },
+                                       "down":  {
+                                                    "texture":  "#rib",
+                                                    "uv":  [
+                                                               0,
+                                                               6.8,
+                                                               16,
+                                                               9.2
+                                                           ]
+                                                }
+                                   }
+                     }
+                 ]
+}

@@ -1,0 +1,49 @@
+{
+    "parent":  "block/block",
+    "gui_light":  "front",
+    "ambientocclusion":  true,
+    "textures":  {
+                     "particle":  "ntmdoors:blocks/shutter_plate",
+                     "plate":  "ntmdoors:blocks/shutter_plate",
+                     "rib":  "ntmdoors:blocks/shutter_rib",
+                     "post":  "ntmdoors:blocks/shutter_post",
+                     "piston":  "ntmdoors:blocks/shutter_piston",
+                     "hazard":  "ntmdoors:blocks/shutter_hazard",
+                     "seal":  "ntmdoors:blocks/shutter_seal"
+                 },
+    "elements":  [
+                     {
+                         "name":  "plate",
+                         "from":  [
+                                      0,
+                                      0,
+                                      7.25
+                                  ],
+                         "to":  [
+                                    16,
+                                    16,
+                                    8.75
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "texture":  "#plate",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#plate",
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ]
+                                                 }
+                                   }
+                     }
+                 ]
+}

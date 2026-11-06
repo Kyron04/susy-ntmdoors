@@ -545,6 +545,18 @@ public final class DoorDecls {
             .sounds(null, SND_WGH_START, SND_WGH_STOP)
             .anim("Door", PartAnim.translate(0, 2.25, 0, 0F, 1F)));
 
+    public static final DoorDecl BLAST_SHUTTER = reg(new DoorDecl("blast_shutter")
+            .footprint(-1, 1, 0, 2, 0, 0).times(40, 40).strength(25F, 4000F)
+            .modelPath("models/doors/blast_shutter.obj",
+                    "textures/models/doors/blast_shutter.png")
+            .movingBox ("plate", box(-1.5, 0, -0.5, 1.5, 2.75, 0.5))
+            .open(box(-1.5, 0, -0.5, -1.25, 3, 0.5),
+             box(1.25, 0, -0.5, 1.5, 3, 0.5),
+             box(-1.25, 2.75, -0.5, 1.25, 3, 0.5))
+            .openSelectionOnly(box(-1.5, 0, -0.5, 1.5, 0.125, 0.5))
+            .clipY(Double.NEGATIVE_INFINITY, 3)
+            .sounds(null, SND_GARAGE_MOVE, SND_GARAGE_STOP)
+            .anim("plate", PartAnim.translate(0, 3, 0, 0F, 1F)));
     private DoorDecls() {
     }
 }
