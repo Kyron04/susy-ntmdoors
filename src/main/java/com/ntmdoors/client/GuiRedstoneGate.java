@@ -108,7 +108,7 @@ public class GuiRedstoneGate extends GuiScreen {
 
         TileEntityRedstoneGate gate = gate();
         drawToggle(0, "Stay active after signal",
-                "Holds the gate on until switched off here.",
+                "Keeps it on after a signal, until switched off here.",
                 gate != null && gate.isStayActive(), mouseX, mouseY);
         drawToggle(1, "Invert operation",
                 "Powered when there is no input.",

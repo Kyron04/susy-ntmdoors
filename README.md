@@ -249,8 +249,9 @@ for editing.
   for its configured duration;
   another event extends the pulse. Sneak + right-click it with an Operator Keycard, Biometric
   Operator Keycard, or the Creative Keycard to open its settings screen. The screen has `Stay
-  active after signal` (hold the gate on until switched off there), `Invert operation` (powered
-  when there is no input), and activation duration controls from 1 second up to 5 minutes using
+  active after signal` (keep the gate on after it receives a signal until switched off there),
+  `Invert operation` (powered when there is no input), and activation duration controls from
+  1 second up to 5 minutes using
   +1/+5/+10/+20 second and matching subtract buttons. It has a red menu name and the tooltip
   `Bound activities from Keypads, Keycard Scanners, and Safes will emit a redstone signal`.
 * Redstone Relay Key (`ntmdoors:redstone_relay_key`): a red-named creative key with the tooltip

@@ -3,12 +3,17 @@ package com.ntmdoors.tile;
 import com.ntmdoors.client.SpeakerLoopSound;
 import com.ntmdoors.monitor.SecurityEvents;
 import com.ntmdoors.util.ModSounds;
+import net.minecraft.block.BlockRedstoneWire;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -138,7 +143,7 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
     @Override
     public void onLoad() {
         if (world != null && !world.isRemote) {
-            powered = world.isBlockPowered(pos);
+            powered = isRedstonePowered();
         }
     }
 
@@ -146,7 +151,26 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
     public void onNeighborChanged() {
         if (world == null || world.isRemote) return;
         if (SecurityEvents.isShutdown(world, pos)) return;
-        updatePower(world.isBlockPowered(pos));
+        updatePower(isRedstonePowered());
+    }
+
+    /**
+     * Normal block power plus a direct check of adjacent redstone dust. The speaker is deliberately
+     * not a full cube so its model can sit flush, and ordinary weak-power queries can miss dust
+     * feeding a non-full-cube machine from the side.
+     */
+    private boolean isRedstonePowered() {
+        if (world == null) return false;
+        if (world.isBlockPowered(pos)) return true;
+        for (EnumFacing side : EnumFacing.values()) {
+            BlockPos neighbour = pos.offset(side);
+            IBlockState state = world.getBlockState(neighbour);
+            if (state.getBlock() == Blocks.REDSTONE_WIRE
+                    && state.getValue(BlockRedstoneWire.POWER) > 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -175,7 +199,7 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
             sync();
         }
 
-        updatePower(world.isBlockPowered(pos));
+        updatePower(isRedstonePowered());
         redstoneBinding.update();
     }
 

@@ -205,15 +205,24 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
             pulseEnd = 0;
             invertProbeTicks = 0;
             ignoreNeighborTicks = 0;
-            setPowered(true);
+            // Latch only a gate that already has an input. Enabling the setting must not
+            // power an idle gate by itself.
+            refreshPower();
         } else if (invert && isPoweredOn()) {
             startInvertProbe();
         } else {
-            // Do not read the input while the gate is still powering its own top dust. Drop the
-            // output first and let the attached wire settle for a tick.
-            inputSettleTicks = INPUT_SETTLE_TICKS;
-            ignoreNeighborTicks = 1;
-            setPowered(false);
+            boolean active = isPulsing() || isHeld()
+                    || BlockRedstoneGate.isReceivingPower(getWorld(), pos);
+            if (active) {
+                refreshPower();
+                ignoreNeighborTicks = 1;
+            } else {
+                // Do not read the input while the gate is still powering its own top dust. Drop
+                // the output first and let the attached wire settle for a tick.
+                inputSettleTicks = INPUT_SETTLE_TICKS;
+                ignoreNeighborTicks = 1;
+                setPowered(false);
+            }
         }
         return true;
     }
@@ -224,7 +233,8 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
         invert = value;
         sync();
         if (stayActive) {
-            setPowered(true);
+            refreshPower();
+            ignoreNeighborTicks = 1;
         } else if (value && isPoweredOn()) {
             startInvertProbe();
         } else if (!value && isPoweredOn()) {
@@ -305,8 +315,11 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
         if (getWorld() == null || getWorld().isRemote) return;
         if (isSystemIdle()) return;
         if (inputSettleTicks > 0 || invertProbeTicks > 0 || ignoreNeighborTicks > 0) return;
-        if (stayActive) {
-            setPowered(true);
+        if (stayActive && !invert) {
+            // Keep a latched gate on, but only switch an idle gate on when a real input arrives.
+            if (BlockRedstoneGate.isReceivingPower(getWorld(), pos) || isPulsing() || isHeld()) {
+                setPowered(true);
+            }
             return;
         }
         if (isPulsing() || isHeld()) return;
@@ -401,9 +414,7 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
             setPowered(false);
             return;
         }
-        if (stayActive) {
-            setPowered(true);
-        } else if (invert && !isPulsing()) {
+        if (invert && !isPulsing()) {
             // The saved gate may be powering its own attached wire; probe before trusting input.
             startInvertProbe();
         } else {
@@ -425,12 +436,14 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
             setPowered(false);
             return;
         }
-        if (stayActive) {
-            setPowered(true);
-            return;
-        }
         boolean active = isPulsing() || isHeld()
                 || BlockRedstoneGate.isReceivingPower(getWorld(), pos);
+        if (stayActive && !invert) {
+            // A latched gate stays on while its input is gone. An idle gate only turns on when
+            // an input actually arrives.
+            if (active) setPowered(true);
+            return;
+        }
         if (invert) ignoreNeighborTicks = 1;
         setPowered(invert ? !active : active);
     }

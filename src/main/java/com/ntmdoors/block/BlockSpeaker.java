@@ -24,6 +24,10 @@ import javax.annotation.Nullable;
 /**
  * 1x1x1 speaker cabinet. Shift-right-click opens its two-row control screen; redstone power while
  * enabled drives the alarm loop in {@link TileEntitySpeaker}.
+ *
+ * <p>Redstone dust is allowed to connect visually to the cabinet. Because the cabinet is not a
+ * full cube, the speaker also reads adjacent dust power directly; the ordinary block-power query
+ * alone can miss dust on a non-full-cube machine.</p>
  */
 public class BlockSpeaker extends Block {
 
