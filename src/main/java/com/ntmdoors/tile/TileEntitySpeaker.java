@@ -30,8 +30,6 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
     public static final int MAX_VOLUME = 100;
     public static final int DEFAULT_VOLUME = 100;
 
-    /** Minecraft's sound range is roughly volume * 16 blocks. */
-    private static final float SOUND_RANGE_PER_VOLUME = 16F;
     private static final String[] SOUND_NAMES = {"Air Raid", "Facility", "Industrial", "EAS"};
 
     private final RedstoneBinding redstoneBinding = new RedstoneBinding(this);
@@ -48,8 +46,6 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
     private SpeakerLoopSound loopSound;
     @SideOnly(Side.CLIENT)
     private int loopSoundIndex;
-    @SideOnly(Side.CLIENT)
-    private float loopVolume;
 
     public boolean isEnabled() {
         return enabled;
@@ -108,10 +104,6 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
 
     public boolean isPowered() {
         return powered;
-    }
-
-    public float getEffectiveVolume() {
-        return (range / SOUND_RANGE_PER_VOLUME) * (volume / (float) MAX_VOLUME);
     }
 
     public SoundEvent getSoundEvent() {
@@ -196,7 +188,9 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
 
     @SideOnly(Side.CLIENT)
     private void updateClientSound() {
-        if (!enabled || (!powered && !systemAlarm) || volume <= 0 || range <= 0) {
+        EntityPlayer player = Minecraft.getMinecraft().player;
+        if (!enabled || (!powered && !systemAlarm) || volume <= 0 || range <= 0
+                || !isPlayerInRange(player)) {
             stopClientSound();
             return;
         }
@@ -204,20 +198,23 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
         if (loopSound != null && loopSound.isDonePlaying()) {
             loopSound = null;
             loopSoundIndex = -1;
-            loopVolume = -1F;
         }
 
-        float effectiveVolume = getEffectiveVolume();
-        if (loopSound == null || loopSoundIndex != sound
-                || Math.abs(loopVolume - effectiveVolume) > 0.001F) {
+        if (loopSound == null || loopSoundIndex != sound) {
             stopClientSound();
             loopSoundIndex = sound;
-            loopVolume = effectiveVolume;
-            loopSound = new SpeakerLoopSound(this, getSoundEvent(), sound, effectiveVolume);
+            loopSound = new SpeakerLoopSound(this, getSoundEvent(), sound);
             Minecraft.getMinecraft().getSoundHandler().playSound(loopSound);
-        } else {
-            loopSound.updateVolume(effectiveVolume);
         }
+    }
+
+    @SideOnly(Side.CLIENT)
+    private boolean isPlayerInRange(EntityPlayer player) {
+        if (player == null || !hasWorld()) return false;
+        double dx = player.posX - (pos.getX() + 0.5D);
+        double dy = player.posY + player.getEyeHeight() - (pos.getY() + 0.5D);
+        double dz = player.posZ - (pos.getZ() + 0.5D);
+        return dx * dx + dy * dy + dz * dz < (double) range * range;
     }
 
     @SideOnly(Side.CLIENT)
@@ -227,7 +224,6 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
         if (handler != null) handler.stopSound(loopSound);
         loopSound = null;
         loopSoundIndex = -1;
-        loopVolume = -1F;
     }
 
     @Override

@@ -209,8 +209,11 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
         } else if (invert && isPoweredOn()) {
             startInvertProbe();
         } else {
-            refreshPower();
+            // Do not read the input while the gate is still powering its own top dust. Drop the
+            // output first and let the attached wire settle for a tick.
+            inputSettleTicks = INPUT_SETTLE_TICKS;
             ignoreNeighborTicks = 1;
+            setPowered(false);
         }
         return true;
     }
@@ -224,6 +227,12 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
             setPowered(true);
         } else if (value && isPoweredOn()) {
             startInvertProbe();
+        } else if (!value && isPoweredOn()) {
+            // Turning inversion off while the gate is powered is the same feedback risk as
+            // leaving Stay active: drop the output before re-reading the wire.
+            inputSettleTicks = INPUT_SETTLE_TICKS;
+            ignoreNeighborTicks = 1;
+            setPowered(false);
         } else {
             refreshPower();
             ignoreNeighborTicks = 1;
@@ -306,7 +315,17 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
             if (isPoweredOn()) startInvertProbe();
             else refreshPower();
         } else {
-            setPowered(BlockRedstoneGate.isReceivingPower(getWorld(), pos));
+            boolean powered = BlockRedstoneGate.isReceivingPower(getWorld(), pos);
+            if (!powered && isPoweredOn()) {
+                // Drop the output first and ignore the neighbour feedback for a moment. Dust
+                // sitting directly on the gate can otherwise keep the old output alive long
+                // enough to feed the gate back on.
+                inputSettleTicks = INPUT_SETTLE_TICKS;
+                ignoreNeighborTicks = 1;
+                setPowered(false);
+            } else {
+                setPowered(powered);
+            }
         }
     }
 
@@ -430,6 +449,13 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
         if (state.getValue(BlockRedstoneGate.POWERED) == powered) return;
         world.setBlockState(pos, state.withProperty(BlockRedstoneGate.POWERED, powered), 3);
         world.notifyNeighborsOfStateChange(pos, state.getBlock(), false);
+        // Dust sitting on the gate's top face is the one cell that can keep a stale power value
+        // through the generic neighbour pass, so give it a direct recalculation after the state
+        // change. The update cascades through the rest of the connected wire.
+        BlockPos above = pos.up();
+        if (world.isBlockLoaded(above)) {
+            world.neighborChanged(above, state.getBlock(), pos);
+        }
     }
 
     @Override

@@ -158,8 +158,10 @@ for editing.
   port. Shift-right-click (with any item or an empty hand) opens a safe-style toggle screen with
   `Enabled`, four selectable sounds (`Air Raid`, `Facility`, `Industrial`, `EAS`), a 1-64 block
   range slider and a 0-100% volume slider; anyone may use it. While enabled and receiving redstone
-  power, it loops the selected alarm until the signal or `Enabled` is removed. The sound, range,
-  volume and enabled state are saved with the block. A normal right-click with the Redstone Relay
+  power, it loops the selected alarm until the signal or `Enabled` is removed. The alarm is mixed at
+  the listener, so looking toward or away from the speaker does not change its loudness; only
+  distance inside the configured range fades it. The sound, range, volume and enabled state are
+  saved with the block. A normal right-click with the Redstone Relay
   Key starts/finishes a wireless binding session, and starting the alarm pulses every linked
   Redstone Gate.
 * Motion Sensor (`ntmdoors:motion_sensor`): a compact 8x8x1.375 surface-mounted PIR housing with an
@@ -242,7 +244,9 @@ for editing.
   remains available for placing blocks. Security-net events are shared with the larger desk.
 * Redstone Gate (`ntmdoors:redstone_gate`): a full-cube redstone component with separate off and on
   textures. It starts off, turns on while it receives redstone power or a wireless pulse, and emits
-  a full-strength signal while on. A wireless event keeps it powered for its configured duration;
+  a full-strength signal while on. Redstone dust sitting on top is refreshed when the gate switches,
+  so it cannot stay latched after the signal or a hold is removed. A wireless event keeps it powered
+  for its configured duration;
   another event extends the pulse. Sneak + right-click it with an Operator Keycard, Biometric
   Operator Keycard, or the Creative Keycard to open its settings screen. The screen has `Stay
   active after signal` (hold the gate on until switched off there), `Invert operation` (powered
