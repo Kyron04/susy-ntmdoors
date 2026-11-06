@@ -106,9 +106,16 @@ public class GuiDeviceName extends GuiScreen {
 
         drawRect(field.x, field.y, field.x + field.width, field.y + field.height, FIELD_BG);
         field.drawTextBox();
-        // Cover the field's default grey border with the orange frame.
-        drawRect(field.x - 1, field.y - 1, field.x + field.width + 1, field.y + field.height + 1,
-                ORANGE);
+        // Cover the field's default grey border with a thin orange frame. Draw the four
+        // edges separately; a single drawRect here would fill the whole field orange.
+        int fx = field.x;
+        int fy = field.y;
+        int fw = field.width;
+        int fh = field.height;
+        drawRect(fx - 1, fy - 1, fx + fw + 1, fy, ORANGE);
+        drawRect(fx - 1, fy + fh, fx + fw + 1, fy + fh + 1, ORANGE);
+        drawRect(fx - 1, fy, fx, fy + fh, ORANGE);
+        drawRect(fx + fw, fy, fx + fw + 1, fy + fh, ORANGE);
 
         int saveX = left + 16;
         int cancelX = left + PANEL_WIDTH - 16 - 128;
