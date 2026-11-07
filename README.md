@@ -193,6 +193,12 @@ for editing.
 * Concrete and HL Blocks: the NTM CE concrete building set and decorative HL Blocks, with metadata
   families, flat Chisel carving groups, shift-scroll cycling, recipes, and `concrete` /
   `blockConcrete` / `blockhl` ore dictionary entries. Chisel is required.
+* Ultra High Performance Concrete (`ntmdoors:ultra_high_performance_concrete`): six grayscale
+  variants (the original texture plus five progressively darker shades) that take three real hours
+  to mine. Only ICBM Classic nuclear, antimatter and red matter weapons can damage it; every other
+  explosion is fully resisted. A decorative `UHPC Panel` set
+  (`ntmdoors:ultra_high_performance_concrete_panel`) uses the same textures with vanilla-concrete
+  hardness.
 * 6 Monitor Setup (`ntmdoors:monitor_setup`): a decorative 3x3x1 desk with six monitors, a
   keyboard, mouse and mousepad. It places as one item, faces the player, and reserves its full
   3x3x1 footprint; breaking any part removes the whole desk. The bottom row is solid, while the
@@ -496,6 +502,21 @@ remain reachable by metadata.
 - **World migration.** The grouped metadata ids are new in 1.0.46. If you used a pre-release fork
   build with per-variant concrete ids, those old ids are not migrated; new worlds get the grouped
   ids.
+
+#### Ultra High Performance Concrete
+
+The UHPC family shares six 16x16 textures: the original plus five black overlays at 10-50%
+opacity. Both blocks are creative-only (no recipes) and are not registered in a Chisel group.
+
+| Block id | Variants | Behaviour |
+|---|---|---|
+| `ntmdoors:ultra_high_performance_concrete` | 6 (original, light gray, gray, dark gray, charcoal, black) | Three-hour mining time; only ICBM nuclear, antimatter and red matter blasts damage it |
+| `ntmdoors:ultra_high_performance_concrete_panel` | 6 (same textures) | Vanilla-concrete hardness (1.8); breaks and blasts apart normally |
+
+Both sets carry the `GBU-57 not included` tooltip and register under the `concrete` and
+`blockConcrete` ore dictionary entries. The hard set reports iron as its material so ICBM's
+exothermic/endothermic terrain beams skip it; add it to ICBM's flying-block ban list to stop the
+beam's flying-block phase as well.
 
 #### Slab model note
 
