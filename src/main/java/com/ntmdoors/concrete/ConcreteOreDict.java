@@ -25,6 +25,8 @@ public final class ConcreteOreDict {
         cube(ConcreteSet.CONCRETE_PILLAR, 1);
         cube(ConcreteSet.CONCRETE_REBAR, 1);
         cube(ConcreteSet.CONCRETE_ASBESTOS, 1);
+        cube(ConcreteSet.ULTRA_HIGH_PERFORMANCE_CONCRETE, 6);
+        cube(ConcreteSet.ULTRA_HIGH_PERFORMANCE_CONCRETE_PANEL, 6);
 
         for (Block stairs : ConcreteSet.allStairs()) {
             OreDictionary.registerOre(CONCRETE, new ItemStack(stairs));

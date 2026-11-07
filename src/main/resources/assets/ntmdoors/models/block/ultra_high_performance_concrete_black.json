@@ -1,0 +1,6 @@
+{
+    "parent": "block/cube_all",
+    "textures": {
+        "all": "ntmdoors:blocks/ultra_high_performance_concrete_black"
+    }
+}

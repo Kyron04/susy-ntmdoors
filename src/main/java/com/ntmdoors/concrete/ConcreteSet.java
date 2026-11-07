@@ -1,6 +1,7 @@
 package com.ntmdoors.concrete;
 
 import com.ntmdoors.item.ItemBlockConcreteVariant;
+import com.ntmdoors.item.ItemBlockUltraHighPerformanceConcrete;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
@@ -94,6 +95,17 @@ public final class ConcreteSet {
     public static final BlockConcreteDebris CONCRETE_SUPER_BROKEN =
             new BlockConcreteDebris("concrete_super_broken");
     public static final BlockUberConcrete CONCRETE_SUPER = new BlockUberConcrete();
+    public static final BlockConcreteVariant ULTRA_HIGH_PERFORMANCE_CONCRETE =
+            new BlockUltraHighPerformanceConcrete();
+    /**
+     * Decorative twin of the hard set: same six textures, but plain vanilla-concrete hardness so it
+     * breaks and blasts apart easily. It has no nuke tuning and no three-hour mining override.
+     */
+    public static final BlockConcreteVariant ULTRA_HIGH_PERFORMANCE_CONCRETE_PANEL =
+            new BlockConcreteVariant("ultra_high_performance_concrete_panel",
+                    BlockUltraHighPerformanceConcrete.VARIANT_NAMES,
+                    BlockUltraHighPerformanceConcrete.MODEL_NAMES,
+                    true, 1.8F, 9F);
 
     static {
         addCube(CONCRETE);
@@ -105,6 +117,11 @@ public final class ConcreteSet {
         addCube(CONCRETE_ASBESTOS);
         addCube(CONCRETE_SUPER);
         addBlock(CONCRETE_SUPER_BROKEN);
+        addCube(ULTRA_HIGH_PERFORMANCE_CONCRETE,
+                new ItemBlockUltraHighPerformanceConcrete(ULTRA_HIGH_PERFORMANCE_CONCRETE));
+        addCube(ULTRA_HIGH_PERFORMANCE_CONCRETE_PANEL,
+                new ItemBlockUltraHighPerformanceConcrete(ULTRA_HIGH_PERFORMANCE_CONCRETE_PANEL,
+                        "UHPC Panel"));
 
         // Plain stairs.
         addStairs(CONCRETE, 0, "concrete_stairs", 15F, 94F);
@@ -193,9 +210,13 @@ public final class ConcreteSet {
     }
 
     private static void addCube(BlockConcreteVariant block) {
-        BLOCKS.add(block);
-        ItemBlockConcreteVariant item = new ItemBlockConcreteVariant(block);
+        addCube(block, new ItemBlockConcreteVariant(block));
+    }
+
+    /** Registers a variant cube with a custom item form (used for blocks that carry a tooltip). */
+    private static void addCube(BlockConcreteVariant block, ItemBlockConcreteVariant item) {
         item.setRegistryName(block.getRegistryName());
+        BLOCKS.add(block);
         ITEMS.add(item);
         for (int meta = 0; meta < block.creativeVariantCount(); meta++) {
             CREATIVE.add(new ItemStack(item, 1, meta));
