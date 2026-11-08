@@ -1,7 +1,7 @@
-HBM DOORS: 1.0.53
+HBM DOORS: 1.0.43
 Minecraft 1.12.2 / Forge 14.23.5.2847
 
-1.0.53
+1.0.43
 FEATURES
 - Added the Thermite Charge, a framed breaching charge with a flat 16x16 item sprite and a
   supplied 3D placed model. It mounts flush to the clicked block or door face in all six

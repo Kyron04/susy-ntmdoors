@@ -1,11 +1,11 @@
-# NTM Doors 1.0.53
+# NTM Doors 1.0.43
 
 Minecraft 1.12.2 / Forge 14.23.5.2847+ (tested on 14.23.5.2860)
 Requires Chisel 1.12.2-1.0.2.45
 
 Changes since the CurseForge **1.0.42** release.
 
-**File:** `ntmdoors-1.0.53.jar`
+**File:** `ntmdoors-1.0.43.jar`
 **SHA-256:** `73E5D7FDAD2E647D00AE57AA16B3CCD486375A1529E230E9BCF0BACA18C4C091`
 
 ## Thermite Charge
