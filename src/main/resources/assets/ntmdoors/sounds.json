@@ -148,5 +148,17 @@
     "sounds": [
       "ntmdoors:speaker/eas"
     ]
+  },
+  "thermite_beep": {
+    "category": "block",
+    "sounds": [
+      "ntmdoors:thermite/thermite_beep"
+    ]
+  },
+  "thermite_explosion": {
+    "category": "block",
+    "sounds": [
+      "ntmdoors:thermite/thermite_explosion"
+    ]
   }
 }

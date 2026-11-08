@@ -279,8 +279,19 @@ for editing.
   structural integrity of UHPC`. Right-click opens a single-action screen with the warning
   `WARNING THIS OPERATION CANNOT BE REVERSED`; activating it scans a 16x16 chunk area and turns
   every hard UHPC block into the soft UHPC Panel of the same shade, then consumes itself with
-  particles and a sound. The machine is bedrock-hard and cannot be mined, blown up or pushed; only
-  its own completed operation removes it.
+  particles and a sound. The machine is bedrock-hard in survival and cannot be blown up or pushed;
+  creative players can break it, and its own completed operation also removes it.
+* Thermite Charge (`ntmdoors:thermite_charge`): a framed breaching charge that mounts flush
+  against the block or door face it is clicked on, in any of the six directions, and points away
+  from that surface. On supported doors it sits on the door's hitbox surface and breaks if the
+  door moves. Flint and steel lights a five-second fuse with the supplied beep countdown, smoke
+  and flame particles; the door ignores hand clicks, redstone, keypads, scanners, safes, security
+  nets and the screwdriver while it burns, and breaking the charge defuses it. The detonation uses
+  the supplied explosion sound and removes the door's moving panel and its collision while the
+  static frame stays; the breached door is permanently unusable. A charge on a normal block
+  destroys that block. Silo hatches, the transition seal, the roller blast door and the Vault-Tec
+  door refuse placement. The placed block uses the supplied 3D model, while the item form uses its
+  flat 16x16 sprite.
 * Motion Relay Key (`ntmdoors:motion_relay_key`) and Terminal Relay Key
   (`ntmdoors:terminal_relay_key`): blue and orange/grey relay keys. The Motion Relay Key is
   reserved for defining the 5x5x5 area a Motion Sensor watches. The Terminal Relay Key starts a

@@ -6,8 +6,17 @@ run/
 # IDE
 .idea/
 *.iml
+*.ipr
+*.iws
 eclipse/
+.settings/
 .vscode/
+
+# Java output
+*.class
+out/
+bin/
+hs_err_pid*
 
 # Local runtime junk
 logs/

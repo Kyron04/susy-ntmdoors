@@ -21,6 +21,9 @@ public final class ModSounds {
     public static final SoundEvent BUTTON9 = create("button9");
     /** Monitor terminal UI click. */
     public static final SoundEvent GUI_CLICK = create("gui_click");
+    /** Thermite Charge countdown beeps and detonation. */
+    public static final SoundEvent THERMITE_BEEP = create("thermite_beep");
+    public static final SoundEvent THERMITE_EXPLOSION = create("thermite_explosion");
 
     public static final SoundEvent SPEAKER_AIR_RAID = create("speaker_air_raid");
     public static final SoundEvent SPEAKER_FACILITY = create("speaker_facility");
@@ -33,6 +36,7 @@ public final class ModSounds {
     /** Everything that has to be registered with Forge during sound registration. */
     public static final List<SoundEvent> ALL = Collections.unmodifiableList(Arrays.asList(
             SCANNER_BUTTON3, SCANNER_BUTTON8, SCANNER_BELL1, BUTTON9, GUI_CLICK,
+            THERMITE_BEEP, THERMITE_EXPLOSION,
             SPEAKER_AIR_RAID, SPEAKER_FACILITY, SPEAKER_INDUSTRIAL, SPEAKER_EAS));
 
     private ModSounds() {

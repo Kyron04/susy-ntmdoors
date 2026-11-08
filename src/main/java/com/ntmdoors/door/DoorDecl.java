@@ -614,7 +614,16 @@ public class DoorDecl {
      * relative to the core cell bottom centre. Static boxes keep their hand-authored door-local
      * shape; boxes bound to an OBJ group are transformed by the group's animation first.
      */
-    public synchronized AxisAlignedBB[] getBoxes(EnumFacing f, float openFraction, boolean collision) {
+    public AxisAlignedBB[] getBoxes(EnumFacing f, float openFraction, boolean collision) {
+        return getBoxes(f, openFraction, collision, true);
+    }
+
+    /**
+     * Same as {@link #getBoxes(EnumFacing, float, boolean)}, with an option to omit the animated
+     * moving-part boxes. A breached door keeps only its static frame geometry.
+     */
+    public synchronized AxisAlignedBB[] getBoxes(EnumFacing f, float openFraction, boolean collision,
+                                                 boolean includeMoving) {
         int i = f.getHorizontalIndex();
         if (rotBoxes[i] == null) {
             List<BoxDef> out = new ArrayList<>(boxDefs.size());
@@ -632,7 +641,7 @@ public class DoorDecl {
             active.add(b.box);
         }
 
-        if (!movingDefs.isEmpty()) {
+        if (includeMoving && !movingDefs.isEmpty()) {
             if (modelBounds == null) modelBounds = ObjBounds.get(model);
             float yaw = Facings.yaw(f) + modelYaw;
             AxisAlignedBB clip = clipVolume();

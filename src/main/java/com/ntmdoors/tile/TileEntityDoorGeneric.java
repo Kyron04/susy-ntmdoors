@@ -1,6 +1,7 @@
 package com.ntmdoors.tile;
 
 import com.ntmdoors.block.BlockDoorGeneric;
+import com.ntmdoors.block.BlockThermiteCharge;
 import com.ntmdoors.client.DoorLoopSound;
 import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.DoorState;
@@ -31,6 +32,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -69,10 +71,16 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
     /** Reconciles the silo hatch's pass-through cells on the first server tick after loading. */
     private boolean passUpdatePending;
 
+    /** True after a thermite charge destroyed the moving panel; the static frame remains. */
+    private boolean breached;
+    /** Charges currently burning on this door; server-only. */
+    private final Set<BlockPos> thermiteCharges = new HashSet<>();
+
     /** Cached collision geometry for the current tick, in door-local space. */
     private int boxCacheTimer = Integer.MIN_VALUE;
     private DoorState boxCacheState;
     private EnumFacing boxCacheFacing;
+    private boolean boxCacheBreached;
     private AxisAlignedBB[] boxCache = EMPTY_BOXES;
 
     /*
@@ -109,6 +117,65 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         return skinIndex;
     }
 
+    public boolean isBreached() {
+        return breached;
+    }
+
+    /**
+     * Server side: removes the door's animated panel and its collision while keeping every static
+     * frame cell and frame box. The door is permanently unusable afterwards.
+     */
+    public void breach() {
+        if (world == null || world.isRemote || breached) return;
+        breached = true;
+        state = DoorState.CLOSED;
+        timer = 0;
+        queuedOpen = null;
+        powered = false;
+        autoCloseTicks = 0;
+        thermiteCharges.clear();
+        boxCacheTimer = Integer.MIN_VALUE;
+        sync();
+    }
+
+    /** Server side: marks a burning charge on this door. */
+    public void addThermiteCharge(BlockPos chargePos) {
+        if (world == null || world.isRemote || breached) return;
+        thermiteCharges.add(chargePos.toImmutable());
+        markDirty();
+    }
+
+    /** Server side: clears a charge that was defused or detonated. */
+    public void removeThermiteCharge(BlockPos chargePos) {
+        if (world == null || world.isRemote) return;
+        if (thermiteCharges.remove(chargePos)) markDirty();
+    }
+
+    /** True while at least one validated charge is burning on this door. */
+    public boolean isThermiteFused() {
+        if (world == null || world.isRemote || thermiteCharges.isEmpty()) return false;
+        boolean changed = false;
+        Iterator<BlockPos> it = thermiteCharges.iterator();
+        while (it.hasNext()) {
+            BlockPos p = it.next();
+            if (!world.isBlockLoaded(p)) continue;
+            if (!(world.getBlockState(p).getBlock() instanceof BlockThermiteCharge)) {
+                it.remove();
+                changed = true;
+                continue;
+            }
+            TileEntity te = world.getTileEntity(p);
+            // A charge whose tile entity has not loaded yet keeps the lock.
+            if (te instanceof TileEntityThermiteCharge
+                    && !((TileEntityThermiteCharge) te).isLit()) {
+                it.remove();
+                changed = true;
+            }
+        }
+        if (changed) markDirty();
+        return !thermiteCharges.isEmpty();
+    }
+
     /** 0 = closed, 1 = open, smoothly interpolated while moving. */
     public float getOpenFraction(float partialTicks) {
         DoorDecl d = getDecl();
@@ -127,15 +194,19 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
      * following the animation does not put the model transform on the collision hot path.
      */
     public AxisAlignedBB[] getCollisionBoxes(EnumFacing facing) {
-        if (boxCacheTimer == timer && boxCacheState == state && boxCacheFacing == facing) {
+        if (boxCacheTimer == timer && boxCacheState == state && boxCacheFacing == facing
+                && boxCacheBreached == breached) {
             return boxCache;
         }
         DoorDecl d = getDecl();
         if (d == null) return EMPTY_BOXES;
-        boxCache = d.getBoxes(facing, getOpenFraction(1F), true);
+        // A breached door keeps the open-state residual frame boxes. The closed-only boxes are
+        // the removed panel, and the moving boxes are already excluded.
+        boxCache = d.getBoxes(facing, breached ? 1F : getOpenFraction(1F), true, !breached);
         boxCacheTimer = timer;
         boxCacheState = state;
         boxCacheFacing = facing;
+        boxCacheBreached = breached;
         return boxCache;
     }
 
@@ -144,6 +215,10 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
     @Override
     public void update() {
         boolean client = world != null && world.isRemote;
+        if (breached) {
+            if (client) stopClientSounds();
+            return;
+        }
         if (!client) tickAutoClose();
         if (!client && state != DoorState.CLOSED
                 && (world.getTotalWorldTime() & 15L) == 0
@@ -312,6 +387,7 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
      */
     public void request(boolean wantOpen, boolean override) {
         if (world == null || world.isRemote) return;
+        if (breached || isThermiteFused()) return;
         if (wantOpen && (SecurityEvents.isShutdown(world, pos)
                 || SecurityEvents.isLockdown(world, pos))) {
             closeForSystem();
@@ -337,6 +413,7 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
      */
     public void closeForSystem() {
         if (world == null || world.isRemote) return;
+        if (breached || isThermiteFused()) return;
         DoorDecl d = getDecl();
         if (d == null || !d.linkAdjacent) {
             closeNow();
@@ -348,6 +425,7 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
     /** Server side: opens the door regardless of locks, keypads or scanner state. */
     public void openForSystem() {
         if (world == null || world.isRemote) return;
+        if (breached || isThermiteFused()) return;
         if (SecurityEvents.isShutdown(world, pos) || SecurityEvents.isLockdown(world, pos)) return;
         DoorDecl d = getDecl();
         if (d == null || !d.linkAdjacent) {
@@ -397,6 +475,7 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
 
     /** Switches to the next skin texture. Does nothing if this door has no alternates. */
     public boolean cycleSkin() {
+        if (breached || isThermiteFused()) return false;
         DoorDecl d = getDecl();
         if (d == null || !d.hasSkinVariants()) return false;
         skinIndex = (skinIndex + 1) % d.skinCount();
@@ -603,6 +682,7 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
     /** Called when any part of the door gets a neighbour update. Reacts to redstone edges only. */
     public void checkRedstone() {
         if (world == null || world.isRemote) return;
+        if (breached || isThermiteFused()) return;
         // A lockdown is meant to stay shut, so redstone edges are ignored until it is lifted.
         if (isLockedDown()) return;
         // Normal and locked doors are redstone-driven. Security doors belong to scanners alone, so
@@ -619,6 +699,14 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
 
     public void onPlayerUse(EntityPlayer player) {
         if (getDecl() == null) return;
+        if (breached) {
+            msg(player, "ntmdoors.msg.door_breached");
+            return;
+        }
+        if (isThermiteFused()) {
+            msg(player, "ntmdoors.msg.door_thermite_fused");
+            return;
+        }
 
         if (SecurityEvents.isShutdown(world, pos)) {
             if (state != DoorState.CLOSED) closeForSystem();
@@ -713,6 +801,8 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         tag.setString("boundScanners", BlockPositions.encodeList(boundScanners));
         tag.setString("boundSafe", BlockPositions.encode(boundSafe));
         tag.setInteger("autoClose", autoCloseTicks);
+        tag.setBoolean("breached", breached);
+        tag.setString("thermiteCharges", BlockPositions.encodeList(thermiteCharges));
         return tag;
     }
 
@@ -725,6 +815,7 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         tag.removeTag("boundScanners");
         tag.removeTag("boundSafe");
         tag.removeTag("autoClose");
+        tag.removeTag("thermiteCharges");
         return tag;
     }
 
@@ -743,6 +834,9 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         boundScanners.clear();
         boundScanners.addAll(BlockPositions.decodeList(tag.getString("boundScanners")));
         boundSafe = BlockPositions.decode(tag.getString("boundSafe"));
+        breached = tag.getBoolean("breached");
+        thermiteCharges.clear();
+        thermiteCharges.addAll(BlockPositions.decodeList(tag.getString("thermiteCharges")));
     }
 
     /**

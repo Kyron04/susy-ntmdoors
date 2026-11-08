@@ -1,5 +1,63 @@
-HBM DOORS: 1.0.42
+HBM DOORS: 1.0.53
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.53
+REMOVED
+- Removed the Creative Relay Key and restored the relay and binding keys to their previous
+  behaviour.
+
+1.0.50
+FIXES
+- Breached panel cells no longer show a full-block selection outline.
+
+1.0.49
+FIXES
+- Breached doors now count as open for mob pathing.
+
+1.0.48
+FIXES
+- A breached door now keeps only its open-state residual frame collision, so the removed panel
+  does not leave invisible closed-panel boxes behind.
+- The thermite door lock is kept through chunk-load order where the charge tile entity has not
+  loaded yet.
+
+1.0.47
+FEATURES
+- Thermite Charge fuse: light it with flint and steel, then a five-second countdown with the
+  supplied beep sound, smoke and flame particles.
+- The detonation plays the supplied explosion sound and breaches a supported door: the animated
+  moving panel and its collision are removed while every static frame cell and frame box stays.
+  A breached door is permanently unusable.
+- While the fuse burns the door ignores hand clicks, redstone, keypads, scanners, safes, security
+  nets and the screwdriver. Breaking the charge before the fuse ends defuses it.
+- A charge on a normal block destroys that attached block; unbreakable blocks are left alone.
+
+1.0.46
+FIXES
+- Moved the Thermite Charge's door-movement removal outside the tile-entity tick loop, matching
+  the Spatial Disrupter's scheduled-removal fix.
+
+1.0.45
+FIXES
+- The Spatial Disrupter can now be broken in creative mode while remaining unbreakable in
+  survival.
+- Thermite Charges placed in creative mode no longer consume the held item.
+- Thermite Charges now sit on the hitbox surface of supported doors instead of the cell boundary,
+  and break if the door moves. Silo hatches, the transition seal, the roller blast door and the
+  Vault-Tec door refuse placement.
+
+1.0.44
+FIXES
+- The Thermite Charge now mounts flush against the block or door face it is clicked on, in all
+  six directions, with matching collision and selection boxes.
+- The charge item places before the clicked block's interaction runs, so it can be attached to
+  doors and machines without opening or toggling them.
+
+1.0.43
+FEATURES
+- Added the Thermite Charge block and its 16x16 item sprite. The placed block uses the supplied
+  3D model and faces the player; the item form is flat in the hand and inventory. Detonation
+  logic is not implemented yet.
 
 1.0.42
 FEATURES

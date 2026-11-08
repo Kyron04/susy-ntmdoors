@@ -15,6 +15,7 @@ import com.ntmdoors.block.BlockRedstoneGate;
 import com.ntmdoors.block.BlockSafe;
 import com.ntmdoors.block.BlockSpeaker;
 import com.ntmdoors.block.BlockSpatialDisrupter;
+import com.ntmdoors.block.BlockThermiteCharge;
 import com.ntmdoors.concrete.ConcreteRecipes;
 import com.ntmdoors.concrete.ConcreteSet;
 import com.ntmdoors.hlblocks.HLBlocksContent;
@@ -44,6 +45,7 @@ import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.item.ItemSafeBindingKey;
 import com.ntmdoors.item.ItemScrewdriver;
 import com.ntmdoors.item.ItemTerminalBackupKey;
+import com.ntmdoors.item.ItemThermiteCharge;
 import com.ntmdoors.item.ItemTerminalRelayKey;
 import com.ntmdoors.item.ItemWeaponsRelayKey;
 import com.ntmdoors.util.ModSounds;
@@ -84,8 +86,10 @@ public class ModContent {
     public static final BlockRedstoneGate REDSTONE_GATE = new BlockRedstoneGate();
     public static final BlockSpeaker SPEAKER = new BlockSpeaker();
     public static final BlockMotionSensor MOTION_SENSOR = new BlockMotionSensor();
-    /** Decorative machine block; gameplay logic will be added later. */
+    /** Bedrock-hard machine that converts hard UHPC to panels in a 16x16 chunk area. */
     public static final BlockSpatialDisrupter SPATIAL_DISRUPTER = new BlockSpatialDisrupter();
+    /** Framed breaching charge that mounts on block faces and breaches doors. */
+    public static final BlockThermiteCharge THERMITE_CHARGE = new BlockThermiteCharge();
     /** Bottom row, including the core cell and the item form of the desk. */
     public static final BlockMonitorSetup MONITOR_SETUP =
             new BlockMonitorSetup("monitor_setup", BlockMonitorSetup.Layer.BOTTOM);
@@ -189,15 +193,15 @@ public class ModContent {
     public static final ItemKeycardHolder KEYCARD_HOLDER = new ItemKeycardHolder();
     /** Carried folder for written notes, with twenty editable pages. */
     public static final ItemDocumentsFolder DOCUMENTS_FOLDER = new ItemDocumentsFolder();
-    /** Creative-only security-network key reserved for future safe binding. */
+    /** Green creative key that links a safe to doors. */
     public static final ItemSafeBindingKey SAFE_BINDING_KEY = new ItemSafeBindingKey();
-    /** Redstone-network key reserved for binding keypads, scanners and safes to a gate. */
+    /** Red creative key that links keypads, scanners, safes, speakers and sensors to a gate. */
     public static final ItemRedstoneRelayKey REDSTONE_RELAY_KEY = new ItemRedstoneRelayKey();
-    /** Blue key reserved for defining the Motion Sensor's 5x5x5 area. */
+    /** Blue creative key that opens the Motion Sensor console and defines its 5x5x5 area. */
     public static final ItemMotionRelayKey MOTION_RELAY_KEY = new ItemMotionRelayKey();
-    /** Orange and grey key reserved for binding devices to the Security Terminal. */
+    /** Orange and grey key that binds devices to a Security Terminal net. */
     public static final ItemTerminalRelayKey TERMINAL_RELAY_KEY = new ItemTerminalRelayKey();
-    /** Black and red USB key reserved for the terminal backup system. */
+    /** Black and red USB key that carries terminal backup data. */
     public static final ItemTerminalBackupKey TERMINAL_BACKUP_KEY = new ItemTerminalBackupKey();
     /** Red weapons key that hard-locks explosives or links them to Redstone Gates. */
     public static final ItemWeaponsRelayKey WEAPONS_RELAY_KEY = new ItemWeaponsRelayKey();
@@ -265,6 +269,7 @@ public class ModContent {
         for (BlockMonitorDesk block : SINGLE_MONITOR_BLOCKS) e.getRegistry().register(block);
         // New blocks go last so previously saved numeric block IDs do not shift.
         e.getRegistry().register(SPATIAL_DISRUPTER);
+        e.getRegistry().register(THERMITE_CHARGE);
     }
 
     @SubscribeEvent
@@ -338,6 +343,10 @@ public class ModContent {
                 .setCreativeTab(NTMDoors.TAB));
         e.getRegistry().register(new ItemBlockSpatialDisrupter(SPATIAL_DISRUPTER)
                 .setRegistryName(SPATIAL_DISRUPTER.getRegistryName())
+                .setCreativeTab(NTMDoors.TAB));
+        // Newest block item goes last so previously saved numeric item IDs do not shift.
+        e.getRegistry().register(new ItemThermiteCharge(THERMITE_CHARGE)
+                .setRegistryName(THERMITE_CHARGE.getRegistryName())
                 .setCreativeTab(NTMDoors.TAB));
     }
 

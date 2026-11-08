@@ -198,12 +198,13 @@ public class BlockDoorGeneric extends Block {
         // Collision follows the animation: the boxes are generated from the same state and timer as
         // the renderer, cached once per tick by the core. Selection uses partial ticks so the
         // outline hugs the panel between ticks.
+        float boxOpen = core.isBreached() ? 1F : open;
         AxisAlignedBB[] boxes = forSelection
-                ? decl.getBoxes(facing, open, false)
+                ? decl.getBoxes(facing, boxOpen, false, !core.isBreached())
                 : core.getCollisionBoxes(facing);
-        if (forSelection && open >= 0.9999F && boxes.length == 0) {
+        if (forSelection && boxOpen >= 0.9999F && boxes.length == 0) {
             // Pass-through doors (for example the transition seal) still need a click target when open.
-            boxes = decl.getBoxes(facing, 0F, false);
+            boxes = decl.getBoxes(facing, core.isBreached() ? 1F : 0F, false, !core.isBreached());
         }
         double ox = corePos.getX() + 0.5 - pos.getX();
         double oy = corePos.getY() - pos.getY();
@@ -251,7 +252,12 @@ public class BlockDoorGeneric extends Block {
     @Override
     public AxisAlignedBB getSelectedBoundingBox(IBlockState state, World world, BlockPos pos) {
         List<AxisAlignedBB> boxes = getLocalBoxes(state, world, pos, true, Minecraft.getMinecraft().getRenderPartialTicks());
-        if (boxes.isEmpty()) return FULL_BLOCK_AABB.offset(pos);
+        if (boxes.isEmpty()) {
+            TileEntityDoorGeneric core = getCore(world, pos, state);
+            // A breached panel cell has no click target; only the intact frame cells do.
+            if (core != null && core.isBreached()) return NULL_AABB.offset(pos);
+            return FULL_BLOCK_AABB.offset(pos);
+        }
         AxisAlignedBB u = boxes.get(0);
         for (int i = 1; i < boxes.size(); i++) u = u.union(boxes.get(i));
         return u.offset(pos);
@@ -314,7 +320,7 @@ public class BlockDoorGeneric extends Block {
     @Override
     public PathNodeType getAiPathNodeType(IBlockState state, IBlockAccess world, BlockPos pos, @Nullable EntityLiving entity) {
         TileEntityDoorGeneric core = getCore(world, pos, state);
-        if (core != null && core.getOpenFraction(1F) > 0.5F) {
+        if (core != null && (core.isBreached() || core.getOpenFraction(1F) > 0.5F)) {
             return PathNodeType.DOOR_OPEN;
         }
         return PathNodeType.DOOR_IRON_CLOSED;

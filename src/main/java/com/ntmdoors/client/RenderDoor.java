@@ -71,7 +71,7 @@ public class RenderDoor extends TileEntitySpecialRenderer<TileEntityDoorGeneric>
         // from one side, which is exactly the symptom we want to avoid.
         GlStateManager.disableCull();
 
-        drawParts(d, model, open, null, true, te.getSkinIndex());
+        drawParts(d, model, open, null, true, te.getSkinIndex(), te.isBreached());
 
         GlStateManager.enableCull();
         GlStateManager.disableBlend();
@@ -83,7 +83,8 @@ public class RenderDoor extends TileEntitySpecialRenderer<TileEntityDoorGeneric>
      * Draws the requested groups. When {@code clip} is true, animated groups are clipped to the
      * model-local bounds in the DoorDecl. HBM uses this to hide sliding panels inside their frame.
      */
-    static void drawParts(DoorDecl d, ObjModel model, float open, Collection<String> only, boolean clip, int skin) {
+    static void drawParts(DoorDecl d, ObjModel model, float open, Collection<String> only, boolean clip,
+                          int skin, boolean hideAnimated) {
         ClipPlane[] planes = clip ? clipPlanes(d) : NO_PLANES;
         // These planes are fixed in model space. They must be specified before the animated
         // group matrix is pushed, otherwise they would follow the sliding panel instead of the frame.
@@ -102,6 +103,7 @@ public class RenderDoor extends TileEntitySpecialRenderer<TileEntityDoorGeneric>
 
             List<PartAnim> steps = d.anims.get(group);
             KeyframeAnimation keyframe = keyframes.get(group);
+            if (hideAnimated && (steps != null || keyframe != null)) continue;
             ResourceLocation texture = d.textureForPart(skin, group);
             if (!texture.equals(boundTexture)) {
                 Minecraft.getMinecraft().getTextureManager().bindTexture(texture);

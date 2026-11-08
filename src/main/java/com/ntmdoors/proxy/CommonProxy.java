@@ -23,6 +23,7 @@ import com.ntmdoors.tile.TileEntityRedstoneGate;
 import com.ntmdoors.tile.TileEntitySafe;
 import com.ntmdoors.tile.TileEntitySpeaker;
 import com.ntmdoors.tile.TileEntitySpatialDisrupter;
+import com.ntmdoors.tile.TileEntityThermiteCharge;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumHand;
@@ -53,6 +54,7 @@ public class CommonProxy {
         registerTileEntity(TileEntityMotionSensor.class, "motion_sensor");
         registerTileEntity(TileEntityMonitorDesk.class, "monitor_desk");
         registerTileEntity(TileEntitySpatialDisrupter.class, "spatial_disrupter");
+        registerTileEntity(TileEntityThermiteCharge.class, "thermite_charge");
         // Read the OBJ group bounds used by moving collision boxes now, so the first collision
         // query on a door never has to touch the filesystem.
         for (DoorDecl d : DoorDecls.ALL) d.prepareGeometry();

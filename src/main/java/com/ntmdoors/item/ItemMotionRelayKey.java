@@ -20,10 +20,8 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 /**
- * Motion Relay Key. Reserved for defining the 5x5x5 area a Motion Sensor watches.
- *
- * <p>The area-binding behaviour is not implemented yet; the key is only registered as an item and
- * carries its description for the later pass.</p>
+ * Motion Relay Key. Opens the Motion Sensor console, whose bound-area page defines the 5x5x5
+ * volume the sensor watches, and toggles the blue projection in the world.
  */
 public class ItemMotionRelayKey extends Item {
 
