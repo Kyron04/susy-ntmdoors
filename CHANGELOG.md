@@ -14,6 +14,8 @@ FEATURES
   every hard UHPC block in a 16x16 chunk area into the soft UHPC Panel and then consumes itself.
 FIXES
 - Removed the hard set's tooltip from the soft UHPC Panel.
+- Moved the Blast Shutter flush against the blocks behind it, with matching collision and
+  selection boxes.
 - Fixed the Spatial Disrupter self-destruct to remove its block outside the tile-entity tick loop,
   avoiding a server-side ConcurrentModificationException.
 

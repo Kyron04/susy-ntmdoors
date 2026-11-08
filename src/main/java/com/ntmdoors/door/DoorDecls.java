@@ -549,11 +549,14 @@ public final class DoorDecls {
             .footprint(-1, 1, 0, 2, 0, 0).times(40, 40).strength(25F, 4000F)
             .modelPath("models/doors/blast_shutter.obj",
                     "textures/models/doors/blast_shutter.png")
-            .movingBox ("plate", box(-1.5, 0, -0.5, 1.5, 2.75, 0.5))
-            .open(box(-1.5, 0, -0.5, -1.25, 3, 0.5),
-             box(1.25, 0, -0.5, 1.5, 3, 0.5),
-             box(-1.25, 2.75, -0.5, 1.25, 3, 0.5))
-            .openSelectionOnly(box(-1.5, 0, -0.5, 1.5, 0.125, 0.5))
+            // Flush-mounted: the 5/16-thick frame sits against the back face of the cell
+            // instead of floating in the middle of it.
+            .modelOffset(0, 0, 0.34375)
+            .movingBox("plate", box(-1.5, 0, -0.15625, 1.5, 2.75, 0.15625))
+            .open(box(-1.5, 0, 0.1875, -1.25, 3, 0.5),
+             box(1.25, 0, 0.1875, 1.5, 3, 0.5),
+             box(-1.25, 2.75, 0.1875, 1.25, 3, 0.5))
+            .openSelectionOnly(box(-1.5, 0, 0.1875, 1.5, 0.125, 0.5))
             .clipY(Double.NEGATIVE_INFINITY, 3)
             .sounds(null, SND_GARAGE_MOVE, SND_GARAGE_STOP)
             .anim("plate", PartAnim.translate(0, 3, 0, 0F, 1F)));

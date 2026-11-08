@@ -6,7 +6,7 @@ Requires Chisel 1.12.2-1.0.2.45
 Changes since the CurseForge **1.0.41** release.
 
 **File:** `ntmdoors-1.0.42.jar`
-**SHA-256:** `52DB7A543639E90D7BB3FA2179CB7FEBD529FDE43CBB7E47AAC6F400952407BD`
+**SHA-256:** `699FED891C06C950C28A65E55D852DDDF172C60409D693ED85789D53B4DBF53E`
 
 ## Ultra High Performance Concrete
 
@@ -52,6 +52,8 @@ Changes since the CurseForge **1.0.41** release.
 ## Fixes and interface
 
 - The soft UHPC Panel no longer shows the hard set's tooltip.
+- The Blast Shutter now mounts flush against the blocks behind it instead of floating in the
+  centre of its cell; its collision and selection boxes follow the new depth.
 - Fixed the Spatial Disrupter self-destruct so it removes its own block outside the tile-entity
   tick loop, avoiding a server-side `ConcurrentModificationException`.
 - Added the new blocks and key to the README and this changelog.
