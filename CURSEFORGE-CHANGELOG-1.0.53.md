@@ -15,19 +15,14 @@ Changes since the CurseForge **1.0.42** release.
 - Mounts flush to the clicked block or door face in all six directions and sits on the door's
   hitbox surface. Silo hatches, the transition seal, the roller blast door and the Vault-Tec door
   refuse placement.
-- Flint and steel lights a five-second fuse with a beep countdown, smoke, flame and a supplied
-  explosion sound. The attached door ignores hand clicks, redstone, keypads, scanners, safes,
-  security nets and the screwdriver while the fuse burns; breaking the charge defuses it.
-- Detonation breaches a supported door: the animated moving panel and its collision are removed,
-  the static frame stays, and the door becomes permanently unusable. A charge on a normal block
-  destroys that block; unbreakable blocks are left alone.
-- A burning charge that loses its support or attached door detonates instead of dropping.
-
-## Door breach
-
-- Moving-panel rendering, collision and selection are removed for a breached door while every
-  static frame cell and frame box remains.
-- Breached doors count as open for mob pathing and no longer show a full-block selection outline.
+- Flint and steel lights a five-second fuse with a beep countdown, smoke, flame particles and a
+  supplied explosion sound. While it burns, the attached door ignores hand clicks, redstone,
+  keypads, scanners, safes, security nets and the screwdriver; breaking the charge defuses it.
+- Detonation breaches a supported door: the animated moving panel and its collision are removed
+  while every static frame cell and frame box stays, and the door becomes permanently unusable.
+  Breached doors count as open for mob pathing.
+- A charge on a normal block destroys that block; unbreakable blocks are left alone. A burning
+  charge that loses its support or attached door detonates instead of dropping.
 
 ## Fixes
 
