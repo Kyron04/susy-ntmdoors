@@ -1,5 +1,21 @@
-HBM DOORS: 1.0.36
+HBM DOORS: 1.0.42
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.42
+FEATURES
+- Added Ultra High Performance Concrete: six grayscale shades (original plus five darker tones),
+  three-hour mining time, and blast resistance that only allows ICBM nuclear, antimatter and red
+  matter warheads through.
+- Added the decorative UHPC Panel set with the same textures and vanilla-concrete hardness.
+- Added the Weapons Relay Key: Regular Bounding links any explosive to Redstone Gates; Dead Man's
+  Hand hard-locks an explosive so anyone without the matching key sets it off by interacting with
+  it, while the key holder can mine it safely.
+- Added the Spatial Disrupter: a bedrock-hard decorative machine that, when activated, converts
+  every hard UHPC block in a 16x16 chunk area into the soft UHPC Panel and then consumes itself.
+FIXES
+- Removed the hard set's tooltip from the soft UHPC Panel.
+- Fixed the Spatial Disrupter self-destruct to remove its block outside the tile-entity tick loop,
+  avoiding a server-side ConcurrentModificationException.
 
 1.0.36
 CHANGES

@@ -9,6 +9,7 @@ import com.ntmdoors.client.GuiMonitor;
 import com.ntmdoors.client.GuiMotionSensor;
 import com.ntmdoors.client.GuiNotepad;
 import com.ntmdoors.client.GuiRedstoneGate;
+import com.ntmdoors.client.GuiSpatialDisrupter;
 import com.ntmdoors.client.GuiWeaponsRelayKey;
 import com.ntmdoors.network.MessageMonitorState;
 import com.ntmdoors.client.MotionSensorOverlay;
@@ -241,6 +242,11 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void openWeaponsRelayKeyGui(EnumHand hand) {
         Minecraft.getMinecraft().displayGuiScreen(new GuiWeaponsRelayKey(hand));
+    }
+
+    @Override
+    public void openSpatialDisrupterGui(BlockPos pos) {
+        Minecraft.getMinecraft().displayGuiScreen(new GuiSpatialDisrupter(pos));
     }
 
     @Override

@@ -274,6 +274,13 @@ for editing.
   Dead Man's Hand hard-locks the explosive: a player without the matching key in their inventory
   sets it off by right-clicking, left-clicking, breaking it, or placing/breaking a block next to
   it, while the key holder can mine it safely. Works on any explosive block, not only ICBM.
+* Spatial Disrupter (`ntmdoors:spatial_disrupter`): a decorative machine block with a blue/red
+  emblem on the sides and a grey plate on the top and bottom. The tooltip reads `Weakens the
+  structural integrity of UHPC`. Right-click opens a single-action screen with the warning
+  `WARNING THIS OPERATION CANNOT BE REVERSED`; activating it scans a 16x16 chunk area and turns
+  every hard UHPC block into the soft UHPC Panel of the same shade, then consumes itself with
+  particles and a sound. The machine is bedrock-hard and cannot be mined, blown up or pushed; only
+  its own completed operation removes it.
 * Motion Relay Key (`ntmdoors:motion_relay_key`) and Terminal Relay Key
   (`ntmdoors:terminal_relay_key`): blue and orange/grey relay keys. The Motion Relay Key is
   reserved for defining the 5x5x5 area a Motion Sensor watches. The Terminal Relay Key starts a

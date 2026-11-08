@@ -80,6 +80,8 @@ public final class ModNetwork {
                 MessageMonitorBackupOpen.class, 34, Side.SERVER);
         INSTANCE.registerMessage(MessageWeaponsKeyMode.Handler.class,
                 MessageWeaponsKeyMode.class, 35, Side.SERVER);
+        INSTANCE.registerMessage(MessageSpatialDisrupterActivate.Handler.class,
+                MessageSpatialDisrupterActivate.class, 36, Side.SERVER);
     }
 
     private ModNetwork() {

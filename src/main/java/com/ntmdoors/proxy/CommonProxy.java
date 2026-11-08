@@ -22,6 +22,7 @@ import com.ntmdoors.tile.TileEntityMotionSensor;
 import com.ntmdoors.tile.TileEntityRedstoneGate;
 import com.ntmdoors.tile.TileEntitySafe;
 import com.ntmdoors.tile.TileEntitySpeaker;
+import com.ntmdoors.tile.TileEntitySpatialDisrupter;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumHand;
@@ -51,6 +52,7 @@ public class CommonProxy {
         registerTileEntity(TileEntitySpeaker.class, "speaker");
         registerTileEntity(TileEntityMotionSensor.class, "motion_sensor");
         registerTileEntity(TileEntityMonitorDesk.class, "monitor_desk");
+        registerTileEntity(TileEntitySpatialDisrupter.class, "spatial_disrupter");
         // Read the OBJ group bounds used by moving collision boxes now, so the first collision
         // query on a door never has to touch the filesystem.
         for (DoorDecl d : DoorDecls.ALL) d.prepareGeometry();
@@ -166,5 +168,9 @@ public class CommonProxy {
 
     /** Client only: open the Weapons Relay Key mode screen. */
     public void openWeaponsRelayKeyGui(EnumHand hand) {
+    }
+
+    /** Client only: open the Spatial Disrupter activation screen. */
+    public void openSpatialDisrupterGui(BlockPos pos) {
     }
 }

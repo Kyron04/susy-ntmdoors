@@ -4,13 +4,14 @@
 
 NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system and concrete building set from HBM's Nuclear Tech Mod. No NTM installation is required. Chisel 1.12.2-1.0.2.45 is required. Every model, texture and sound is bundled.
 
-**Current version: 1.0.36**
+**Current version: 1.0.42**
 
-## 16 multiblock doors
+## 17 multiblock doors
 
 - **Vault-Tec Blast Door** — 5x5 rolling gear door
 - **Sliding Blast Door** — 7x4 double-panel blast door
 - **Roller Blast Door** — 1x7 roller shutter
+- **Blast Shutter** — 3x3 vertical steel shutter
 - **Secure Access Door** — 5x5 rising security door
 - **Fire Door** — 4x3 roller/fire door
 - **QE Sliding Door** — 2x2 double panel
@@ -32,7 +33,7 @@ Every door:
 - has state-dependent collision and selection boxes — walk through when open, click-through gaps
 - responds to redstone from any cell (edge-triggered) and right-click
 - is also registered as a redstone-only `<door>_locked` twin for adventure maps
-- has a `<door>_security` variant (all sixteen doors, including both silo hatches) that only a keycard scanner or the Creative Keycard can open
+- has a `<door>_security` variant (all seventeen doors, including both silo hatches) that only a keycard scanner or the Creative Keycard can open
 - security doors take three real hours of continuous mining with any tool and resist explosions; normal and locked doors keep their original break times
 
 ## Keypad
@@ -104,6 +105,10 @@ Screwdriver + sneak + right-click cycles door skins:
 
 - **Concrete** - the full NTM CE set: plain, smooth, 16 dyed, Builder's Choice, concrete bricks, pillar, rebar, asbestos, Über Concrete and Moldy Debris. Cubes and slabs use metadata families; stairs stay one id per texture.
 - **HL Blocks** - three simple blocks and seven metadata groups: freezer, fifties, crete, duct, lab, tunnel and generic.
+- **Ultra High Performance Concrete** — six grayscale shades (original plus five darker tones).
+  Every variant takes three real hours of continuous mining, and only ICBM nuclear, antimatter and
+  red matter warheads can damage it; every other explosion is fully resisted. A decorative **UHPC
+  Panel** set shares the same textures with vanilla-concrete hardness.
 - Both sets have recipes, `concrete` / `blockConcrete` / `blockhl` ore dictionary entries, and flat Chisel carving groups.
 - All concrete and HL Blocks are listed in the NTM Doors creative tab.
 - Shift + scroll cycles a held concrete or HL stack through its texture family. The cycle modifier is rebindable under Controls.
@@ -112,14 +117,16 @@ Screwdriver + sneak + right-click cycles door skins:
 ## Decorative blocks
 
 - **Speaker** - a 1x1x1 black-ash cabinet with a woofer, tweeter and bass reflex port. Shift-right-click (with any item or an empty hand) opens a safe-style toggle screen with **Enabled**, four selectable sounds (**Air Raid**, **Facility**, **Industrial**, **EAS**), a 1-64 block range slider and a 0-100% volume slider; anyone may use it. While enabled and receiving redstone power, it loops the selected alarm until the signal or **Enabled** is removed. The sound, range, volume and enabled state are saved with the block. A normal right-click with the Redstone Relay Key starts/finishes a wireless binding session, and starting the alarm pulses every linked Redstone Gate.
-- **Motion Sensor** - a compact 8x8x1.375 surface-mounted PIR sensor with an off-white ABS housing, charcoal bezel, ringed concentric Fresnel lens and a status light. It can be placed on floors, walls and ceilings; the clicked face becomes the lens direction. Green means no motion, blue means authorised personnel, yellow means maintenance and red means motion detected. Creative right-click cycles the light for preview; detection logic is not implemented yet.
+- **Motion Sensor** - a compact 8x8x1.375 surface-mounted PIR sensor with an off-white ABS housing, charcoal bezel, ringed concentric Fresnel lens and a status light. It can be placed on floors, walls and ceilings; the clicked face becomes the lens direction. Green means no motion, blue means authorised personnel, yellow means maintenance and red means motion detected. Creative right-click cycles the light for preview. The sensor scans its configured 5x5 area, checks the cards and biometric IDs assigned to it, and drives linked Redstone Gates.
   - [Final model preview](https://github.com/Kyron04/susy-ntmdoors/blob/main/source-art/motion-sensor/motion-sensor-model-preview-final.png)
+- **Spatial Disrupter** - a decorative machine block with a blue/red emblem on the sides and a grey plate on the top and bottom. Tooltip: `Weakens the structural integrity of UHPC`. Right-click opens a one-action screen; activating it scans a 16x16 chunk area and turns every hard UHPC block into the soft UHPC Panel of the same shade, then consumes itself. The machine is bedrock-hard and cannot be removed by hand or explosions.
 
 ## Redstone
 
 - Normal and locked doors respond to redstone. Security doors still require a keycard scanner or the Creative Keycard, and lockdown still blocks redstone edges.
 - **Redstone Gate** - a full-cube redstone component with separate off and on textures. It starts off, turns on while it receives redstone power or a wireless pulse, and emits a full-strength signal while on. A wireless event powers it for the gate's configured duration, and another event extends the pulse. Both Operator Keycards and the Creative Keycard open its settings screen: `Stay active after signal`, `Invert operation`, and +1/+5/+10/+20 second activation duration controls with matching subtract buttons.
 - **Redstone Relay Key** - a red-named creative key. Sneak + right-click a safe or keycard scanner to start/finish a wireless binding session, then sneak + right-click a Redstone Gate to link or unlink it. On a keypad or speaker, a normal right-click starts/finishes the session; sneak + right-click opens the keypad screen, while the speaker uses shift-right-click for its own screen. Devices and gates can be linked many-to-many in the same dimension.
+- **Weapons Relay Key** - a red creative key. Sneak + right-click opens a mode screen: **Regular Bounding** links any explosive block to Redstone Gates (a powered gate triggers it immediately), and **Dead Man's Hand** hard-locks the explosive so anyone without the matching key sets it off by right-clicking, left-clicking, breaking it, or placing/breaking a block next to it. The key holder can mine it safely. Works with any explosive block.
 - Both safes and the keycard scanner have a third **Redstone** page with a red panel tint and scrolling. Event toggles start off and pulse every linked gate for that gate's configured activation duration when enabled:
   - Code Safe: Code fail, Code success, Binding activities, Lockout.
   - Biometric Safe: Scan fail, Scan success, Match holder fail, Match holder success, Lockout.

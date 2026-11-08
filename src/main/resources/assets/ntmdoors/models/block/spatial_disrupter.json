@@ -1,0 +1,12 @@
+{
+    "parent": "block/cube",
+    "textures": {
+        "particle": "ntmdoors:blocks/spatial_disrupter_side",
+        "down": "ntmdoors:blocks/spatial_disrupter_top",
+        "up": "ntmdoors:blocks/spatial_disrupter_top",
+        "north": "ntmdoors:blocks/spatial_disrupter_side",
+        "south": "ntmdoors:blocks/spatial_disrupter_side",
+        "west": "ntmdoors:blocks/spatial_disrupter_side",
+        "east": "ntmdoors:blocks/spatial_disrupter_side"
+    }
+}

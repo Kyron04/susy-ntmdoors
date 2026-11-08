@@ -122,6 +122,7 @@ tile.ntmdoors.biometric_safe.name=Biometric Safe
 tile.ntmdoors.redstone_gate.name=Redstone Gate
 tile.ntmdoors.speaker.name=Speaker
 tile.ntmdoors.motion_sensor.name=Motion Sensor
+tile.ntmdoors.spatial_disrupter.name=Spatial Disrupter
 tile.ntmdoors.monitor_setup.name=6 Monitor Setup
 tile.ntmdoors.monitor_setup_middle.name=6 Monitor Setup
 tile.ntmdoors.monitor_setup_top.name=6 Monitor Setup
@@ -386,6 +387,9 @@ ntmdoors.msg.weapons_gate_unlinked=Unlinked from Redstone Gate
 ntmdoors.msg.weapons_gate_regular_only=Gates can only be linked in Regular mode
 ntmdoors.msg.weapons_key_locked=Hard-locked: the matching key is required
 ntmdoors.msg.weapons_trap_triggered=The explosive was triggered!
+ntmdoors.msg.spatial_disrupter_active=Spatial Disrupter activated. This cannot be reversed.
+ntmdoors.msg.spatial_disrupter_already=The Spatial Disrupter is already active.
+ntmdoors.msg.spatial_disrupter_done=Spatial Disrupter finished. The machine consumed itself.
 
 tile.ntmdoors.test_door.name=Test Door
 tile.ntmdoors.test_door_locked.name=Test Door (Locked)

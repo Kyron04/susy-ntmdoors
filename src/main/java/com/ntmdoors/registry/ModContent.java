@@ -14,6 +14,7 @@ import com.ntmdoors.block.MonitorDesk;
 import com.ntmdoors.block.BlockRedstoneGate;
 import com.ntmdoors.block.BlockSafe;
 import com.ntmdoors.block.BlockSpeaker;
+import com.ntmdoors.block.BlockSpatialDisrupter;
 import com.ntmdoors.concrete.ConcreteRecipes;
 import com.ntmdoors.concrete.ConcreteSet;
 import com.ntmdoors.hlblocks.HLBlocksContent;
@@ -27,6 +28,7 @@ import com.ntmdoors.item.ItemBlockKeycardScanner;
 import com.ntmdoors.item.ItemBlockKeypad;
 import com.ntmdoors.item.ItemBlockRedstoneGate;
 import com.ntmdoors.item.ItemBlockSafe;
+import com.ntmdoors.item.ItemBlockSpatialDisrupter;
 import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.item.ItemDocumentsFolder;
 import com.ntmdoors.item.ItemDoorBlock;
@@ -82,6 +84,8 @@ public class ModContent {
     public static final BlockRedstoneGate REDSTONE_GATE = new BlockRedstoneGate();
     public static final BlockSpeaker SPEAKER = new BlockSpeaker();
     public static final BlockMotionSensor MOTION_SENSOR = new BlockMotionSensor();
+    /** Decorative machine block; gameplay logic will be added later. */
+    public static final BlockSpatialDisrupter SPATIAL_DISRUPTER = new BlockSpatialDisrupter();
     /** Bottom row, including the core cell and the item form of the desk. */
     public static final BlockMonitorSetup MONITOR_SETUP =
             new BlockMonitorSetup("monitor_setup", BlockMonitorSetup.Layer.BOTTOM);
@@ -259,6 +263,8 @@ public class ModContent {
         for (BlockMonitorDesk block : DUAL_MONITOR_BLOCKS) e.getRegistry().register(block);
         for (BlockMonitorDesk block : DUAL_MONITOR_SHORT_BLOCKS) e.getRegistry().register(block);
         for (BlockMonitorDesk block : SINGLE_MONITOR_BLOCKS) e.getRegistry().register(block);
+        // New blocks go last so previously saved numeric block IDs do not shift.
+        e.getRegistry().register(SPATIAL_DISRUPTER);
     }
 
     @SubscribeEvent
@@ -329,6 +335,9 @@ public class ModContent {
                 .setCreativeTab(NTMDoors.TAB));
         e.getRegistry().register(new ItemMonitorDesk(SINGLE_MONITOR_SETUP, SINGLE_MONITOR_DESK)
                 .setRegistryName(SINGLE_MONITOR_SETUP.getRegistryName())
+                .setCreativeTab(NTMDoors.TAB));
+        e.getRegistry().register(new ItemBlockSpatialDisrupter(SPATIAL_DISRUPTER)
+                .setRegistryName(SPATIAL_DISRUPTER.getRegistryName())
                 .setCreativeTab(NTMDoors.TAB));
     }
 
