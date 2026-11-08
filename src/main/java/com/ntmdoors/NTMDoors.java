@@ -71,6 +71,7 @@ public class NTMDoors {
             items.add(new ItemStack(ModContent.MOTION_RELAY_KEY));
             items.add(new ItemStack(ModContent.TERMINAL_RELAY_KEY));
             items.add(new ItemStack(ModContent.TERMINAL_BACKUP_KEY));
+            items.add(new ItemStack(ModContent.WEAPONS_RELAY_KEY));
             items.add(new ItemStack(ModContent.REDSTONE_GATE));
             items.add(new ItemStack(ModContent.SPEAKER));
             items.add(new ItemStack(ModContent.MOTION_SENSOR));

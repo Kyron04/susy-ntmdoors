@@ -18,14 +18,21 @@ import java.util.List;
 public class ItemBlockUltraHighPerformanceConcrete extends ItemBlockConcreteVariant {
 
     private final String fallbackName;
+    private final boolean showDescription;
 
     public ItemBlockUltraHighPerformanceConcrete(BlockConcreteVariant block) {
-        this(block, "Ultra High Performance Concrete");
+        this(block, "Ultra High Performance Concrete", true);
     }
 
     public ItemBlockUltraHighPerformanceConcrete(BlockConcreteVariant block, String fallbackName) {
+        this(block, fallbackName, true);
+    }
+
+    public ItemBlockUltraHighPerformanceConcrete(BlockConcreteVariant block, String fallbackName,
+                                                 boolean showDescription) {
         super(block);
         this.fallbackName = fallbackName;
+        this.showDescription = showDescription;
     }
 
     @Override
@@ -36,6 +43,6 @@ public class ItemBlockUltraHighPerformanceConcrete extends ItemBlockConcreteVari
     @Override
     public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip,
                                ITooltipFlag flag) {
-        Names.addDescription(tooltip, "GBU-57 not included");
+        if (showDescription) Names.addDescription(tooltip, "GBU-57 not included");
     }
 }

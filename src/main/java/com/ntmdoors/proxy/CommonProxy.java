@@ -163,4 +163,8 @@ public class CommonProxy {
     /** Client only: show or hide the blue bound-area projection for one sensor. */
     public void toggleMotionSensorOverlay(BlockPos pos) {
     }
+
+    /** Client only: open the Weapons Relay Key mode screen. */
+    public void openWeaponsRelayKeyGui(EnumHand hand) {
+    }
 }

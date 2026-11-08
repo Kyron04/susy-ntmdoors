@@ -121,7 +121,7 @@ public final class ConcreteSet {
                 new ItemBlockUltraHighPerformanceConcrete(ULTRA_HIGH_PERFORMANCE_CONCRETE));
         addCube(ULTRA_HIGH_PERFORMANCE_CONCRETE_PANEL,
                 new ItemBlockUltraHighPerformanceConcrete(ULTRA_HIGH_PERFORMANCE_CONCRETE_PANEL,
-                        "UHPC Panel"));
+                        "UHPC Panel", false));
 
         // Plain stairs.
         addStairs(CONCRETE, 0, "concrete_stairs", 15F, 94F);

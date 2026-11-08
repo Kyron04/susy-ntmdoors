@@ -43,6 +43,7 @@ import com.ntmdoors.item.ItemSafeBindingKey;
 import com.ntmdoors.item.ItemScrewdriver;
 import com.ntmdoors.item.ItemTerminalBackupKey;
 import com.ntmdoors.item.ItemTerminalRelayKey;
+import com.ntmdoors.item.ItemWeaponsRelayKey;
 import com.ntmdoors.util.ModSounds;
 import net.minecraft.block.Block;
 import net.minecraft.init.Items;
@@ -194,6 +195,8 @@ public class ModContent {
     public static final ItemTerminalRelayKey TERMINAL_RELAY_KEY = new ItemTerminalRelayKey();
     /** Black and red USB key reserved for the terminal backup system. */
     public static final ItemTerminalBackupKey TERMINAL_BACKUP_KEY = new ItemTerminalBackupKey();
+    /** Red weapons key that hard-locks explosives or links them to Redstone Gates. */
+    public static final ItemWeaponsRelayKey WEAPONS_RELAY_KEY = new ItemWeaponsRelayKey();
 
     /**
      * Every non-privileged, non-biometric RFID card the programmer's second page can produce:
@@ -313,6 +316,7 @@ public class ModContent {
         e.getRegistry().register(MOTION_RELAY_KEY);
         e.getRegistry().register(TERMINAL_RELAY_KEY);
         e.getRegistry().register(TERMINAL_BACKUP_KEY);
+        e.getRegistry().register(WEAPONS_RELAY_KEY);
         // New monitor desk items go last for the same reason.
         e.getRegistry().register(new ItemMonitorDesk(TRIPLE_MONITOR_SETUP, TRIPLE_MONITOR_DESK)
                 .setRegistryName(TRIPLE_MONITOR_SETUP.getRegistryName())

@@ -3,6 +3,7 @@ package com.ntmdoors.tile;
 import com.ntmdoors.block.BlockRedstoneGate;
 import com.ntmdoors.monitor.SecurityEvents;
 import com.ntmdoors.util.BlockPositions;
+import com.ntmdoors.weapons.WeaponsBindings;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -169,6 +170,7 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
     public void clearDevices() {
         World world = getWorld();
         if (world != null && !world.isRemote) {
+            WeaponsBindings.onGateRemoved(world, pos);
             for (BlockPos devicePos : new ArrayList<>(boundDevices)) {
                 if (!world.isBlockLoaded(devicePos)) continue;
                 TileEntity te = world.getTileEntity(devicePos);
@@ -462,6 +464,8 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
         if (world.isBlockLoaded(above)) {
             world.neighborChanged(above, state.getBlock(), pos);
         }
+        // Weapons Relay Key links fire on the rising edge of the gate output.
+        if (powered) WeaponsBindings.onGatePowered(world, pos);
     }
 
     @Override

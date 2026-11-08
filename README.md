@@ -267,6 +267,13 @@ for editing.
   binding session; sneak + right-click opens the keypad configuration screen, while the speaker
   uses shift-right-click for its own screen. Devices and gates can be linked many-to-many in the
   same dimension.
+* Weapons Relay Key (`ntmdoors:weapons_relay_key`): a red-named creative key with the tooltip
+  `Hard lock weapons so enemies can't disarm them`. Sneak + Right Click opens a screen that selects
+  `Regular Bounding` or `Dead Man's Hand`. Regular binds explosives to Redstone Gates: sneak +
+  Right Click an explosive to start, then gates to link; a powered gate triggers the explosive.
+  Dead Man's Hand hard-locks the explosive: a player without the matching key in their inventory
+  sets it off by right-clicking, left-clicking, breaking it, or placing/breaking a block next to
+  it, while the key holder can mine it safely. Works on any explosive block, not only ICBM.
 * Motion Relay Key (`ntmdoors:motion_relay_key`) and Terminal Relay Key
   (`ntmdoors:terminal_relay_key`): blue and orange/grey relay keys. The Motion Relay Key is
   reserved for defining the 5x5x5 area a Motion Sensor watches. The Terminal Relay Key starts a
