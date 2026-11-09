@@ -1,5 +1,6 @@
 package com.ntmdoors.client;
 
+import com.ntmdoors.item.ItemDeveloperKeycard;
 import com.ntmdoors.item.ItemOperatorKeycard;
 import com.ntmdoors.network.MessageSensorArea;
 import com.ntmdoors.network.MessageSensorKey;
@@ -179,16 +180,21 @@ public class GuiMotionSensor extends GuiScreen {
         ItemStack card = operatorCard();
         if (card.isEmpty()) return Collections.emptyList();
 
+        boolean redacted = ItemDeveloperKeycard.isRedacted(card);
         List<Entry> assigned = assigned();
         List<Entry> out = new ArrayList<>();
         if (Biometrics.isBound(card)) {
             String uuid = Biometrics.ownerUuid(card);
             if (!hasValue(assigned, uuid)) {
-                out.add(Entry.identity(new BiometricId(uuid, Biometrics.ownerName(card))));
+                out.add(redacted
+                        ? new Entry(true, Biometrics.label("Unknown"), "Unknown", uuid)
+                        : Entry.identity(new BiometricId(uuid, Biometrics.ownerName(card))));
             }
         }
         for (PrivateKeys.Key key : PrivateKeys.get(card)) {
-            if (!hasValue(assigned, key.serial)) out.add(Entry.key(key));
+            if (!hasValue(assigned, key.serial)) {
+                out.add(redacted ? new Entry(false, "Unknown", "Unknown", key.serial) : Entry.key(key));
+            }
         }
         return out;
     }

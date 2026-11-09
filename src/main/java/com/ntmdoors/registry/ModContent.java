@@ -31,6 +31,7 @@ import com.ntmdoors.item.ItemBlockRedstoneGate;
 import com.ntmdoors.item.ItemBlockSafe;
 import com.ntmdoors.item.ItemBlockSpatialDisrupter;
 import com.ntmdoors.item.ItemCreativeKeycard;
+import com.ntmdoors.item.ItemDeveloperKeycard;
 import com.ntmdoors.item.ItemDocumentsFolder;
 import com.ntmdoors.item.ItemDoorBlock;
 import com.ntmdoors.item.ItemKeycardHolder;
@@ -179,6 +180,31 @@ public class ModContent {
             new ItemNamedRfidCard("scp_level_5_keycard", "Level 5 clearance");
     public static final ItemRfidCard GOOGA_SECURITY_KEYCARD =
             new ItemNamedRfidCard(TextFormatting.GOLD, "googa_security_keycard", "Security is goog");
+    /** Numbered access keycards (Level 1-12). */
+    public static final ItemRfidCard LEVEL_1_ACCESS_KEYCARD =
+            new ItemNamedRfidCard("level_1_access_keycard", "Level 1 access");
+    public static final ItemRfidCard LEVEL_2_ACCESS_KEYCARD =
+            new ItemNamedRfidCard("level_2_access_keycard", "Level 2 access");
+    public static final ItemRfidCard LEVEL_3_ACCESS_KEYCARD =
+            new ItemNamedRfidCard("level_3_access_keycard", "Level 3 access");
+    public static final ItemRfidCard LEVEL_4_ACCESS_KEYCARD =
+            new ItemNamedRfidCard("level_4_access_keycard", "Level 4 access");
+    public static final ItemRfidCard LEVEL_5_ACCESS_KEYCARD =
+            new ItemNamedRfidCard("level_5_access_keycard", "Level 5 access");
+    public static final ItemRfidCard LEVEL_6_ACCESS_KEYCARD =
+            new ItemNamedRfidCard("level_6_access_keycard", "Level 6 access");
+    public static final ItemRfidCard LEVEL_7_ACCESS_KEYCARD =
+            new ItemNamedRfidCard("level_7_access_keycard", "Level 7 access");
+    public static final ItemRfidCard LEVEL_8_ACCESS_KEYCARD =
+            new ItemNamedRfidCard("level_8_access_keycard", "Level 8 access");
+    public static final ItemRfidCard LEVEL_9_ACCESS_KEYCARD =
+            new ItemNamedRfidCard("level_9_access_keycard", "Level 9 access");
+    public static final ItemRfidCard LEVEL_10_ACCESS_KEYCARD =
+            new ItemNamedRfidCard("level_10_access_keycard", "Level 10 access");
+    public static final ItemRfidCard LEVEL_11_ACCESS_KEYCARD =
+            new ItemNamedRfidCard("level_11_access_keycard", "Level 11 access");
+    public static final ItemRfidCard LEVEL_12_ACCESS_KEYCARD =
+            new ItemNamedRfidCard("level_12_access_keycard", "Level 12 access");
     /** Privileged card produced by the programmer and accepted by scanners as an admin card. */
     public static final ItemOperatorKeycard OPERATOR_KEYCARD = new ItemOperatorKeycard();
     /** Debug card that bypasses every door restriction. */
@@ -208,11 +234,14 @@ public class ModContent {
     public static final ItemTerminalBackupKey TERMINAL_BACKUP_KEY = new ItemTerminalBackupKey();
     /** Red weapons key that hard-locks explosives or links them to Redstone Gates. */
     public static final ItemWeaponsRelayKey WEAPONS_RELAY_KEY = new ItemWeaponsRelayKey();
+    /** Pack-developer keycard: works like a normal card but shows Unknown for keys and biometric IDs. */
+    public static final ItemDeveloperKeycard DEVELOPER_KEYCARD = new ItemDeveloperKeycard();
 
     /**
      * Every non-privileged, non-biometric RFID card the programmer's second page can produce:
-     * the seven colours, the five Tarkov cards, the six SCP clearance cards and Googa.
-     * Operator, Creative and Biometric cards are deliberately excluded.
+     * the seven colours, the five Tarkov cards, the six SCP clearance cards, Googa and the
+     * Level 1-12 access keycards. Operator, Creative, Biometric and the Developer Keycard are
+     * deliberately excluded.
      */
     public static final List<ItemRfidCard> PROGRAMMER_CARDS = Collections.unmodifiableList(Arrays.asList(
             RED_RFID_CARD, VIOLET_RFID_CARD, GREEN_RFID_CARD, BLUE_RFID_CARD,
@@ -221,7 +250,11 @@ public class ModContent {
             TERRAGROUP_LABS_KEYCARD,
             SCP_LEVEL_0_KEYCARD, SCP_LEVEL_1_KEYCARD, SCP_LEVEL_2_KEYCARD,
             SCP_LEVEL_3_KEYCARD, SCP_LEVEL_4_KEYCARD, SCP_LEVEL_5_KEYCARD,
-            GOOGA_SECURITY_KEYCARD));
+            GOOGA_SECURITY_KEYCARD,
+            LEVEL_1_ACCESS_KEYCARD, LEVEL_2_ACCESS_KEYCARD, LEVEL_3_ACCESS_KEYCARD,
+            LEVEL_4_ACCESS_KEYCARD, LEVEL_5_ACCESS_KEYCARD, LEVEL_6_ACCESS_KEYCARD,
+            LEVEL_7_ACCESS_KEYCARD, LEVEL_8_ACCESS_KEYCARD, LEVEL_9_ACCESS_KEYCARD,
+            LEVEL_10_ACCESS_KEYCARD, LEVEL_11_ACCESS_KEYCARD, LEVEL_12_ACCESS_KEYCARD));
 
     /** Blank first, then the colour variants and the themed cards in creative-tab order. */
     public static final List<ItemRfidCard> RFID_CARDS = Collections.unmodifiableList(Arrays.asList(
@@ -235,6 +268,13 @@ public class ModContent {
             SCP_LEVEL_0_KEYCARD, SCP_LEVEL_1_KEYCARD, SCP_LEVEL_2_KEYCARD,
             SCP_LEVEL_3_KEYCARD, SCP_LEVEL_4_KEYCARD, SCP_LEVEL_5_KEYCARD,
             GOOGA_SECURITY_KEYCARD));
+
+    /** Level 1-12 access keycards; registered last to preserve saved numeric item IDs. */
+    public static final List<ItemRfidCard> LEVEL_ACCESS_CARDS = Collections.unmodifiableList(Arrays.asList(
+            LEVEL_1_ACCESS_KEYCARD, LEVEL_2_ACCESS_KEYCARD, LEVEL_3_ACCESS_KEYCARD,
+            LEVEL_4_ACCESS_KEYCARD, LEVEL_5_ACCESS_KEYCARD, LEVEL_6_ACCESS_KEYCARD,
+            LEVEL_7_ACCESS_KEYCARD, LEVEL_8_ACCESS_KEYCARD, LEVEL_9_ACCESS_KEYCARD,
+            LEVEL_10_ACCESS_KEYCARD, LEVEL_11_ACCESS_KEYCARD, LEVEL_12_ACCESS_KEYCARD));
 
     static {
         for (DoorDecl d : DoorDecls.ALL) NORMAL_DOORS.add(new BlockDoorGeneric(d, BlockDoorGeneric.Variant.NORMAL));
@@ -353,6 +393,9 @@ public class ModContent {
                 .setCreativeTab(NTMDoors.TAB));
         // The diagnostic monocle is newer still, so it takes the next free numeric item ID.
         e.getRegistry().register(REDSTONE_MONOCLE);
+        // Registered last to preserve every previously saved numeric item ID.
+        e.getRegistry().register(DEVELOPER_KEYCARD);
+        for (ItemRfidCard card : LEVEL_ACCESS_CARDS) e.getRegistry().register(card);
     }
 
     /** Keeps existing worlds working after the SCP card registry names moved from 1-6 to 0-5. */

@@ -1,5 +1,6 @@
 package com.ntmdoors.util;
 
+import com.ntmdoors.item.ItemDeveloperKeycard;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -103,6 +104,10 @@ public final class Biometrics {
 
     /** The identity line for any item that happens to carry one. */
     public static void addOwnerIfBound(List<String> tooltip, ItemStack stack) {
+        if (ItemDeveloperKeycard.isRedacted(stack)) {
+            if (isBound(stack)) tooltip.add(TextFormatting.WHITE + "Biometric ID (Unknown)");
+            return;
+        }
         if (isBound(stack)) addOwnerLine(tooltip, stack);
     }
 

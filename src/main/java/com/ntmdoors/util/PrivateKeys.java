@@ -1,5 +1,6 @@
 package com.ntmdoors.util;
 
+import com.ntmdoors.item.ItemDeveloperKeycard;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -115,6 +116,10 @@ public final class PrivateKeys {
 
     /** Adds the standard white name/serial pairs to an item tooltip. */
     public static void addTooltip(List<String> tooltip, ItemStack stack) {
+        if (ItemDeveloperKeycard.isRedacted(stack)) {
+            if (!isBlank(stack)) tooltip.add(TextFormatting.WHITE + "Unknown");
+            return;
+        }
         for (Key key : get(stack)) {
             tooltip.add(TextFormatting.WHITE + key.name);
             tooltip.add(TextFormatting.WHITE + key.serial);

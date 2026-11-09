@@ -1,6 +1,7 @@
 package com.ntmdoors.client;
 
 import com.ntmdoors.item.ItemCreativeKeycard;
+import com.ntmdoors.item.ItemDeveloperKeycard;
 import com.ntmdoors.util.Biometrics;
 import com.ntmdoors.util.PrivateKeys;
 import net.minecraft.client.gui.GuiScreen;
@@ -37,6 +38,7 @@ public class GuiKeycardViewer extends GuiScreen {
     private final ItemStack card;
     private final List<PrivateKeys.Key> keys;
     private final boolean creative;
+    private final boolean redacted;
     private final boolean biometric;
     private final String biometricName;
 
@@ -48,6 +50,7 @@ public class GuiKeycardViewer extends GuiScreen {
     public GuiKeycardViewer(ItemStack card) {
         this.card = card.copy();
         this.creative = card.getItem() instanceof ItemCreativeKeycard;
+        this.redacted = !creative && ItemDeveloperKeycard.isRedacted(card);
         this.keys = PrivateKeys.get(card);
         this.biometric = !creative && Biometrics.isBound(card);
         this.biometricName = biometric ? Biometrics.ownerName(card) : "";
@@ -66,18 +69,21 @@ public class GuiKeycardViewer extends GuiScreen {
 
     private int entryCount() {
         if (creative) return 1;
+        if (redacted) return (biometric ? 1 : 0) + (keys.isEmpty() ? 0 : 1);
         return keys.size() + (biometric ? 1 : 0);
     }
 
     private String entryName(int index) {
         if (creative) return CREATIVE_ENTRY;
-        if (biometric && index == 0) return Biometrics.label(biometricName);
+        if (biometric && index == 0) return Biometrics.label(redacted ? "Unknown" : biometricName);
+        if (redacted) return "Unknown";
         return keys.get(keyIndex(index)).name;
     }
 
     private String entrySerial(int index) {
         if (creative) return "";
-        if (biometric && index == 0) return shortId(Biometrics.ownerUuid(card));
+        if (biometric && index == 0) return redacted ? "Unknown" : shortId(Biometrics.ownerUuid(card));
+        if (redacted) return "Unknown";
         return keys.get(keyIndex(index)).serial;
     }
 
