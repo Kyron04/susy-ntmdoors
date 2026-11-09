@@ -5,10 +5,12 @@ import com.ntmdoors.monitor.SecurityEvents;
 import com.ntmdoors.util.BlockPositions;
 import com.ntmdoors.weapons.WeaponsBindings;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
@@ -20,8 +22,11 @@ import java.util.Map;
  * Gate logic. Redstone input and wireless events share the block's POWERED state. Wireless events
  * activate the gate for the configured duration; the next pulse extends it. The gate can be
  * inverted and can be held active until the setting is turned off from its screen.
+ *
+ * <p>A gate is also a binding host: a session started on it links other gates and doors, and its
+ * output is mirrored to those receivers until the link is removed.</p>
  */
-public class TileEntityRedstoneGate extends TileEntitySynced implements ITickable {
+public class TileEntityRedstoneGate extends TileEntitySynced implements ITickable, RedstoneBindingHost {
 
     /** Default wireless activation window, in ticks. */
     public static final int WIRELESS_PULSE_TICKS = 20;
@@ -34,7 +39,10 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
     /** A hold expires if its sensor stops refreshing it, e.g. because its chunk unloaded. */
     private static final int HOLD_TIMEOUT_TICKS = 60;
 
+    private final RedstoneBinding redstoneBinding = new RedstoneBinding(this);
     private final List<BlockPos> boundDevices = new ArrayList<>();
+    /** Source gates currently driving this gate, mapped to the tick each refresh expires. */
+    private final Map<BlockPos, Long> linkedInputs = new HashMap<>();
     /**
      * Per-device hold state. A presence hold powers the gate while active; vacancy holds are an
      * AND group, so a gate linked to several out-of-bounds sensors only powers while every one of
@@ -71,6 +79,61 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
     private boolean invert;
     /** Configured wireless activation window, in ticks. */
     private int activeTicks = WIRELESS_PULSE_TICKS;
+
+    // ------------------------------------------------------------ binding host
+
+    @Override
+    public RedstoneBinding getRedstoneBinding() {
+        return redstoneBinding;
+    }
+
+    @Override
+    public void syncRedstoneState() {
+        sync();
+    }
+
+    @Override
+    public void onRedstoneBindingChanged() {
+        markDirty();
+    }
+
+    @Override
+    public void sendRedstoneMessage(EntityPlayer player, String key) {
+        player.sendStatusMessage(new TextComponentTranslation(key), true);
+    }
+
+    /**
+     * Server side: a linked gate reports its output. Only powered sources are stored; a false
+     * report removes the source. Expiry lets a receiver recover if the source disappears without
+     * sending its falling edge.
+     */
+    public void setLinkedPower(BlockPos source, boolean powered) {
+        World world = getWorld();
+        if (world == null || world.isRemote || source == null) return;
+        BlockPos key = source.toImmutable();
+        if (powered) {
+            Long previous = linkedInputs.put(key,
+                    world.getTotalWorldTime() + RedstoneBinding.LINK_TIMEOUT_TICKS);
+            if (previous != null) return;
+        } else if (linkedInputs.remove(key) == null) {
+            return;
+        }
+        inputSettleTicks = 0;
+        invertProbeTicks = 0;
+        ignoreNeighborTicks = 1;
+        markDirty();
+        refreshPower();
+    }
+
+    private boolean isLinkedPowered() {
+        if (linkedInputs.isEmpty()) return false;
+        World world = getWorld();
+        long now = world == null ? 0 : world.getTotalWorldTime();
+        for (Long expiry : linkedInputs.values()) {
+            if (expiry >= now) return true;
+        }
+        return false;
+    }
 
     /** Server side: adds a safe, scanner or keypad to this gate's wireless link. */
     public void bindDevice(BlockPos devicePos) {
@@ -178,9 +241,11 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
                     ((RedstoneBindingHost) te).getRedstoneBinding().onGateRemoved(pos);
                 }
             }
+            redstoneBinding.clearGates();
         }
         boundDevices.clear();
         holds.clear();
+        linkedInputs.clear();
         markDirty();
     }
 
@@ -312,12 +377,13 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
         if (inputSettleTicks > 0 || invertProbeTicks > 0 || ignoreNeighborTicks > 0) return;
         if (stayActive && !invert) {
             // Keep a latched gate on, but only switch an idle gate on when a real input arrives.
-            if (BlockRedstoneGate.isReceivingPower(getWorld(), pos) || isPulsing() || isHeld()) {
+            if (BlockRedstoneGate.isReceivingPower(getWorld(), pos) || isPulsing() || isHeld()
+                    || isLinkedPowered()) {
                 setPowered(true);
             }
             return;
         }
-        if (isPulsing() || isHeld()) return;
+        if (isPulsing() || isHeld() || isLinkedPowered()) return;
 
         if (invert) {
             if (isPoweredOn()) startInvertProbe();
@@ -341,6 +407,7 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
     public void update() {
         World world = getWorld();
         if (world == null || world.isRemote) return;
+        redstoneBinding.update();
 
         if (isSystemIdle()) {
             if (!systemIdle) {
@@ -349,6 +416,7 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
                 inputSettleTicks = 0;
                 invertProbeTicks = 0;
                 holds.clear();
+                linkedInputs.clear();
             }
             if (isPoweredOn()) setPowered(false);
             return;
@@ -367,8 +435,23 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
                 ignoreNeighborTicks = 1;
             }
         }
+        if (!linkedInputs.isEmpty()) {
+            long now = world.getTotalWorldTime();
+            boolean changed = linkedInputs.values().removeIf(expiry -> expiry < now);
+            if (changed) {
+                refreshPower();
+                ignoreNeighborTicks = 1;
+            }
+        }
 
         if (ignoreNeighborTicks > 0) ignoreNeighborTicks--;
+
+        // Keep receivers alive while this gate is on so a chunk that loads after the output edge
+        // still adopts the signal, and a stale receiver times out only after the source is gone.
+        if (redstoneBinding.hasLinks() && isPoweredOn()
+                && (world.getTotalWorldTime() & 19L) == 0L) {
+            redstoneBinding.applyGateOutput(true);
+        }
 
         if (inputSettleTicks > 0) {
             if (--inputSettleTicks == 0) refreshPower();
@@ -384,7 +467,7 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
         if (pulseEnd <= 0 || isPulsing()) return;
 
         pulseEnd = 0;
-        if (isHeld()) {
+        if (isHeld() || isLinkedPowered()) {
             refreshPower();
             ignoreNeighborTicks = 1;
             return;
@@ -407,17 +490,17 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
         if (!enabled) {
             systemIdle = true;
             setPowered(false);
-            return;
-        }
-        if (invert && !isPulsing()) {
+        } else if (invert && !isPulsing()) {
             // The saved gate may be powering its own attached wire; probe before trusting input.
             startInvertProbe();
         } else {
             refreshPower();
         }
+        // Seed receivers from the saved output state; persisted inputs cover chunk-load order.
+        redstoneBinding.applyGateOutput(isPoweredOn());
     }
 
-    private boolean isPoweredOn() {
+    public boolean isPoweredOn() {
         World world = getWorld();
         if (world == null) return false;
         IBlockState state = world.getBlockState(pos);
@@ -431,7 +514,7 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
             setPowered(false);
             return;
         }
-        boolean active = isPulsing() || isHeld()
+        boolean active = isPulsing() || isHeld() || isLinkedPowered()
                 || BlockRedstoneGate.isReceivingPower(getWorld(), pos);
         if (stayActive && !invert) {
             // A latched gate stays on while its input is gone. An idle gate only turns on when
@@ -466,6 +549,8 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
         }
         // Weapons Relay Key links fire on the rising edge of the gate output.
         if (powered) WeaponsBindings.onGatePowered(world, pos);
+        // Linked gates and doors follow every output edge.
+        redstoneBinding.applyGateOutput(powered);
     }
 
     @Override
@@ -477,6 +562,16 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
         tag.setBoolean("stayActive", stayActive);
         tag.setBoolean("invert", invert);
         tag.setInteger("activeTicks", activeTicks);
+        tag.setString("linkedInputs", BlockPositions.encodeList(new ArrayList<>(linkedInputs.keySet())));
+        redstoneBinding.writeToNBT(tag);
+        return tag;
+    }
+
+    @Override
+    protected NBTTagCompound writeSyncTag(NBTTagCompound tag) {
+        super.writeSyncTag(tag);
+        // Gate and door link lists stay in the sync tag so the Redstone Monocle can draw them.
+        tag.removeTag("linkedInputs");
         return tag;
     }
 
@@ -485,6 +580,14 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
         super.readFromNBT(tag);
         boundDevices.clear();
         boundDevices.addAll(BlockPositions.decodeList(tag.getString("boundDevices")));
+        linkedInputs.clear();
+        if (tag.hasKey("linkedInputs") && getWorld() != null) {
+            long expiry = getWorld().getTotalWorldTime() + RedstoneBinding.LINK_TIMEOUT_TICKS;
+            for (BlockPos source : BlockPositions.decodeList(tag.getString("linkedInputs"))) {
+                linkedInputs.put(source, expiry);
+            }
+        }
+        redstoneBinding.readFromNBT(tag);
         if (tag.hasKey("wirelessPulseEnd")) {
             pulseEnd = tag.getLong("wirelessPulseEnd");
         } else if (tag.hasKey("wirelessTicks") && getWorld() != null) {

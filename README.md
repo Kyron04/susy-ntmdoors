@@ -29,10 +29,13 @@ for editing.
 * Redstone from any cell of the door (edge triggered), right click toggle
 * Every door is also registered as a locked copy named `<door>_locked`, and as a `<door>_security`
   copy that only a keycard scanner (or the Creative Keycard directly) can open. Normal and locked
-  doors respond to redstone; security doors refuse it, as do hand clicks. All 17 doors, including
-  both silo hatches, now have a security variant. Security doors take three real hours to mine with
-  any tool, and keypads may bind and drive locked doors exactly like normal ones; security doors
-  are off limits to keypads.
+  doors respond to redstone; security doors refuse it by default, as they do hand clicks. A
+  security door records the player who placed it as its owner; that owner can sneak + right-click
+  it with the Redstone Monocle to opt it in to redstone and Redstone Gate links. Security doors
+  placed before this owner tracking was added have no recorded owner and cannot be enabled until
+  they are replaced. All 17 doors, including both silo hatches, now have a security variant.
+  Security doors take three real hours to mine with any tool, and keypads may bind and drive locked
+  doors exactly like normal ones; security doors are off limits to keypads.
 * State dependent collision and selection boxes that follow the door animation continuously
   (walk through when open, click-through gaps)
 * OBJ renderer (TESR) with per-group translate/rotate animations, X/Y/Z clipping and sounds
@@ -259,14 +262,25 @@ for editing.
   `Invert operation` (powered when there is no input), and activation duration controls from
   1 second up to 5 minutes using
   +1/+5/+10/+20 second and matching subtract buttons. It has a red menu name and the tooltip
-  `Bound activities from Keypads, Keycard Scanners, and Safes will emit a redstone signal`.
+  `Bound activities from Keypads, Keycard Scanners, and Safes will emit a redstone signal` plus the
+  Redstone Relay Key instructions. A gate can also be the start of a relay-key session: link other
+  gates and doors to its output, and they follow it on and off. Links are directional, work in the
+  same dimension, and a link that would close a feedback loop is refused.
 * Redstone Relay Key (`ntmdoors:redstone_relay_key`): a red-named creative key with the tooltip
-  `Allows Keypads, Keycard Scanners, Safes, Speakers and Motion Sensors to be bound to the Redstone Gate`. Sneak +
+  `Links keypads, scanners, safes, speakers and sensors to a Redstone Gate`. Sneak +
   right-click a safe, scanner or motion sensor to start/finish a wireless binding session, then sneak + right-click
   a gate to link or unlink it. On a keypad or speaker, a normal right-click starts/finishes the
   binding session; sneak + right-click opens the keypad configuration screen, while the speaker
-  uses shift-right-click for its own screen. Devices and gates can be linked many-to-many in the
-  same dimension.
+  uses shift-right-click for its own screen. Sneak + right-click a gate to start/finish a gate
+  session, then sneak + right-click other gates to relay the signal or doors to open and close them
+  with that gate. Devices and gates can be linked many-to-many in the same dimension; doors are
+  driven by gate sessions only, breached doors refuse the link, and security doors accept it only
+  after their owner enables Redstone access with the Monocle.
+* Redstone Monocle (`ntmdoors:redstone_monocle`): a red-named creative diagnostic item with a
+  16x16 red monocle sprite. While held in either hand it draws the loaded wireless links through
+  walls: red for gate-to-gate, amber for gate-to-door, and blue for device-to-gate. Sneak +
+  right-click a security door as its owner to toggle whether that door accepts redstone and gate
+  links; other players are refused. It changes nothing else on the server.
 * Weapons Relay Key (`ntmdoors:weapons_relay_key`): a red-named creative key with the tooltip
   `Hard lock weapons so enemies can't disarm them`. Sneak + Right Click opens a screen that selects
   `Regular Bounding` or `Dead Man's Hand`. Regular binds explosives to Redstone Gates: sneak +

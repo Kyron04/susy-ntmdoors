@@ -33,7 +33,8 @@ Every door:
 - has state-dependent collision and selection boxes — walk through when open, click-through gaps
 - responds to redstone from any cell (edge-triggered) and right-click
 - is also registered as a redstone-only `<door>_locked` twin for adventure maps
-- has a `<door>_security` variant (all seventeen doors, including both silo hatches) that only a keycard scanner or the Creative Keycard can open
+- has a `<door>_security` variant (all seventeen doors, including both silo hatches) that by default only a keycard scanner or the Creative Keycard can open
+- security doors record the player who placed them as their owner; the owner can sneak + right-click with the Redstone Monocle to allow redstone and Redstone Gate links. Older security doors without an owner cannot be enabled until replaced
 - security doors take three real hours of continuous mining with any tool and resist explosions; normal and locked doors keep their original break times
 
 ## Keypad
@@ -124,16 +125,17 @@ Screwdriver + sneak + right-click cycles door skins:
 
 ## Redstone
 
-- Normal and locked doors respond to redstone. Security doors still require a keycard scanner or the Creative Keycard, and lockdown still blocks redstone edges.
-- **Redstone Gate** - a full-cube redstone component with separate off and on textures. It starts off, turns on while it receives redstone power or a wireless pulse, and emits a full-strength signal while on. A wireless event powers it for the gate's configured duration, and another event extends the pulse. Both Operator Keycards and the Creative Keycard open its settings screen: `Stay active after signal`, `Invert operation`, and +1/+5/+10/+20 second activation duration controls with matching subtract buttons.
-- **Redstone Relay Key** - a red-named creative key. Sneak + right-click a safe or keycard scanner to start/finish a wireless binding session, then sneak + right-click a Redstone Gate to link or unlink it. On a keypad or speaker, a normal right-click starts/finishes the session; sneak + right-click opens the keypad screen, while the speaker uses shift-right-click for its own screen. Devices and gates can be linked many-to-many in the same dimension.
+- Normal and locked doors respond to redstone. Security doors require a keycard scanner or the Creative Keycard by default; their owner can enable redstone and gate links with the Redstone Monocle. Lockdown still blocks redstone edges.
+- **Redstone Gate** - a full-cube redstone component with separate off and on textures. It starts off, turns on while it receives redstone power or a wireless pulse, and emits a full-strength signal while on. A wireless event powers it for the gate's configured duration, and another event extends the pulse. Both Operator Keycards and the Creative Keycard open its settings screen: `Stay active after signal`, `Invert operation`, and +1/+5/+10/+20 second activation duration controls with matching subtract buttons. A gate can also be the start of a relay-key session: link other gates and doors to its output, and they follow it on and off. Links are directional, work in the same dimension, and a link that would close a feedback loop is refused.
+- **Redstone Relay Key** - a red-named creative key. Sneak + right-click a safe or keycard scanner to start/finish a wireless binding session, then sneak + right-click a Redstone Gate to link or unlink it. On a keypad or speaker, a normal right-click starts/finishes the session; sneak + right-click opens the keypad screen, while the speaker uses shift-right-click for its own screen. Sneak + right-click a gate to start/finish a gate session, then sneak + right-click other gates to relay the signal or doors to open and close them with that gate. Devices and gates can be linked many-to-many in the same dimension; doors are driven by gate sessions only, breached doors refuse the link, and security doors accept it only after their owner enables Redstone access with the Monocle.
+- **Redstone Monocle** - a red-named creative diagnostic item. While held in either hand it draws the loaded wireless links through walls: red for gate-to-gate, amber for gate-to-door, and blue for device-to-gate. Sneak + right-click a security door as its owner to toggle whether that door accepts redstone and gate links; other players are refused.
 - **Weapons Relay Key** - a red creative key. Sneak + right-click opens a mode screen: **Regular Bounding** links any explosive block to Redstone Gates (a powered gate triggers it immediately), and **Dead Man's Hand** hard-locks the explosive so anyone without the matching key sets it off by right-clicking, left-clicking, breaking it, or placing/breaking a block next to it. The key holder can mine it safely. Works with any explosive block.
 - Both safes and the keycard scanner have a third **Redstone** page with a red panel tint and scrolling. Event toggles start off and pulse every linked gate for that gate's configured activation duration when enabled:
   - Code Safe: Code fail, Code success, Binding activities, Lockout.
   - Biometric Safe: Scan fail, Scan success, Match holder fail, Match holder success, Lockout.
   - Keycard Scanner: Scan fail, Scan success, Match holder fail, Match holder success, Private key fail, Private key success, Biometric fail, Biometric success, Lockout.
   - Keypad (Redstone Relay Key screen): On fail, On success.
-- Safe-to-door, scanner-to-door, keypad and safe-binding links are untouched. Breaking a safe, scanner, keypad or gate clears its reciprocal wireless links.
+- Safe-to-door, scanner-to-door, keypad and safe-binding links are untouched. Breaking a safe, scanner, keypad, gate or linked door clears its reciprocal wireless links.
 
 ## Safe-to-door binding
 

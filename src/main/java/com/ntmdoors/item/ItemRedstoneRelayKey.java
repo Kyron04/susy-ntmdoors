@@ -1,7 +1,9 @@
 package com.ntmdoors.item;
 
 import com.ntmdoors.NTMDoors;
+import com.ntmdoors.block.BlockDoorGeneric;
 import com.ntmdoors.tile.RedstoneBinding;
+import com.ntmdoors.tile.TileEntityDoorGeneric;
 import com.ntmdoors.tile.TileEntityDoorKeypad;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
 import com.ntmdoors.tile.TileEntityMotionSensor;
@@ -10,6 +12,7 @@ import com.ntmdoors.tile.TileEntitySafe;
 import com.ntmdoors.tile.TileEntitySpeaker;
 import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.Names;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -29,6 +32,7 @@ import java.util.List;
 /**
  * Redstone Relay Key. Sneak right-click a safe or scanner (or normal-click a speaker) to start or
  * finish a wireless binding session, then sneak right-click any Redstone Gate to link or unlink it.
+ * A session started on a gate links other gates and doors to that gate's output.
  */
 public class ItemRedstoneRelayKey extends Item {
 
@@ -76,15 +80,39 @@ public class ItemRedstoneRelayKey extends Item {
         } else if (te instanceof TileEntityMotionSensor) {
             ((TileEntityMotionSensor) te).getRedstoneBinding().toggle(player);
         } else if (te instanceof TileEntityRedstoneGate) {
+            TileEntityRedstoneGate gate = (TileEntityRedstoneGate) te;
             RedstoneBinding binding = RedstoneBinding.findSession(world, player);
             if (binding == null) {
-                player.sendStatusMessage(new TextComponentTranslation(
-                        "ntmdoors.msg.redstone_binding_required"), true);
+                // Starting here turns the gate into a relay for other gates and doors.
+                gate.getRedstoneBinding().toggle(player);
+            } else if (binding.isHost(gate)) {
+                binding.stop(player);
             } else {
-                binding.link(player, (TileEntityRedstoneGate) te);
+                binding.link(player, gate);
+            }
+        } else {
+            TileEntityDoorGeneric door = findDoor(world, pos);
+            if (door != null) {
+                RedstoneBinding binding = RedstoneBinding.findSession(world, player);
+                if (binding == null) {
+                    player.sendStatusMessage(new TextComponentTranslation(
+                            "ntmdoors.msg.redstone_binding_required"), true);
+                } else if (!binding.isGateHost()) {
+                    player.sendStatusMessage(new TextComponentTranslation(
+                            "ntmdoors.msg.redstone_door_gate_only"), true);
+                } else {
+                    binding.linkDoor(player, door);
+                }
             }
         }
         return EnumActionResult.SUCCESS;
+    }
+
+    @Nullable
+    private static TileEntityDoorGeneric findDoor(World world, BlockPos pos) {
+        IBlockState state = world.getBlockState(pos);
+        if (!(state.getBlock() instanceof BlockDoorGeneric)) return null;
+        return ((BlockDoorGeneric) state.getBlock()).getCore(world, pos, state);
     }
 
     /** True when either hand holds a Redstone Relay Key. */
@@ -95,9 +123,10 @@ public class ItemRedstoneRelayKey extends Item {
     @Override
     public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
         Names.addDescription(tooltip,
-                "Allows Keypads, Keycard Scanners, Safes,",
-                "Speakers and Motion Sensors to be bound",
-                "to the Redstone Gate.",
+                "Links keypads, scanners, safes, speakers",
+                "and sensors to a Redstone Gate.",
+                "Sneak + Right Click a gate to bind",
+                "other gates and doors to its output.",
                 "Normal Right Click a Speaker to bind it.",
                 "Sneak + Right Click a Keypad to configure it.",
                 "Sneak + Right Click a Motion Sensor to bind it.");

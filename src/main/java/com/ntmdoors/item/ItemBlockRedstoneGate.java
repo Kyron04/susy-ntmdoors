@@ -29,6 +29,8 @@ public class ItemBlockRedstoneGate extends ItemBlock {
     public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
         Names.addDescription(tooltip,
                 "Bound activities from Keypads, Keycard Scanners,",
-                "and Safes will emit a redstone signal");
+                "and Safes will emit a redstone signal.",
+                "Sneak + Right Click with the Redstone Relay Key",
+                "to link other gates and doors to this one.");
     }
 }

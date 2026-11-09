@@ -71,7 +71,11 @@ public class ItemDoorBlock extends ItemBlock {
             for (BlockPos off : cells) world.notifyNeighborsOfStateChange(origin.add(off), door, true);
 
             TileEntity te = world.getTileEntity(origin);
-            if (te instanceof TileEntityDoorGeneric) ((TileEntityDoorGeneric) te).checkRedstone();
+            if (te instanceof TileEntityDoorGeneric) {
+                TileEntityDoorGeneric doorCore = (TileEntityDoorGeneric) te;
+                if (door.isSecurity()) doorCore.setOwner(player);
+                doorCore.checkRedstone();
+            }
         }
 
         SoundType st = door.getSoundType(door.getDefaultState(), world, origin, player);

@@ -22,6 +22,10 @@ AI assistance was used for:
   `half=...,variant=...`;
 - the Thermite Charge integration: the supplied 3D model and sprite, face-inset mounting, fuse,
   breach and sound/particle logic, and the matching door breach rendering and collision;
+- the Redstone Gate relay linking: gate-to-gate and gate-to-door sessions, mirrored outputs and
+  door redstone integration;
+- the Redstone Monocle: its supplied 16x16 sprite, the client-side wireless-link overlay, and the
+  owner-only security-door Redstone toggle;
 - the Spatial Disrupter creative-break exception;
 - a Creative Relay Key prototype that was removed before release at the owner's request;
 - final housekeeping: asset reference validation, stale comment cleanup and release docs;

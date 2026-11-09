@@ -18,8 +18,9 @@ import javax.annotation.Nullable;
 
 /**
  * Redstone Gate. It is off when placed, turns on while it receives redstone power or a wireless
- * pulse from a bound safe/scanner, and emits a full-strength signal while on. The gate's own output
- * is excluded while it probes for input so an adjacent normal cube cannot latch it on.
+ * pulse from a bound device or linked gate, and emits a full-strength signal while on. Its output
+ * can also drive linked gates and doors through the Redstone Relay Key. The gate's own output is
+ * excluded while it probes for input so an adjacent normal cube cannot latch it on.
  */
 public class BlockRedstoneGate extends Block {
 

@@ -19,8 +19,10 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.ItemStack;
 import net.minecraft.pathfinding.PathNodeType;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
@@ -158,6 +160,16 @@ public class BlockDoorGeneric extends Block {
     @Override
     public TileEntity createTileEntity(World world, IBlockState state) {
         return state.getValue(PART) == Part.CORE ? new TileEntityDoorGeneric() : new TileEntityDoorPart();
+    }
+
+    /** Records the placer as the owner of a security door when a normal block placement path is used. */
+    @Override
+    public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer,
+                                ItemStack stack) {
+        super.onBlockPlacedBy(world, pos, state, placer, stack);
+        if (world.isRemote || !isSecurity() || !(placer instanceof EntityPlayer)) return;
+        TileEntityDoorGeneric core = getCore(world, pos, state);
+        if (core != null) core.setOwner((EntityPlayer) placer);
     }
 
     @Nullable

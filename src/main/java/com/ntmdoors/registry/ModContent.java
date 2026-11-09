@@ -39,6 +39,7 @@ import com.ntmdoors.item.ItemMonitorSetup;
 import com.ntmdoors.item.ItemMotionRelayKey;
 import com.ntmdoors.item.ItemNamedRfidCard;
 import com.ntmdoors.item.ItemOperatorKeycard;
+import com.ntmdoors.item.ItemRedstoneMonocle;
 import com.ntmdoors.item.ItemRedstoneRelayKey;
 import com.ntmdoors.item.ItemRelayKey;
 import com.ntmdoors.item.ItemRfidCard;
@@ -197,6 +198,8 @@ public class ModContent {
     public static final ItemSafeBindingKey SAFE_BINDING_KEY = new ItemSafeBindingKey();
     /** Red creative key that links keypads, scanners, safes, speakers and sensors to a gate. */
     public static final ItemRedstoneRelayKey REDSTONE_RELAY_KEY = new ItemRedstoneRelayKey();
+    /** Red diagnostic monocle that reveals wireless Redstone links while held. */
+    public static final ItemRedstoneMonocle REDSTONE_MONOCLE = new ItemRedstoneMonocle();
     /** Blue creative key that opens the Motion Sensor console and defines its 5x5x5 area. */
     public static final ItemMotionRelayKey MOTION_RELAY_KEY = new ItemMotionRelayKey();
     /** Orange and grey key that binds devices to a Security Terminal net. */
@@ -348,6 +351,8 @@ public class ModContent {
         e.getRegistry().register(new ItemThermiteCharge(THERMITE_CHARGE)
                 .setRegistryName(THERMITE_CHARGE.getRegistryName())
                 .setCreativeTab(NTMDoors.TAB));
+        // The diagnostic monocle is newer still, so it takes the next free numeric item ID.
+        e.getRegistry().register(REDSTONE_MONOCLE);
     }
 
     /** Keeps existing worlds working after the SCP card registry names moved from 1-6 to 0-5. */

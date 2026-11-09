@@ -31,10 +31,13 @@ import javax.annotation.Nullable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 /** Core cell of a door. Owns the state machine, redstone handling, keypad binding and animation timing. */
 public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable {
@@ -54,6 +57,12 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
      * scanner cannot reset it. Server-only.
      */
     private String scannerCode = "";
+    /** Owner of a security door. Only the owner may enable or disable its Redstone access. */
+    @Nullable
+    private UUID ownerId;
+    private String ownerName = "";
+    /** Security doors ignore redstone and gate links until the owner opts in with the Monocle. */
+    private boolean redstoneEnabled;
     /**
      * Scanners controlling this door. Server-only, and kept when a scanner is broken so a
      * replacement placed in the same spot adopts the door again.
@@ -64,6 +73,11 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
     private BlockPos boundSafe;
     /** Ticks until a scanner-opened door closes itself; 0 when no timer is running. */
     private int autoCloseTicks;
+
+    /** Linked gate sources currently powering this door, mapped to the tick each refresh expires. */
+    private final Map<BlockPos, Long> linkedPower = new HashMap<>();
+    /** Recheck saved power on the first server tick after loading. */
+    private boolean redstoneCheckPending;
 
     /** Set while the structure is being torn down so parts don't recurse. */
     private boolean dismantling;
@@ -133,6 +147,7 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         queuedOpen = null;
         powered = false;
         autoCloseTicks = 0;
+        linkedPower.clear();
         thermiteCharges.clear();
         boxCacheTimer = Integer.MIN_VALUE;
         sync();
@@ -218,6 +233,13 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         if (breached) {
             if (client) stopClientSounds();
             return;
+        }
+        if (!client) {
+            if (redstoneCheckPending) {
+                redstoneCheckPending = false;
+                checkRedstone();
+            }
+            pruneLinkedPower();
         }
         if (!client) tickAutoClose();
         if (!client && state != DoorState.CLOSED
@@ -372,6 +394,8 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
                 ((TileEntityKeycardScanner) te).unbindDoor(self);
             } else if (te instanceof TileEntityDoorKeypad) {
                 ((TileEntityDoorKeypad) te).unbindDoor(self);
+            } else if (te instanceof TileEntityRedstoneGate) {
+                ((TileEntityRedstoneGate) te).getRedstoneBinding().onDoorRemoved(self);
             }
         }
         if (boundSafe != null) {
@@ -379,6 +403,7 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
             if (te instanceof TileEntitySafe) ((TileEntitySafe) te).unbindDoor(self);
             boundSafe = null;
         }
+        linkedPower.clear();
     }
 
     /**
@@ -405,6 +430,30 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
             return;
         }
         for (TileEntityDoorGeneric door : linkedGroup()) door.requestSelf(wantOpen);
+    }
+
+    /**
+     * Applies a redstone or linked-gate request. Unlike a normal request, group segments that
+     * have not opted in to redstone are left alone, so one enabled security segment cannot open a
+     * disabled neighbour.
+     */
+    private void requestRedstone(boolean wantOpen) {
+        if (world == null || world.isRemote) return;
+        if (breached || isThermiteFused()) return;
+        if (wantOpen && (SecurityEvents.isShutdown(world, pos)
+                || SecurityEvents.isLockdown(world, pos))) {
+            closeForSystem();
+            return;
+        }
+        if (wantOpen && isLockedDown()) return;
+        DoorDecl d = getDecl();
+        if (d == null || !d.linkAdjacent) {
+            requestSelf(wantOpen);
+            return;
+        }
+        for (TileEntityDoorGeneric door : linkedGroup()) {
+            if (door.acceptsRedstone()) door.requestSelf(wantOpen);
+        }
     }
 
     /**
@@ -659,7 +708,40 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
 
     // ------------------------------------------------------------ redstone
 
+    /**
+     * Server side: a linked Redstone Gate reports its output. The source is removed on the falling
+     * edge; the expiry lets the door recover if a source unloads without sending one.
+     */
+    public void setLinkedPower(BlockPos gatePos, boolean powered) {
+        if (world == null || world.isRemote || gatePos == null) return;
+        if (!acceptsRedstone() || breached) return;
+        BlockPos source = gatePos.toImmutable();
+        if (powered) {
+            linkedPower.put(source, world.getTotalWorldTime() + RedstoneBinding.LINK_TIMEOUT_TICKS);
+        } else if (linkedPower.remove(source) == null) {
+            return;
+        }
+        checkRedstone();
+    }
+
+    private boolean isWirelessPowered() {
+        if (linkedPower.isEmpty()) return false;
+        long now = world == null ? 0 : world.getTotalWorldTime();
+        for (Long expiry : linkedPower.values()) {
+            if (expiry >= now) return true;
+        }
+        return false;
+    }
+
+    private void pruneLinkedPower() {
+        if (linkedPower.isEmpty()) return;
+        long now = world.getTotalWorldTime();
+        if (linkedPower.values().removeIf(expiry -> expiry < now)) checkRedstone();
+    }
+
     private boolean isReceivingPower() {
+        if (!acceptsRedstone()) return false;
+        if (isWirelessPowered()) return true;
         DoorDecl d = getDecl();
         if (d == null) return false;
         EnumFacing f = world.getBlockState(pos).getValue(BlockDoorGeneric.FACING);
@@ -685,14 +767,14 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         if (breached || isThermiteFused()) return;
         // A lockdown is meant to stay shut, so redstone edges are ignored until it is lifted.
         if (isLockedDown()) return;
-        // Normal and locked doors are redstone-driven. Security doors belong to scanners alone, so
-        // they still refuse a lever or a plate.
-        if (isSecurityDoor()) return;
+        // Normal and locked doors are redstone-driven. Security doors stay redstone-blind until
+        // their owner enables access with the Redstone Monocle.
+        if (!acceptsRedstone()) return;
         boolean p = isGroupReceivingPower();
         if (p == powered) return;
         powered = p;
         markDirty();
-        request(p);
+        requestRedstone(p);
     }
 
     // ------------------------------------------------------------ player interaction
@@ -765,7 +847,7 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         return block instanceof BlockDoorGeneric && ((BlockDoorGeneric) block).locked;
     }
 
-    /** True for the {@code _security} twins: scanners and the Creative Keycard only. */
+    /** True for the {@code _security} twins: scanners, the Creative Keycard and owner-enabled Redstone. */
     public boolean isSecurityDoor() {
         Block block = getBlockType();
         return block instanceof BlockDoorGeneric && ((BlockDoorGeneric) block).isSecurity();
@@ -777,9 +859,101 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         return block instanceof BlockDoorGeneric && !((BlockDoorGeneric) block).isSecurity();
     }
 
+    /** True when redstone and wireless gate links may drive this door. */
+    public boolean acceptsRedstone() {
+        return !isSecurityDoor() || (ownerId != null && redstoneEnabled);
+    }
+
+    public boolean isRedstoneEnabled() {
+        return redstoneEnabled;
+    }
+
+    @Nullable
+    public UUID getOwnerId() {
+        return ownerId;
+    }
+
+    public String getOwnerName() {
+        return ownerName;
+    }
+
+    /** True when {@code player} is the recorded owner of this security door. */
+    public boolean isOwnedBy(EntityPlayer player) {
+        return player != null && ownerId != null && ownerId.equals(player.getUniqueID());
+    }
+
+    /** Server side: records the player who placed this security door. */
+    public void setOwner(EntityPlayer player) {
+        if (world == null || world.isRemote || player == null) return;
+        if (!isSecurityDoor() || ownerId != null) return;
+        ownerId = player.getUniqueID();
+        ownerName = player.getName();
+        markDirty();
+    }
+
+    /**
+     * Server side: the owner toggles whether this security door accepts redstone and gate links.
+     * Other players are refused so they cannot silently open a path through a protected door.
+     */
+    public boolean toggleRedstoneAccess(EntityPlayer player) {
+        if (world == null || world.isRemote || player == null || !isSecurityDoor()) return false;
+        if (ownerId == null) {
+            rejectText(player, new TextComponentTranslation("ntmdoors.msg.security_redstone_no_owner"));
+            return false;
+        }
+        if (!ownerId.equals(player.getUniqueID())) {
+            String owner = ownerName.isEmpty() ? "the owner" : ownerName;
+            rejectText(player, new TextComponentTranslation(
+                    "ntmdoors.msg.security_redstone_owner_only", owner));
+            return false;
+        }
+        ownerName = player.getName();
+        setRedstoneEnabled(!redstoneEnabled);
+        player.sendStatusMessage(new TextComponentTranslation(redstoneEnabled
+                ? "ntmdoors.msg.security_redstone_enabled"
+                : "ntmdoors.msg.security_redstone_disabled"), true);
+        return true;
+    }
+
+    private void setRedstoneEnabled(boolean value) {
+        if (redstoneEnabled == value) return;
+        boolean wasDriven = powered || isWirelessPowered();
+        redstoneEnabled = value;
+        if (value) {
+            checkRedstone();
+        } else {
+            powered = false;
+            linkedPower.clear();
+            removeGateLinks();
+            // Close only this cell. Other segments of a linked group keep their own redstone
+            // state, so an enabled neighbour is not forced shut by this owner's opt-out.
+            if (wasDriven && !breached && !isThermiteFused() && state != DoorState.CLOSED) {
+                requestSelf(false);
+            }
+        }
+        markDirty();
+        sync();
+    }
+
+    /** Server side: drops this door from every loaded gate's receiver list. */
+    private void removeGateLinks() {
+        if (world == null || world.isRemote) return;
+        BlockPos self = pos.toImmutable();
+        for (TileEntity te : new ArrayList<>(world.loadedTileEntityList)) {
+            if (te instanceof TileEntityRedstoneGate) {
+                ((TileEntityRedstoneGate) te).getRedstoneBinding().onDoorRemoved(self);
+            }
+        }
+    }
+
     private void reject(EntityPlayer player, String key) {
         world.playSound(null, pos, SoundEvents.BLOCK_METAL_PRESSPLATE_CLICK_ON, SoundCategory.BLOCKS, 1F, 0.6F);
         msg(player, key);
+    }
+
+    private void rejectText(EntityPlayer player, TextComponentTranslation text) {
+        world.playSound(null, pos, SoundEvents.BLOCK_METAL_PRESSPLATE_CLICK_ON, SoundCategory.BLOCKS, 1F, 0.6F);
+        player.sendStatusMessage(text, true);
     }
 
     private static void msg(EntityPlayer player, String key) {
@@ -803,10 +977,16 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         tag.setInteger("autoClose", autoCloseTicks);
         tag.setBoolean("breached", breached);
         tag.setString("thermiteCharges", BlockPositions.encodeList(thermiteCharges));
+        tag.setString("linkedPower", BlockPositions.encodeList(new ArrayList<>(linkedPower.keySet())));
+        if (isSecurityDoor()) {
+            tag.setString("owner", ownerId == null ? "" : ownerId.toString());
+            tag.setString("ownerName", ownerName);
+            tag.setBoolean("redstoneEnabled", redstoneEnabled);
+        }
         return tag;
     }
 
-    /** Keypad codes and scanner links stay on the server; clients only need the visual state. */
+    /** Keypad codes, scanner links and the security owner stay on the server; clients need the visual state. */
     @Override
     protected NBTTagCompound writeSyncTag(NBTTagCompound tag) {
         writeToNBT(tag);
@@ -816,6 +996,9 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         tag.removeTag("boundSafe");
         tag.removeTag("autoClose");
         tag.removeTag("thermiteCharges");
+        tag.removeTag("linkedPower");
+        tag.removeTag("owner");
+        tag.removeTag("ownerName");
         return tag;
     }
 
@@ -837,6 +1020,26 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         breached = tag.getBoolean("breached");
         thermiteCharges.clear();
         thermiteCharges.addAll(BlockPositions.decodeList(tag.getString("thermiteCharges")));
+        ownerId = null;
+        ownerName = "";
+        redstoneEnabled = false;
+        String owner = tag.getString("owner");
+        if (!owner.isEmpty()) {
+            try {
+                ownerId = UUID.fromString(owner);
+            } catch (IllegalArgumentException ignored) {
+                // Treat a malformed owner as ownerless instead of losing the whole door.
+            }
+        }
+        ownerName = tag.getString("ownerName");
+        redstoneEnabled = tag.getBoolean("redstoneEnabled");
+        linkedPower.clear();
+        if (!breached && tag.hasKey("linkedPower") && world != null) {
+            long expiry = world.getTotalWorldTime() + RedstoneBinding.LINK_TIMEOUT_TICKS;
+            for (BlockPos source : BlockPositions.decodeList(tag.getString("linkedPower"))) {
+                linkedPower.put(source, expiry);
+            }
+        }
     }
 
     /**
@@ -847,6 +1050,7 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
     public void onLoad() {
         super.onLoad();
         passUpdatePending = world != null && !world.isRemote;
+        redstoneCheckPending = world != null && !world.isRemote;
     }
 
     // ------------------------------------------------------------ rendering hints
