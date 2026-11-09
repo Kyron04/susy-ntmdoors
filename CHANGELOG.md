@@ -1,5 +1,27 @@
-HBM DOORS: 1.0.43
+HBM DOORS: 1.0.57
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.57
+FEATURES
+- Security doors now record the player who placed them as their owner. By default they still
+  require a keycard scanner or the Creative Keycard; the owner can opt a security door in to
+  redstone and Redstone Gate links by sneak + right-clicking it with the Redstone Monocle. Other
+  players are refused, and security doors placed before owner tracking have no recorded owner and
+  cannot be enabled until replaced.
+- Added the Redstone Monocle, a red-named creative diagnostic item. While held in either hand it
+  draws loaded wireless Redstone links through walls (red: gate to gate, amber: gate to door,
+  blue: device to gate). Sneak + right-click an owned security door with it to toggle Redstone
+  access.
+- The Redstone Relay Key can start a binding session from a Redstone Gate (sneak + right-click),
+  then link other gates to relay its signal or link doors to open/close with that gate. Links are
+  directional, same-dimension, and refuse feedback loops. Breached doors refuse gate-door links;
+  security doors accept them only after owner-enabled Redstone access. Existing device/gate and
+  safe/scanner/keypad links are unchanged.
+- Added the Developer Keycard (gold name) for pack developers integrating security systems into
+  structures. It behaves like a normal RFID card but displays stored private keys and biometric
+  IDs as Unknown. Excluded from the keycard programmer card page.
+- Added Level 1-12 Access Keycards, programmable/usable numbered keycards available from the
+  keycard programmer card page.
 
 1.0.43
 FEATURES
