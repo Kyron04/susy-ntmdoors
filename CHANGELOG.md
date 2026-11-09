@@ -1,7 +1,7 @@
-HBM DOORS: 1.0.57
+HBM DOORS: 1.0.44
 Minecraft 1.12.2 / Forge 14.23.5.2847
 
-1.0.57
+1.0.44
 FEATURES
 - Security doors now record the player who placed them as their owner. By default they still
   require a keycard scanner or the Creative Keycard; the owner can opt a security door in to

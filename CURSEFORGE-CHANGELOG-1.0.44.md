@@ -1,11 +1,11 @@
-# NTM Doors 1.0.57
+# NTM Doors 1.0.44
 
 Minecraft 1.12.2 / Forge 14.23.5.2847+ (tested on 14.23.5.2860)
 Requires Chisel 1.12.2-1.0.2.45
 
 Changes since the CurseForge **1.0.43** release.
 
-**File:** `ntmdoors-1.0.57.jar`
+**File:** `ntmdoors-1.0.44.jar`
 **SHA-256:** `D606EEF4A186CA1172A9D9CDB16DE580640E7122444C3C8C5B96511F1CDEBD2D`
 
 ## Security Door Ownership & Redstone Linking
