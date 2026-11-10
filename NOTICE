@@ -16,6 +16,15 @@ under the GNU Lesser General Public License, version 3 (LGPL-3.0):
   * Door geometry, animation dimensions and behaviour used by
     src/main/java/com/ntmdoors/door/DoorDecls.java
 
+Exception: the Black Mesa door test assets
+(assets/ntmdoors/models/doors/black_mesa_door.obj,
+assets/ntmdoors/textures/models/doors/black_mesa_door.png and
+assets/ntmdoors/sounds/doors/door_latch.ogg) are not HBM material.
+The door texture is a scaled/cropped derivative of Black Mesa's
+materials/metal/bms_metaldoor_2.vtf (Crowbar Collective) and is included for
+private testing only; it is not LGPL-licensed and must be replaced or licensed
+before public redistribution. The latch sound was supplied by the project owner.
+
 The concrete building set is derived from HBM's Nuclear Tech Mod Community
 Edition (NTM CE):
   https://github.com/Warfactory-Official/Hbm-s-Nuclear-Tech-CE

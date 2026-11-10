@@ -33,17 +33,18 @@ for editing.
   security door records the player who placed it as its owner; that owner can sneak + right-click
   it with the Redstone Monocle to opt it in to redstone and Redstone Gate links. Security doors
   placed before this owner tracking was added have no recorded owner and cannot be enabled until
-  they are replaced. All 17 doors, including both silo hatches, now have a security variant.
+  they are replaced. All 19 doors, including both silo hatches, now have a security variant.
   Security doors take three real hours to mine with any tool, and keypads may bind and drive locked
   doors exactly like normal ones; security doors are off limits to keypads.
 * State dependent collision and selection boxes that follow the door animation continuously
   (walk through when open, click-through gaps)
 * OBJ renderer (TESR) with per-group translate/rotate animations, X/Y/Z clipping and sounds
 * 3D door item rendering (inventory, hand, ground) from the same OBJ model, matching HBM's door item renderer
-* 17 multiblock OBJ doors: `vault_door`, `sliding_blast_door`, `qe_sliding_door`, `qe_sliding_panel`,
+* 19 multiblock OBJ doors: `vault_door`, `sliding_blast_door`, `qe_sliding_door`, `qe_sliding_panel`,
   `fire_door`, `secure_access_door`, `sliding_seal_door`, `round_airlock_door`, `silo_hatch`,
   `silo_hatch_large`, `large_vehicle_door`, `qe_containment`, `blast_shutter`, `blast_door`,
-  `cargo_door`, `water_door`, and `transition_seal`, plus a `_locked` copy of each
+  `cargo_door`, `water_door`, `black_mesa_door`, `office_door_1_double`, and `transition_seal`,
+  plus a `_locked` copy of each
 * Screwdriver: sneak + right click on a door with alternate skins cycles through them; right click
   a keypad to start its code-reset sequence; sneak + right click an unused keypad cycles its
   binding mode. Every interaction the tool handles plays `button9`, so nearby players hear the
@@ -453,6 +454,8 @@ from its model; the scanner uses a 3D model in the inventory and hand too, like 
 | `blast_door` | `Tooth`, `Slider1`-`Slider4` | 1x7 roller shutter (Roller Blast Door) |
 | `water_door` | `Door_Cube.003`, `Bolts`, `Top`, `Bottom` | 3x3 swinging water-tight door |
 | `transition_seal` | 20 rigid keyframed groups | converted from HBM `seal.dae`; full Collada action replayed as per-group matrices |
+| `black_mesa_door` | `Door` | 1x2 office door with straight front/back levers, dark frame and static hinges |
+| `office_door_1_double` | `DoorLeft`, `DoorRight` | 2x2 double office door with mirrored leaves and front/back handles |
 
 `sounds.json` and `lang/en_us.lang` are included.
 
