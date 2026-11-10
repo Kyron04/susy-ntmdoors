@@ -5,6 +5,7 @@ import com.ntmdoors.block.BlockDoorGeneric;
 import com.ntmdoors.block.BlockDoorKeypad;
 import com.ntmdoors.block.BlockKeycardProgrammer;
 import com.ntmdoors.block.BlockKeycardScanner;
+import com.ntmdoors.door.DoorPlacementGuard;
 import com.ntmdoors.item.ItemKeycardHolder;
 import com.ntmdoors.item.ItemRedstoneMonocle;
 import com.ntmdoors.item.ItemRedstoneRelayKey;
@@ -25,8 +26,10 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.event.entity.EntityMountEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
@@ -67,6 +70,30 @@ public final class GuardEvents {
             return;
         }
         event.setCanceled(true);
+    }
+
+    /**
+     * Refuses placement into the space a door's moving panel occupies when open. The door block
+     * itself is non-replaceable, but its panel can park outside the footprint (above a roller
+     * shutter, in a wall pocket, or sideways), so without this check a block could be placed inside
+     * the visible open door. Forge restores any captured block snapshots when this event is
+     * cancelled.
+     */
+    @SubscribeEvent
+    public static void onBlockPlaced(BlockEvent.EntityPlaceEvent event) {
+        if (event.getWorld().isRemote) return;
+        if (event instanceof BlockEvent.MultiPlaceEvent) {
+            for (BlockSnapshot snapshot : ((BlockEvent.MultiPlaceEvent) event).getReplacedBlockSnapshots()) {
+                if (DoorPlacementGuard.blocksPlacement(event.getWorld(), snapshot.getPos())) {
+                    event.setCanceled(true);
+                    return;
+                }
+            }
+            return;
+        }
+        if (DoorPlacementGuard.blocksPlacement(event.getWorld(), event.getPos())) {
+            event.setCanceled(true);
+        }
     }
 
     @SubscribeEvent

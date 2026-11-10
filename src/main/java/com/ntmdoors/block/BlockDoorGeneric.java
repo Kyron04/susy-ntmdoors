@@ -266,8 +266,12 @@ public class BlockDoorGeneric extends Block {
         List<AxisAlignedBB> boxes = getLocalBoxes(state, world, pos, true, Minecraft.getMinecraft().getRenderPartialTicks());
         if (boxes.isEmpty()) {
             TileEntityDoorGeneric core = getCore(world, pos, state);
-            // A breached panel cell has no click target; only the intact frame cells do.
-            if (core != null && core.isBreached()) return NULL_AABB.offset(pos);
+            // Empty dummy cells (for example the clearance cell in front of an open-swing door)
+            // must not fall back to a full-block outline. A breached panel cell also has no
+            // click target; only intact cells with actual geometry are selectable.
+            if (core != null && (!core.getPos().equals(pos) || core.isBreached())) {
+                return NULL_AABB.offset(pos);
+            }
             return FULL_BLOCK_AABB.offset(pos);
         }
         AxisAlignedBB u = boxes.get(0);

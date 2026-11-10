@@ -76,11 +76,11 @@ public class ItemDoorBlock extends ItemBlock {
                 if (door.isSecurity()) doorCore.setOwner(player);
                 doorCore.checkRedstone();
             }
-        }
 
-        SoundType st = door.getSoundType(door.getDefaultState(), world, origin, player);
-        world.playSound(player, origin, st.getPlaceSound(), SoundCategory.BLOCKS, (st.getVolume() + 1F) / 2F, st.getPitch() * 0.8F);
-        if (!player.capabilities.isCreativeMode) stack.shrink(1);
+            SoundType st = door.getSoundType(door.getDefaultState(), world, origin, player);
+            world.playSound(null, origin, st.getPlaceSound(), SoundCategory.BLOCKS, (st.getVolume() + 1F) / 2F, st.getPitch() * 0.8F);
+            if (!player.capabilities.isCreativeMode) stack.shrink(1);
+        }
         return EnumActionResult.SUCCESS;
     }
 }

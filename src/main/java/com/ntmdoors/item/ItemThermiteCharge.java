@@ -1,6 +1,7 @@
 package com.ntmdoors.item;
 
 import com.ntmdoors.block.BlockDoorGeneric;
+import com.ntmdoors.door.DoorPlacementGuard;
 import com.ntmdoors.tile.TileEntityDoorGeneric;
 import com.ntmdoors.tile.TileEntityThermiteCharge;
 import net.minecraft.block.Block;
@@ -48,6 +49,9 @@ public class ItemThermiteCharge extends ItemBlock {
         ItemStack stack = player.getHeldItem(hand);
         int count = stack.getCount();
         BlockPos placedPos = clicked.getBlock().isReplaceable(world, pos) ? pos : pos.offset(side);
+        if (DoorPlacementGuard.blocksPlacement(world, placedPos)) {
+            return EnumActionResult.FAIL;
+        }
         EnumActionResult result = onItemUse(player, world, pos, hand, side, hitX, hitY, hitZ);
 
         // ItemBlock.onItemUse always shrinks; the normal creative path restores the count itself,

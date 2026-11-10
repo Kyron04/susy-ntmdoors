@@ -1,6 +1,7 @@
 package com.ntmdoors.item;
 
 import com.ntmdoors.block.BlockMonitorSetup;
+import com.ntmdoors.door.DoorPlacementGuard;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
@@ -42,6 +43,7 @@ public class ItemMonitorSetup extends ItemBlock {
                 BlockPos p = corePos.add(block.offset(column, facing));
                 if (world.isOutsideBuildHeight(p) || !world.isBlockLoaded(p)) return EnumActionResult.FAIL;
                 if (!player.canPlayerEdit(p, side, stack)) return EnumActionResult.FAIL;
+                if (DoorPlacementGuard.blocksPlacement(world, p)) return EnumActionResult.FAIL;
                 if (!world.getBlockState(p).getBlock().isReplaceable(world, p)) return EnumActionResult.FAIL;
             }
         }

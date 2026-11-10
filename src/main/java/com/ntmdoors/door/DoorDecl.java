@@ -624,6 +624,16 @@ public class DoorDecl {
      */
     public synchronized AxisAlignedBB[] getBoxes(EnumFacing f, float openFraction, boolean collision,
                                                  boolean includeMoving) {
+        return getBoxes(f, openFraction, collision, true, includeMoving);
+    }
+
+    /** Only the animated moving-part boxes, with no static frame geometry. */
+    public synchronized AxisAlignedBB[] getMovingBoxes(EnumFacing f, float openFraction, boolean collision) {
+        return getBoxes(f, openFraction, collision, false, true);
+    }
+
+    private synchronized AxisAlignedBB[] getBoxes(EnumFacing f, float openFraction, boolean collision,
+                                                  boolean includeStatic, boolean includeMoving) {
         int i = f.getHorizontalIndex();
         if (rotBoxes[i] == null) {
             List<BoxDef> out = new ArrayList<>(boxDefs.size());
@@ -634,11 +644,14 @@ public class DoorDecl {
         }
 
         float t = Math.max(0F, Math.min(1F, openFraction));
-        List<AxisAlignedBB> active = new ArrayList<>(rotBoxes[i].size() + movingDefs.size());
-        for (BoxDef b : rotBoxes[i]) {
-            if (collision ? !b.collision : !b.selection) continue;
-            if (t + 0.00001F < b.start || t >= b.end) continue;
-            active.add(b.box);
+        List<AxisAlignedBB> active = new ArrayList<>(
+                (includeStatic ? rotBoxes[i].size() : 0) + (includeMoving ? movingDefs.size() : 0));
+        if (includeStatic) {
+            for (BoxDef b : rotBoxes[i]) {
+                if (collision ? !b.collision : !b.selection) continue;
+                if (t + 0.00001F < b.start || t >= b.end) continue;
+                active.add(b.box);
+            }
         }
 
         if (includeMoving && !movingDefs.isEmpty()) {
