@@ -51,36 +51,36 @@ public class ItemDoorBlock extends ItemBlock {
             if (!world.getBlockState(p).getBlock().isReplaceable(world, p)) return EnumActionResult.FAIL;
         }
 
-        if (!world.isRemote) {
-            IBlockState dummy = door.getDefaultState()
-                    .withProperty(BlockDoorGeneric.FACING, facing)
-                    .withProperty(BlockDoorGeneric.PART, BlockDoorGeneric.Part.DUMMY);
-            IBlockState core = door.getDefaultState()
-                    .withProperty(BlockDoorGeneric.FACING, facing)
-                    .withProperty(BlockDoorGeneric.PART, BlockDoorGeneric.Part.CORE);
+        if (world.isRemote) return EnumActionResult.SUCCESS;
 
-            for (BlockPos off : cells) {
-                if (BlockPos.ORIGIN.equals(off)) continue;
-                BlockPos p = origin.add(off);
-                world.setBlockState(p, dummy, 2);
-                TileEntity te = world.getTileEntity(p);
-                if (te instanceof TileEntityDoorPart) ((TileEntityDoorPart) te).setCorePos(origin);
-            }
-            world.setBlockState(origin, core, 2);
+        IBlockState dummy = door.getDefaultState()
+                .withProperty(BlockDoorGeneric.FACING, facing)
+                .withProperty(BlockDoorGeneric.PART, BlockDoorGeneric.Part.DUMMY);
+        IBlockState core = door.getDefaultState()
+                .withProperty(BlockDoorGeneric.FACING, facing)
+                .withProperty(BlockDoorGeneric.PART, BlockDoorGeneric.Part.CORE);
 
-            for (BlockPos off : cells) world.notifyNeighborsOfStateChange(origin.add(off), door, true);
-
-            TileEntity te = world.getTileEntity(origin);
-            if (te instanceof TileEntityDoorGeneric) {
-                TileEntityDoorGeneric doorCore = (TileEntityDoorGeneric) te;
-                if (door.isSecurity()) doorCore.setOwner(player);
-                doorCore.checkRedstone();
-            }
-
-            SoundType st = door.getSoundType(door.getDefaultState(), world, origin, player);
-            world.playSound(null, origin, st.getPlaceSound(), SoundCategory.BLOCKS, (st.getVolume() + 1F) / 2F, st.getPitch() * 0.8F);
-            if (!player.capabilities.isCreativeMode) stack.shrink(1);
+        for (BlockPos off : cells) {
+            if (BlockPos.ORIGIN.equals(off)) continue;
+            BlockPos p = origin.add(off);
+            world.setBlockState(p, dummy, 2);
+            TileEntity te = world.getTileEntity(p);
+            if (te instanceof TileEntityDoorPart) ((TileEntityDoorPart) te).setCorePos(origin);
         }
+        world.setBlockState(origin, core, 2);
+
+        for (BlockPos off : cells) world.notifyNeighborsOfStateChange(origin.add(off), door, true);
+
+        TileEntity te = world.getTileEntity(origin);
+        if (te instanceof TileEntityDoorGeneric) {
+            TileEntityDoorGeneric doorCore = (TileEntityDoorGeneric) te;
+            if (door.isSecurity()) doorCore.setOwner(player);
+            doorCore.checkRedstone();
+        }
+
+        SoundType st = door.getSoundType(door.getDefaultState(), world, origin, player);
+        world.playSound(null, origin, st.getPlaceSound(), SoundCategory.BLOCKS, (st.getVolume() + 1F) / 2F, st.getPitch() * 0.8F);
+        if (!player.capabilities.isCreativeMode) stack.shrink(1);
         return EnumActionResult.SUCCESS;
     }
 }

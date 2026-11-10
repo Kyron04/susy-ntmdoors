@@ -163,7 +163,7 @@ final class DoorSecurityAccess {
     /** Server side: drops this door from linked gates using known backrefs. */
     void unlinkKnownGates(World world, BlockPos pos) {
         if (world == null || world.isRemote) return;
-        unlinkKnownGatesInternal(world, pos.toImmutable());
+        unlinkGates(world, pos.toImmutable(), new ArrayList<>(linkedGates));
         linkedGates.clear();
     }
 
@@ -174,7 +174,6 @@ final class DoorSecurityAccess {
     void unlinkAllLoadedGates(World world, BlockPos pos) {
         if (world == null || world.isRemote) return;
         BlockPos self = pos.toImmutable();
-        unlinkKnownGatesInternal(world, self);
         linkedGates.clear();
         for (TileEntity te : new ArrayList<>(world.loadedTileEntityList)) {
             if (te instanceof TileEntityRedstoneGate) {
@@ -183,8 +182,8 @@ final class DoorSecurityAccess {
         }
     }
 
-    private void unlinkKnownGatesInternal(World world, BlockPos self) {
-        for (BlockPos gatePos : new ArrayList<>(linkedGates)) {
+    private static void unlinkGates(World world, BlockPos self, List<BlockPos> gates) {
+        for (BlockPos gatePos : gates) {
             if (!world.isBlockLoaded(gatePos)) continue;
             TileEntity te = world.getTileEntity(gatePos);
             if (te instanceof TileEntityRedstoneGate) {
