@@ -269,7 +269,8 @@ public class BlockDoorGeneric extends Block {
             // Empty dummy cells (for example the clearance cell in front of an open-swing door)
             // must not fall back to a full-block outline. A breached panel cell also has no
             // click target; only intact cells with actual geometry are selectable.
-            if (core != null && (!core.getPos().equals(pos) || core.isBreached())) {
+            BlockPos corePos = core == null ? null : core.getPos();
+            if (core != null && (corePos == null || !corePos.equals(pos) || core.isBreached())) {
                 return NULL_AABB.offset(pos);
             }
             return FULL_BLOCK_AABB.offset(pos);
