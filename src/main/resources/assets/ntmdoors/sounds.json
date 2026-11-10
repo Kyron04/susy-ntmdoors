@@ -160,5 +160,11 @@
     "sounds": [
       "ntmdoors:thermite/thermite_explosion"
     ]
+  },
+  "door_latch": {
+    "category": "block",
+    "sounds": [
+      "ntmdoors:doors/door_latch"
+    ]
   }
 }
