@@ -207,6 +207,7 @@ public final class RedstoneBinding {
         BlockPos doorPos = door.getPos().toImmutable();
         if (doors.remove(doorPos)) {
             door.setLinkedPower(host.getPos(), false);
+            door.onGateUnlinked(host.getPos());
             callbacks.onRedstoneBindingChanged();
             callbacks.syncRedstoneState();
             callbacks.sendRedstoneMessage(player, "ntmdoors.msg.redstone_door_unlinked");
@@ -214,6 +215,7 @@ public final class RedstoneBinding {
         }
 
         if (!doors.contains(doorPos)) doors.add(doorPos);
+        door.onGateLinked(host.getPos());
         door.setLinkedPower(host.getPos(), ((TileEntityRedstoneGate) host).isPoweredOn());
         callbacks.onRedstoneBindingChanged();
         callbacks.syncRedstoneState();
@@ -254,6 +256,8 @@ public final class RedstoneBinding {
                 if (door.acceptsRedstone() && !door.isBreached()) {
                     door.setLinkedPower(source, powered);
                 } else {
+                    door.setLinkedPower(source, false);
+                    door.onGateUnlinked(source);
                     doorIterator.remove();
                     changed = true;
                 }
@@ -363,7 +367,9 @@ public final class RedstoneBinding {
             if (!world.isBlockLoaded(doorPos)) continue;
             TileEntity te = world.getTileEntity(doorPos);
             if (te instanceof TileEntityDoorGeneric) {
-                ((TileEntityDoorGeneric) te).setLinkedPower(source, false);
+                TileEntityDoorGeneric door = (TileEntityDoorGeneric) te;
+                door.setLinkedPower(source, false);
+                door.onGateUnlinked(source);
             }
         }
         gates.clear();
