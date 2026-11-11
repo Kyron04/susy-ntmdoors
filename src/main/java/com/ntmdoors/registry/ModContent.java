@@ -80,6 +80,10 @@ public class ModContent {
     public static final List<BlockDoorGeneric> SECURITY_DOORS = new ArrayList<>();
     /** Normal doors first, then their locked and security twins; used for registration and rendering setup. */
     public static final List<BlockDoorGeneric> DOORS = new ArrayList<>();
+    /** Doors that keep the existing registration order and therefore the existing numeric IDs. */
+    public static final List<BlockDoorGeneric> EARLY_DOORS = new ArrayList<>();
+    /** New doors registered after every other block/item so saved numeric IDs do not shift. */
+    public static final List<BlockDoorGeneric> LATE_DOORS = new ArrayList<>();
     public static final BlockDoorKeypad KEYPAD = new BlockDoorKeypad();
     public static final BlockKeycardScanner KEYCARD_SCANNER = new BlockKeycardScanner();
     public static final BlockKeycardProgrammer KEYCARD_PROGRAMMER = new BlockKeycardProgrammer();
@@ -285,11 +289,14 @@ public class ModContent {
         DOORS.addAll(NORMAL_DOORS);
         DOORS.addAll(LOCKED_DOORS);
         DOORS.addAll(SECURITY_DOORS);
+        for (BlockDoorGeneric door : DOORS) {
+            (DoorDecls.LATE.contains(door.decl) ? LATE_DOORS : EARLY_DOORS).add(door);
+        }
     }
 
     @SubscribeEvent
     public static void registerBlocks(RegistryEvent.Register<Block> e) {
-        for (BlockDoorGeneric b : DOORS) e.getRegistry().register(b);
+        for (BlockDoorGeneric b : EARLY_DOORS) e.getRegistry().register(b);
         e.getRegistry().register(KEYPAD);
         e.getRegistry().register(KEYCARD_SCANNER);
         e.getRegistry().register(KEYCARD_PROGRAMMER);
@@ -313,11 +320,13 @@ public class ModContent {
         // New blocks go last so previously saved numeric block IDs do not shift.
         e.getRegistry().register(SPATIAL_DISRUPTER);
         e.getRegistry().register(THERMITE_CHARGE);
+        // The 3x3 office doors are newer still, so they take the next free numeric block IDs.
+        for (BlockDoorGeneric b : LATE_DOORS) e.getRegistry().register(b);
     }
 
     @SubscribeEvent
     public static void registerItems(RegistryEvent.Register<Item> e) {
-        for (BlockDoorGeneric b : DOORS) e.getRegistry().register(new ItemDoorBlock(b).setRegistryName(b.getRegistryName()));
+        for (BlockDoorGeneric b : EARLY_DOORS) e.getRegistry().register(new ItemDoorBlock(b).setRegistryName(b.getRegistryName()));
         e.getRegistry().register(new ItemBlockKeypad(KEYPAD).setRegistryName(KEYPAD.getRegistryName()));
         e.getRegistry().register(new ItemBlockKeycardScanner(KEYCARD_SCANNER).setRegistryName(KEYCARD_SCANNER.getRegistryName()));
         e.getRegistry().register(new ItemBlockKeycardProgrammer(KEYCARD_PROGRAMMER).setRegistryName(KEYCARD_PROGRAMMER.getRegistryName()));
@@ -396,6 +405,10 @@ public class ModContent {
         // Registered last to preserve every previously saved numeric item ID.
         e.getRegistry().register(DEVELOPER_KEYCARD);
         for (ItemRfidCard card : LEVEL_ACCESS_CARDS) e.getRegistry().register(card);
+        // The 3x3 office door items are newer still, so they take the next free numeric item IDs.
+        for (BlockDoorGeneric b : LATE_DOORS) {
+            e.getRegistry().register(new ItemDoorBlock(b).setRegistryName(b.getRegistryName()));
+        }
     }
 
     /** Keeps existing worlds working after the SCP card registry names moved from 1-6 to 0-5. */

@@ -24,6 +24,18 @@ public final class DoorDecls {
     private static final List<DoorDecl> LIST = new ArrayList<>();
     public static final List<DoorDecl> ALL = Collections.unmodifiableList(LIST);
 
+    /**
+     * Doors registered after every pre-existing block and item. Their numeric IDs therefore sit
+     * at the end of the registry, leaving existing world saves untouched.
+     */
+    private static final List<DoorDecl> LATE_LIST = new ArrayList<>();
+    public static final List<DoorDecl> LATE = Collections.unmodifiableList(LATE_LIST);
+
+    private static DoorDecl regLate(DoorDecl d) {
+        LATE_LIST.add(d);
+        return d;
+    }
+
     /*
      * The shared HBM audio library. Several doors use the same recording, so these events are
      * resolved through DoorDecl.sound() and registered only once.
@@ -569,9 +581,22 @@ public final class DoorDecls {
     // threshold is a clickable selection box (older office doors have it; thresholdless
     // variants do not).
 
+    /**
+     * Adds colour variants after the normal texture. The first entry is always the door's
+     * default texture, so the screwdriver cycles back to the original look.
+     */
+    private static void applySkins(DoorDecl d, String baseTexture, String... variants) {
+        if (variants.length == 0) return;
+        String[] all = new String[variants.length + 1];
+        all[0] = baseTexture;
+        System.arraycopy(variants, 0, all, 1, variants.length);
+        d.skins(all);
+    }
+
     /** Common base for a 1x2 single office door (leaf hinged on the right jamb, swings ~90°). */
     private static DoorDecl officeDoorSingle(String id, String displayName, String modelPath,
-                                             String texturePath, boolean thresholdSelection) {
+                                             String texturePath, boolean thresholdSelection,
+                                             String... textureVariants) {
         DoorDecl d = new DoorDecl(id)
                 .footprint(0, 0, 0, 1, -1, 0).times(30, 30).strength(8F, 1200F)
                 .displayName(displayName)
@@ -595,6 +620,7 @@ public final class DoorDecls {
                 .soundsOpen(SND_LATCH, null, null)
                 .soundsClose(null, null, SND_LATCH)
                 .anim("Door", PartAnim.rotate(-90, 0, 1, 0, 0.395, 0, 0, 0F, 1F));
+        applySkins(d, texturePath, textureVariants);
         if (thresholdSelection) {
             // Clickable threshold at the base of the frame; the clearance cell stays unselectable.
             d.openSelectionOnly(box(-0.40, 0.00, -0.50, 0.40, 0.02, -0.30));
@@ -602,36 +628,68 @@ public final class DoorDecls {
         return reg(d);
     }
 
-    /** Common base for a 2x2 double office door (mirrored leaves hinged at the outer jambs). */
-    private static DoorDecl officeDoorDouble(String id, String displayName, String modelPath,
-                                             String texturePath, boolean thresholdSelection) {
+    /**
+     * Common base for an office double door spanning {@code cellsX x cellsY} cells. The model is
+     * authored for the 2x2 door; {@code scale} enlarges it for the 3x3 version. {@code frontDepth}
+     * is the number of cells reserved in front for the open leaves.
+     */
+    private static DoorDecl officeDoorScaled(String id, String displayName, String modelPath,
+                                             String texturePath, boolean thresholdSelection,
+                                             int cellsX, int cellsY, int frontDepth, double scale,
+                                             String... textureVariants) {
+        double jamb = 0.1 * scale;
+        double trim = 0.14 * scale;
+        double thickness = 0.2 * scale;
+        double headTrim = 0.04 * scale;
+        double leaf = 0.9 * scale;
+        double leafBottom = 0.02 * scale;
+        double leafTop = 1.88 * scale;
+        double leafHalfDepth = 0.04 * scale;
+        double rightEdge = cellsX - 0.5;
+        double topEdge = cellsY;
         DoorDecl d = new DoorDecl(id)
-                .footprint(0, 1, 0, 1, -1, 0).times(30, 30).strength(8F, 1200F)
+                .footprint(0, cellsX - 1, 0, cellsY - 1, -frontDepth, 0)
+                .times(30, 30).strength(8F, 1200F)
                 .displayName(displayName)
-                // The leaves meet at x=0 and are hinged at the outer edges.
-                .movingBox("DoorRight", box(0.00, 0.02, -0.04, 0.90, 1.88, 0.04), 8)
-                .movingBox("DoorLeft", box(-0.90, 0.02, -0.04, 0.00, 1.88, 0.04), 8)
-                // Fixed frame, sitting flush against the front edge of the two cells.
-                .open(box(-0.50, 0.00, -0.50, -0.40, 2.00, -0.30),
-                        box(1.40, 0.00, -0.50, 1.50, 2.00, -0.30),
-                        box(-0.50, 1.90, -0.50, 1.50, 2.00, -0.30),
-                        box(-0.40, 0.02, -0.36, -0.36, 1.90, -0.30),
-                        box(1.36, 0.02, -0.36, 1.40, 1.90, -0.30),
-                        box(-0.36, 1.86, -0.36, 1.36, 1.90, -0.30))
+                // The leaves meet at the centre of the opening and are hinged at the outer edges.
+                .movingBox("DoorRight", box(0.00, leafBottom, -leafHalfDepth,
+                        leaf, leafTop, leafHalfDepth), 8)
+                .movingBox("DoorLeft", box(-leaf, leafBottom, -leafHalfDepth,
+                        0.00, leafTop, leafHalfDepth), 8)
+                // Fixed frame, sitting flush against the front edge of the door cells.
+                .open(box(-0.50, 0.00, -0.50, -0.50 + jamb, topEdge, -0.50 + thickness),
+                        box(rightEdge - jamb, 0.00, -0.50, rightEdge, topEdge, -0.50 + thickness),
+                        box(-0.50, topEdge - jamb, -0.50, rightEdge, topEdge, -0.50 + thickness),
+                        box(-0.50 + jamb, leafBottom, -0.50 + trim, -0.50 + trim,
+                                topEdge - jamb, -0.50 + thickness),
+                        box(rightEdge - trim, leafBottom, -0.50 + trim, rightEdge - jamb,
+                                topEdge - jamb, -0.50 + thickness),
+                        box(-0.50 + trim, topEdge - jamb - headTrim, -0.50 + trim,
+                                rightEdge - trim, topEdge - jamb, -0.50 + thickness))
                 .modelPath(modelPath, texturePath)
                 .modelYaw(0F)
-                // Centre the two-block model on the boundary between the core and its right neighbour.
-                .modelOffset(0.5, 0, -0.4)
-                .renderRadius(3.0)
+                // Centre the model on the opening and keep its front face flush with the cell edge.
+                .modelOffset((cellsX - 1) / 2.0, 0, -0.5 + 0.1 * scale)
+                .renderRadius(3.0 * scale)
                 .soundVolume(1.0F)
                 .soundsOpen(SND_LATCH, null, null)
                 .soundsClose(null, null, SND_LATCH)
-                .anim("DoorRight", PartAnim.rotate(-90, 0, 1, 0, 0.90, 0, 0, 0F, 1F))
-                .anim("DoorLeft", PartAnim.rotate(90, 0, 1, 0, -0.90, 0, 0, 0F, 1F));
+                .anim("DoorRight", PartAnim.rotate(-90, 0, 1, 0, leaf, 0, 0, 0F, 1F))
+                .anim("DoorLeft", PartAnim.rotate(90, 0, 1, 0, -leaf, 0, 0, 0F, 1F));
+        applySkins(d, texturePath, textureVariants);
         if (thresholdSelection) {
-            d.openSelectionOnly(box(-0.40, 0.00, -0.50, 1.40, 0.02, -0.30));
+            d.openSelectionOnly(box(-0.50 + jamb, 0.00, -0.50,
+                    rightEdge - jamb, leafBottom, -0.50 + thickness));
         }
         return reg(d);
+    }
+
+    /** Common base for a 2x2 double office door (mirrored leaves hinged at the outer jambs). */
+    private static DoorDecl officeDoorDouble(String id, String displayName, String modelPath,
+                                             String texturePath, boolean thresholdSelection,
+                                             String... textureVariants) {
+        return officeDoorScaled(id, displayName, modelPath, texturePath, thresholdSelection,
+                2, 2, 1, 1.0, textureVariants);
     }
 
     /**
@@ -642,7 +700,16 @@ public final class DoorDecls {
     public static final DoorDecl BLACK_MESA_DOOR = officeDoorSingle(
             "black_mesa_door", "Office door 1",
             "models/doors/black_mesa_door.obj", "textures/models/doors/black_mesa_door.png",
-            true);
+            true,
+            // White leaf panel variants: dark blue, olive, taupe, black.
+            "textures/models/doors/black_mesa_door_2d4a73.png",
+            "textures/models/doors/black_mesa_door_a39c48.png",
+            "textures/models/doors/black_mesa_door_785e5c.png",
+            "textures/models/doors/black_mesa_door_212121.png")
+            // The handle rotates with the leaf but keeps its original metal texture; the
+            // leaf's coloured edge is painted in the main variant texture.
+            .anim("Handle", PartAnim.rotate(-90, 0, 1, 0, 0.395, 0, 0, 0F, 1F))
+            .partSkin("Handle", "textures/models/doors/black_mesa_door_handle.png");
 
     /**
      * 2x2 double office door. Two mirrored leaves meet in the middle; the right leaf is hinged
@@ -652,7 +719,16 @@ public final class DoorDecls {
     public static final DoorDecl OFFICE_DOOR_1_DOUBLE = officeDoorDouble(
             "office_door_1_double", "Office door 1 (Double)",
             "models/doors/office_door_1_double.obj", "textures/models/doors/office_door_1_double.png",
-            true);
+            true,
+            // The double uses the same white-panel variants as the single.
+            "textures/models/doors/black_mesa_door_2d4a73.png",
+            "textures/models/doors/black_mesa_door_a39c48.png",
+            "textures/models/doors/black_mesa_door_785e5c.png",
+            "textures/models/doors/black_mesa_door_212121.png")
+            .anim("HandleRight", PartAnim.rotate(-90, 0, 1, 0, 0.90, 0, 0, 0F, 1F))
+            .anim("HandleLeft", PartAnim.rotate(90, 0, 1, 0, -0.90, 0, 0, 0F, 1F))
+            .partSkin("HandleRight", "textures/models/doors/black_mesa_door_handle.png")
+            .partSkin("HandleLeft", "textures/models/doors/black_mesa_door_handle.png");
 
     /**
      * Red single office door based on the Black Mesa fire/office doors. It reuses the office
@@ -661,7 +737,14 @@ public final class DoorDecls {
     public static final DoorDecl OFFICE_DOOR_2 = officeDoorSingle(
             "office_door_2", "Office door 2",
             "models/doors/office_door_2.obj", "textures/models/doors/office_door_2.png",
-            false);
+            false,
+            // Red leaf variants: dark red, charcoal, green, yellow, light grey, black.
+            "textures/models/doors/office_door_2_8c332e.png",
+            "textures/models/doors/office_door_2_41474f.png",
+            "textures/models/doors/office_door_2_5b8255.png",
+            "textures/models/doors/office_door_2_ebb010.png",
+            "textures/models/doors/office_door_2_d4d2cf.png",
+            "textures/models/doors/office_door_2_212121.png");
 
     /**
      * Two mirrored red office leaves, matching the office double layout. The leaves meet in the
@@ -670,7 +753,14 @@ public final class DoorDecls {
     public static final DoorDecl OFFICE_DOOR_2_DOUBLE = officeDoorDouble(
             "office_door_2_double", "Office door 2 (Double)",
             "models/doors/office_door_2_double.obj", "textures/models/doors/office_door_2.png",
-            false);
+            false,
+            // The double uses the same red-leaf variants as the single.
+            "textures/models/doors/office_door_2_8c332e.png",
+            "textures/models/doors/office_door_2_41474f.png",
+            "textures/models/doors/office_door_2_5b8255.png",
+            "textures/models/doors/office_door_2_ebb010.png",
+            "textures/models/doors/office_door_2_d4d2cf.png",
+            "textures/models/doors/office_door_2_212121.png");
 
     /**
      * Brown single office door based on the Black Mesa office doors. Plain wood leaf, square
@@ -679,7 +769,12 @@ public final class DoorDecls {
     public static final DoorDecl OFFICE_DOOR_3 = officeDoorSingle(
             "office_door_3", "Office door 3",
             "models/doors/office_door_3.obj", "textures/models/doors/office_door_3.png",
-            false);
+            false,
+            // Wood leaf variants: light grey, red, blue, black.
+            "textures/models/doors/office_door_3_babfba.png",
+            "textures/models/doors/office_door_3_b8382c.png",
+            "textures/models/doors/office_door_3_4b6982.png",
+            "textures/models/doors/office_door_3_212121.png");
 
     /**
      * Two mirrored brown office leaves, matching the office double layout. The straight levers
@@ -688,7 +783,57 @@ public final class DoorDecls {
     public static final DoorDecl OFFICE_DOOR_3_DOUBLE = officeDoorDouble(
             "office_door_3_double", "Office door 3 (Double)",
             "models/doors/office_door_3_double.obj", "textures/models/doors/office_door_3.png",
-            false);
+            false,
+            // The double uses the same wood-leaf variants as the single.
+            "textures/models/doors/office_door_3_babfba.png",
+            "textures/models/doors/office_door_3_b8382c.png",
+            "textures/models/doors/office_door_3_4b6982.png",
+            "textures/models/doors/office_door_3_212121.png");
+
+    /**
+     * 3x3 double office door. The 2x2 model is scaled by 1.5; the extra front cell keeps the
+     * longer leaves inside the door's footprint when open.
+     */
+    public static final DoorDecl OFFICE_DOOR_1_DOUBLE_3X3 = regLate(officeDoorScaled(
+            "office_door_1_double_3x3", "Office door 1 (3x3)",
+            "models/doors/office_door_1_double_3x3.obj",
+            "textures/models/doors/office_door_1_double.png",
+            true, 3, 3, 2, 1.5,
+            // The 3x3 double uses the same white-panel variants as the single.
+            "textures/models/doors/black_mesa_door_2d4a73.png",
+            "textures/models/doors/black_mesa_door_a39c48.png",
+            "textures/models/doors/black_mesa_door_785e5c.png",
+            "textures/models/doors/black_mesa_door_212121.png")
+            .anim("HandleRight", PartAnim.rotate(-90, 0, 1, 0, 1.35, 0, 0, 0F, 1F))
+            .anim("HandleLeft", PartAnim.rotate(90, 0, 1, 0, -1.35, 0, 0, 0F, 1F))
+            .partSkin("HandleRight", "textures/models/doors/black_mesa_door_handle.png")
+            .partSkin("HandleLeft", "textures/models/doors/black_mesa_door_handle.png"));
+
+    /** 3x3 red double office door. */
+    public static final DoorDecl OFFICE_DOOR_2_DOUBLE_3X3 = regLate(officeDoorScaled(
+            "office_door_2_double_3x3", "Office door 2 (3x3)",
+            "models/doors/office_door_2_double_3x3.obj",
+            "textures/models/doors/office_door_2.png",
+            false, 3, 3, 2, 1.5,
+            // The 3x3 double uses the same red-leaf variants as the single.
+            "textures/models/doors/office_door_2_8c332e.png",
+            "textures/models/doors/office_door_2_41474f.png",
+            "textures/models/doors/office_door_2_5b8255.png",
+            "textures/models/doors/office_door_2_ebb010.png",
+            "textures/models/doors/office_door_2_d4d2cf.png",
+            "textures/models/doors/office_door_2_212121.png"));
+
+    /** 3x3 brown double office door. */
+    public static final DoorDecl OFFICE_DOOR_3_DOUBLE_3X3 = regLate(officeDoorScaled(
+            "office_door_3_double_3x3", "Office door 3 (3x3)",
+            "models/doors/office_door_3_double_3x3.obj",
+            "textures/models/doors/office_door_3.png",
+            false, 3, 3, 2, 1.5,
+            // The 3x3 double uses the same wood-leaf variants as the single.
+            "textures/models/doors/office_door_3_babfba.png",
+            "textures/models/doors/office_door_3_b8382c.png",
+            "textures/models/doors/office_door_3_4b6982.png",
+            "textures/models/doors/office_door_3_212121.png"));
 
     private DoorDecls() {
     }

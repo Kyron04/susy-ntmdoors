@@ -456,6 +456,11 @@ from its model; the scanner uses a 3D model in the inventory and hand too, like 
 | `transition_seal` | 20 rigid keyframed groups | converted from HBM `seal.dae`; full Collada action replayed as per-group matrices |
 | `black_mesa_door` | `Door` | 1x2 office door with straight front/back levers, dark frame and static hinges |
 | `office_door_1_double` | `DoorLeft`, `DoorRight` | 2x2 double office door with mirrored leaves and front/back handles |
+| `office_door_2_double` | `DoorLeft`, `DoorRight` | 2x2 red double office door with mirrored leaves |
+| `office_door_3_double` | `DoorLeft`, `DoorRight` | 2x2 brown double office door with mirrored leaves |
+| `office_door_1_double_3x3` | `DoorLeft`, `DoorRight`, `HandleLeft`, `HandleRight` | 3x3 scaled white double office door; two-cell front footprint for the open leaves |
+| `office_door_2_double_3x3` | `DoorLeft`, `DoorRight` | 3x3 scaled red double office door; two-cell front footprint for the open leaves |
+| `office_door_3_double_3x3` | `DoorLeft`, `DoorRight` | 3x3 scaled brown double office door; two-cell front footprint for the open leaves |
 
 `sounds.json` and `lang/en_us.lang` are included.
 
