@@ -2,13 +2,13 @@ package com.ntmdoors.door;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.util.Facings;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Direction;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -41,7 +41,7 @@ public class DoorDecl {
     public float hardness = 10F, resistance = 1000F;
 
     /*
-     * HBM's door sounds are split into four roles per direction:
+     * Door sounds are split into four roles per direction:
      *   start  - one-shot played when the movement begins
      *   loop   - repeating sound played for as long as the door moves
      *   loop2  - optional second repeating layer (the fire door's alarm)
@@ -59,19 +59,19 @@ public class DoorDecl {
         public static final Sounds NONE = new Sounds(null, null, null, null);
         public final SoundEvent start, loop, loop2, end;
 
-        private Sounds(SoundEvent start, SoundEvent loop, SoundEvent loop2, SoundEvent end) {
+        public Sounds(SoundEvent start, SoundEvent loop, SoundEvent loop2, SoundEvent end) {
             this.start = start;
             this.loop = loop;
             this.loop2 = loop2;
             this.end = end;
         }
 
-        private Sounds withLoop2(SoundEvent loop2) {
+        public Sounds withLoop2(SoundEvent loop2) {
             return new Sounds(start, loop, loop2, end);
         }
     }
 
-    /** HBM's large doors all use a volume of two so they carry across a base. */
+    /** Large doors use a volume of 2 so they carry across a base. */
     public float soundVolume = 2F;
 
     /** One delayed one-shot sound for a door movement. */
@@ -88,12 +88,12 @@ public class DoorDecl {
         }
     }
 
-    public ResourceLocation model;
-    public ResourceLocation texture;
+    public Identifier model;
+    public Identifier texture;
     /** Optional client-side keyframe animation for models baked from an animated Collada scene. */
-    public ResourceLocation keyframeAnim;
+    public Identifier keyframeAnim;
     public double modelX, modelY, modelZ;
-    /** Extra yaw added after the door facing. HBM's pheo doors are authored facing EAST. */
+    /** Extra yaw added after the door facing. Pheo doors are authored facing EAST. */
     public float modelYaw;
     /** Optional animated-part clipping bounds in model-local X/Y/Z. Infinite means no clip. */
     public double clipMinX = Double.NEGATIVE_INFINITY, clipMaxX = Double.POSITIVE_INFINITY;
@@ -113,14 +113,14 @@ public class DoorDecl {
      * Whole-door skin list. Index 0 is the default texture. A door with more than one entry can be
      * cycled with the screwdriver; indexes beyond the list wrap around.
      */
-    public final List<ResourceLocation> skins = new ArrayList<>();
+    public final List<Identifier> skins = new ArrayList<>();
     /**
      * Per-group skin lists, keyed by OBJ group name (for example the vault door's label). A group
      * with an entry here ignores the whole-door skin list and uses its own list instead.
      */
-    public final Map<String, List<ResourceLocation>> partSkins = new LinkedHashMap<>();
+    public final Map<String, List<Identifier>> partSkins = new LinkedHashMap<>();
     /** Optional per-group texture overrides used when a door has no skins at all. */
-    public final Map<String, ResourceLocation> partTextures = new LinkedHashMap<>();
+    public final Map<String, Identifier> partTextures = new LinkedHashMap<>();
     /** Groups shown in the inventory/hand renderer. Empty means all groups. */
     public final List<String> itemGroups = new ArrayList<>();
     /** Groups actually drawn in the world. Empty means all groups. */
@@ -134,26 +134,23 @@ public class DoorDecl {
      * follow that OBJ group's animation.
      */
     private static final class BoxDef {
-        final AxisAlignedBB box;
+        final Box box;
         final float start, end;
         final boolean collision, selection;
-        /** Animated OBJ group to follow, or null for a static door-local box. */
         final String group;
-        /** Animation key to apply; null means the same name as {@link #group}. */
         final String anim;
-        /** Slice count for rotating groups; 0 means use the door's default. */
         final int splits;
 
-        BoxDef(AxisAlignedBB box, float start, float end, boolean collision, boolean selection) {
+        BoxDef(Box box, float start, float end, boolean collision, boolean selection) {
             this(box, start, end, collision, selection, null, null, 0);
         }
 
-        BoxDef(AxisAlignedBB box, float start, float end, boolean collision, boolean selection,
+        BoxDef(Box box, float start, float end, boolean collision, boolean selection,
                String group, int splits) {
             this(box, start, end, collision, selection, group, null, splits);
         }
 
-        BoxDef(AxisAlignedBB box, float start, float end, boolean collision, boolean selection,
+        BoxDef(Box box, float start, float end, boolean collision, boolean selection,
                String group, String anim, int splits) {
             this.box = box;
             this.start = start;
@@ -167,30 +164,23 @@ public class DoorDecl {
     }
 
     private final List<BoxDef> boxDefs = new ArrayList<>();
-    /** Boxes that follow an animated OBJ group; evaluated with the same PartAnim steps as the renderer. */
     private final List<BoxDef> movingDefs = new ArrayList<>();
-    /** Per-group model-space bounds, loaded on first use by {@link #prepareGeometry()}. */
-    private Map<String, AxisAlignedBB> modelBounds;
-    /** Default slice count for rotating moving boxes. */
+    private Map<String, Box> modelBounds;
     public int collisionSplits = 1;
-    /** Cells that exist only for a track or service platform (HBM's extra dimensions). */
     private final List<BlockPos> extraCells = new ArrayList<>();
     public final Map<String, List<PartAnim>> anims = new LinkedHashMap<>();
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({"unchecked"})
     private final List<BoxDef>[] rotBoxes = new List[4];
     private final BlockPos[][] cells = new BlockPos[4][];
 
     public DoorDecl(String name) {
         this.name = name;
         this.displayName = prettyName(name);
-        this.model = new ResourceLocation(NTMDoors.MODID, "models/doors/" + name + ".obj");
-        this.texture = new ResourceLocation(NTMDoors.MODID, "textures/models/doors/" + name + ".png");
+        this.model = Identifier.of(NTMDoors.MOD_ID, "models/doors/" + name + ".obj");
+        this.texture = Identifier.of(NTMDoors.MOD_ID, "textures/models/doors/" + name + ".png");
     }
 
-    /**
-     * Turns an internal registry name into a readable fallback name, e.g. qe_sliding_panel -> QE Sliding Panel.
-     */
     private static String prettyName(String name) {
         StringBuilder sb = new StringBuilder();
         for (String part : name.split("_")) {
@@ -202,16 +192,11 @@ public class DoorDecl {
         return sb.length() == 0 ? name : sb.toString();
     }
 
-    /**
-     * Returns a registered sound event for a path below the mod namespace. Several doors share the
-     * same HBM audio (for example garage_move), so the cache guarantees one event per asset.
-     */
     public static SoundEvent sound(String path) {
         SoundEvent cached = SOUND_CACHE.get(path);
         if (cached != null) return cached;
-        ResourceLocation rl = new ResourceLocation(NTMDoors.MODID, path);
-        SoundEvent e = new SoundEvent(rl);
-        e.setRegistryName(rl);
+        Identifier rl = Identifier.of(NTMDoors.MOD_ID, path);
+        SoundEvent e = SoundEvent.of(rl);
         SOUND_CACHE.put(path, e);
         ALL_SOUNDS.add(e);
         return e;
@@ -241,55 +226,41 @@ public class DoorDecl {
         return this;
     }
 
-    /** Open central cells become passable for falling sand and other entities. */
     public DoorDecl passFallingWhenOpen() {
         this.passFallingWhenOpen = true;
         return this;
     }
 
-    /** Size of the pass-through square, in cells from the core centre (1 = 3x3, 2 = 5x5). */
     public DoorDecl passRadius(int radius) {
         this.passRadius = Math.max(0, radius);
         return this;
     }
 
-    /** Adjacent copies of this door along its width axis move as one. */
     public DoorDecl linkAdjacent() {
         this.linkAdjacent = true;
         return this;
     }
 
-    /** A closed-door box that is removed once the opening animation reaches {@code end}. */
-    public DoorDecl closedUntil(float end, AxisAlignedBB... boxes) {
-        for (AxisAlignedBB b : boxes) addBox(b, -0.0001F, Math.min(end, 0.9999F), true, true);
+    public DoorDecl closedUntil(float end, Box... boxes) {
+        for (Box b : boxes) addBox(b, -0.0001F, Math.min(end, 0.9999F), true, true);
         return this;
     }
 
-    /** A residual frame box, present for the whole animation and in the open state. */
-    public DoorDecl open(AxisAlignedBB... boxes) {
-        for (AxisAlignedBB b : boxes) addBox(b, 0F, 1.0001F, true, true);
+    public DoorDecl open(Box... boxes) {
+        for (Box b : boxes) addBox(b, 0F, 1.0001F, true, true);
         return this;
     }
 
-    /** A residual frame box that can be clicked but does not push entities around. */
-    public DoorDecl openSelectionOnly(AxisAlignedBB... boxes) {
-        for (AxisAlignedBB b : boxes) addBox(b, 0F, 1.0001F, false, true);
+    public DoorDecl openSelectionOnly(Box... boxes) {
+        for (Box b : boxes) addBox(b, 0F, 1.0001F, false, true);
         return this;
     }
 
-    /**
-     * Number of slices used to approximate a rotating part's collision box. More slices follow a
-     * swinging panel more closely; 1 keeps the plain corner AABB.
-     */
     public DoorDecl collisionSplits(int splits) {
         this.collisionSplits = Math.max(1, splits);
         return this;
     }
 
-    /**
-     * Adds a collision/selection box that follows an animated OBJ group. The box is the group's
-     * model-space bounds, so it tracks the rendered mesh for the whole movement.
-     */
     public DoorDecl movingGroup(String group) {
         return movingGroup(group, 0);
     }
@@ -299,67 +270,44 @@ public class DoorDecl {
         return this;
     }
 
-    /**
-     * Adds a collision/selection box that follows an animated OBJ group, using explicit
-     * model-space bounds instead of the group's own extents.
-     */
-    public DoorDecl movingBox(String group, AxisAlignedBB box) {
+    public DoorDecl movingBox(String group, Box box) {
         return movingBox(group, box, 0);
     }
 
-    public DoorDecl movingBox(String group, AxisAlignedBB box, int splits) {
+    public DoorDecl movingBox(String group, Box box, int splits) {
         addMovingBox(group, null, box, splits);
         return this;
     }
 
-    /**
-     * A moving box whose bounds come from {@code boundsGroup} but whose motion is the animation
-     * registered under {@code animGroup}. The two are normally the same name; they differ when a
-     * part must follow only part of its own animation (the vault door's plate spins in place, which
-     * does not change its silhouette and must not be applied to the banded collision).
-     */
-    public DoorDecl movingBox(String group, String animGroup, AxisAlignedBB box) {
+    public DoorDecl movingBox(String group, String animGroup, Box box) {
         return movingBox(group, animGroup, box, 0);
     }
 
-    public DoorDecl movingBox(String group, String animGroup, AxisAlignedBB box, int splits) {
+    public DoorDecl movingBox(String group, String animGroup, Box box, int splits) {
         addMovingBox(group, animGroup, box, splits);
         return this;
     }
 
-    private void addMovingBox(String group, String animGroup, AxisAlignedBB box, int splits) {
+    private void addMovingBox(String group, String animGroup, Box box, int splits) {
         movingDefs.add(new BoxDef(box, -0.0001F, 1.0001F, true, true, group, animGroup, Math.max(0, splits)));
     }
 
-    /**
-     * Adds a collision approximation of a round panel as a stack of horizontal bands. The profile
-     * is read bottom-up as alternating band tops and half-widths, so a round door does not need a
-     * full grid of boxes. Every band follows the same animated group.
-     */
     public DoorDecl movingDisc(String group, double xMin, double xMax, double yBottom, double... profile) {
         return movingDisc(group, group, xMin, xMax, yBottom, profile);
     }
 
-    /**
-     * Banded disc collision for a part whose bounds and motion use different keys. The bands are
-     * read from {@code boundsGroup}'s model extents and animated with the steps of {@code animGroup}.
-     */
     public DoorDecl movingDisc(String boundsGroup, String animGroup, double xMin, double xMax,
                                double yBottom, double... profile) {
         double y = yBottom;
         for (int i = 0; i + 1 < profile.length; i += 2) {
             double top = profile[i];
             double halfWidth = Math.abs(profile[i + 1]);
-            movingBox(boundsGroup, animGroup, new AxisAlignedBB(xMin, y, -halfWidth, xMax, top, halfWidth));
+            movingBox(boundsGroup, animGroup, new Box(xMin, y, -halfWidth, xMax, top, halfWidth));
             y = top;
         }
         return this;
     }
 
-    /**
-     * Loads the model-space group bounds used by {@code movingGroup(...)}. Called once during mod
-     * setup so the first collision query never has to read an OBJ file.
-     */
     public synchronized void prepareGeometry() {
         if (movingDefs.isEmpty()) return;
         if (modelBounds == null) modelBounds = ObjBounds.get(model);
@@ -370,16 +318,11 @@ public class DoorDecl {
         }
     }
 
-    private void addBox(AxisAlignedBB box, float start, float end, boolean collision, boolean selection) {
+    private void addBox(Box box, float start, float end, boolean collision, boolean selection) {
         boxDefs.add(new BoxDef(box, start, end, collision, selection));
         Arrays.fill(rotBoxes, null);
     }
 
-    /**
-     * Converts the fraction of the travel distance at which a cell is cleared into the eased open
-     * fraction. PartAnim and HBM both use smoothstep, so a linear threshold would drop collision
-     * noticeably before the panel has actually left the cell.
-     */
     private static float thresholdForDistance(double fraction) {
         if (fraction >= 1.0) return 0.9999F;
         double target = Math.max(0.0, fraction);
@@ -393,13 +336,12 @@ public class DoorDecl {
         return (float) Math.min(0.9999, hi);
     }
 
-    /** Full-width row boxes removed bottom-to-top. Keeps huge doors cheap to collide with. */
     public DoorDecl liftRows(double xMin, double xMax, int minY, int maxY,
                              double zMin, double zMax, double travel) {
         double dist = Math.max(0.001, travel);
         for (int y = minY; y <= maxY; y++) {
             float end = thresholdForDistance((y + 1) / dist);
-            closedUntil(end, new AxisAlignedBB(xMin, y, zMin, xMax, y + 1, zMax));
+            closedUntil(end, new Box(xMin, y, zMin, xMax, y + 1, zMax));
         }
         return this;
     }
@@ -421,13 +363,13 @@ public class DoorDecl {
     }
 
     public DoorDecl modelPath(String modelPath, String texturePath) {
-        this.model = new ResourceLocation(NTMDoors.MODID, modelPath);
-        this.texture = new ResourceLocation(NTMDoors.MODID, texturePath);
+        this.model = Identifier.of(NTMDoors.MOD_ID, modelPath);
+        this.texture = Identifier.of(NTMDoors.MOD_ID, texturePath);
         return this;
     }
 
     public DoorDecl keyframeAnim(String path) {
-        this.keyframeAnim = new ResourceLocation(NTMDoors.MODID, path);
+        this.keyframeAnim = Identifier.of(NTMDoors.MOD_ID, path);
         return this;
     }
 
@@ -436,39 +378,33 @@ public class DoorDecl {
         return this;
     }
 
-    /** Same start/loop/end set for opening and closing. */
     public DoorDecl sounds(SoundEvent start, SoundEvent loop, SoundEvent end) {
         this.openSounds = new Sounds(start, loop, null, end);
         this.closeSounds = null;
         return this;
     }
 
-    /** Opening-specific sounds. Closing keeps mirroring these until soundsClose is called. */
     public DoorDecl soundsOpen(SoundEvent start, SoundEvent loop, SoundEvent end) {
         this.openSounds = new Sounds(start, loop, null, end);
         return this;
     }
 
-    /** Closing-specific sounds. */
     public DoorDecl soundsClose(SoundEvent start, SoundEvent loop, SoundEvent end) {
         this.closeSounds = new Sounds(start, loop, null, end);
         return this;
     }
 
-    /** A second repeating layer used in both directions (HBM's fire door alarm). */
     public DoorDecl secondaryLoop(SoundEvent loop2) {
         this.openSounds = openSounds.withLoop2(loop2);
         if (closeSounds != null) this.closeSounds = closeSounds.withLoop2(loop2);
         return this;
     }
 
-    /** Plays {@code sound} at {@code tick} of the movement, in either or both directions. */
     public DoorDecl soundCue(int tick, SoundEvent sound, boolean opening, boolean closing) {
         this.soundCues.add(new SoundCue(tick, sound, opening, closing));
         return this;
     }
 
-    /** The sound roles for a movement direction. */
     public Sounds soundSet(boolean opening) {
         return opening || closeSounds == null ? openSounds : closeSounds;
     }
@@ -506,61 +442,52 @@ public class DoorDecl {
         return this;
     }
 
-    /** Replaces the whole-door skin list. Index 0 is the default texture. */
     public DoorDecl skins(String... texturePaths) {
         this.skins.clear();
         this.skins.addAll(locations(texturePaths));
         return this;
     }
 
-    /** Replaces one group's skin list, independent of the whole-door skins. */
     public DoorDecl partSkin(String part, String... texturePaths) {
         this.partSkins.put(part, locations(texturePaths));
         return this;
     }
 
-    private static List<ResourceLocation> locations(String... paths) {
-        List<ResourceLocation> list = new ArrayList<>(paths.length);
-        for (String path : paths) list.add(new ResourceLocation(NTMDoors.MODID, path));
+    private static List<Identifier> locations(String... paths) {
+        List<Identifier> list = new ArrayList<>(paths.length);
+        for (String path : paths) list.add(Identifier.of(NTMDoors.MOD_ID, path));
         return list;
     }
 
     public DoorDecl partTexture(String part, String texturePath) {
-        this.partTextures.put(part, new ResourceLocation(NTMDoors.MODID, texturePath));
+        this.partTextures.put(part, Identifier.of(NTMDoors.MOD_ID, texturePath));
         return this;
     }
 
-    /** Number of selectable skins; always at least one (the default texture). */
     public int skinCount() {
         int count = skins.size();
-        for (List<ResourceLocation> list : partSkins.values()) {
+        for (List<Identifier> list : partSkins.values()) {
             count = Math.max(count, list.size());
         }
         return Math.max(1, count);
     }
 
-    /** True when the screwdriver has an alternate skin to switch to. */
     public boolean hasSkinVariants() {
         return skinCount() > 1;
     }
 
-    /** Wraps a skin index around a skin list; falls back to the default texture for an empty list. */
-    private static ResourceLocation skinAt(List<ResourceLocation> list, int index, ResourceLocation fallback) {
+    private static Identifier skinAt(List<Identifier> list, int index, Identifier fallback) {
         if (list == null || list.isEmpty()) return fallback;
         int i = index % list.size();
         if (i < 0) i += list.size();
         return list.get(i);
     }
 
-    /**
-     * Texture for one OBJ group. Per-group skins take priority, then the whole-door skin list,
-     * then the legacy static part override, and finally the door's default texture.
-     */
-    public ResourceLocation textureForPart(int skinIndex, String part) {
-        List<ResourceLocation> list = partSkins.get(part);
+    public Identifier textureForPart(int skinIndex, String part) {
+        List<Identifier> list = partSkins.get(part);
         if (list != null && !list.isEmpty()) return skinAt(list, skinIndex, texture);
         if (!skins.isEmpty()) return skinAt(skins, skinIndex, texture);
-        ResourceLocation override = partTextures.get(part);
+        Identifier override = partTextures.get(part);
         return override == null ? texture : override;
     }
 
@@ -569,19 +496,16 @@ public class DoorDecl {
         return this;
     }
 
-    /** Restricts world rendering to these OBJ groups. Used by cropped door variants. */
     public DoorDecl renderGroups(String... groups) {
         for (String g : groups) renderGroups.add(g);
         return this;
     }
 
-    /** Applies the clip bounds to static groups as well as animated ones. */
     public DoorDecl clipAllGroups() {
         this.clipAllGroups = true;
         return this;
     }
 
-    /** Overrides the fallback display name (the language file still takes priority). */
     public DoorDecl displayName(String name) {
         this.displayName = name;
         return this;
@@ -589,9 +513,8 @@ public class DoorDecl {
 
     // ------------------------------------------------------------ geometry
 
-    /** Every cell of the door (including the core at 0,0,0 and any extra track cells), rotated for the facing. */
-    public synchronized BlockPos[] getCells(EnumFacing f) {
-        int i = f.getHorizontalIndex();
+    public synchronized BlockPos[] getCells(Direction f) {
+        int i = (f != null && f.getAxis().isHorizontal()) ? f.getHorizontal() : 0;
         if (cells[i] == null) {
             Set<BlockPos> l = new LinkedHashSet<>();
             for (int x = minX; x <= maxX; x++)
@@ -609,32 +532,22 @@ public class DoorDecl {
         return cells[i];
     }
 
-    /**
-     * Collision or selection boxes active at the given open fraction, rotated for the facing and
-     * relative to the core cell bottom centre. Static boxes keep their hand-authored door-local
-     * shape; boxes bound to an OBJ group are transformed by the group's animation first.
-     */
-    public AxisAlignedBB[] getBoxes(EnumFacing f, float openFraction, boolean collision) {
+    public Box[] getBoxes(Direction f, float openFraction, boolean collision) {
         return getBoxes(f, openFraction, collision, true);
     }
 
-    /**
-     * Same as {@link #getBoxes(EnumFacing, float, boolean)}, with an option to omit the animated
-     * moving-part boxes. A breached door keeps only its static frame geometry.
-     */
-    public synchronized AxisAlignedBB[] getBoxes(EnumFacing f, float openFraction, boolean collision,
-                                                 boolean includeMoving) {
+    public synchronized Box[] getBoxes(Direction f, float openFraction, boolean collision,
+                                       boolean includeMoving) {
         return getBoxes(f, openFraction, collision, true, includeMoving);
     }
 
-    /** Only the animated moving-part boxes, with no static frame geometry. */
-    public synchronized AxisAlignedBB[] getMovingBoxes(EnumFacing f, float openFraction, boolean collision) {
+    public synchronized Box[] getMovingBoxes(Direction f, float openFraction, boolean collision) {
         return getBoxes(f, openFraction, collision, false, true);
     }
 
-    private synchronized AxisAlignedBB[] getBoxes(EnumFacing f, float openFraction, boolean collision,
-                                                  boolean includeStatic, boolean includeMoving) {
-        int i = f.getHorizontalIndex();
+    private synchronized Box[] getBoxes(Direction f, float openFraction, boolean collision,
+                                        boolean includeStatic, boolean includeMoving) {
+        int i = (f != null && f.getAxis().isHorizontal()) ? f.getHorizontal() : 0;
         if (rotBoxes[i] == null) {
             List<BoxDef> out = new ArrayList<>(boxDefs.size());
             for (BoxDef src : boxDefs) {
@@ -644,7 +557,7 @@ public class DoorDecl {
         }
 
         float t = Math.max(0F, Math.min(1F, openFraction));
-        List<AxisAlignedBB> active = new ArrayList<>(
+        List<Box> active = new ArrayList<>(
                 (includeStatic ? rotBoxes[i].size() : 0) + (includeMoving ? movingDefs.size() : 0));
         if (includeStatic) {
             for (BoxDef b : rotBoxes[i]) {
@@ -657,32 +570,28 @@ public class DoorDecl {
         if (includeMoving && !movingDefs.isEmpty()) {
             if (modelBounds == null) modelBounds = ObjBounds.get(model);
             float yaw = Facings.yaw(f) + modelYaw;
-            AxisAlignedBB clip = clipVolume();
+            Box clip = clipVolume();
             for (BoxDef b : movingDefs) {
                 if (collision ? !b.collision : !b.selection) continue;
                 if (t + 0.00001F < b.start || t >= b.end) continue;
-                AxisAlignedBB src = b.box != null ? b.box : modelBounds.get(b.group);
+                Box src = b.box != null ? b.box : modelBounds.get(b.group);
                 if (src == null) continue;
                 int splits = b.splits > 0 ? b.splits : collisionSplits;
-                AxisAlignedBB[] boxes = DoorGeometry.transform(
+                Box[] boxes = DoorGeometry.transform(
                         anims.get(b.anim != null ? b.anim : b.group), t, src, splits,
                         yaw, modelX, modelY, modelZ, clip);
-                for (AxisAlignedBB box : boxes) active.add(box);
+                for (Box box : boxes) active.add(box);
             }
         }
-        return active.toArray(new AxisAlignedBB[0]);
+        return active.toArray(new Box[0]);
     }
 
-    /**
-     * The renderer's clip volume in model space. DoorGeometry clips the animated box before the
-     * facing rotation, which is the same space the GL clip planes are expressed in.
-     */
     @Nullable
-    private AxisAlignedBB clipVolume() {
+    private Box clipVolume() {
         if (Double.isInfinite(clipMinX) && Double.isInfinite(clipMinY) && Double.isInfinite(clipMinZ)
                 && Double.isInfinite(clipMaxX) && Double.isInfinite(clipMaxY) && Double.isInfinite(clipMaxZ)) {
             return null;
         }
-        return new AxisAlignedBB(clipMinX, clipMinY, clipMinZ, clipMaxX, clipMaxY, clipMaxZ);
+        return new Box(clipMinX, clipMinY, clipMinZ, clipMaxX, clipMaxY, clipMaxZ);
     }
 }

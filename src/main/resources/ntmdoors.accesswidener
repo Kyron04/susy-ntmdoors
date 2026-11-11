@@ -1,0 +1,4 @@
+accessWidener	v1	named
+
+accessible	method	net/minecraft/registry/entry/RegistryEntry$Reference	setRegistryKey	(Lnet/minecraft/registry/RegistryKey;)V
+accessible	method	net/minecraft/block/AbstractBlock$Settings	<init>	()V

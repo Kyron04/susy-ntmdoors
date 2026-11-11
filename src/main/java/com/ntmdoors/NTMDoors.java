@@ -1,5 +1,6 @@
 package com.ntmdoors;
 
+import com.ntmdoors.block.door.ModDoors;
 import com.ntmdoors.item.ModItemGroups;
 import com.ntmdoors.sound.ModSounds;
 import net.fabricmc.api.ModInitializer;
@@ -23,5 +24,8 @@ public class NTMDoors implements ModInitializer {
 
         // 2. Register Creative Tab
         ModItemGroups.registerItemGroups();
+
+        // 3. Register Multiblock Doors & BlockEntities
+        ModDoors.registerModDoors();
     }
 }

@@ -24,14 +24,25 @@ dependencies {
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 
+loom {
+    accessWidenerPath = file("src/main/resources/ntmdoors.accesswidener")
+}
+
 sourceSets {
     main {
         java {
             include 'com/ntmdoors/NTMDoors.java'
             include 'com/ntmdoors/client/NTMDoorsClient.java'
             include 'com/ntmdoors/client/render/**'
+            include 'com/ntmdoors/client/sound/**'
             include 'com/ntmdoors/sound/**'
+            include 'com/ntmdoors/door/**'
+            include 'com/ntmdoors/block/door/**'
+            include 'com/ntmdoors/block/entity/**'
             include 'com/ntmdoors/item/ModItemGroups.java'
+            include 'com/ntmdoors/item/ItemDoorBlock.java'
+            include 'com/ntmdoors/util/Facings.java'
+            include 'com/ntmdoors/util/BlockPositions.java'
         }
     }
 }

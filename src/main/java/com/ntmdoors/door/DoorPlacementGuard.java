@@ -1,13 +1,17 @@
 package com.ntmdoors.door;
 
-import com.ntmdoors.block.BlockDoorGeneric;
-import com.ntmdoors.tile.TileEntityDoorGeneric;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.AxisAlignedBB;
+import com.ntmdoors.block.door.BlockDoorGeneric;
+import com.ntmdoors.block.door.DoorPart;
+import com.ntmdoors.block.entity.DoorBlockEntity;
+import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
+
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Refuses block placement in the volume a door's moving panel currently occupies or will occupy
@@ -27,53 +31,71 @@ public final class DoorPlacementGuard {
 
     /** The largest door (transition seal) is roughly 26 blocks wide and 24 high. */
     private static final double MAX_DISTANCE_SQ = 80D * 80D;
+
     /**
      * Fractions of the opening animation sampled for the guard. The final value is just below
-     * fully open so end-exclusive moving-part boxes are included. Sampling the sweep as well as
-     * the parked position stops a block from being placed in the path of a panel that is still
-     * moving.
+     * fully open so end-exclusive moving-part boxes are included.
      */
     private static final float[] OPEN_FRACTIONS = {
             0.1F, 0.2F, 0.3F, 0.4F, 0.5F, 0.6F, 0.7F, 0.8F, 0.9F, 0.999F
     };
 
+    private static final Set<DoorBlockEntity> ACTIVE_CORES = Collections.newSetFromMap(new ConcurrentHashMap<>());
+
+    public static void registerActive(DoorBlockEntity core) {
+        if (core != null) ACTIVE_CORES.add(core);
+    }
+
+    public static void unregisterActive(DoorBlockEntity core) {
+        if (core != null) ACTIVE_CORES.remove(core);
+    }
+
+    public static void clearActive() {
+        ACTIVE_CORES.clear();
+    }
+
+    public static int getActiveCount() {
+        return ACTIVE_CORES.size();
+    }
+
+    public static boolean isRegistered(DoorBlockEntity core) {
+        return core != null && ACTIVE_CORES.contains(core);
+    }
+
     /** True when a block placed at {@code target} would intersect a loaded door's moving panel. */
     public static boolean blocksPlacement(World world, BlockPos target) {
-        if (world == null || target == null) return false;
-        AxisAlignedBB block = new AxisAlignedBB(target);
-        for (TileEntity te : world.loadedTileEntityList) {
-            if (!(te instanceof TileEntityDoorGeneric)) continue;
-            TileEntityDoorGeneric core = (TileEntityDoorGeneric) te;
-            if (core.isInvalid() || core.isBreached()) continue;
-            // A fully closed, settled door keeps its panel in the footprint. Reserving its future
-            // sweep would make nearby space (and other door placements) permanently unbuildable.
+        if (target == null) return false;
+        Box block = new Box(target);
+        for (DoorBlockEntity core : ACTIVE_CORES) {
+            if (core.isRemoved() || core.isBreached()) continue;
+            if (world != null && core.getWorld() != null && core.getWorld() != world) continue;
             if (core.getState() == DoorState.CLOSED) continue;
             BlockPos corePos = core.getPos();
-            if (corePos.distanceSq(target) > MAX_DISTANCE_SQ) continue;
+            if (corePos.getSquaredDistance(target) > MAX_DISTANCE_SQ) continue;
 
-            IBlockState state = world.getBlockState(corePos);
-            if (!(state.getBlock() instanceof BlockDoorGeneric)) continue;
-            if (state.getValue(BlockDoorGeneric.PART) != BlockDoorGeneric.Part.CORE) continue;
+            Direction facing = Direction.NORTH;
+            BlockState state = core.getCachedState();
+            if (state != null) {
+                if (!(state.getBlock() instanceof BlockDoorGeneric)) continue;
+                if (state.get(BlockDoorGeneric.PART) != DoorPart.CORE) continue;
+                facing = state.get(BlockDoorGeneric.FACING);
+            }
 
             DoorDecl decl = core.getDecl();
             if (decl == null) continue;
-            EnumFacing facing = state.getValue(BlockDoorGeneric.FACING);
             if (intersectsMovingPanel(decl, corePos, facing, block)) return true;
         }
         return false;
     }
 
-    private static boolean intersectsMovingPanel(DoorDecl decl, BlockPos corePos, EnumFacing facing,
-                                                 AxisAlignedBB target) {
+    public static boolean intersectsMovingPanel(DoorDecl decl, BlockPos corePos, Direction facing, Box target) {
         double ox = corePos.getX() + 0.5D;
         double oy = corePos.getY();
         double oz = corePos.getZ() + 0.5D;
 
-        // Check only the animated moving-panel volume (not static frame geometry). For open/moving
-        // doors this covers the parked position and the path the panel currently occupies.
         for (float fraction : OPEN_FRACTIONS) {
             for (boolean collision : new boolean[]{true, false}) {
-                for (AxisAlignedBB box : decl.getMovingBoxes(facing, fraction, collision)) {
+                for (Box box : decl.getMovingBoxes(facing, fraction, collision)) {
                     if (target.intersects(box.offset(ox, oy, oz))) return true;
                 }
             }

@@ -22,6 +22,7 @@
       "com.ntmdoors.client.NTMDoorsClient"
     ]
   },
+  "accessWidener": "ntmdoors.accesswidener",
   "mixins": [
     "ntmdoors.mixins.json"
   ],

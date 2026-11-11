@@ -1,15 +1,15 @@
 package com.ntmdoors.door;
 
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.Box;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Evaluates a door part's animation on a collision box.
  *
- * <p>The renderer applies every {@link PartAnim} with {@code GlStateManager.translate/rotate},
+ * <p>The renderer applies every {@link PartAnim} with matrix transformations,
  * which post-multiplies the current matrix, so a vertex is transformed by
  * {@code T * A1 * A2 * ... * An}, where {@code T} is the model offset. This class mirrors that
  * order exactly, which lets a box bound to an animated OBJ group follow the mesh instead of
@@ -21,7 +21,7 @@ import java.util.List;
  */
 public final class DoorGeometry {
 
-    private static final AxisAlignedBB[] EMPTY = new AxisAlignedBB[0];
+    private static final Box[] EMPTY = new Box[0];
     private static final double EPS = 1.0E-7;
 
     private DoorGeometry() {
@@ -41,10 +41,10 @@ public final class DoorGeometry {
      * @param clip   clip volume in model space (after the model offset), or null
      * @return boxes in door-local space, relative to the core cell's bottom centre
      */
-    public static AxisAlignedBB[] transform(List<PartAnim> steps, float open, AxisAlignedBB box,
-                                            int splits, float yaw,
-                                            double ox, double oy, double oz,
-                                            @Nullable AxisAlignedBB clip) {
+    public static Box[] transform(List<PartAnim> steps, float open, Box box,
+                                  int splits, float yaw,
+                                  double ox, double oy, double oz,
+                                  @Nullable Box clip) {
         if (box == null) return EMPTY;
 
         boolean rotates = false;
@@ -62,10 +62,6 @@ public final class DoorGeometry {
         }
 
         Mat mat = new Mat();
-        // The renderer translates by modelOffset before it applies the part steps, and OpenGL
-        // post-multiplies, so the offset ends up to the left of the animation matrices. Applying it
-        // here (before the loop) reproduces that order; doing it afterwards would rotate the offset
-        // together with the part instead of moving the part's result.
         mat.translate(ox, oy, oz);
         if (steps != null) {
             for (PartAnim a : steps) {
@@ -83,12 +79,9 @@ public final class DoorGeometry {
         int n = rotates ? Math.max(1, splits) : 1;
         int splitAxis = n > 1 ? splitAxis(box, axisX, axisY, axisZ) : 0;
         double[] point = new double[3];
-        List<AxisAlignedBB> result = new ArrayList<>(n);
+        List<Box> result = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
-            AxisAlignedBB slice = slice(box, splitAxis, i, n);
-            // Animate the slice into model space first. The renderer's clip planes live in this
-            // space (after the model offset, before the facing rotation), so clipping here keeps
-            // the collision box consistent with what is actually drawn.
+            Box slice = slice(box, splitAxis, i, n);
             double mx1 = Double.POSITIVE_INFINITY, my1 = Double.POSITIVE_INFINITY, mz1 = Double.POSITIVE_INFINITY;
             double mx2 = Double.NEGATIVE_INFINITY, my2 = Double.NEGATIVE_INFINITY, mz2 = Double.NEGATIVE_INFINITY;
             for (int corner = 0; corner < 8; corner++) {
@@ -129,17 +122,13 @@ public final class DoorGeometry {
                 if (point[2] > z2) z2 = point[2];
             }
             if (x2 - x1 > EPS && y2 - y1 > EPS && z2 - z1 > EPS) {
-                result.add(new AxisAlignedBB(x1, y1, z1, x2, y2, z2));
+                result.add(new Box(x1, y1, z1, x2, y2, z2));
             }
         }
         return result.toArray(EMPTY);
     }
 
-    /**
-     * Picks the axis to slice along: the longest axis that is not parallel to the rotation axis.
-     * Slicing across the rotation plane is what makes a swinging panel's staircase tight.
-     */
-    private static int splitAxis(AxisAlignedBB box, double ax, double ay, double az) {
+    private static int splitAxis(Box box, double ax, double ay, double az) {
         double len = Math.sqrt(ax * ax + ay * ay + az * az);
         if (len < EPS) return longestAxis(box);
         double dx = Math.abs(ax) / len;
@@ -165,7 +154,7 @@ public final class DoorGeometry {
         return axis < 0 ? longestAxis(box) : axis;
     }
 
-    private static int longestAxis(AxisAlignedBB box) {
+    private static int longestAxis(Box box) {
         double ex = box.maxX - box.minX;
         double ey = box.maxY - box.minY;
         double ez = box.maxZ - box.minZ;
@@ -173,7 +162,7 @@ public final class DoorGeometry {
         return ey >= ez ? 1 : 2;
     }
 
-    private static AxisAlignedBB slice(AxisAlignedBB box, int axis, int index, int count) {
+    private static Box slice(Box box, int axis, int index, int count) {
         if (count <= 1) return box;
         double min, max;
         if (axis == 0) {
@@ -188,12 +177,11 @@ public final class DoorGeometry {
         }
         double lo = min + (max - min) * index / count;
         double hi = min + (max - min) * (index + 1) / count;
-        if (axis == 0) return new AxisAlignedBB(lo, box.minY, box.minZ, hi, box.maxY, box.maxZ);
-        if (axis == 1) return new AxisAlignedBB(box.minX, lo, box.minZ, box.maxX, hi, box.maxZ);
-        return new AxisAlignedBB(box.minX, box.minY, lo, box.maxX, box.maxY, hi);
+        if (axis == 0) return new Box(lo, box.minY, box.minZ, hi, box.maxY, box.maxZ);
+        if (axis == 1) return new Box(box.minX, lo, box.minZ, box.maxX, hi, box.maxZ);
+        return new Box(box.minX, box.minY, lo, box.maxX, box.maxY, hi);
     }
 
-    /** Matches {@code glRotatef(degrees, 0, 1, 0)}. */
     private static void rotateY(double[] point, float degrees) {
         if (degrees == 0F) return;
         double r = Math.toRadians(degrees);
@@ -205,7 +193,6 @@ public final class DoorGeometry {
         point[2] = -s * x + c * z;
     }
 
-    /** Affine transform with the same post-multiplication order as OpenGL. */
     private static final class Mat {
         double m00 = 1, m01, m02, m03;
         double m10, m11 = 1, m12, m13;

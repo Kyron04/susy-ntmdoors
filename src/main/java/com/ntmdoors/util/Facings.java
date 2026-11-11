@@ -1,7 +1,7 @@
 package com.ntmdoors.util;
 
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Direction;
 
 /**
  * Facing math shared by the door geometry, the keypad hit test and the renderers.
@@ -13,7 +13,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 public final class Facings {
 
     /** GL yaw (degrees) that turns a NORTH-authored model into {@code f}. */
-    public static float yaw(EnumFacing f) {
+    public static float yaw(Direction f) {
         switch (f) {
             case EAST: return -90F;
             case SOUTH: return 180F;
@@ -23,7 +23,7 @@ public final class Facings {
     }
 
     /** World X of a model-local point once the model is rotated to face {@code f}. */
-    public static double worldX(double x, double z, EnumFacing f) {
+    public static double worldX(double x, double z, Direction f) {
         switch (f) {
             case EAST: return -z;
             case SOUTH: return -x;
@@ -33,7 +33,7 @@ public final class Facings {
     }
 
     /** World Z of a model-local point once the model is rotated to face {@code f}. */
-    public static double worldZ(double x, double z, EnumFacing f) {
+    public static double worldZ(double x, double z, Direction f) {
         switch (f) {
             case EAST: return x;
             case SOUTH: return -z;
@@ -43,26 +43,26 @@ public final class Facings {
     }
 
     /** Model-space X of a world-space offset, i.e. the inverse of {@link #worldX}. */
-    public static double localX(double x, double z, EnumFacing f) {
+    public static double localX(double x, double z, Direction f) {
         return worldX(x, z, inverse(f));
     }
 
     /**
      * The horizontal facing whose yaw is the negative of {@code f}'s. Note that this is not
-     * {@link EnumFacing#getOpposite()}: the opposite turns the model 180 degrees, while this
+     * {@link Direction#getOpposite()}: the opposite turns the model 180 degrees, while this
      * undoes the turn, which for SOUTH happens to be SOUTH again.
      */
-    public static EnumFacing inverse(EnumFacing f) {
-        return EnumFacing.byHorizontalIndex((4 - f.getHorizontalIndex()) % 4);
+    public static Direction inverse(Direction f) {
+        return Direction.fromHorizontal((4 - f.getHorizontal()) % 4);
     }
 
     /** Rotates a model-space box for {@code f} and normalises the two opposite corners. */
-    public static AxisAlignedBB rotate(AxisAlignedBB box, EnumFacing f) {
+    public static Box rotate(Box box, Direction f) {
         double x1 = worldX(box.minX, box.minZ, f);
         double z1 = worldZ(box.minX, box.minZ, f);
         double x2 = worldX(box.maxX, box.maxZ, f);
         double z2 = worldZ(box.maxX, box.maxZ, f);
-        return new AxisAlignedBB(
+        return new Box(
                 Math.min(x1, x2), box.minY, Math.min(z1, z2),
                 Math.max(x1, x2), box.maxY, Math.max(z1, z2));
     }

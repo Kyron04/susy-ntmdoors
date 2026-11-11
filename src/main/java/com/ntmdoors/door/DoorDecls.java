@@ -1,7 +1,7 @@
 package com.ntmdoors.door;
 
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.util.math.Box;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,8 +51,8 @@ public final class DoorDecls {
         return d;
     }
 
-    private static AxisAlignedBB box(double x1, double y1, double z1, double x2, double y2, double z2) {
-        return new AxisAlignedBB(x1, y1, z1, x2, y2, z2);
+    private static Box box(double x1, double y1, double z1, double x2, double y2, double z2) {
+        return new Box(x1, y1, z1, x2, y2, z2);
     }
 
     /** 5x5 roll-up vault door. The frame track deliberately extends to one side, just like HBM. */

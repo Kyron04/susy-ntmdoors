@@ -1,8 +1,8 @@
 package com.ntmdoors.door;
 
 import com.ntmdoors.NTMDoors;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Box;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -25,7 +25,7 @@ import java.util.Map;
  */
 public final class ObjBounds {
 
-    private static final Map<ResourceLocation, Map<String, AxisAlignedBB>> CACHE = new HashMap<>();
+    private static final Map<Identifier, Map<String, Box>> CACHE = new HashMap<>();
 
     private ObjBounds() {
     }
@@ -34,16 +34,16 @@ public final class ObjBounds {
         CACHE.clear();
     }
 
-    public static synchronized Map<String, AxisAlignedBB> get(ResourceLocation model) {
+    public static synchronized Map<String, Box> get(Identifier model) {
         if (model == null) return Collections.emptyMap();
-        Map<String, AxisAlignedBB> cached = CACHE.get(model);
+        Map<String, Box> cached = CACHE.get(model);
         if (cached != null) return cached;
-        Map<String, AxisAlignedBB> loaded = load(model);
+        Map<String, Box> loaded = load(model);
         CACHE.put(model, loaded);
         return loaded;
     }
 
-    private static Map<String, AxisAlignedBB> load(ResourceLocation model) {
+    private static Map<String, Box> load(Identifier model) {
         String path = "/assets/" + model.getNamespace() + "/" + model.getPath();
         try (InputStream in = ObjBounds.class.getResourceAsStream(path)) {
             if (in == null) {
@@ -57,7 +57,7 @@ public final class ObjBounds {
         }
     }
 
-    private static Map<String, AxisAlignedBB> parse(InputStream in) throws Exception {
+    private static Map<String, Box> parse(InputStream in) throws Exception {
         List<double[]> vertices = new ArrayList<>();
         Map<String, double[]> bounds = new LinkedHashMap<>();
         BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
@@ -100,11 +100,11 @@ public final class ObjBounds {
                     break;
             }
         }
-        Map<String, AxisAlignedBB> out = new LinkedHashMap<>();
+        Map<String, Box> out = new LinkedHashMap<>();
         for (Map.Entry<String, double[]> e : bounds.entrySet()) {
             double[] b = e.getValue();
             if (b[0] <= b[3] && b[1] <= b[4] && b[2] <= b[5]) {
-                out.put(e.getKey(), new AxisAlignedBB(b[0], b[1], b[2], b[3], b[4], b[5]));
+                out.put(e.getKey(), new Box(b[0], b[1], b[2], b[3], b[4], b[5]));
             }
         }
         return out;
