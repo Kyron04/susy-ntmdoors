@@ -23,6 +23,7 @@ import com.ntmdoors.util.ModSounds;
 import com.ntmdoors.util.MonitorPasswords;
 import com.ntmdoors.util.PrivateKeys;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
@@ -54,7 +55,7 @@ import java.util.List;
 @SideOnly(Side.CLIENT)
 public class GuiMonitor extends GuiScreen {
 
-    private enum Stage {
+    enum Stage {
         ASK(MonitorDisplay.STAGE_ASK),
         SET(MonitorDisplay.STAGE_SET),
         CONFIRM(MonitorDisplay.STAGE_CONFIRM),
@@ -95,58 +96,58 @@ public class GuiMonitor extends GuiScreen {
     };
     private static final int SECURITY_TAB_HEIGHT = 18;
 
-    private static final int ORANGE = 0xFFFF8A00;
-    private static final int ORANGE_LIGHT = 0xFFFFB454;
-    private static final int ORANGE_DIM = 0xFF7A3D00;
-    private static final int ORANGE_GLOW = 0x33FF8A00;
-    private static final int ORANGE_ERROR = 0xFFFF4A2E;
-    private static final int TEXT = 0xFFFFD9A8;
-    private static final int MUTED = 0xFF9A6A3A;
+    static final int ORANGE = 0xFFFF8A00;
+    static final int ORANGE_LIGHT = 0xFFFFB454;
+    static final int ORANGE_DIM = 0xFF7A3D00;
+    static final int ORANGE_GLOW = 0x33FF8A00;
+    static final int ORANGE_ERROR = 0xFFFF4A2E;
+    static final int TEXT = 0xFFFFD9A8;
+    static final int MUTED = 0xFF9A6A3A;
 
-    private static final int BLACK = 0xFF000000;
-    private static final int CASING_DARK = 0xFF080808;
-    private static final int CASING = 0xFF141414;
-    private static final int CASING_LIGHT = 0xFF2A2A2A;
-    private static final int TITLE_BG = 0xFF0C0C0C;
-    private static final int SCREEN_BG = 0xFF040404;
-    private static final int FIELD_BG = 0xFF020202;
-    private static final int BUTTON_BG = 0xFF101010;
-    private static final int BUTTON_HOVER = 0xFF2A1500;
-    private static final int ROW_BG = 0xFF080808;
-    private static final int ROW_HOVER = 0xFF241200;
+    static final int BLACK = 0xFF000000;
+    static final int CASING_DARK = 0xFF080808;
+    static final int CASING = 0xFF141414;
+    static final int CASING_LIGHT = 0xFF2A2A2A;
+    static final int TITLE_BG = 0xFF0C0C0C;
+    static final int SCREEN_BG = 0xFF040404;
+    static final int FIELD_BG = 0xFF020202;
+    static final int BUTTON_BG = 0xFF101010;
+    static final int BUTTON_HOVER = 0xFF2A1500;
+    static final int ROW_BG = 0xFF080808;
+    static final int ROW_HOVER = 0xFF241200;
 
-    private static final int TITLE_HEIGHT = 20;
-    private static final int CLOSE_BUTTON_SIZE = 12;
-    private static final int FOOTER_HEIGHT = 20;
-    private static final int TITLE_TEXT_Y = 10;
-    private static final int FIELD_HEIGHT = 20;
-    private static final int BUTTON_HEIGHT = 20;
-    private static final int ROW_HEIGHT = 26;
-    private static final int ROW_GAP = 6;
-    private static final int SECURITY_ROW_HEIGHT = 28;
-    private static final int DOOR_BUTTON_WIDTH = 38;
-    private static final int DOOR_BUTTON_HEIGHT = 15;
-    private static final int DOOR_BUTTON_GAP = 4;
-    private static final int DISPLAY_TAB_HEIGHT = 18;
-    private static final int DISPLAY_TILE_GAP = 8;
-    private static final int DISPLAY_TILE_HEIGHT = 78;
-    private static final int DISPLAY_URL_LENGTH = MonitorWallpaper.MAX_URL_LENGTH;
-    private static final int BACKUP_OPTION_HEIGHT = 36;
+    static final int TITLE_HEIGHT = 20;
+    static final int CLOSE_BUTTON_SIZE = 12;
+    static final int FOOTER_HEIGHT = 20;
+    static final int TITLE_TEXT_Y = 10;
+    static final int FIELD_HEIGHT = 20;
+    static final int BUTTON_HEIGHT = 20;
+    static final int ROW_HEIGHT = 26;
+    static final int ROW_GAP = 6;
+    static final int SECURITY_ROW_HEIGHT = 28;
+    static final int DOOR_BUTTON_WIDTH = 38;
+    static final int DOOR_BUTTON_HEIGHT = 15;
+    static final int DOOR_BUTTON_GAP = 4;
+    static final int DISPLAY_TAB_HEIGHT = 18;
+    static final int DISPLAY_TILE_GAP = 8;
+    static final int DISPLAY_TILE_HEIGHT = 78;
+    static final int DISPLAY_URL_LENGTH = MonitorWallpaper.MAX_URL_LENGTH;
+    static final int BACKUP_OPTION_HEIGHT = 36;
 
-    private final BlockPos origin;
-    private final int screenIndex;
-    private final boolean passive;
+    final BlockPos origin;
+    final int screenIndex;
+    final boolean passive;
 
-    private boolean hasPassword;
-    private boolean passwordSkipped;
+    boolean hasPassword;
+    boolean passwordSkipped;
     private boolean resumeApplied;
-    private Stage stage;
+    Stage stage;
 
     private final StringBuilder password = new StringBuilder();
     private String firstPassword = "";
     private String error = "";
     private boolean waiting;
-    private int ticks;
+    int ticks;
     private int selectedTask = -1;
     private int menuScroll;
     private final List<MonitorDevice> securityDevices = new ArrayList<>();
@@ -162,11 +163,7 @@ public class GuiMonitor extends GuiScreen {
     private String selectedNetName = "";
     private boolean securityEventsTab;
     private final boolean[] securityEvents = new boolean[SecurityNet.EVENT_COUNT];
-    private boolean displayCustomTab;
-    private String displayWallpaper = "";
-    private final StringBuilder displayUrl = new StringBuilder();
-    private String displayNotice = "";
-    private boolean displayUrlFocused;
+    final GuiMonitorDisplayController display = new GuiMonitorDisplayController(this);
 
     private String linkedKeyName = "";
     private int pendingKeyHand = -1;
@@ -181,18 +178,18 @@ public class GuiMonitor extends GuiScreen {
     private int lastSentSecurityScroll = Integer.MIN_VALUE;
     private int lastSentEventsScroll = Integer.MIN_VALUE;
 
-    private int guiWidth;
-    private int guiHeight;
-    private int guiLeft;
-    private int guiTop;
-    private int contentLeft;
-    private int contentRight;
-    private int contentTop;
-    private int contentBottom;
-    private int fieldX;
-    private int fieldWidth;
-    private int buttonX;
-    private int buttonWidth;
+    int guiWidth;
+    int guiHeight;
+    int guiLeft;
+    int guiTop;
+    int contentLeft;
+    int contentRight;
+    int contentTop;
+    int contentBottom;
+    int fieldX;
+    int fieldWidth;
+    int buttonX;
+    int buttonWidth;
 
     public GuiMonitor(BlockPos origin, boolean hasPassword, boolean passwordSkipped,
                       int screenIndex) {
@@ -456,7 +453,7 @@ public class GuiMonitor extends GuiScreen {
                 drawDeleteConfirm(mouseX, mouseY);
                 break;
             case DISPLAY:
-                drawDisplayPage(mouseX, mouseY);
+                display.draw(mouseX, mouseY);
                 break;
             case BACKUP:
                 drawBackupPage(mouseX, mouseY);
@@ -686,329 +683,7 @@ public class GuiMonitor extends GuiScreen {
         ModNetwork.INSTANCE.sendToServer(new MessageMonitorBackupOpen(origin, restore));
     }
 
-    // ------------------------------------------------------------ display wallpapers
-
-    private void openDisplay() {
-        stage = Stage.DISPLAY;
-        displayCustomTab = false;
-        displayNotice = "";
-        displayUrl.setLength(0);
-        displayWallpaper = currentWallpaper();
-        if (MonitorWallpaper.isUrl(displayWallpaper)) {
-            displayCustomTab = true;
-            String url = MonitorWallpaper.urlOf(displayWallpaper);
-            if (url != null) displayUrl.append(url);
-        }
-        displayUrlFocused = displayCustomTab;
-    }
-
-    private String currentWallpaper() {
-        if (mc.world == null) return "";
-        net.minecraft.tileentity.TileEntity tile = mc.world.getTileEntity(origin);
-        if (!(tile instanceof TileEntityMonitorDesk)) return "";
-        return ((TileEntityMonitorDesk) tile).getScreenWallpaper(screenIndex);
-    }
-
-    private int displayTabWidth() {
-        return Math.max(54, Math.min(110, (contentRight - contentLeft - 4) / 2));
-    }
-
-    private int displayGridTop() {
-        return contentTop + DISPLAY_TAB_HEIGHT + 10;
-    }
-
-    private int displayGridBottom() {
-        return contentBottom - 30;
-    }
-
-    private int displayCellWidth() {
-        int columns = 3;
-        return Math.max(40, (contentRight - contentLeft
-                - (columns - 1) * DISPLAY_TILE_GAP) / columns);
-    }
-
-    private int displayCellHeight() {
-        int rows = 2;
-        int available = displayGridBottom() - displayGridTop();
-        int height = (available - (rows - 1) * DISPLAY_TILE_GAP) / rows;
-        return Math.max(30, Math.min(DISPLAY_TILE_HEIGHT, height));
-    }
-
-    private int displayTileX(int index) {
-        return contentLeft + (index % 3) * (displayCellWidth() + DISPLAY_TILE_GAP);
-    }
-
-    private int displayTileY(int index) {
-        return displayGridTop() + (index / 3) * (displayCellHeight() + DISPLAY_TILE_GAP);
-    }
-
-    private void drawDisplayPage(int mouseX, int mouseY) {
-        int tabWidth = displayTabWidth();
-        drawTab("BUILT-IN", contentLeft, contentTop, tabWidth, DISPLAY_TAB_HEIGHT,
-                !displayCustomTab,
-                isHovering(mouseX, mouseY, contentLeft, contentTop, tabWidth, DISPLAY_TAB_HEIGHT));
-        drawTab("CUSTOM", contentLeft + tabWidth + 4, contentTop, tabWidth, DISPLAY_TAB_HEIGHT,
-                displayCustomTab,
-                isHovering(mouseX, mouseY, contentLeft + tabWidth + 4, contentTop,
-                        tabWidth, DISPLAY_TAB_HEIGHT));
-        drawRect(contentLeft + tabWidth * 2 + 4, contentTop + DISPLAY_TAB_HEIGHT - 1,
-                contentRight, contentTop + DISPLAY_TAB_HEIGHT, ORANGE_DIM);
-
-        if (displayCustomTab) {
-            drawDisplayCustomTab(mouseX, mouseY);
-        } else {
-            drawDisplayBuiltinTab(mouseX, mouseY);
-        }
-
-        drawButton("Back", contentLeft, contentBottom - 24, 64, BUTTON_HEIGHT,
-                isHovering(mouseX, mouseY, contentLeft, contentBottom - 24,
-                        64, BUTTON_HEIGHT));
-        if (!displayNotice.isEmpty()) {
-            String notice = fontRenderer.trimStringToWidth(displayNotice,
-                    contentRight - contentLeft - 80);
-            drawString(fontRenderer, notice,
-                    contentRight - fontRenderer.getStringWidth(notice),
-                    contentTop + 4, ORANGE_ERROR);
-        }
-    }
-
-    private void drawDisplayBuiltinTab(int mouseX, int mouseY) {
-        java.util.List<MonitorWallpaper.Builtin> builtins = MonitorWallpaper.builtins();
-        int total = builtins.size() + 1;
-        for (int i = 0; i < total; i++) {
-            String value = i == 0 ? "" : MonitorWallpaper.builtin(builtins.get(i - 1).id);
-            int x = displayTileX(i);
-            int y = displayTileY(i);
-            int width = displayCellWidth();
-            int height = displayCellHeight();
-            boolean hover = isHovering(mouseX, mouseY, x, y, width, height);
-            boolean selected = displayWallpaper.equals(value);
-            drawWallpaperTile(x, y, width, height, value, selected, hover);
-        }
-    }
-
-    private void drawWallpaperTile(int x, int y, int width, int height,
-                                   String value, boolean selected, boolean hover) {
-        int fill = selected ? 0xFF1A0E04 : hover ? ROW_HOVER : ROW_BG;
-        int border = selected || hover ? ORANGE : ORANGE_DIM;
-        drawRect(x, y, x + width, y + height, fill);
-        drawRect(x, y, x + width, y + 1, border);
-        drawRect(x, y + height - 1, x + width, y + height, border);
-        drawRect(x, y, x + 1, y + height, border);
-        drawRect(x + width - 1, y, x + width, y + height, border);
-
-        int imageX = x + 5;
-        int imageY = y + 5;
-        int imageWidth = Math.max(1, width - 10);
-        int imageHeight = Math.max(1, height - 23);
-        drawRect(imageX, imageY, imageX + imageWidth, imageY + imageHeight, 0xFF020202);
-
-        if (value.isEmpty()) {
-            int cx = imageX + imageWidth / 2;
-            int cy = imageY + imageHeight / 2;
-            drawRect(cx - 14, cy - 9, cx + 14, cy + 9, 0xFF0A0A0A);
-            drawRect(cx - 12, cy - 7, cx + 12, cy + 7, 0xFF241200);
-            drawCenteredString(fontRenderer, "TERMINAL", cx, y + height - 14,
-                    selected ? ORANGE_LIGHT : TEXT);
-        } else {
-            String id = MonitorWallpaper.builtinId(value);
-            boolean exists = id != null && DisplayImages.builtinExists(id);
-            if (exists) {
-                net.minecraft.util.ResourceLocation texture = MonitorWallpaper.texture(value);
-                if (texture != null) {
-                    GlStateManager.color(1F, 1F, 1F, 1F);
-                    mc.getTextureManager().bindTexture(texture);
-                    drawModalRectWithCustomSizedTexture(imageX, imageY, 0F, 0F,
-                            imageWidth, imageHeight, imageWidth, imageHeight);
-                }
-            } else {
-                drawCenteredString(fontRenderer, "MISSING", imageX + imageWidth / 2,
-                        imageY + imageHeight / 2 - 4, ORANGE_ERROR);
-            }
-            String label = MonitorWallpaper.label(value);
-            String shown = fontRenderer.trimStringToWidth(label, width - 12);
-            drawCenteredString(fontRenderer, shown, x + width / 2, y + height - 14,
-                    selected ? ORANGE_LIGHT : hover ? TEXT : MUTED);
-        }
-
-        if (selected) {
-            drawRect(x + 1, y + 1, x + 4, y + height - 1, ORANGE);
-        }
-    }
-
-    private void drawDisplayCustomTab(int mouseX, int mouseY) {
-        int top = displayGridTop();
-        drawString(fontRenderer, "IMAGE URL", contentLeft, top - 2, ORANGE);
-        int fieldY = top + 14;
-        drawDisplayUrlField(fieldY);
-
-        int buttonY = fieldY + FIELD_HEIGHT + 8;
-        drawButton("Apply", contentLeft, buttonY, 70, BUTTON_HEIGHT,
-                isHovering(mouseX, mouseY, contentLeft, buttonY, 70, BUTTON_HEIGHT));
-        drawButton("Paste", contentLeft + 78, buttonY, 70, BUTTON_HEIGHT,
-                isHovering(mouseX, mouseY, contentLeft + 78, buttonY, 70, BUTTON_HEIGHT));
-        drawButton("Clear", contentLeft + 156, buttonY, 70, BUTTON_HEIGHT,
-                isHovering(mouseX, mouseY, contentLeft + 156, buttonY, 70, BUTTON_HEIGHT));
-
-        int infoY = buttonY + 30;
-        drawString(fontRenderer, "Direct PNG or JPG URL.", contentLeft, infoY, MUTED);
-        drawString(fontRenderer, "Static images only, no video.",
-                contentLeft, infoY + 12, MUTED);
-        drawString(fontRenderer, "Downloaded by each viewer's client.",
-                contentLeft, infoY + 24, MUTED);
-        if (MonitorWallpaper.isUrl(displayWallpaper)) {
-            String current = "ACTIVE: " + MonitorWallpaper.urlOf(displayWallpaper);
-            drawString(fontRenderer, fontRenderer.trimStringToWidth(
-                            current, contentRight - contentLeft),
-                    contentLeft, infoY + 42, ORANGE_LIGHT);
-        }
-    }
-
-    private void drawDisplayUrlField(int y) {
-        int width = contentRight - contentLeft;
-        int border = displayUrlFocused ? ORANGE : ORANGE_DIM;
-        drawRect(contentLeft - 1, y - 1, contentLeft + width + 1, y + FIELD_HEIGHT + 1, border);
-        drawRect(contentLeft, y, contentLeft + width, y + FIELD_HEIGHT, FIELD_BG);
-        drawRect(contentLeft, y + FIELD_HEIGHT - 1, contentLeft + width,
-                y + FIELD_HEIGHT, 0xFF1A0E04);
-
-        String text = fontRenderer.trimStringToWidth(displayUrl.toString(), width - 16);
-        int textY = y + (FIELD_HEIGHT - 8) / 2;
-        if (!text.isEmpty()) {
-            fontRenderer.drawString(text, contentLeft + 8, textY, TEXT);
-        }
-        if (displayUrlFocused && (ticks / 10) % 2 == 0) {
-            int cursorX = contentLeft + 8 + fontRenderer.getStringWidth(text);
-            drawRect(cursorX, y + 4, cursorX + 1, y + FIELD_HEIGHT - 4, ORANGE_LIGHT);
-        }
-    }
-
-    private void handleDisplayClick(int mouseX, int mouseY) {
-        int tabWidth = displayTabWidth();
-        if (isHovering(mouseX, mouseY, contentLeft, contentTop, tabWidth, DISPLAY_TAB_HEIGHT)) {
-            playClick();
-            displayCustomTab = false;
-            displayUrlFocused = false;
-            displayNotice = "";
-            return;
-        }
-        if (isHovering(mouseX, mouseY, contentLeft + tabWidth + 4, contentTop,
-                tabWidth, DISPLAY_TAB_HEIGHT)) {
-            playClick();
-            displayCustomTab = true;
-            displayUrlFocused = true;
-            displayNotice = "";
-            return;
-        }
-        if (isHovering(mouseX, mouseY, contentLeft, contentBottom - 24,
-                64, BUTTON_HEIGHT)) {
-            playClick();
-            stage = Stage.MENU;
-            displayNotice = "";
-            displayUrlFocused = false;
-            return;
-        }
-
-        if (!displayCustomTab) {
-            java.util.List<MonitorWallpaper.Builtin> builtins = MonitorWallpaper.builtins();
-            int total = builtins.size() + 1;
-            for (int i = 0; i < total; i++) {
-                int x = displayTileX(i);
-                int y = displayTileY(i);
-                if (isHovering(mouseX, mouseY, x, y, displayCellWidth(), displayCellHeight())) {
-                    playClick();
-                    String value = i == 0 ? "" : MonitorWallpaper.builtin(builtins.get(i - 1).id);
-                    applyWallpaper(value);
-                    return;
-                }
-            }
-            return;
-        }
-
-        int top = displayGridTop();
-        int fieldY = top + 14;
-        if (isHovering(mouseX, mouseY, contentLeft, fieldY,
-                contentRight - contentLeft, FIELD_HEIGHT)) {
-            displayUrlFocused = true;
-            return;
-        }
-        int buttonY = fieldY + FIELD_HEIGHT + 8;
-        if (isHovering(mouseX, mouseY, contentLeft, buttonY, 70, BUTTON_HEIGHT)) {
-            playClick();
-            applyDisplayUrl();
-            return;
-        }
-        if (isHovering(mouseX, mouseY, contentLeft + 78, buttonY, 70, BUTTON_HEIGHT)) {
-            playClick();
-            pasteDisplayUrl();
-            return;
-        }
-        if (isHovering(mouseX, mouseY, contentLeft + 156, buttonY, 70, BUTTON_HEIGHT)) {
-            playClick();
-            displayUrl.setLength(0);
-            applyWallpaper("");
-            return;
-        }
-        displayUrlFocused = false;
-    }
-
-    private void handleDisplayKey(char typedChar, int keyCode) {
-        if (displayCustomTab) {
-            if (keyCode == Keyboard.KEY_RETURN || keyCode == Keyboard.KEY_NUMPADENTER) {
-                applyDisplayUrl();
-                return;
-            }
-            if (keyCode == Keyboard.KEY_BACK || keyCode == Keyboard.KEY_DELETE) {
-                if (displayUrl.length() > 0) {
-                    displayUrl.deleteCharAt(displayUrl.length() - 1);
-                }
-                return;
-            }
-            if (GuiScreen.isCtrlKeyDown()) {
-                if (keyCode == Keyboard.KEY_V) pasteDisplayUrl();
-                return;
-            }
-            if (typedChar > 32 && typedChar != 127
-                    && displayUrl.length() < DISPLAY_URL_LENGTH) {
-                displayUrl.append(typedChar);
-            }
-            return;
-        }
-        if (keyCode == Keyboard.KEY_TAB) {
-            displayCustomTab = true;
-            displayUrlFocused = true;
-            displayNotice = "";
-        }
-    }
-
-    private void applyDisplayUrl() {
-        String value = displayUrl.toString().trim();
-        if (!MonitorWallpaper.isValidHttpUrl(value)) {
-            displayNotice = "Use an http:// or https:// image URL";
-            return;
-        }
-        applyWallpaper(MonitorWallpaper.url(value));
-    }
-
-    private void pasteDisplayUrl() {
-        String clip = GuiScreen.getClipboardString();
-        if (clip == null) return;
-        displayUrl.setLength(0);
-        for (int i = 0; i < clip.length() && displayUrl.length() < DISPLAY_URL_LENGTH; i++) {
-            char c = clip.charAt(i);
-            if (c > 32 && c != 127) displayUrl.append(c);
-        }
-        displayUrlFocused = true;
-    }
-
-    private void applyWallpaper(String value) {
-        String normalized = MonitorWallpaper.normalize(value);
-        displayWallpaper = normalized;
-        displayNotice = normalized.isEmpty() ? "Terminal display restored" : "Display applied";
-        displayUrlFocused = false;
-        ModNetwork.INSTANCE.sendToServer(new MessageMonitorWallpaper(
-                origin, screenIndex, normalized));
-    }
+    // display page extracted to GuiMonitorDisplayController
 
     private void drawSecurityHome(int mouseX, int mouseY) {
         int listLeft = securityListLeft();
@@ -1117,8 +792,8 @@ public class GuiMonitor extends GuiScreen {
                 contentRight, contentTop + SECURITY_TAB_HEIGHT, ORANGE_DIM);
     }
 
-    private void drawTab(String label, int x, int y, int width, int height,
-                         boolean selected, boolean hover) {
+    void drawTab(String label, int x, int y, int width, int height,
+                 boolean selected, boolean hover) {
         drawRect(x, y, x + width, y + height,
                 selected ? BUTTON_HOVER : hover ? ROW_HOVER : ROW_BG);
         int border = selected ? ORANGE : ORANGE_DIM;
@@ -1445,7 +1120,7 @@ public class GuiMonitor extends GuiScreen {
         }
     }
 
-    private void drawButton(String label, int x, int y, int width, int height, boolean hover) {
+    void drawButton(String label, int x, int y, int width, int height, boolean hover) {
         int fill = waiting ? 0xFF080808 : hover ? BUTTON_HOVER : BUTTON_BG;
         int border = waiting ? ORANGE_DIM : hover ? ORANGE : ORANGE_DIM;
         int text = waiting ? MUTED : hover ? ORANGE_LIGHT : TEXT;
@@ -1544,7 +1219,7 @@ public class GuiMonitor extends GuiScreen {
                         playClick();
                         selectedTask = index;
                         if (index == 0) openSecurityHome();
-                        else if (index == 3) openDisplay();
+                        else if (index == 3) display.open();
                         else if (index == 4) {
                             mc.displayGuiScreen(new GuiNotepad(origin, screenIndex,
                                     hasPassword, passwordSkipped));
@@ -1555,7 +1230,7 @@ public class GuiMonitor extends GuiScreen {
                     }
                 }
             } else if (stage == Stage.DISPLAY) {
-                handleDisplayClick(mouseX, mouseY);
+                display.handleClick(mouseX, mouseY);
                 return;
             } else if (stage == Stage.BACKUP) {
                 int x = backupOptionX();
@@ -1822,9 +1497,7 @@ public class GuiMonitor extends GuiScreen {
                 return;
             }
             if (stage == Stage.DISPLAY) {
-                stage = Stage.MENU;
-                displayNotice = "";
-                displayUrlFocused = false;
+                display.closeToMenu();
                 return;
             }
             if (stage == Stage.BACKUP) {
@@ -1837,7 +1510,7 @@ public class GuiMonitor extends GuiScreen {
 
         if (waiting) return;
         if (stage == Stage.DISPLAY) {
-            handleDisplayKey(typedChar, keyCode);
+            display.handleKey(typedChar, keyCode);
             return;
         }
         if (stage == Stage.NAME_NET || stage == Stage.NAME_KEY) {
@@ -2469,8 +2142,12 @@ public class GuiMonitor extends GuiScreen {
                 selectedNetId, "", 0));
     }
 
-    private void playClick() {
+    void playClick() {
         if (mc.player != null) mc.player.playSound(ModSounds.GUI_CLICK, 0.5F, 1F);
+    }
+
+    void goToMenu() {
+        stage = Stage.MENU;
     }
 
     /** Called by the client proxy when the server sends the net landing rows. */
@@ -2657,21 +2334,12 @@ public class GuiMonitor extends GuiScreen {
         this.firstPassword = "";
         this.securityEventsTab = false;
         this.resetSecurityEvents();
-        this.displayCustomTab = false;
-        this.displayWallpaper = "";
-        this.displayUrl.setLength(0);
-        this.displayNotice = "";
-        this.displayUrlFocused = false;
+        this.display.resetForDisplay();
     }
 
     public void showDisplayWallpaper(String wallpaper) {
         showDisplayStage(MonitorDisplay.STAGE_DISPLAY);
-        this.displayWallpaper = wallpaper == null ? "" : wallpaper;
-        if (MonitorWallpaper.isUrl(this.displayWallpaper)) {
-            this.displayCustomTab = true;
-            String url = MonitorWallpaper.urlOf(this.displayWallpaper);
-            if (url != null) this.displayUrl.append(url);
-        }
+        this.display.showPassiveWallpaper(wallpaper);
     }
 
     public void showDisplayHome(List<SecurityNetSummary> nets) {
@@ -2701,8 +2369,13 @@ public class GuiMonitor extends GuiScreen {
         this.selectedNetName = netName == null ? "" : netName;
     }
 
-    private boolean isHovering(int mouseX, int mouseY, int x, int y, int width, int height) {
+    boolean isHovering(int mouseX, int mouseY, int x, int y, int width, int height) {
         return mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
+    }
+
+    /** Page controllers live outside the screen class, so they cannot reach the protected field. */
+    FontRenderer font() {
+        return fontRenderer;
     }
 
     private static String mask(int length) {

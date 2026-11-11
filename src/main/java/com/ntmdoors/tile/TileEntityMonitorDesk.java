@@ -88,15 +88,51 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
         NO_DATA
     }
 
+    /** Per-physical-screen terminal state: live display, resume page, wallpaper and viewer. */
+    private static final class ScreenState {
+        int stage = MonitorDisplay.DEFAULT_STAGE;
+        int netId = -1;
+        int notepadDocId = -1;
+        boolean eventsTab;
+        boolean viewing;
+        int netsScroll;
+        int securityScroll;
+        int eventsScroll;
+        UUID viewer;
+        String wallpaper = "";
+
+        int resumeStage = MonitorDisplay.DEFAULT_STAGE;
+        int resumeNetId = -1;
+        int resumeNotepadDocId = -1;
+        boolean resumeEventsTab;
+        int resumeNetsScroll;
+        int resumeSecurityScroll;
+        int resumeEventsScroll;
+
+        void reset() {
+            stage = MonitorDisplay.DEFAULT_STAGE;
+            netId = -1;
+            notepadDocId = -1;
+            eventsTab = false;
+            viewing = false;
+            netsScroll = 0;
+            securityScroll = 0;
+            eventsScroll = 0;
+            viewer = null;
+            wallpaper = "";
+            resumeStage = MonitorDisplay.DEFAULT_STAGE;
+            resumeNetId = -1;
+            resumeNotepadDocId = -1;
+            resumeEventsTab = false;
+            resumeNetsScroll = 0;
+            resumeSecurityScroll = 0;
+            resumeEventsScroll = 0;
+        }
+    }
+
     public TileEntityMonitorDesk() {
         for (int i = 0; i < MAX_SCREENS; i++) {
-            displayStages[i] = MonitorDisplay.DEFAULT_STAGE;
-            displayNetIds[i] = -1;
-            displayNotepadDocIds[i] = -1;
-            resumeStages[i] = MonitorDisplay.DEFAULT_STAGE;
-            resumeNetIds[i] = -1;
-            resumeNotepadDocIds[i] = -1;
-            screenWallpapers[i] = "";
+            screens[i] = new ScreenState();
         }
     }
 
@@ -105,7 +141,6 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
     private boolean passwordSkipped;
     private final List<SecurityNet> nets = new ArrayList<>();
     private final List<NotepadDocument> notepadDocuments = new ArrayList<>();
-    private final String[] screenWallpapers = new String[MAX_SCREENS];
     private int nextNetId;
     private int nextNotepadId;
     private int displayRevision;
@@ -127,28 +162,10 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
     @Nullable
     private BackupLoopSound backupSound;
 
-    // One independent terminal page per physical screen.
-    private final int[] displayStages = new int[MAX_SCREENS];
-    private final int[] displayNetIds = new int[MAX_SCREENS];
-    private final int[] displayNotepadDocIds = new int[MAX_SCREENS];
-    private final boolean[] displayEventsTabs = new boolean[MAX_SCREENS];
-    private final boolean[] displayViewing = new boolean[MAX_SCREENS];
-    private final int[] displayNetsScrolls = new int[MAX_SCREENS];
-    private final int[] displaySecurityScrolls = new int[MAX_SCREENS];
-    private final int[] displayEventsScrolls = new int[MAX_SCREENS];
-    private final UUID[] displayViewers = new UUID[MAX_SCREENS];
+    // One independent terminal page per physical screen (live display, resume page, viewer).
+    private final ScreenState[] screens = new ScreenState[MAX_SCREENS];
     /** Number of screens with a live viewer; lets an idle desk skip its whole tick loop. */
     private int viewingScreens;
-
-    // The last stable page, kept separately so a lock screen or prompt can be shown without
-    // losing the page the monitor should reopen on.
-    private final int[] resumeStages = new int[MAX_SCREENS];
-    private final int[] resumeNetIds = new int[MAX_SCREENS];
-    private final int[] resumeNotepadDocIds = new int[MAX_SCREENS];
-    private final boolean[] resumeEventsTabs = new boolean[MAX_SCREENS];
-    private final int[] resumeNetsScrolls = new int[MAX_SCREENS];
-    private final int[] resumeSecurityScrolls = new int[MAX_SCREENS];
-    private final int[] resumeEventsScrolls = new int[MAX_SCREENS];
 
     // Client-side copy of the data needed to draw the screens.
     private final List<SecurityNetSummary> displayNets = new ArrayList<>();
@@ -594,7 +611,7 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
     /** The cosmetic wallpaper shown by one physical screen; empty means the terminal page. */
     public String getScreenWallpaper(int index) {
         if (index < 0 || index >= MAX_SCREENS) return "";
-        String value = screenWallpapers[index];
+        String value = screens[index].wallpaper;
         return value == null ? "" : value;
     }
 
@@ -605,38 +622,38 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
         String normalized = MonitorWallpaper.normalize(wallpaper);
         String current = getScreenWallpaper(index);
         if (current.equals(normalized)) return false;
-        screenWallpapers[index] = normalized;
+        screens[index].wallpaper = normalized;
         sync();
         return true;
     }
 
     public int getScreenStage(int index) {
         return index >= 0 && index < MAX_SCREENS
-                ? displayStages[index] : MonitorDisplay.DEFAULT_STAGE;
+                ? screens[index].stage : MonitorDisplay.DEFAULT_STAGE;
     }
 
     public int getScreenNetId(int index) {
-        return index >= 0 && index < MAX_SCREENS ? displayNetIds[index] : -1;
+        return index >= 0 && index < MAX_SCREENS ? screens[index].netId : -1;
     }
 
     public int getScreenNotepadDocId(int index) {
-        return index >= 0 && index < MAX_SCREENS ? displayNotepadDocIds[index] : -1;
+        return index >= 0 && index < MAX_SCREENS ? screens[index].notepadDocId : -1;
     }
 
     public boolean getScreenEventsTab(int index) {
-        return index >= 0 && index < MAX_SCREENS && displayEventsTabs[index];
+        return index >= 0 && index < MAX_SCREENS && screens[index].eventsTab;
     }
 
     public int getScreenNetsScroll(int index) {
-        return index >= 0 && index < MAX_SCREENS ? displayNetsScrolls[index] : 0;
+        return index >= 0 && index < MAX_SCREENS ? screens[index].netsScroll : 0;
     }
 
     public int getScreenSecurityScroll(int index) {
-        return index >= 0 && index < MAX_SCREENS ? displaySecurityScrolls[index] : 0;
+        return index >= 0 && index < MAX_SCREENS ? screens[index].securityScroll : 0;
     }
 
     public int getScreenEventsScroll(int index) {
-        return index >= 0 && index < MAX_SCREENS ? displayEventsScrolls[index] : 0;
+        return index >= 0 && index < MAX_SCREENS ? screens[index].eventsScroll : 0;
     }
 
     public List<SecurityNetSummary> getDisplayNets() {
@@ -694,41 +711,41 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
 
         boolean stable = isStableStage(stage);
         if (stable) {
-            resumeStages[screenIndex] = stage;
-            resumeNetIds[screenIndex] = netId;
-            resumeNotepadDocIds[screenIndex] = notepadDocId;
-            resumeEventsTabs[screenIndex] = eventsTab;
-            resumeNetsScrolls[screenIndex] = Math.max(0, netsScroll);
-            resumeSecurityScrolls[screenIndex] = Math.max(0, securityScroll);
-            resumeEventsScrolls[screenIndex] = Math.max(0, eventsScroll);
+            screens[screenIndex].resumeStage = stage;
+            screens[screenIndex].resumeNetId = netId;
+            screens[screenIndex].resumeNotepadDocId = notepadDocId;
+            screens[screenIndex].resumeEventsTab = eventsTab;
+            screens[screenIndex].resumeNetsScroll = Math.max(0, netsScroll);
+            screens[screenIndex].resumeSecurityScroll = Math.max(0, securityScroll);
+            screens[screenIndex].resumeEventsScroll = Math.max(0, eventsScroll);
         }
 
         if (!viewing && !stable) {
             // Closing on the lock screen or a prompt leaves the last real page visible.
             restoreResumeDisplay(screenIndex);
         } else {
-            displayStages[screenIndex] = stage;
-            displayNetIds[screenIndex] = netId;
-            displayNotepadDocIds[screenIndex] = notepadDocId;
-            displayEventsTabs[screenIndex] = eventsTab;
-            displayNetsScrolls[screenIndex] = Math.max(0, netsScroll);
-            displaySecurityScrolls[screenIndex] = Math.max(0, securityScroll);
-            displayEventsScrolls[screenIndex] = Math.max(0, eventsScroll);
+            screens[screenIndex].stage = stage;
+            screens[screenIndex].netId = netId;
+            screens[screenIndex].notepadDocId = notepadDocId;
+            screens[screenIndex].eventsTab = eventsTab;
+            screens[screenIndex].netsScroll = Math.max(0, netsScroll);
+            screens[screenIndex].securityScroll = Math.max(0, securityScroll);
+            screens[screenIndex].eventsScroll = Math.max(0, eventsScroll);
         }
-        boolean wasViewing = displayViewing[screenIndex];
-        displayViewing[screenIndex] = viewing;
+        boolean wasViewing = screens[screenIndex].viewing;
+        screens[screenIndex].viewing = viewing;
         if (wasViewing != viewing) {
             viewingScreens = Math.max(0, viewingScreens + (viewing ? 1 : -1));
         }
-        displayViewers[screenIndex] = viewing ? viewer : null;
+        screens[screenIndex].viewer = viewing ? viewer : null;
         sync();
         return true;
     }
 
     private void refreshViewingCount() {
         int count = 0;
-        for (boolean viewing : displayViewing) {
-            if (viewing) count++;
+        for (ScreenState screen : screens) {
+            if (screen.viewing) count++;
         }
         viewingScreens = count;
     }
@@ -741,38 +758,38 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
     }
 
     private void restoreResumeDisplay(int index) {
-        displayStages[index] = resumeStages[index];
-        displayNetIds[index] = resumeNetIds[index];
-        displayNotepadDocIds[index] = resumeNotepadDocIds[index];
-        displayEventsTabs[index] = resumeEventsTabs[index];
-        displayNetsScrolls[index] = resumeNetsScrolls[index];
-        displaySecurityScrolls[index] = resumeSecurityScrolls[index];
-        displayEventsScrolls[index] = resumeEventsScrolls[index];
+        screens[index].stage = screens[index].resumeStage;
+        screens[index].netId = screens[index].resumeNetId;
+        screens[index].notepadDocId = screens[index].resumeNotepadDocId;
+        screens[index].eventsTab = screens[index].resumeEventsTab;
+        screens[index].netsScroll = screens[index].resumeNetsScroll;
+        screens[index].securityScroll = screens[index].resumeSecurityScroll;
+        screens[index].eventsScroll = screens[index].resumeEventsScroll;
     }
 
     public int getScreenResumeStage(int index) {
         return index >= 0 && index < MAX_SCREENS
-                ? resumeStages[index] : MonitorDisplay.DEFAULT_STAGE;
+                ? screens[index].resumeStage : MonitorDisplay.DEFAULT_STAGE;
     }
 
     public int getScreenResumeNetId(int index) {
-        return index >= 0 && index < MAX_SCREENS ? resumeNetIds[index] : -1;
+        return index >= 0 && index < MAX_SCREENS ? screens[index].resumeNetId : -1;
     }
 
     public boolean getScreenResumeEventsTab(int index) {
-        return index >= 0 && index < MAX_SCREENS && resumeEventsTabs[index];
+        return index >= 0 && index < MAX_SCREENS && screens[index].resumeEventsTab;
     }
 
     public int getScreenResumeNetsScroll(int index) {
-        return index >= 0 && index < MAX_SCREENS ? resumeNetsScrolls[index] : 0;
+        return index >= 0 && index < MAX_SCREENS ? screens[index].resumeNetsScroll : 0;
     }
 
     public int getScreenResumeSecurityScroll(int index) {
-        return index >= 0 && index < MAX_SCREENS ? resumeSecurityScrolls[index] : 0;
+        return index >= 0 && index < MAX_SCREENS ? screens[index].resumeSecurityScroll : 0;
     }
 
     public int getScreenResumeEventsScroll(int index) {
-        return index >= 0 && index < MAX_SCREENS ? resumeEventsScrolls[index] : 0;
+        return index >= 0 && index < MAX_SCREENS ? screens[index].resumeEventsScroll : 0;
     }
 
     /** Clears stale live-view flags if a viewer left the desk or logged out. */
@@ -789,14 +806,14 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
         if (viewingScreens <= 0) return;
         boolean changed = false;
         for (int i = 0; i < MAX_SCREENS; i++) {
-            if (!displayViewing[i]) continue;
-            UUID viewer = displayViewers[i];
+            if (!screens[i].viewing) continue;
+            UUID viewer = screens[i].viewer;
             EntityPlayer player = viewer == null ? null : world.getPlayerEntityByUUID(viewer);
             if (player == null || player.world != world || !NetworkUtil.isWithinReach(player, pos)) {
-                displayViewing[i] = false;
-                displayViewers[i] = null;
+                screens[i].viewing = false;
+                screens[i].viewer = null;
                 viewingScreens = Math.max(0, viewingScreens - 1);
-                if (!isStableStage(displayStages[i])) restoreResumeDisplay(i);
+                if (!isStableStage(screens[i].stage)) restoreResumeDisplay(i);
                 changed = true;
             }
         }
@@ -873,36 +890,36 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
         SecurityEvents.updateDesk(this);
         if (world == null || world.isRemote) return;
         for (int i = 0; i < MAX_SCREENS; i++) {
-            if (displayNetIds[i] >= 0 && getNet(displayNetIds[i]) == null) {
-                displayNetIds[i] = -1;
-                if (displayStages[i] == MonitorDisplay.STAGE_SECURITY
-                        || displayStages[i] == MonitorDisplay.STAGE_DELETE_NET
-                        || displayStages[i] == MonitorDisplay.STAGE_NAME_KEY) {
-                    displayStages[i] = MonitorDisplay.STAGE_SECURITY_HOME;
+            if (screens[i].netId >= 0 && getNet(screens[i].netId) == null) {
+                screens[i].netId = -1;
+                if (screens[i].stage == MonitorDisplay.STAGE_SECURITY
+                        || screens[i].stage == MonitorDisplay.STAGE_DELETE_NET
+                        || screens[i].stage == MonitorDisplay.STAGE_NAME_KEY) {
+                    screens[i].stage = MonitorDisplay.STAGE_SECURITY_HOME;
                 }
             }
-            if (resumeNetIds[i] >= 0 && getNet(resumeNetIds[i]) == null) {
-                resumeNetIds[i] = -1;
-                if (resumeStages[i] == MonitorDisplay.STAGE_SECURITY
-                        || resumeStages[i] == MonitorDisplay.STAGE_DELETE_NET
-                        || resumeStages[i] == MonitorDisplay.STAGE_NAME_KEY) {
-                    resumeStages[i] = MonitorDisplay.STAGE_SECURITY_HOME;
+            if (screens[i].resumeNetId >= 0 && getNet(screens[i].resumeNetId) == null) {
+                screens[i].resumeNetId = -1;
+                if (screens[i].resumeStage == MonitorDisplay.STAGE_SECURITY
+                        || screens[i].resumeStage == MonitorDisplay.STAGE_DELETE_NET
+                        || screens[i].resumeStage == MonitorDisplay.STAGE_NAME_KEY) {
+                    screens[i].resumeStage = MonitorDisplay.STAGE_SECURITY_HOME;
                 }
             }
-            if (displayStages[i] == MonitorDisplay.STAGE_NOTEPAD
-                    && getNotepadDocument(displayNotepadDocIds[i]) == null) {
-                displayNotepadDocIds[i] = notepadDocuments.isEmpty()
+            if (screens[i].stage == MonitorDisplay.STAGE_NOTEPAD
+                    && getNotepadDocument(screens[i].notepadDocId) == null) {
+                screens[i].notepadDocId = notepadDocuments.isEmpty()
                         ? -1 : notepadDocuments.get(0).id;
-                if (displayNotepadDocIds[i] < 0) {
-                    displayStages[i] = MonitorDisplay.STAGE_MENU;
+                if (screens[i].notepadDocId < 0) {
+                    screens[i].stage = MonitorDisplay.STAGE_MENU;
                 }
             }
-            if (resumeStages[i] == MonitorDisplay.STAGE_NOTEPAD
-                    && getNotepadDocument(resumeNotepadDocIds[i]) == null) {
-                resumeNotepadDocIds[i] = notepadDocuments.isEmpty()
+            if (screens[i].resumeStage == MonitorDisplay.STAGE_NOTEPAD
+                    && getNotepadDocument(screens[i].resumeNotepadDocId) == null) {
+                screens[i].resumeNotepadDocId = notepadDocuments.isEmpty()
                         ? -1 : notepadDocuments.get(0).id;
-                if (resumeNotepadDocIds[i] < 0) {
-                    resumeStages[i] = MonitorDisplay.STAGE_MENU;
+                if (screens[i].resumeNotepadDocId < 0) {
+                    screens[i].resumeStage = MonitorDisplay.STAGE_MENU;
                 }
             }
         }
@@ -1001,16 +1018,16 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
     private void notepadDocumentRemoved(int removedId) {
         int fallback = notepadDocuments.isEmpty() ? -1 : notepadDocuments.get(0).id;
         for (int i = 0; i < MAX_SCREENS; i++) {
-            if (displayNotepadDocIds[i] == removedId) {
-                displayNotepadDocIds[i] = fallback;
-                if (fallback < 0 && displayStages[i] == MonitorDisplay.STAGE_NOTEPAD) {
-                    displayStages[i] = MonitorDisplay.STAGE_MENU;
+            if (screens[i].notepadDocId == removedId) {
+                screens[i].notepadDocId = fallback;
+                if (fallback < 0 && screens[i].stage == MonitorDisplay.STAGE_NOTEPAD) {
+                    screens[i].stage = MonitorDisplay.STAGE_MENU;
                 }
             }
-            if (resumeNotepadDocIds[i] == removedId) {
-                resumeNotepadDocIds[i] = fallback;
-                if (fallback < 0 && resumeStages[i] == MonitorDisplay.STAGE_NOTEPAD) {
-                    resumeStages[i] = MonitorDisplay.STAGE_MENU;
+            if (screens[i].resumeNotepadDocId == removedId) {
+                screens[i].resumeNotepadDocId = fallback;
+                if (fallback < 0 && screens[i].resumeStage == MonitorDisplay.STAGE_NOTEPAD) {
+                    screens[i].resumeStage = MonitorDisplay.STAGE_MENU;
                 }
             }
         }
@@ -1196,7 +1213,7 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
     @Override
     public void readFromNBT(NBTTagCompound tag) {
         super.readFromNBT(tag);
-        for (int i = 0; i < MAX_SCREENS; i++) screenWallpapers[i] = "";
+        for (int i = 0; i < MAX_SCREENS; i++) screens[i].reset();
         if (tag.hasKey("PasswordHash")) {
             passwordHash = tag.getString("PasswordHash");
         }
@@ -1284,51 +1301,35 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
 
         if (tag.hasKey("ScreenStates", Constants.NBT.TAG_LIST)) {
             for (int i = 0; i < MAX_SCREENS; i++) {
-                displayStages[i] = MonitorDisplay.DEFAULT_STAGE;
-                displayNetIds[i] = -1;
-                displayNotepadDocIds[i] = -1;
-                displayEventsTabs[i] = false;
-                displayViewing[i] = false;
-                displayViewers[i] = null;
-                displayNetsScrolls[i] = 0;
-                displaySecurityScrolls[i] = 0;
-                displayEventsScrolls[i] = 0;
-                screenWallpapers[i] = "";
-                resumeStages[i] = MonitorDisplay.DEFAULT_STAGE;
-                resumeNetIds[i] = -1;
-                resumeNotepadDocIds[i] = -1;
-                resumeEventsTabs[i] = false;
-                resumeNetsScrolls[i] = 0;
-                resumeSecurityScrolls[i] = 0;
-                resumeEventsScrolls[i] = 0;
+                screens[i].reset();
             }
             NBTTagList screenList = tag.getTagList("ScreenStates", Constants.NBT.TAG_COMPOUND);
             for (int i = 0; i < screenList.tagCount() && i < MAX_SCREENS; i++) {
                 NBTTagCompound screen = screenList.getCompoundTagAt(i);
-                displayStages[i] = screen.getInteger("Stage");
-                displayNetIds[i] = screen.getInteger("NetId");
-                displayNotepadDocIds[i] = screen.hasKey("NotepadDocId")
+                screens[i].stage = screen.getInteger("Stage");
+                screens[i].netId = screen.getInteger("NetId");
+                screens[i].notepadDocId = screen.hasKey("NotepadDocId")
                         ? screen.getInteger("NotepadDocId") : -1;
-                displayEventsTabs[i] = screen.getBoolean("EventsTab");
-                displayViewing[i] = screen.getBoolean("Viewing");
-                displayNetsScrolls[i] = screen.getInteger("NetsScroll");
-                displaySecurityScrolls[i] = screen.getInteger("SecurityScroll");
-                displayEventsScrolls[i] = screen.getInteger("EventsScroll");
-                screenWallpapers[i] = MonitorWallpaper.normalize(screen.getString("Wallpaper"));
-                resumeStages[i] = screen.hasKey("ResumeStage")
-                        ? screen.getInteger("ResumeStage") : displayStages[i];
-                resumeNetIds[i] = screen.hasKey("ResumeNetId")
-                        ? screen.getInteger("ResumeNetId") : displayNetIds[i];
-                resumeNotepadDocIds[i] = screen.hasKey("ResumeNotepadDocId")
-                        ? screen.getInteger("ResumeNotepadDocId") : displayNotepadDocIds[i];
-                resumeEventsTabs[i] = screen.hasKey("ResumeEventsTab")
-                        ? screen.getBoolean("ResumeEventsTab") : displayEventsTabs[i];
-                resumeNetsScrolls[i] = screen.hasKey("ResumeNetsScroll")
-                        ? screen.getInteger("ResumeNetsScroll") : displayNetsScrolls[i];
-                resumeSecurityScrolls[i] = screen.hasKey("ResumeSecurityScroll")
-                        ? screen.getInteger("ResumeSecurityScroll") : displaySecurityScrolls[i];
-                resumeEventsScrolls[i] = screen.hasKey("ResumeEventsScroll")
-                        ? screen.getInteger("ResumeEventsScroll") : displayEventsScrolls[i];
+                screens[i].eventsTab = screen.getBoolean("EventsTab");
+                screens[i].viewing = screen.getBoolean("Viewing");
+                screens[i].netsScroll = screen.getInteger("NetsScroll");
+                screens[i].securityScroll = screen.getInteger("SecurityScroll");
+                screens[i].eventsScroll = screen.getInteger("EventsScroll");
+                screens[i].wallpaper = MonitorWallpaper.normalize(screen.getString("Wallpaper"));
+                screens[i].resumeStage = screen.hasKey("ResumeStage")
+                        ? screen.getInteger("ResumeStage") : screens[i].stage;
+                screens[i].resumeNetId = screen.hasKey("ResumeNetId")
+                        ? screen.getInteger("ResumeNetId") : screens[i].netId;
+                screens[i].resumeNotepadDocId = screen.hasKey("ResumeNotepadDocId")
+                        ? screen.getInteger("ResumeNotepadDocId") : screens[i].notepadDocId;
+                screens[i].resumeEventsTab = screen.hasKey("ResumeEventsTab")
+                        ? screen.getBoolean("ResumeEventsTab") : screens[i].eventsTab;
+                screens[i].resumeNetsScroll = screen.hasKey("ResumeNetsScroll")
+                        ? screen.getInteger("ResumeNetsScroll") : screens[i].netsScroll;
+                screens[i].resumeSecurityScroll = screen.hasKey("ResumeSecurityScroll")
+                        ? screen.getInteger("ResumeSecurityScroll") : screens[i].securityScroll;
+                screens[i].resumeEventsScroll = screen.hasKey("ResumeEventsScroll")
+                        ? screen.getInteger("ResumeEventsScroll") : screens[i].eventsScroll;
             }
         } else if (tag.hasKey("DisplayStage")) {
             // Migration from the one-display build: every screen starts on the same page.
@@ -1339,21 +1340,19 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
             int securityScroll = tag.getInteger("DisplaySecurityScroll");
             int eventsScroll = tag.getInteger("DisplayEventsScroll");
             for (int i = 0; i < MAX_SCREENS; i++) {
-                displayStages[i] = stage;
-                displayNetIds[i] = netId;
-                displayNotepadDocIds[i] = -1;
-                displayEventsTabs[i] = eventsTab;
-                displayViewing[i] = false;
-                displayNetsScrolls[i] = netsScroll;
-                displaySecurityScrolls[i] = securityScroll;
-                displayEventsScrolls[i] = eventsScroll;
-                resumeStages[i] = stage;
-                resumeNetIds[i] = netId;
-                resumeNotepadDocIds[i] = -1;
-                resumeEventsTabs[i] = eventsTab;
-                resumeNetsScrolls[i] = netsScroll;
-                resumeSecurityScrolls[i] = securityScroll;
-                resumeEventsScrolls[i] = eventsScroll;
+                screens[i].reset();
+                screens[i].stage = stage;
+                screens[i].netId = netId;
+                screens[i].eventsTab = eventsTab;
+                screens[i].netsScroll = netsScroll;
+                screens[i].securityScroll = securityScroll;
+                screens[i].eventsScroll = eventsScroll;
+                screens[i].resumeStage = stage;
+                screens[i].resumeNetId = netId;
+                screens[i].resumeEventsTab = eventsTab;
+                screens[i].resumeNetsScroll = netsScroll;
+                screens[i].resumeSecurityScroll = securityScroll;
+                screens[i].resumeEventsScroll = eventsScroll;
             }
             if (netId >= 0 && tag.hasKey("DisplayNetName")) {
                 displayNetData.put(netId, new MonitorDisplay.NetData(netId,
@@ -1413,22 +1412,22 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
         NBTTagList list = new NBTTagList();
         for (int i = 0; i < MAX_SCREENS; i++) {
             NBTTagCompound screen = new NBTTagCompound();
-            screen.setInteger("Stage", displayStages[i]);
-            screen.setInteger("NetId", displayNetIds[i]);
-            screen.setInteger("NotepadDocId", displayNotepadDocIds[i]);
-            screen.setBoolean("EventsTab", displayEventsTabs[i]);
-            screen.setInteger("NetsScroll", displayNetsScrolls[i]);
-            screen.setInteger("SecurityScroll", displaySecurityScrolls[i]);
-            screen.setInteger("EventsScroll", displayEventsScrolls[i]);
+            screen.setInteger("Stage", screens[i].stage);
+            screen.setInteger("NetId", screens[i].netId);
+            screen.setInteger("NotepadDocId", screens[i].notepadDocId);
+            screen.setBoolean("EventsTab", screens[i].eventsTab);
+            screen.setInteger("NetsScroll", screens[i].netsScroll);
+            screen.setInteger("SecurityScroll", screens[i].securityScroll);
+            screen.setInteger("EventsScroll", screens[i].eventsScroll);
             screen.setString("Wallpaper", getScreenWallpaper(i));
-            screen.setInteger("ResumeStage", resumeStages[i]);
-            screen.setInteger("ResumeNetId", resumeNetIds[i]);
-            screen.setInteger("ResumeNotepadDocId", resumeNotepadDocIds[i]);
-            screen.setBoolean("ResumeEventsTab", resumeEventsTabs[i]);
-            screen.setInteger("ResumeNetsScroll", resumeNetsScrolls[i]);
-            screen.setInteger("ResumeSecurityScroll", resumeSecurityScrolls[i]);
-            screen.setInteger("ResumeEventsScroll", resumeEventsScrolls[i]);
-            if (includeViewing) screen.setBoolean("Viewing", displayViewing[i]);
+            screen.setInteger("ResumeStage", screens[i].resumeStage);
+            screen.setInteger("ResumeNetId", screens[i].resumeNetId);
+            screen.setInteger("ResumeNotepadDocId", screens[i].resumeNotepadDocId);
+            screen.setBoolean("ResumeEventsTab", screens[i].resumeEventsTab);
+            screen.setInteger("ResumeNetsScroll", screens[i].resumeNetsScroll);
+            screen.setInteger("ResumeSecurityScroll", screens[i].resumeSecurityScroll);
+            screen.setInteger("ResumeEventsScroll", screens[i].resumeEventsScroll);
+            if (includeViewing) screen.setBoolean("Viewing", screens[i].viewing);
             list.appendTag(screen);
         }
         tag.setTag("ScreenStates", list);
@@ -1443,7 +1442,7 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
 
         boolean securityVisible = false;
         for (int i = 0; i < MAX_SCREENS; i++) {
-            int stage = displayStages[i];
+            int stage = screens[i].stage;
             if (stage == MonitorDisplay.STAGE_SECURITY_HOME
                     || stage == MonitorDisplay.STAGE_SECURITY
                     || stage == MonitorDisplay.STAGE_DELETE_NET) {
@@ -1465,7 +1464,7 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
             NBTTagList dataList = new NBTTagList();
             Set<Integer> included = new HashSet<>();
             for (int i = 0; i < MAX_SCREENS; i++) {
-                int netId = displayNetIds[i];
+                int netId = screens[i].netId;
                 if (netId < 0 || !included.add(netId)) continue;
                 SecurityNet selected = getNet(netId);
                 if (selected == null) continue;
@@ -1488,7 +1487,7 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
 
         boolean notepadVisible = false;
         for (int i = 0; i < MAX_SCREENS; i++) {
-            if (displayStages[i] == MonitorDisplay.STAGE_NOTEPAD) {
+            if (screens[i].stage == MonitorDisplay.STAGE_NOTEPAD) {
                 notepadVisible = true;
                 break;
             }
@@ -1507,8 +1506,8 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
         NBTTagList noteTexts = new NBTTagList();
         Set<Integer> includedNotes = new HashSet<>();
         for (int i = 0; i < MAX_SCREENS; i++) {
-            if (displayStages[i] != MonitorDisplay.STAGE_NOTEPAD) continue;
-            int documentId = displayNotepadDocIds[i];
+            if (screens[i].stage != MonitorDisplay.STAGE_NOTEPAD) continue;
+            int documentId = screens[i].notepadDocId;
             if (documentId < 0 || !includedNotes.add(documentId)) continue;
             NotepadDocument document = getNotepadDocument(documentId);
             if (document == null) continue;
