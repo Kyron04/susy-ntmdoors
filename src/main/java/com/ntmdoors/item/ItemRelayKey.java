@@ -1,24 +1,27 @@
 package com.ntmdoors.item;
 
-import com.ntmdoors.NTMDoors;
+import com.ntmdoors.client.screen.RelayKeyNameScreen;
+import com.ntmdoors.sound.ModSounds;
 import com.ntmdoors.util.Biometrics;
 import com.ntmdoors.util.InteractionGuard;
-import com.ntmdoors.util.ModSounds;
 import com.ntmdoors.util.Names;
 import com.ntmdoors.util.PrivateKeys;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.player.EntityPlayer;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.item.TooltipContext;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
+import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -36,44 +39,49 @@ public class ItemRelayKey extends Item {
 
     /** Lets the biometric variant reuse the naming flow with its own registry name. */
     protected ItemRelayKey(String name) {
-        setRegistryName(NTMDoors.MODID, name);
-        setTranslationKey(NTMDoors.MODID + "." + name);
-        setCreativeTab(NTMDoors.TAB);
+        super(new FabricItemSettings().maxCount(1));
     }
 
     @Override
-    public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
-        ItemStack stack = player.getHeldItem(hand);
+    public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
+        ItemStack stack = player.getStackInHand(hand);
         if (!player.isSneaking() || InteractionGuard.targetsInteractiveBlock(player)) {
-            return new ActionResult<>(EnumActionResult.PASS, stack);
+            return TypedActionResult.pass(stack);
         }
 
-        if (world.isRemote) {
-            if (PrivateKeys.isBlank(stack)) NTMDoors.proxy.openRelayKeyNameGui(hand);
-            return new ActionResult<>(EnumActionResult.SUCCESS, stack);
+        if (world.isClient) {
+            if (PrivateKeys.isBlank(stack)) {
+                openNameScreen(hand);
+            }
+            return TypedActionResult.success(stack, true);
         }
 
         // The server owns the one-key-only rule, so it answers every attempt on a used key.
         if (!PrivateKeys.isBlank(stack)) {
-            world.playSound(null, player.posX, player.posY, player.posZ,
-                    ModSounds.SCANNER_BUTTON8, SoundCategory.PLAYERS, FEEDBACK_VOLUME, 1F);
-            player.sendStatusMessage(new TextComponentTranslation("ntmdoors.msg.key_exists"), true);
+            world.playSound(null, player.getX(), player.getY(), player.getZ(),
+                    ModSounds.SCANNER_BUTTON8, SoundCategory.PLAYERS, FEEDBACK_VOLUME, 1.0F);
+            player.sendMessage(Text.translatable("ntmdoors.msg.key_exists"), true);
         }
-        return new ActionResult<>(EnumActionResult.SUCCESS, stack);
+        return TypedActionResult.success(stack, false);
+    }
+
+    @Environment(EnvType.CLIENT)
+    private void openNameScreen(Hand hand) {
+        MinecraftClient.getInstance().setScreen(new RelayKeyNameScreen(hand));
     }
 
     @Override
-    public String getItemStackDisplayName(ItemStack stack) {
-        return nameColour() + super.getItemStackDisplayName(stack);
+    public Text getName(ItemStack stack) {
+        return super.getName(stack).copy().formatted(nameColour());
     }
 
     /** The plain key is yellow; the biometric variant overrides this with aqua. */
-    protected TextFormatting nameColour() {
-        return TextFormatting.YELLOW;
+    protected Formatting nameColour() {
+        return Formatting.YELLOW;
     }
 
     @Override
-    public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
+    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
         Names.addDescription(tooltip,
                 "Used to generate private keys via",
                 "Sneak + Right Click.");

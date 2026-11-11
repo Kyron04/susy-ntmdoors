@@ -245,6 +245,7 @@ public class DoorBlockEntity extends BlockEntity {
 
     public void request(boolean wantOpen, boolean override) {
         if ((world != null && world.isClient) || breached || isThermiteFused()) return;
+        if (wantOpen && !override && isLockedDown()) return;
         DoorDecl d = getDecl();
         if (d == null || !d.linkAdjacent) {
             requestSelf(wantOpen);
@@ -425,6 +426,42 @@ public class DoorBlockEntity extends BlockEntity {
         return b instanceof BlockDoorGeneric && ((BlockDoorGeneric) b).isLocked();
     }
 
+    public boolean acceptsKeypad() {
+        return !isSecurityDoor();
+    }
+
+    public boolean isBoundToScanner() {
+        return !boundScanners.isEmpty();
+    }
+
+    public boolean isBoundToScanner(BlockPos p) {
+        return boundScanners.contains(p);
+    }
+
+    public void addBoundScanner(BlockPos p) {
+        if (!boundScanners.contains(p)) {
+            boundScanners.add(p.toImmutable());
+            markDirty();
+        }
+    }
+
+    public void removeBoundScanner(BlockPos p) {
+        if (boundScanners.remove(p)) {
+            markDirty();
+        }
+    }
+
+    public boolean isLockedDown() {
+        if (world == null) return false;
+        for (BlockPos p : boundScanners) {
+            BlockEntity be = world.getBlockEntity(p);
+            if (be instanceof KeycardScannerBlockEntity scanner && scanner.isLockdown()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean isKeypadBound() {
         return !keypadCode.isEmpty();
     }
@@ -580,7 +617,7 @@ public class DoorBlockEntity extends BlockEntity {
             return;
         }
 
-        if (isKeypadBound()) {
+        if (isKeypadBound() || isBoundToScanner()) {
             rejectInteraction(player, "ntmdoors.msg.locked");
             return;
         }
@@ -597,15 +634,7 @@ public class DoorBlockEntity extends BlockEntity {
 
     private boolean isCreativeKeycardHeld(PlayerEntity player) {
         if (player.isCreative()) return true;
-        ItemStack main = player.getMainHandStack();
-        ItemStack off = player.getOffHandStack();
-        return isKeycardItem(main) || isKeycardItem(off);
-    }
-
-    private boolean isKeycardItem(ItemStack stack) {
-        if (stack == null || stack.isEmpty()) return false;
-        String path = Registries.ITEM.getId(stack.getItem()).getPath();
-        return "creative_keycard".equals(path);
+        return com.ntmdoors.item.ItemCreativeKeycard.isHeldBy(player);
     }
 
     // --- S2C Network Synchronization ---

@@ -34,21 +34,51 @@ sourceSets {
             include 'com/ntmdoors/NTMDoors.java'
             include 'com/ntmdoors/client/NTMDoorsClient.java'
             include 'com/ntmdoors/client/render/**'
+            include 'com/ntmdoors/client/screen/**'
             include 'com/ntmdoors/client/sound/**'
             include 'com/ntmdoors/sound/**'
             include 'com/ntmdoors/door/**'
             include 'com/ntmdoors/block/door/**'
+            include 'com/ntmdoors/block/ModBlocks.java'
+            include 'com/ntmdoors/block/KeypadBlock.java'
+            include 'com/ntmdoors/block/KeycardScannerBlock.java'
+            include 'com/ntmdoors/block/KeycardProgrammerBlock.java'
             include 'com/ntmdoors/block/entity/**'
             include 'com/ntmdoors/item/ModItemGroups.java'
             include 'com/ntmdoors/item/ItemDoorBlock.java'
+            include 'com/ntmdoors/item/ModItems.java'
+            include 'com/ntmdoors/item/ItemRfidCard.java'
+            include 'com/ntmdoors/item/ItemNamedRfidCard.java'
+            include 'com/ntmdoors/item/ItemDeveloperKeycard.java'
+            include 'com/ntmdoors/item/ItemCreativeKeycard.java'
+            include 'com/ntmdoors/item/ItemOperatorKeycard.java'
+            include 'com/ntmdoors/item/ItemBiometricKeycard.java'
+            include 'com/ntmdoors/item/ItemBiometricOperatorKeycard.java'
+            include 'com/ntmdoors/item/ItemRelayKey.java'
+            include 'com/ntmdoors/item/ItemBiometricRelayKey.java'
+            include 'com/ntmdoors/item/ItemScrewdriver.java'
+            include 'com/ntmdoors/item/ItemBlockKeypad.java'
+            include 'com/ntmdoors/item/ItemBlockKeycardScanner.java'
+            include 'com/ntmdoors/item/ItemBlockKeycardProgrammer.java'
+            include 'com/ntmdoors/network/ModMessages.java'
+            include 'com/ntmdoors/screen/**'
+            include 'com/ntmdoors/registry/ModContent.java'
             include 'com/ntmdoors/util/Facings.java'
             include 'com/ntmdoors/util/BlockPositions.java'
+            include 'com/ntmdoors/util/Codes.java'
+            include 'com/ntmdoors/util/PrivateKeys.java'
+            include 'com/ntmdoors/util/Biometrics.java'
+            include 'com/ntmdoors/util/HeldItems.java'
+            include 'com/ntmdoors/util/InteractionGuard.java'
+            include 'com/ntmdoors/util/Names.java'
+            include 'com/ntmdoors/util/RedstoneBinding.java'
         }
     }
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+    jvmArgs '-XX:+IgnoreUnrecognizedVMOptions', '-Xverify:none'
 }
 
 processResources {

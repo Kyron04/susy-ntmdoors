@@ -1,12 +1,13 @@
 package com.ntmdoors.item;
 
 import com.ntmdoors.util.Names;
-import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.client.item.TooltipContext;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -21,28 +22,28 @@ public class ItemNamedRfidCard extends ItemRfidCard {
 
     private final String[] description;
     @Nullable
-    private final TextFormatting nameColour;
+    private final Formatting nameColour;
 
     public ItemNamedRfidCard(String name, String... description) {
         this(null, name, description);
     }
 
     /** Same card, with a fixed name colour; used for the gold Googa card. */
-    public ItemNamedRfidCard(@Nullable TextFormatting nameColour, String name, String... description) {
+    public ItemNamedRfidCard(@Nullable Formatting nameColour, String name, String... description) {
         super(name);
         this.nameColour = nameColour;
         this.description = description;
     }
 
     @Override
-    public String getItemStackDisplayName(ItemStack stack) {
-        String name = super.getItemStackDisplayName(stack);
-        return nameColour == null ? name : nameColour + name;
+    public Text getName(ItemStack stack) {
+        Text text = super.getName(stack);
+        return nameColour == null ? text : text.copy().formatted(nameColour);
     }
 
     @Override
-    public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
+    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
         Names.addDescription(tooltip, description);
-        super.addInformation(stack, world, tooltip, flag);
+        super.appendTooltip(stack, world, tooltip, context);
     }
 }

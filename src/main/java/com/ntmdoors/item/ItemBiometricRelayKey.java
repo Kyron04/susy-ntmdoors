@@ -1,22 +1,21 @@
 package com.ntmdoors.item;
 
+import com.ntmdoors.sound.ModSounds;
 import com.ntmdoors.util.Biometrics;
 import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.InteractionGuard;
-import com.ntmdoors.util.ModSounds;
 import com.ntmdoors.util.Names;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.client.item.TooltipContext;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
+import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -33,8 +32,8 @@ public class ItemBiometricRelayKey extends ItemRelayKey {
     }
 
     @Override
-    protected TextFormatting nameColour() {
-        return TextFormatting.AQUA;
+    protected Formatting nameColour() {
+        return Formatting.AQUA;
     }
 
     /**
@@ -42,32 +41,30 @@ public class ItemBiometricRelayKey extends ItemRelayKey {
      * screen to open: the whole interaction is recording who is holding the key.
      */
     @Override
-    public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
-        ItemStack stack = player.getHeldItem(hand);
+    public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
+        ItemStack stack = player.getStackInHand(hand);
         if (!player.isSneaking() || InteractionGuard.targetsInteractiveBlock(player)) {
-            return new ActionResult<>(EnumActionResult.PASS, stack);
+            return TypedActionResult.pass(stack);
         }
-        if (world.isRemote) return new ActionResult<>(EnumActionResult.SUCCESS, stack);
+        if (world.isClient) return TypedActionResult.success(stack, true);
 
         if (Biometrics.bindIfNeeded(stack, player)) {
-            // The identity is written straight into the held stack, which the inventory container
-            // does not notice by itself. Without this the server is bound but the client keeps the
-            // old stack, so the tooltip and the programmer still see an unbound key until a relog.
+            // The identity is written straight into the held stack
             HeldItems.sync(player);
-            world.playSound(null, player.posX, player.posY, player.posZ,
-                    ModSounds.SCANNER_BUTTON3, SoundCategory.PLAYERS, FEEDBACK_VOLUME, 1F);
-            player.sendStatusMessage(new TextComponentTranslation("ntmdoors.msg.biometric_collected"), true);
+            world.playSound(null, player.getX(), player.getY(), player.getZ(),
+                    ModSounds.SCANNER_BUTTON3, SoundCategory.PLAYERS, FEEDBACK_VOLUME, 1.0F);
+            player.sendMessage(Text.translatable("ntmdoors.msg.biometric_collected"), true);
         } else {
-            world.playSound(null, player.posX, player.posY, player.posZ,
-                    ModSounds.SCANNER_BUTTON8, SoundCategory.PLAYERS, FEEDBACK_VOLUME, 1F);
-            player.sendStatusMessage(new TextComponentTranslation("ntmdoors.msg.biometric_already",
+            world.playSound(null, player.getX(), player.getY(), player.getZ(),
+                    ModSounds.SCANNER_BUTTON8, SoundCategory.PLAYERS, FEEDBACK_VOLUME, 1.0F);
+            player.sendMessage(Text.translatable("ntmdoors.msg.biometric_already",
                     Biometrics.ownerName(stack)), true);
         }
-        return new ActionResult<>(EnumActionResult.SUCCESS, stack);
+        return TypedActionResult.success(stack, false);
     }
 
     @Override
-    public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
+    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
         Names.addDescription(tooltip,
                 "Collects biometric data from the player via",
                 "Sneak + Right Click.");

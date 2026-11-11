@@ -1,7 +1,12 @@
 package com.ntmdoors;
 
+import com.ntmdoors.block.ModBlocks;
 import com.ntmdoors.block.door.ModDoors;
+import com.ntmdoors.block.entity.ModBlockEntities;
 import com.ntmdoors.item.ModItemGroups;
+import com.ntmdoors.item.ModItems;
+import com.ntmdoors.network.ModMessages;
+import com.ntmdoors.screen.ModScreenHandlerTypes;
 import com.ntmdoors.sound.ModSounds;
 import net.fabricmc.api.ModInitializer;
 import org.slf4j.Logger;
@@ -25,7 +30,20 @@ public class NTMDoors implements ModInitializer {
         // 2. Register Creative Tab
         ModItemGroups.registerItemGroups();
 
-        // 3. Register Multiblock Doors & BlockEntities
+        // 3. Register Security Hardware Blocks & Entities
+        ModBlocks.registerModBlocks();
+        ModBlockEntities.registerModBlockEntities();
+
+        // 4. Register Access Cards, Tools, and Block Items
+        ModItems.registerModItems();
+
+        // 5. Register Multiblock Doors & BlockEntities
         ModDoors.registerModDoors();
+
+        // 6. Register ScreenHandlers
+        ModScreenHandlerTypes.registerScreenHandlers();
+
+        // 7. Register C2S Networking Packets
+        ModMessages.registerC2SPackets();
     }
 }

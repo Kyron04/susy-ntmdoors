@@ -1,28 +1,30 @@
 package com.ntmdoors.item;
 
-import com.ntmdoors.NTMDoors;
-import com.ntmdoors.block.BlockDoorGeneric;
+import com.ntmdoors.block.door.BlockDoorGeneric;
+import com.ntmdoors.block.entity.DoorBlockEntity;
+import com.ntmdoors.block.entity.DoorPartBlockEntity;
+import com.ntmdoors.block.entity.KeycardScannerBlockEntity;
+import com.ntmdoors.block.entity.KeypadBlockEntity;
 import com.ntmdoors.door.DoorDecl;
-import com.ntmdoors.tile.TileEntityDoorGeneric;
-import com.ntmdoors.tile.TileEntityDoorKeypad;
-import com.ntmdoors.tile.TileEntityKeycardScanner;
-import com.ntmdoors.util.ModSounds;
+import com.ntmdoors.sound.ModSounds;
 import com.ntmdoors.util.Names;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.player.EntityPlayer;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.client.item.TooltipContext;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.SoundCategory;
+import net.minecraft.item.ItemUsageContext;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -38,203 +40,175 @@ public class ItemScrewdriver extends Item {
     private static final float SOUND_VOLUME = 0.8F;
 
     /** Item NBT key holding the keypad that is waiting for doors to be bound at range. */
-    private static final String TAG_BIND_KEYPAD = "bindKeypad";
-    private static final String TAG_BIND_DIM = "bindKeypadDim";
+    public static final String TAG_BIND_KEYPAD = "bindKeypad";
+    public static final String TAG_BIND_DIM = "bindKeypadDim";
     /** Item NBT key holding the keycard scanner that is waiting for doors to be bound at range. */
-    private static final String TAG_BIND_SCANNER = "bindScanner";
-    private static final String TAG_BIND_SCANNER_DIM = "bindScannerDim";
+    public static final String TAG_BIND_SCANNER = "bindScanner";
+    public static final String TAG_BIND_SCANNER_DIM = "bindScannerDim";
 
     public ItemScrewdriver() {
-        setRegistryName(NTMDoors.MODID, "screwdriver");
-        setTranslationKey(NTMDoors.MODID + ".screwdriver");
-        setCreativeTab(NTMDoors.TAB);
-        setMaxStackSize(1);
+        super(new FabricItemSettings().maxCount(1));
     }
 
-    /**
-     * Handles the interaction before the block is activated. This is required because Minecraft
-     * skips block activation when the player is sneaking with an item in hand.
-     */
     @Override
-    public EnumActionResult onItemUseFirst(EntityPlayer player, World world, BlockPos pos,
-                                           EnumFacing side, float hitX, float hitY, float hitZ,
-                                           EnumHand hand) {
-        EnumActionResult result = useTool(player, world, pos, hitX, hitY, hitZ, hand);
-        // One click per handled interaction, sent from the server so nearby players hear it.
-        if (!world.isRemote && result == EnumActionResult.SUCCESS) {
-            world.playSound(null, pos, ModSounds.BUTTON9, SoundCategory.BLOCKS, SOUND_VOLUME, 1F);
+    public ActionResult useOnBlock(ItemUsageContext context) {
+        PlayerEntity player = context.getPlayer();
+        if (player == null) return ActionResult.PASS;
+
+        World world = context.getWorld();
+        BlockPos pos = context.getBlockPos();
+        Hand hand = context.getHand();
+        float hitX = (float) (context.getHitPos().x - pos.getX());
+        float hitY = (float) (context.getHitPos().y - pos.getY());
+        float hitZ = (float) (context.getHitPos().z - pos.getZ());
+
+        ActionResult result = useTool(player, world, pos, hitX, hitY, hitZ, hand);
+        if (!world.isClient && result == ActionResult.SUCCESS) {
+            world.playSound(null, pos, ModSounds.BUTTON9, SoundCategory.BLOCKS, SOUND_VOLUME, 1.0F);
         }
         return result;
     }
 
-    /** The actual interaction; the caller plays the click once when this reports a handled use. */
-    private EnumActionResult useTool(EntityPlayer player, World world, BlockPos pos,
-                                     float hitX, float hitY, float hitZ, EnumHand hand) {
-        TileEntity te = world.getTileEntity(pos);
-        if (te instanceof TileEntityKeycardScanner) {
-            // Sneak: open or close the scanner's binding session. Plain click: commit the doors
-            // collected so far. Doors clicked in between are added to the session.
-            if (!world.isRemote) {
-                TileEntityKeycardScanner scanner = (TileEntityKeycardScanner) te;
+    private ActionResult useTool(PlayerEntity player, World world, BlockPos pos,
+                                 float hitX, float hitY, float hitZ, Hand hand) {
+        BlockEntity be = world.getBlockEntity(pos);
+
+        if (be instanceof KeycardScannerBlockEntity scanner) {
+            if (!world.isClient) {
                 if (player.isSneaking()) scanner.toggleBinding(player);
                 else scanner.confirm(player);
                 updateScannerTag(player, hand, scanner);
             }
-            return EnumActionResult.SUCCESS;
+            return ActionResult.success(world.isClient);
         }
 
-        if (te instanceof TileEntityDoorKeypad) {
-            TileEntityDoorKeypad keypad = (TileEntityDoorKeypad) te;
+        if (be instanceof KeypadBlockEntity keypad) {
             if (player.isSneaking()) {
-                // Sneak: cycle the binding mode (or reset once the pad is in use). Remember the
-                // pad on the tool so the doors clicked next know where they belong.
-                if (!world.isRemote) {
+                if (!world.isClient) {
                     keypad.onScrewdriverSneak(player);
-                    ItemStack stack = player.getHeldItem(hand);
-                    NBTTagCompound tag = stack.getTagCompound();
-                    boolean armed = keypad.isLinking()
-                            && keypad.getBindMode() != TileEntityDoorKeypad.BindMode.NONE;
+                    ItemStack stack = player.getStackInHand(hand);
+                    NbtCompound tag = stack.getNbt();
+                    boolean armed = keypad.isLinking() && keypad.getBindMode() != KeypadBlockEntity.BindMode.NONE;
                     if (armed) {
-                        if (tag == null) {
-                            tag = new NBTTagCompound();
-                            stack.setTagCompound(tag);
-                        }
-                        tag.setLong(TAG_BIND_KEYPAD, keypad.getPos().toLong());
-                        tag.setInteger(TAG_BIND_DIM, world.provider.getDimension());
+                        tag = stack.getOrCreateNbt();
+                        tag.putLong(TAG_BIND_KEYPAD, keypad.getPos().asLong());
+                        tag.putString(TAG_BIND_DIM, world.getRegistryKey().getValue().toString());
                     } else if (tag != null) {
-                        tag.removeTag(TAG_BIND_KEYPAD);
-                        tag.removeTag(TAG_BIND_DIM);
+                        tag.remove(TAG_BIND_KEYPAD);
+                        tag.remove(TAG_BIND_DIM);
                     }
                 }
-                return EnumActionResult.SUCCESS;
+                return ActionResult.success(world.isClient);
             }
+
             int button = keypad.buttonAt(hitX, hitY, hitZ);
-            // R is the close/clear key and must always reach the keypad, even with the tool in
-            // hand. While the reset is waiting for the current code, every key must type, so the
-            // entry can never be swallowed by the tool. Binding modes also need the digits, so the
-            // player can pick a multi door without putting the screwdriver away.
-            boolean typingReset = keypad.getMode() == TileEntityDoorKeypad.Mode.RESET_ENTER;
-            boolean bindingMode = keypad.getBindMode() != TileEntityDoorKeypad.BindMode.NONE;
-            if (button >= 0 && (button == TileEntityDoorKeypad.BUTTON_RESET || typingReset || bindingMode)) {
-                return EnumActionResult.PASS;
+            boolean typingReset = keypad.getMode() == KeypadBlockEntity.Mode.RESET_ENTER;
+            boolean bindingMode = keypad.getBindMode() != KeypadBlockEntity.BindMode.NONE;
+            if (button >= 0 && (button == KeypadBlockEntity.BUTTON_RESET || typingReset || bindingMode)) {
+                return ActionResult.PASS;
             }
-            if (!keypad.hasStoredCode()) return EnumActionResult.PASS;
-            if (!world.isRemote) keypad.onScrewdriverUse();
-            return EnumActionResult.SUCCESS;
+            if (!keypad.hasStoredCode()) return ActionResult.PASS;
+            if (!world.isClient) keypad.onScrewdriverUse();
+            return ActionResult.success(world.isClient);
         }
 
-        if (!player.isSneaking()) return EnumActionResult.PASS;
-        TileEntityDoorGeneric core = findCore(world, pos);
-        if (core == null) return EnumActionResult.PASS;
+        if (!player.isSneaking()) return ActionResult.PASS;
+        DoorBlockEntity core = findCore(world, pos);
+        if (core == null) return ActionResult.PASS;
 
-        TileEntityKeycardScanner scanner = bindScanner(world, player, hand);
+        KeycardScannerBlockEntity scanner = bindScanner(world, player, hand);
         if (scanner != null) {
-            if (!world.isRemote) scanner.selectDoor(core, player);
-            return EnumActionResult.SUCCESS;
+            if (!world.isClient) scanner.selectDoor(core, player);
+            return ActionResult.success(world.isClient);
         }
 
-        TileEntityDoorKeypad binder = bindKeypad(world, player, hand);
+        KeypadBlockEntity binder = bindKeypad(world, player, hand);
         if (binder != null) {
-            if (!world.isRemote) binder.bindDoor(core, player);
-            return EnumActionResult.SUCCESS;
+            if (!world.isClient) binder.bindDoor(core, player);
+            return ActionResult.success(world.isClient);
         }
 
         DoorDecl decl = core.getDecl();
-        if (decl == null || !decl.hasSkinVariants()) return EnumActionResult.PASS;
+        if (decl == null || !decl.hasSkinVariants()) return ActionResult.PASS;
 
-        if (!world.isRemote) core.cycleSkin();
-        return EnumActionResult.SUCCESS;
+        if (!world.isClient) core.cycleSkin();
+        return ActionResult.success(world.isClient);
     }
 
-    @Override
-    public String getItemStackDisplayName(ItemStack stack) {
-        return Names.translationOr(getTranslationKey() + ".name", "Screwdriver");
+    private static DoorBlockEntity findCore(World world, BlockPos pos) {
+        BlockEntity be = world.getBlockEntity(pos);
+        if (be instanceof DoorBlockEntity core) return core;
+        if (be instanceof DoorPartBlockEntity part) {
+            BlockEntity coreBe = world.getBlockEntity(part.getCorePos());
+            if (coreBe instanceof DoorBlockEntity core) return core;
+        }
+        return null;
     }
 
-    @Override
-    public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
-        Names.addDescription(tooltip,
-                "For establishing connections to doors from keypads",
-                "and keycard scanners via Sneak + Right Click.");
-    }
-
-    private static TileEntityDoorGeneric findCore(World world, BlockPos pos) {
-        IBlockState state = world.getBlockState(pos);
-        return state.getBlock() instanceof BlockDoorGeneric
-                ? ((BlockDoorGeneric) state.getBlock()).getCore(world, pos, state)
-                : null;
-    }
-
-    /** Remembers (or forgets) the scanner this tool is currently collecting doors for. */
-    private static void updateScannerTag(EntityPlayer player, EnumHand hand, TileEntityKeycardScanner scanner) {
-        ItemStack stack = player.getHeldItem(hand);
-        NBTTagCompound tag = stack.getTagCompound();
+    private static void updateScannerTag(PlayerEntity player, Hand hand, KeycardScannerBlockEntity scanner) {
+        ItemStack stack = player.getStackInHand(hand);
+        NbtCompound tag = stack.getNbt();
         if (scanner.isBindingFor(player)) {
-            if (tag == null) {
-                tag = new NBTTagCompound();
-                stack.setTagCompound(tag);
+            tag = stack.getOrCreateNbt();
+            tag.putLong(TAG_BIND_SCANNER, scanner.getPos().asLong());
+            if (scanner.getWorld() != null) {
+                tag.putString(TAG_BIND_SCANNER_DIM, scanner.getWorld().getRegistryKey().getValue().toString());
             }
-            tag.setLong(TAG_BIND_SCANNER, scanner.getPos().toLong());
-            tag.setInteger(TAG_BIND_SCANNER_DIM, scanner.getWorld().provider.getDimension());
         } else if (tag != null) {
-            tag.removeTag(TAG_BIND_SCANNER);
-            tag.removeTag(TAG_BIND_SCANNER_DIM);
+            tag.remove(TAG_BIND_SCANNER);
+            tag.remove(TAG_BIND_SCANNER_DIM);
         }
     }
 
-    /**
-     * The scanner this screwdriver is currently binding doors for, or null. Like the keypad link,
-     * it lives on the tool so the player can walk to a door without the scanner staying in reach.
-     */
     @Nullable
-    private static TileEntityKeycardScanner bindScanner(World world, EntityPlayer player, EnumHand hand) {
-        ItemStack stack = player.getHeldItem(hand);
-        NBTTagCompound tag = stack.getTagCompound();
-        if (tag == null || !tag.hasKey(TAG_BIND_SCANNER)) return null;
-        if (tag.hasKey(TAG_BIND_SCANNER_DIM) && tag.getInteger(TAG_BIND_SCANNER_DIM) != world.provider.getDimension()) {
-            tag.removeTag(TAG_BIND_SCANNER);
-            tag.removeTag(TAG_BIND_SCANNER_DIM);
+    private static KeycardScannerBlockEntity bindScanner(World world, PlayerEntity player, Hand hand) {
+        ItemStack stack = player.getStackInHand(hand);
+        NbtCompound tag = stack.getNbt();
+        if (tag == null || !tag.contains(TAG_BIND_SCANNER, NbtElement.LONG_TYPE)) return null;
+        if (tag.contains(TAG_BIND_SCANNER_DIM) && !tag.getString(TAG_BIND_SCANNER_DIM).equals(world.getRegistryKey().getValue().toString())) {
+            tag.remove(TAG_BIND_SCANNER);
+            tag.remove(TAG_BIND_SCANNER_DIM);
             return null;
         }
         BlockPos scannerPos = BlockPos.fromLong(tag.getLong(TAG_BIND_SCANNER));
-        TileEntity te = world.getTileEntity(scannerPos);
-        if (!(te instanceof TileEntityKeycardScanner) || !((TileEntityKeycardScanner) te).isBindingFor(player)) {
-            tag.removeTag(TAG_BIND_SCANNER);
-            tag.removeTag(TAG_BIND_SCANNER_DIM);
+        BlockEntity be = world.getBlockEntity(scannerPos);
+        if (!(be instanceof KeycardScannerBlockEntity scanner) || !scanner.isBindingFor(player)) {
+            tag.remove(TAG_BIND_SCANNER);
+            tag.remove(TAG_BIND_SCANNER_DIM);
             return null;
         }
-        return (TileEntityKeycardScanner) te;
+        return scanner;
     }
 
-    /**
-     * The keypad this screwdriver is currently linking doors for, or null. The link lives on the
-     * tool so the player can walk to a door and link it without the keypad staying in reach.
-     */
     @Nullable
-    private static TileEntityDoorKeypad bindKeypad(World world, EntityPlayer player, EnumHand hand) {
-        ItemStack stack = player.getHeldItem(hand);
-        NBTTagCompound tag = stack.getTagCompound();
-        if (tag == null || !tag.hasKey(TAG_BIND_KEYPAD)) return null;
-        if (tag.hasKey(TAG_BIND_DIM) && tag.getInteger(TAG_BIND_DIM) != world.provider.getDimension()) {
-            // The pad is in another dimension; the stored position means something else here.
-            tag.removeTag(TAG_BIND_KEYPAD);
-            tag.removeTag(TAG_BIND_DIM);
+    private static KeypadBlockEntity bindKeypad(World world, PlayerEntity player, Hand hand) {
+        ItemStack stack = player.getStackInHand(hand);
+        NbtCompound tag = stack.getNbt();
+        if (tag == null || !tag.contains(TAG_BIND_KEYPAD, NbtElement.LONG_TYPE)) return null;
+        if (tag.contains(TAG_BIND_DIM) && !tag.getString(TAG_BIND_DIM).equals(world.getRegistryKey().getValue().toString())) {
+            tag.remove(TAG_BIND_KEYPAD);
+            tag.remove(TAG_BIND_DIM);
             return null;
         }
         BlockPos padPos = BlockPos.fromLong(tag.getLong(TAG_BIND_KEYPAD));
-        TileEntity te = world.getTileEntity(padPos);
-        if (!(te instanceof TileEntityDoorKeypad)) {
-            tag.removeTag(TAG_BIND_KEYPAD);
-            tag.removeTag(TAG_BIND_DIM);
+        BlockEntity be = world.getBlockEntity(padPos);
+        if (!(be instanceof KeypadBlockEntity keypad)) {
+            tag.remove(TAG_BIND_KEYPAD);
+            tag.remove(TAG_BIND_DIM);
             return null;
         }
-        TileEntityDoorKeypad keypad = (TileEntityDoorKeypad) te;
-        if (!keypad.isLinking() || keypad.getBindMode() == TileEntityDoorKeypad.BindMode.NONE) {
-            // The pad is no longer linking; stop treating clicks as binds.
-            tag.removeTag(TAG_BIND_KEYPAD);
-            tag.removeTag(TAG_BIND_DIM);
+        if (!keypad.isLinking() || keypad.getBindMode() == KeypadBlockEntity.BindMode.NONE) {
+            tag.remove(TAG_BIND_KEYPAD);
+            tag.remove(TAG_BIND_DIM);
             return null;
         }
         return keypad;
+    }
+
+    @Override
+    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
+        Names.addDescription(tooltip,
+                "For establishing connections to doors from keypads",
+                "and keycard scanners via Sneak + Right Click.");
     }
 }

@@ -2,9 +2,8 @@ package com.ntmdoors.item;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.text.TextFormatting;
-
-import javax.annotation.Nullable;
+import net.minecraft.util.Formatting;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Developer keycard for pack makers integrating security systems into structures.
@@ -16,7 +15,7 @@ import javax.annotation.Nullable;
 public class ItemDeveloperKeycard extends ItemNamedRfidCard {
 
     public ItemDeveloperKeycard() {
-        super(TextFormatting.GOLD, "developer_keycard",
+        super(Formatting.GOLD, "developer_keycard",
                 "For pack developers who wish to intergrade security systems into structures");
     }
 

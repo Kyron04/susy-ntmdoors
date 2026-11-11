@@ -1,33 +1,31 @@
 package com.ntmdoors.item;
 
-import com.ntmdoors.NTMDoors;
-import com.ntmdoors.tile.TileEntityKeycardScanner;
-import com.ntmdoors.tile.TileEntityRedstoneGate;
+import com.ntmdoors.block.entity.KeycardScannerBlockEntity;
+import com.ntmdoors.client.screen.ScannerCodeScreen;
 import com.ntmdoors.util.Biometrics;
 import com.ntmdoors.util.Names;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.player.EntityPlayer;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.item.TooltipContext;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
+import net.minecraft.item.ItemUsageContext;
+import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 /**
  * Operator Keycard. A privileged card produced by the Keycard Programmer. It is recognised by the
  * scanner as a card, and sneak right-clicking a scanner that is already bound to doors opens its
  * security code screen, so the card also administers the doors it is assigned to.
- *
- * <p>It shares the RFID card item model and hand display. Its name is orange and its description
- * explains the scanner screen; stored keys are not listed, since the card is an administrator
- * tool rather than a read-only viewer.</p>
  */
 public class ItemOperatorKeycard extends ItemRfidCard {
 
@@ -40,73 +38,63 @@ public class ItemOperatorKeycard extends ItemRfidCard {
         super(name);
     }
 
-    /**
-     * The name colour is per-variant: the plain card is gold, the biometric one is aqua.
-     */
     @Override
-    public String getItemStackDisplayName(ItemStack stack) {
-        return nameColour() + super.getItemStackDisplayName(stack);
+    public Text getName(ItemStack stack) {
+        return super.getName(stack).copy().formatted(nameColour());
     }
 
-    protected TextFormatting nameColour() {
-        return TextFormatting.GOLD;
+    protected Formatting nameColour() {
+        return Formatting.GOLD;
     }
 
-    /**
-     * Called when the card is used on a block. The scanner screen is the one machine interaction
-     * the Operator Keycard owns, so it takes the click before anything else could see it.
-     */
     @Override
-    public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand,
-                                      EnumFacing facing, float hitX, float hitY, float hitZ) {
-        if (!player.isSneaking()) return EnumActionResult.PASS;
-        TileEntity te = world.getTileEntity(pos);
-        if (te instanceof TileEntityRedstoneGate) {
-            if (world.isRemote) NTMDoors.proxy.openRedstoneGateGui(pos);
-            return EnumActionResult.SUCCESS;
+    public ActionResult useOnBlock(ItemUsageContext context) {
+        PlayerEntity player = context.getPlayer();
+        if (player == null || !player.isSneaking()) return ActionResult.PASS;
+
+        World world = context.getWorld();
+        BlockPos pos = context.getBlockPos();
+        BlockEntity be = world.getBlockEntity(pos);
+
+        if (be instanceof KeycardScannerBlockEntity scanner) {
+            return openScannerScreen(player, world, scanner, context.getHand());
         }
-        if (!(te instanceof TileEntityKeycardScanner)) return EnumActionResult.PASS;
-
-        return openScannerScreen(player, world, (TileEntityKeycardScanner) te, hand);
+        return ActionResult.PASS;
     }
 
-    /**
-     * Checks and opens the scanner administration screen. Shared by the direct block click and the
-     * crosshair fallback so holder matching and lockout rules cannot drift apart.
-     */
-    EnumActionResult openScannerScreen(EntityPlayer player, World world,
-                                       TileEntityKeycardScanner scanner, EnumHand hand) {
-        if (!scanner.hasBoundDoors()) return EnumActionResult.PASS;
+    public ActionResult openScannerScreen(PlayerEntity player, World world,
+                                         KeycardScannerBlockEntity scanner, Hand hand) {
+        if (!scanner.hasBoundDoors()) return ActionResult.PASS;
 
-        // A biometric operator card is personal: with holder matching on, a stolen card cannot
-        // open the admin screen just because the player knows the code. The server re-checks this,
-        // so the GUI guard is only about not showing a screen that will be refused.
-        ItemStack stack = player.getHeldItem(hand);
+        ItemStack stack = player.getStackInHand(hand);
         if (scanner.isMatchHolder() && Biometrics.isBound(stack)
                 && !Biometrics.isOwnedBy(stack, player)) {
-            if (world.isRemote) {
-                player.sendStatusMessage(new TextComponentTranslation("ntmdoors.msg.scanner_denied"), true);
+            if (world.isClient) {
+                player.sendMessage(Text.translatable("ntmdoors.msg.scanner_denied"), true);
             }
-            return EnumActionResult.SUCCESS;
+            return ActionResult.success(world.isClient);
         }
 
-        // During a lockout only the biometric operator card may reach the code screen.
         if (scanner.isLockedOut() && !(this instanceof ItemBiometricOperatorKeycard)) {
-            if (world.isRemote) {
-                player.sendStatusMessage(new TextComponentTranslation(
-                        "ntmdoors.msg.scanner_locked_out"), true);
+            if (world.isClient) {
+                player.sendMessage(Text.translatable("ntmdoors.msg.scanner_locked_out"), true);
             }
-            return EnumActionResult.SUCCESS;
+            return ActionResult.success(world.isClient);
         }
 
-        if (world.isRemote) {
-            NTMDoors.proxy.openScannerCodeGui(scanner.getPos());
+        if (world.isClient) {
+            openCodeScreen(scanner.getPos());
         }
-        return EnumActionResult.SUCCESS;
+        return ActionResult.success(world.isClient);
+    }
+
+    @Environment(EnvType.CLIENT)
+    private void openCodeScreen(BlockPos pos) {
+        MinecraftClient.getInstance().setScreen(new ScannerCodeScreen(pos));
     }
 
     @Override
-    public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
+    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
         Names.addDescription(tooltip,
                 "The master keycard of your security network.",
                 "Holds several private keys that can be assigned",

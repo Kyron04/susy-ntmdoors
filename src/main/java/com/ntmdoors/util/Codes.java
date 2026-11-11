@@ -14,6 +14,14 @@ public final class Codes {
         return out.toString();
     }
 
+    public static String sanitizeDecimal(String raw, int maxLength) {
+        return sanitise(raw, maxLength);
+    }
+
+    public static String sanitize(String raw, int maxLength) {
+        return sanitise(raw, maxLength);
+    }
+
     private Codes() {
     }
 }

@@ -2,12 +2,13 @@ package com.ntmdoors.item;
 
 import com.ntmdoors.util.Biometrics;
 import com.ntmdoors.util.Names;
-import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.client.item.TooltipContext;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -25,18 +26,16 @@ public class ItemBiometricKeycard extends ItemRfidCard {
     }
 
     @Override
-    public String getItemStackDisplayName(ItemStack stack) {
-        return TextFormatting.YELLOW + super.getItemStackDisplayName(stack);
+    public Text getName(ItemStack stack) {
+        return super.getName(stack).copy().formatted(Formatting.YELLOW);
     }
 
     @Override
-    public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
+    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
         Names.addDescription(tooltip,
                 "Holds the biometric data of the player",
                 "alongside the private key.");
-        // The base card lists the private keys and then the identity line when one exists. An
-        // unbound card is still worth labelling, so add the empty state here.
-        super.addInformation(stack, world, tooltip, flag);
+        super.appendTooltip(stack, world, tooltip, context);
         if (!Biometrics.isBound(stack)) Biometrics.addOwnerLine(tooltip, stack);
     }
 }

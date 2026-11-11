@@ -2,10 +2,11 @@ package com.ntmdoors.util;
 
 import com.ntmdoors.item.ItemDeveloperKeycard;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -47,21 +48,33 @@ public final class PrivateKeys {
             this.name = name;
             this.serial = serial;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Key other)) return false;
+            return serial.equals(other.serial);
+        }
+
+        @Override
+        public int hashCode() {
+            return serial.hashCode();
+        }
     }
 
     /** Every well-formed private key on the stack, in the order they were added. */
     public static List<Key> get(ItemStack stack) {
-        if (stack.isEmpty() || !stack.hasTagCompound()) return Collections.emptyList();
-        NBTTagCompound tag = stack.getTagCompound();
-        if (!tag.hasKey(ROOT, Constants.NBT.TAG_LIST)) return Collections.emptyList();
-        return fromList(tag.getTagList(ROOT, Constants.NBT.TAG_COMPOUND));
+        if (stack.isEmpty() || !stack.hasNbt()) return Collections.emptyList();
+        NbtCompound tag = stack.getNbt();
+        if (tag == null || !tag.contains(ROOT, NbtElement.LIST_TYPE)) return Collections.emptyList();
+        return fromList(tag.getList(ROOT, NbtElement.COMPOUND_TYPE));
     }
 
     /** Parses the standard {@code { Name, Serial }} list shape, skipping entries without a serial. */
-    public static List<Key> fromList(NBTTagList list) {
-        List<Key> keys = new ArrayList<>(list.tagCount());
-        for (int i = 0; i < list.tagCount(); i++) {
-            NBTTagCompound entry = list.getCompoundTagAt(i);
+    public static List<Key> fromList(NbtList list) {
+        List<Key> keys = new ArrayList<>(list.size());
+        for (int i = 0; i < list.size(); i++) {
+            NbtCompound entry = list.getCompound(i);
             String serial = entry.getString(SERIAL);
             if (serial.isEmpty()) continue;
             keys.add(new Key(entry.getString(NAME), serial));
@@ -70,16 +83,16 @@ public final class PrivateKeys {
     }
 
     /** Writes keys in the standard {@code { Name, Serial }} list shape. */
-    public static NBTTagList toList(List<Key> keys) {
-        NBTTagList list = new NBTTagList();
-        for (Key key : keys) list.appendTag(entry(key.name, key.serial));
+    public static NbtList toList(List<Key> keys) {
+        NbtList list = new NbtList();
+        for (Key key : keys) list.add(entry(key.name, key.serial));
         return list;
     }
 
-    private static NBTTagCompound entry(String name, String serial) {
-        NBTTagCompound entry = new NBTTagCompound();
-        entry.setString(NAME, name);
-        entry.setString(SERIAL, serial);
+    private static NbtCompound entry(String name, String serial) {
+        NbtCompound entry = new NbtCompound();
+        entry.putString(NAME, name);
+        entry.putString(SERIAL, serial);
         return entry;
     }
 
@@ -99,30 +112,39 @@ public final class PrivateKeys {
         return false;
     }
 
+    public static List<Key> getKeys(ItemStack stack) {
+        return get(stack);
+    }
+
+    public static boolean hasKey(ItemStack stack, Key key) {
+        return key != null && hasSerial(stack, key.serial);
+    }
+
+    /** Adds one private key; returns false when the stack already carries that serial. */
+    public static boolean add(ItemStack stack, Key key) {
+        return key != null && add(stack, key.name, key.serial);
+    }
+
     /** Adds one private key; returns false when the stack already carries that serial. */
     public static boolean add(ItemStack stack, String name, String serial) {
         if (stack.isEmpty() || hasSerial(stack, serial)) return false;
 
-        NBTTagCompound tag = stack.getTagCompound();
-        if (tag == null) {
-            tag = new NBTTagCompound();
-            stack.setTagCompound(tag);
-        }
-        NBTTagList list = tag.getTagList(ROOT, Constants.NBT.TAG_COMPOUND);
-        list.appendTag(entry(name, serial));
-        tag.setTag(ROOT, list);
+        NbtCompound tag = stack.getOrCreateNbt();
+        NbtList list = tag.getList(ROOT, NbtElement.COMPOUND_TYPE);
+        list.add(entry(name, serial));
+        tag.put(ROOT, list);
         return true;
     }
 
     /** Adds the standard white name/serial pairs to an item tooltip. */
-    public static void addTooltip(List<String> tooltip, ItemStack stack) {
+    public static void addTooltip(List<Text> tooltip, ItemStack stack) {
         if (ItemDeveloperKeycard.isRedacted(stack)) {
-            if (!isBlank(stack)) tooltip.add(TextFormatting.WHITE + "Unknown");
+            if (!isBlank(stack)) tooltip.add(Text.literal("Unknown").formatted(Formatting.WHITE));
             return;
         }
         for (Key key : get(stack)) {
-            tooltip.add(TextFormatting.WHITE + key.name);
-            tooltip.add(TextFormatting.WHITE + key.serial);
+            tooltip.add(Text.literal(key.name).formatted(Formatting.WHITE));
+            tooltip.add(Text.literal(key.serial).formatted(Formatting.WHITE));
         }
     }
 
@@ -135,17 +157,34 @@ public final class PrivateKeys {
         return added;
     }
 
+    public static int addAll(ItemStack target, List<Key> keys) {
+        if (keys == null || keys.isEmpty()) return 0;
+        int added = 0;
+        for (Key key : keys) {
+            if (add(target, key)) added++;
+        }
+        return added;
+    }
+
     /**
      * A ten digit serial. The leading digit is never zero, so the number always reads as ten
      * digits, and every digit comes from {@link SecureRandom}.
      */
     public static String createSerial() {
+        return createSerial(RANDOM);
+    }
+
+    public static String createSerial(java.util.Random rand) {
         StringBuilder serial = new StringBuilder(SERIAL_LENGTH);
-        serial.append(1 + RANDOM.nextInt(9));
+        serial.append(1 + rand.nextInt(9));
         for (int i = 1; i < SERIAL_LENGTH; i++) {
-            serial.append(RANDOM.nextInt(10));
+            serial.append(rand.nextInt(10));
         }
         return serial.toString();
+    }
+
+    public static String sanitizeName(String name) {
+        return sanitiseName(name);
     }
 
     /**

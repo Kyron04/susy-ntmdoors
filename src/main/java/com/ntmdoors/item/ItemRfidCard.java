@@ -1,23 +1,24 @@
 package com.ntmdoors.item;
 
-import com.ntmdoors.NTMDoors;
-import com.ntmdoors.tile.TileEntityKeycardScanner;
+import com.ntmdoors.client.screen.KeycardViewerScreen;
 import com.ntmdoors.util.Biometrics;
 import com.ntmdoors.util.InteractionGuard;
 import com.ntmdoors.util.Names;
 import com.ntmdoors.util.PrivateKeys;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.player.EntityPlayer;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.item.TooltipContext;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.text.Text;
+import net.minecraft.util.Hand;
+import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -35,53 +36,38 @@ public class ItemRfidCard extends Item {
     }
 
     public ItemRfidCard(String name, boolean keyViewer) {
+        super(new FabricItemSettings().maxCount(1));
         this.keyViewer = keyViewer;
-        setRegistryName(NTMDoors.MODID, name);
-        setTranslationKey(NTMDoors.MODID + "." + name);
-        setCreativeTab(NTMDoors.TAB);
-        // A keycard is a personal access token: one card per stack, like a key.
-        setMaxStackSize(1);
+    }
+
+    public boolean hasKeyViewer() {
+        return keyViewer;
     }
 
     @Override
-    public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
-        ItemStack stack = player.getHeldItem(hand);
+    public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
+        ItemStack stack = player.getStackInHand(hand);
         if (!keyViewer || !player.isSneaking()) {
-            return new ActionResult<>(EnumActionResult.PASS, stack);
-        }
-
-        // The Operator Keycard talks to a scanner that already controls doors. That takes
-        // precedence over the viewer, which deliberately ignores machines.
-        if (this instanceof ItemOperatorKeycard) {
-            TileEntityKeycardScanner scanner = scannerInSight(player);
-            if (scanner != null) {
-                EnumActionResult result = ((ItemOperatorKeycard) this)
-                        .openScannerScreen(player, world, scanner, hand);
-                if (result != EnumActionResult.PASS) {
-                    return new ActionResult<>(result, stack);
-                }
-            }
+            return TypedActionResult.pass(stack);
         }
 
         if (InteractionGuard.targetsInteractiveBlock(player)) {
-            return new ActionResult<>(EnumActionResult.PASS, stack);
+            return TypedActionResult.pass(stack);
         }
 
-        if (world.isRemote) NTMDoors.proxy.openKeycardViewerGui(stack);
-        return new ActionResult<>(EnumActionResult.SUCCESS, stack);
+        if (world.isClient) {
+            openViewerScreen(stack);
+        }
+        return TypedActionResult.success(stack, world.isClient);
     }
 
-    /** The keycard scanner under the player's crosshair, or null when looking elsewhere. */
-    @Nullable
-    private static TileEntityKeycardScanner scannerInSight(EntityPlayer player) {
-        RayTraceResult hit = InteractionGuard.rayTrace(player, 5.0D);
-        if (hit == null || hit.typeOfHit != RayTraceResult.Type.BLOCK) return null;
-        TileEntity te = player.world.getTileEntity(hit.getBlockPos());
-        return te instanceof TileEntityKeycardScanner ? (TileEntityKeycardScanner) te : null;
+    @Environment(EnvType.CLIENT)
+    private void openViewerScreen(ItemStack stack) {
+        MinecraftClient.getInstance().setScreen(new KeycardViewerScreen(stack));
     }
 
     @Override
-    public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
+    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
         if (!keyViewer) {
             Names.addDescription(tooltip,
                     "Use the Keycard Programmer to assign this card",
