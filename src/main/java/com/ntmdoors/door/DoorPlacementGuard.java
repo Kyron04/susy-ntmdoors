@@ -10,7 +10,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 /**
- * Refuses block placement in the volume an open door's moving panel occupies.
+ * Refuses block placement in the volume a door's moving panel currently occupies or will occupy
+ * while open/moving.
  *
  * <p>A door is only a multiblock at its closed footprint. Sliding panels park in adjacent cells,
  * roller shutters and lifting doors roll into the space above their frame, and the large vehicle
@@ -18,9 +19,9 @@ import net.minecraft.world.World;
  * player place a block inside the visible panel. The check uses the door's moving-panel geometry,
  * so it works for every door without duplicating per-door parking coordinates.</p>
  *
- * <p>The check is deliberately independent of the current animation fraction: the swept/parked
- * panel volume is reserved even while the door is closed, otherwise a block placed first would be
- * clipped when the door later opens.</p>
+ * <p>Fully closed doors do not reserve their future sweep here: reserving it would make the path of
+ * every closed door permanently unbuildable and prevent normal door placement nearby. Open or moving
+ * doors do reserve the swept/parked panel volume so blocks cannot be placed into the active panel.</p>
  */
 public final class DoorPlacementGuard {
 
@@ -44,6 +45,9 @@ public final class DoorPlacementGuard {
             if (!(te instanceof TileEntityDoorGeneric)) continue;
             TileEntityDoorGeneric core = (TileEntityDoorGeneric) te;
             if (core.isInvalid() || core.isBreached()) continue;
+            // A fully closed, settled door keeps its panel in the footprint. Reserving its future
+            // sweep would make nearby space (and other door placements) permanently unbuildable.
+            if (core.getState() == DoorState.CLOSED) continue;
             BlockPos corePos = core.getPos();
             if (corePos.distanceSq(target) > MAX_DISTANCE_SQ) continue;
 
@@ -54,19 +58,19 @@ public final class DoorPlacementGuard {
             DoorDecl decl = core.getDecl();
             if (decl == null) continue;
             EnumFacing facing = state.getValue(BlockDoorGeneric.FACING);
-            if (intersectsOpenPanel(decl, corePos, facing, block)) return true;
+            if (intersectsMovingPanel(decl, corePos, facing, block)) return true;
         }
         return false;
     }
 
-    private static boolean intersectsOpenPanel(DoorDecl decl, BlockPos corePos, EnumFacing facing,
-                                               AxisAlignedBB target) {
+    private static boolean intersectsMovingPanel(DoorDecl decl, BlockPos corePos, EnumFacing facing,
+                                                 AxisAlignedBB target) {
         double ox = corePos.getX() + 0.5D;
         double oy = corePos.getY();
         double oz = corePos.getZ() + 0.5D;
 
-        // Check only the animated moving-panel volume (not static frame geometry). The panel
-        // sweeps through these positions, so they are reserved even while the door is closed.
+        // Check only the animated moving-panel volume (not static frame geometry). For open/moving
+        // doors this covers the parked position and the path the panel currently occupies.
         for (float fraction : OPEN_FRACTIONS) {
             for (boolean collision : new boolean[]{true, false}) {
                 for (AxisAlignedBB box : decl.getMovingBoxes(facing, fraction, collision)) {
