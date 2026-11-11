@@ -626,6 +626,56 @@ public final class DoorDecls {
             .anim("DoorRight", PartAnim.rotate(-90, 0, 1, 0, 0.90, 0, 0, 0F, 1F))
             .anim("DoorLeft", PartAnim.rotate(90, 0, 1, 0, -0.90, 0, 0, 0F, 1F)));
 
+    /**
+     * Red single office door based on the Black Mesa fire/office doors. It reuses the Office
+     * door 1 frame and swing behaviour, with a wire-glass window, panic bar and vertical latch
+     * rod on the leaf.
+     */
+    public static final DoorDecl OFFICE_DOOR_2 = reg(new DoorDecl("office_door_2")
+            .footprint(0, 0, 0, 1, -1, 0).times(30, 30).strength(8F, 1200F)
+            .displayName("Office door 2")
+            .movingBox("Door", box(-0.40, 0.02, -0.04, 0.40, 1.88, 0.04), 8)
+            .open(box(-0.50, 0.00, -0.50, -0.40, 2.00, -0.30),
+                    box(0.40, 0.00, -0.50, 0.50, 2.00, -0.30),
+                    box(-0.50, 1.90, -0.50, 0.50, 2.00, -0.30),
+                    box(-0.40, 0.02, -0.36, -0.36, 1.90, -0.30),
+                    box(0.36, 0.02, -0.36, 0.40, 1.90, -0.30),
+                    box(-0.36, 1.86, -0.36, 0.36, 1.90, -0.30))
+            .modelPath("models/doors/office_door_2.obj", "textures/models/doors/office_door_2.png")
+            .modelYaw(0F)
+            .modelOffset(0, 0, -0.4)
+            .renderRadius(2.0)
+            .soundVolume(1.0F)
+            .soundsOpen(SND_LATCH, null, null)
+            .soundsClose(null, null, SND_LATCH)
+            .anim("Door", PartAnim.rotate(-90, 0, 1, 0, 0.395, 0, 0, 0F, 1F)));
+
+    /**
+     * Two mirrored red office leaves, matching the Office door 1 double layout. The leaves meet
+     * in the middle and swing outward; the hinges are part of the static frame.
+     */
+    public static final DoorDecl OFFICE_DOOR_2_DOUBLE = reg(new DoorDecl("office_door_2_double")
+            .footprint(0, 1, 0, 1, -1, 0).times(30, 30).strength(8F, 1200F)
+            .displayName("Office door 2 (Double)")
+            .movingBox("DoorRight", box(0.00, 0.02, -0.04, 0.90, 1.88, 0.04), 8)
+            .movingBox("DoorLeft", box(-0.90, 0.02, -0.04, 0.00, 1.88, 0.04), 8)
+            .open(box(-0.50, 0.00, -0.50, -0.40, 2.00, -0.30),
+                    box(1.40, 0.00, -0.50, 1.50, 2.00, -0.30),
+                    box(-0.50, 1.90, -0.50, 1.50, 2.00, -0.30),
+                    box(-0.40, 0.02, -0.36, -0.36, 1.90, -0.30),
+                    box(1.36, 0.02, -0.36, 1.40, 1.90, -0.30),
+                    box(-0.36, 1.86, -0.36, 1.36, 1.90, -0.30))
+            .modelPath("models/doors/office_door_2_double.obj",
+                    "textures/models/doors/office_door_2.png")
+            .modelYaw(0F)
+            .modelOffset(0.5, 0, -0.4)
+            .renderRadius(3.0)
+            .soundVolume(1.0F)
+            .soundsOpen(SND_LATCH, null, null)
+            .soundsClose(null, null, SND_LATCH)
+            .anim("DoorRight", PartAnim.rotate(-90, 0, 1, 0, 0.90, 0, 0, 0F, 1F))
+            .anim("DoorLeft", PartAnim.rotate(90, 0, 1, 0, -0.90, 0, 0, 0F, 1F)));
+
     private DoorDecls() {
     }
 }

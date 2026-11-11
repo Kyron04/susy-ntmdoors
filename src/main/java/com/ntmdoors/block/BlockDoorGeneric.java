@@ -271,7 +271,10 @@ public class BlockDoorGeneric extends Block {
             // click target; only intact cells with actual geometry are selectable.
             BlockPos corePos = core == null ? null : core.getPos();
             if (core != null && (corePos == null || !corePos.equals(pos) || core.isBreached())) {
-                return NULL_AABB.offset(pos);
+                // Block.NULL_AABB is null (it means "no collision"), so it cannot be offset.
+                // Use an actual zero-volume box for the client's selection renderer instead.
+                return new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(),
+                        pos.getX(), pos.getY(), pos.getZ());
             }
             return FULL_BLOCK_AABB.offset(pos);
         }
