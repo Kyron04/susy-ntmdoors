@@ -1,75 +1,72 @@
 package com.ntmdoors.item;
 
-import com.ntmdoors.NTMDoors;
-import com.ntmdoors.tile.TileEntityMotionSensor;
-import com.ntmdoors.util.HeldItems;
+import com.ntmdoors.block.MotionSensorBlock;
+import com.ntmdoors.client.MotionSensorOverlay;
+import com.ntmdoors.client.screen.MotionSensorScreen;
 import com.ntmdoors.util.Names;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.block.BlockState;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.item.TooltipContext;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
+import net.minecraft.item.ItemUsageContext;
+import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
-/**
- * Motion Relay Key. Opens the Motion Sensor console, whose bound-area page defines the 5x5x5
- * volume the sensor watches, and toggles the blue projection in the world.
- */
 public class ItemMotionRelayKey extends Item {
 
+    public ItemMotionRelayKey(Settings settings) {
+        super(settings.maxCount(1));
+    }
+
     public ItemMotionRelayKey() {
-        setRegistryName(NTMDoors.MODID, "motion_relay_key");
-        setTranslationKey(NTMDoors.MODID + ".motion_relay_key");
-        setCreativeTab(NTMDoors.TAB);
+        this(new Settings());
     }
 
     @Override
-    public String getItemStackDisplayName(ItemStack stack) {
-        return TextFormatting.BLUE + super.getItemStackDisplayName(stack);
+    public Text getName(ItemStack stack) {
+        return super.getName(stack).copy().formatted(Formatting.BLUE);
     }
 
-    /**
-     * A normal click opens the sensor console. Sneak-clicking the sensor starts or finishes an
-     * area selection; while a session is active, sneak-clicking a block sets a corner.
-     */
     @Override
-    public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand,
-                                      EnumFacing facing, float hitX, float hitY, float hitZ) {
-        TileEntity te = world.getTileEntity(pos);
+    public ActionResult useOnBlock(ItemUsageContext context) {
+        PlayerEntity player = context.getPlayer();
+        if (player == null) return ActionResult.PASS;
 
-        if (player.isSneaking()) {
-            if (te instanceof TileEntityMotionSensor) {
-                if (world.isRemote) NTMDoors.proxy.toggleMotionSensorOverlay(pos);
-                return EnumActionResult.SUCCESS;
+        World world = context.getWorld();
+        BlockPos pos = context.getBlockPos();
+        BlockState state = world.getBlockState(pos);
+
+        if (state.getBlock() instanceof MotionSensorBlock) {
+            if (player.isSneaking()) {
+                if (world.isClient) {
+                    MotionSensorOverlay.toggle(pos);
+                }
+                return ActionResult.success(world.isClient);
+            } else {
+                if (world.isClient) {
+                    MinecraftClient.getInstance().setScreen(new MotionSensorScreen(pos));
+                }
+                return ActionResult.success(world.isClient);
             }
-            return EnumActionResult.PASS;
         }
 
-        if (te instanceof TileEntityMotionSensor) {
-            if (world.isRemote) NTMDoors.proxy.openMotionSensorGui(pos);
-            return EnumActionResult.SUCCESS;
-        }
-        return EnumActionResult.PASS;
-    }
-
-    /** True when either hand holds a Motion Relay Key. */
-    public static boolean isHeldBy(EntityPlayer player) {
-        return HeldItems.holds(player, ItemMotionRelayKey.class);
+        return ActionResult.PASS;
     }
 
     @Override
-    public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
+    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
         Names.addDescription(tooltip,
-                "Right click a sensor to open its console.",
-                "Page three defines the 5 by 5 by 5 bound area.",
-                "Sneak + Right Click toggles the blue projection.");
+                "Right Click a Motion Sensor to configure",
+                "its detection area and credentials.",
+                "Sneak + Right Click to show or hide the",
+                "client blue detection footprint.");
     }
 }

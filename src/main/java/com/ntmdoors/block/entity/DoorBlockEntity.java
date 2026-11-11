@@ -157,6 +157,7 @@ public class DoorBlockEntity extends BlockEntity {
 
     public void tickServer() {
         if (breached) return;
+        security.tick(world);
 
         // Auto close timer
         if (autoCloseTicks > 0 && state == DoorState.OPEN) {
@@ -506,6 +507,10 @@ public class DoorBlockEntity extends BlockEntity {
         security.setOwner(world, player, isSecurityDoor());
     }
 
+    public boolean toggleRedstoneAccess(PlayerEntity player) {
+        return security.toggleRedstoneAccess(world, pos, player, isSecurityDoor());
+    }
+
     public void clearPoweredState() {
         powered = false;
         markDirty();
@@ -524,6 +529,7 @@ public class DoorBlockEntity extends BlockEntity {
 
     private boolean isReceivingPower() {
         if (!acceptsRedstone()) return false;
+        if (security.isWirelessPowered(world)) return true;
         DoorDecl d = getDecl();
         if (d == null || world == null) return false;
         Direction f = getCachedState().get(BlockDoorGeneric.FACING);
@@ -531,6 +537,39 @@ public class DoorBlockEntity extends BlockEntity {
             if (world.isReceivingRedstonePower(pos.add(off))) return true;
         }
         return false;
+    }
+
+    public void setLinkedPower(BlockPos gatePos, boolean powered) {
+        security.setLinkedPower(world, gatePos, powered, isSecurityDoor(), breached);
+    }
+
+    public void onGateLinked(BlockPos gatePos) {
+        security.onGateLinked(gatePos);
+    }
+
+    public void onGateUnlinked(BlockPos gatePos) {
+        security.onGateUnlinked(gatePos);
+    }
+
+    public boolean isBoundToSafe(BlockPos safePos) {
+        return safePos != null && safePos.equals(boundSafe);
+    }
+
+    public boolean bindToSafe(BlockPos safePos) {
+        if (safePos == null || boundSafe != null) return false;
+        boundSafe = safePos.toImmutable();
+        markDirty();
+        return true;
+    }
+
+    public void unbindFromSafe(@Nullable BlockPos safePos) {
+        if (boundSafe == null || (safePos != null && !boundSafe.equals(safePos))) return;
+        boundSafe = null;
+        markDirty();
+    }
+
+    public BlockPos getBoundSafe() {
+        return boundSafe;
     }
 
     private boolean isGroupReceivingPower() {

@@ -1,38 +1,31 @@
 package com.ntmdoors.item;
 
-import com.ntmdoors.NTMDoors;
-import com.ntmdoors.util.Names;
 import net.minecraft.block.Block;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.item.ItemBlock;
+import net.minecraft.client.item.TooltipContext;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
-/**
- * Item form for the safe. It is a single block item because the safe will own an inventory and a
- * lock later; stacking them would make no sense once the contents are stored.
- */
-public class ItemBlockSafe extends ItemBlock {
+public class ItemBlockSafe extends BlockItem {
 
-    private final String[] description;
+    private final String descriptionKey;
 
-    public ItemBlockSafe(Block block, String... description) {
-        super(block);
-        this.description = description;
-        setMaxStackSize(1);
-        setCreativeTab(NTMDoors.TAB);
+    public ItemBlockSafe(Block block, String descriptionKey, Settings settings) {
+        super(block, settings.maxCount(1));
+        this.descriptionKey = descriptionKey;
+    }
+
+    public ItemBlockSafe(Block block, Settings settings) {
+        this(block, "ntmdoors.desc.safe", settings);
     }
 
     @Override
-    public String getItemStackDisplayName(ItemStack stack) {
-        return Names.translationOr(getTranslationKey(stack) + ".name", "Safe");
-    }
-
-    @Override
-    public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
-        if (description.length > 0) Names.addDescription(tooltip, description);
+    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
+        tooltip.add(Text.translatable(descriptionKey).formatted(Formatting.GRAY));
     }
 }

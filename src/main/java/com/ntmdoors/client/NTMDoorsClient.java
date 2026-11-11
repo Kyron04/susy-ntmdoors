@@ -11,7 +11,9 @@ import com.ntmdoors.client.render.KeycardScannerBlockEntityRenderer;
 import com.ntmdoors.client.render.KeyframeAnimation;
 import com.ntmdoors.client.render.KeypadBlockEntityRenderer;
 import com.ntmdoors.client.render.ObjModel;
+import com.ntmdoors.client.render.MotionSensorBlockEntityRenderer;
 import com.ntmdoors.client.screen.KeycardProgrammerScreen;
+import com.ntmdoors.client.screen.SafeScreen;
 import com.ntmdoors.network.ModMessages;
 import com.ntmdoors.screen.ModScreenHandlerTypes;
 import net.fabricmc.api.ClientModInitializer;
@@ -40,9 +42,14 @@ public class NTMDoorsClient implements ClientModInitializer {
         BlockEntityRendererRegistry.register(ModBlockEntities.KEYPAD, KeypadBlockEntityRenderer::new);
         BlockEntityRendererRegistry.register(ModBlockEntities.KEYCARD_SCANNER, KeycardScannerBlockEntityRenderer::new);
         BlockEntityRendererRegistry.register(ModBlockEntities.KEYCARD_PROGRAMMER, KeycardProgrammerBlockEntityRenderer::new);
+        BlockEntityRendererRegistry.register(ModBlockEntities.MOTION_SENSOR, MotionSensorBlockEntityRenderer::new);
 
         // Register Screen Handlers
         HandledScreens.register(ModScreenHandlerTypes.KEYCARD_PROGRAMMER, KeycardProgrammerScreen::new);
+        HandledScreens.register(ModScreenHandlerTypes.SAFE, SafeScreen::new);
+
+        // Register Overlays
+        RedstoneMonocleOverlay.init();
 
         // Register S2C Packets
         ModMessages.registerS2CPackets();

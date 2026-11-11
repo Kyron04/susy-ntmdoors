@@ -31,6 +31,36 @@ public final class ModBlockEntities {
             FabricBlockEntityTypeBuilder.create(KeycardProgrammerBlockEntity::new, ModBlocks.KEYCARD_PROGRAMMER).build()
     );
 
+    public static final BlockEntityType<SafeBlockEntity> SAFE = Registry.register(
+            Registries.BLOCK_ENTITY_TYPE,
+            Identifier.of(NTMDoors.MOD_ID, "safe"),
+            FabricBlockEntityTypeBuilder.create(SafeBlockEntity::new, ModBlocks.SAFE).build()
+    );
+
+    public static final BlockEntityType<BiometricSafeBlockEntity> BIOMETRIC_SAFE = Registry.register(
+            Registries.BLOCK_ENTITY_TYPE,
+            Identifier.of(NTMDoors.MOD_ID, "biometric_safe"),
+            FabricBlockEntityTypeBuilder.create(BiometricSafeBlockEntity::new, ModBlocks.BIOMETRIC_SAFE).build()
+    );
+
+    public static final BlockEntityType<RedstoneGateBlockEntity> REDSTONE_GATE = Registry.register(
+            Registries.BLOCK_ENTITY_TYPE,
+            Identifier.of(NTMDoors.MOD_ID, "redstone_gate"),
+            FabricBlockEntityTypeBuilder.create(RedstoneGateBlockEntity::new, ModBlocks.REDSTONE_GATE).build()
+    );
+
+    public static final BlockEntityType<SpeakerBlockEntity> SPEAKER = Registry.register(
+            Registries.BLOCK_ENTITY_TYPE,
+            Identifier.of(NTMDoors.MOD_ID, "speaker"),
+            FabricBlockEntityTypeBuilder.create(SpeakerBlockEntity::new, ModBlocks.SPEAKER).build()
+    );
+
+    public static final BlockEntityType<MotionSensorBlockEntity> MOTION_SENSOR = Registry.register(
+            Registries.BLOCK_ENTITY_TYPE,
+            Identifier.of(NTMDoors.MOD_ID, "motion_sensor"),
+            FabricBlockEntityTypeBuilder.create(MotionSensorBlockEntity::new, ModBlocks.MOTION_SENSOR).build()
+    );
+
     public static void registerModBlockEntities() {
         // Triggers static initialization
     }

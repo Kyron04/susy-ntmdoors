@@ -19,13 +19,22 @@ public final class ModBlocks {
     public static final KeypadBlock KEYPAD = reg("sliding_blast_door_keypad", new KeypadBlock());
     public static final KeycardScannerBlock KEYCARD_SCANNER = reg("keycard_scanner", new KeycardScannerBlock());
     public static final KeycardProgrammerBlock KEYCARD_PROGRAMMER = reg("keycard_programmer", new KeycardProgrammerBlock());
+    public static final SafeBlock SAFE = reg("safe", new SafeBlock());
+    public static final BiometricSafeBlock BIOMETRIC_SAFE = reg("biometric_safe", new BiometricSafeBlock());
+    public static final RedstoneGateBlock REDSTONE_GATE = reg("redstone_gate", new RedstoneGateBlock());
+    public static final SpeakerBlock SPEAKER = reg("speaker", new SpeakerBlock());
+    public static final MotionSensorBlock MOTION_SENSOR = reg("motion_sensor", new MotionSensorBlock());
 
     private static <T extends Block> T reg(String name, T block) {
         BLOCKS.put(name, block);
         return block;
     }
 
-    public static void registerModBlocks() {
+    private static boolean registered = false;
+
+    public static synchronized void registerModBlocks() {
+        if (registered) return;
+        registered = true;
         for (Map.Entry<String, Block> entry : BLOCKS.entrySet()) {
             Registry.register(Registries.BLOCK, Identifier.of(NTMDoors.MOD_ID, entry.getKey()), entry.getValue());
         }

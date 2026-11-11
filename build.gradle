@@ -33,6 +33,8 @@ sourceSets {
         java {
             include 'com/ntmdoors/NTMDoors.java'
             include 'com/ntmdoors/client/NTMDoorsClient.java'
+            include 'com/ntmdoors/client/MotionSensorOverlay.java'
+            include 'com/ntmdoors/client/RedstoneMonocleOverlay.java'
             include 'com/ntmdoors/client/render/**'
             include 'com/ntmdoors/client/screen/**'
             include 'com/ntmdoors/client/sound/**'
@@ -43,6 +45,12 @@ sourceSets {
             include 'com/ntmdoors/block/KeypadBlock.java'
             include 'com/ntmdoors/block/KeycardScannerBlock.java'
             include 'com/ntmdoors/block/KeycardProgrammerBlock.java'
+            include 'com/ntmdoors/block/SafeBlock.java'
+            include 'com/ntmdoors/block/BiometricSafeBlock.java'
+            include 'com/ntmdoors/block/RedstoneGateBlock.java'
+            include 'com/ntmdoors/block/SpeakerBlock.java'
+            include 'com/ntmdoors/block/MotionSensorBlock.java'
+            include 'com/ntmdoors/block/MotionSensorStatus.java'
             include 'com/ntmdoors/block/entity/**'
             include 'com/ntmdoors/item/ModItemGroups.java'
             include 'com/ntmdoors/item/ItemDoorBlock.java'
@@ -60,6 +68,12 @@ sourceSets {
             include 'com/ntmdoors/item/ItemBlockKeypad.java'
             include 'com/ntmdoors/item/ItemBlockKeycardScanner.java'
             include 'com/ntmdoors/item/ItemBlockKeycardProgrammer.java'
+            include 'com/ntmdoors/item/ItemBlockSafe.java'
+            include 'com/ntmdoors/item/ItemBlockRedstoneGate.java'
+            include 'com/ntmdoors/item/ItemSafeBindingKey.java'
+            include 'com/ntmdoors/item/ItemMotionRelayKey.java'
+            include 'com/ntmdoors/item/ItemRedstoneRelayKey.java'
+            include 'com/ntmdoors/item/ItemRedstoneMonocle.java'
             include 'com/ntmdoors/network/ModMessages.java'
             include 'com/ntmdoors/screen/**'
             include 'com/ntmdoors/registry/ModContent.java'
@@ -72,6 +86,7 @@ sourceSets {
             include 'com/ntmdoors/util/InteractionGuard.java'
             include 'com/ntmdoors/util/Names.java'
             include 'com/ntmdoors/util/RedstoneBinding.java'
+            include 'com/ntmdoors/util/TimedSources.java'
         }
     }
 }

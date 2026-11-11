@@ -18,6 +18,12 @@ public final class ModScreenHandlerTypes {
             new ExtendedScreenHandlerType<>(KeycardProgrammerScreenHandler::new)
     );
 
+    public static final ScreenHandlerType<SafeScreenHandler> SAFE = Registry.register(
+            Registries.SCREEN_HANDLER,
+            Identifier.of(NTMDoors.MOD_ID, "safe"),
+            new ExtendedScreenHandlerType<>(SafeScreenHandler::new)
+    );
+
     public static void registerScreenHandlers() {
         // Triggers static initialization
     }

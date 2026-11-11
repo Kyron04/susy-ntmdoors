@@ -1,127 +1,124 @@
 package com.ntmdoors.item;
 
-import com.ntmdoors.NTMDoors;
-import com.ntmdoors.block.BlockDoorGeneric;
-import com.ntmdoors.tile.RedstoneBinding;
-import com.ntmdoors.tile.TileEntityDoorGeneric;
-import com.ntmdoors.tile.TileEntityDoorKeypad;
-import com.ntmdoors.tile.TileEntityKeycardScanner;
-import com.ntmdoors.tile.TileEntityMotionSensor;
-import com.ntmdoors.tile.TileEntityRedstoneGate;
-import com.ntmdoors.tile.TileEntitySafe;
-import com.ntmdoors.tile.TileEntitySpeaker;
+import com.ntmdoors.block.door.BlockDoorGeneric;
+import com.ntmdoors.block.entity.DoorBlockEntity;
+import com.ntmdoors.block.entity.KeypadBlockEntity;
+import com.ntmdoors.block.entity.RedstoneBindingHost;
+import com.ntmdoors.block.entity.RedstoneGateBlockEntity;
+import com.ntmdoors.block.entity.SpeakerBlockEntity;
+import com.ntmdoors.client.screen.KeypadSecurityCodeScreen;
 import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.Names;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.player.EntityPlayer;
+import com.ntmdoors.util.RedstoneBinding;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.item.TooltipContext;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
+import net.minecraft.item.ItemUsageContext;
+import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
-/**
- * Redstone Relay Key. Sneak right-click a safe or scanner (or normal-click a speaker) to start or
- * finish a wireless binding session, then sneak right-click any Redstone Gate to link or unlink it.
- * A session started on a gate links other gates and doors to that gate's output.
- */
 public class ItemRedstoneRelayKey extends Item {
 
+    public ItemRedstoneRelayKey(Settings settings) {
+        super(settings.maxCount(1));
+    }
+
     public ItemRedstoneRelayKey() {
-        setRegistryName(NTMDoors.MODID, "redstone_relay_key");
-        setTranslationKey(NTMDoors.MODID + ".redstone_relay_key");
-        setCreativeTab(NTMDoors.TAB);
+        this(new Settings());
     }
 
     @Override
-    public String getItemStackDisplayName(ItemStack stack) {
-        return TextFormatting.RED + super.getItemStackDisplayName(stack);
+    public Text getName(ItemStack stack) {
+        return super.getName(stack).copy().formatted(Formatting.RED);
     }
 
-    @Override
-    public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand,
-                                      EnumFacing facing, float hitX, float hitY, float hitZ) {
-        TileEntity te = world.getTileEntity(pos);
-
-        // The speaker uses a normal click for binding because shift-right-click is its GUI gesture.
-        if (!player.isSneaking()) {
-            if (te instanceof TileEntitySpeaker) {
-                if (!world.isRemote) {
-                    ((TileEntitySpeaker) te).getRedstoneBinding().toggle(player);
-                }
-                return EnumActionResult.SUCCESS;
-            }
-            return EnumActionResult.PASS;
-        }
-
-        // Vanilla skips Block.onBlockActivated for a sneaking player, so the item owns this action.
-        if (world.isRemote) {
-            // Sneak-clicking a keypad opens its security-code screen, then the configuration GUI.
-            // Gate binding uses a normal click on the keypad, handled by BlockDoorKeypad.
-            if (te instanceof TileEntityDoorKeypad) NTMDoors.proxy.openKeypadSecurityCodeGui(pos);
-            return EnumActionResult.SUCCESS;
-        }
-
-        if (te instanceof TileEntitySafe) {
-            ((TileEntitySafe) te).getRedstoneBinding().toggle(player);
-        } else if (te instanceof TileEntityKeycardScanner) {
-            ((TileEntityKeycardScanner) te).getRedstoneBinding().toggle(player);
-        } else if (te instanceof TileEntitySpeaker) {
-            ((TileEntitySpeaker) te).getRedstoneBinding().toggle(player);
-        } else if (te instanceof TileEntityMotionSensor) {
-            ((TileEntityMotionSensor) te).getRedstoneBinding().toggle(player);
-        } else if (te instanceof TileEntityRedstoneGate) {
-            TileEntityRedstoneGate gate = (TileEntityRedstoneGate) te;
-            RedstoneBinding binding = RedstoneBinding.findSession(world, player);
-            if (binding == null) {
-                // Starting here turns the gate into a relay for other gates and doors.
-                gate.getRedstoneBinding().toggle(player);
-            } else if (binding.isHost(gate)) {
-                binding.stop(player);
-            } else {
-                binding.link(player, gate);
-            }
-        } else {
-            TileEntityDoorGeneric door = findDoor(world, pos);
-            if (door != null) {
-                RedstoneBinding binding = RedstoneBinding.findSession(world, player);
-                if (binding == null) {
-                    player.sendStatusMessage(new TextComponentTranslation(
-                            "ntmdoors.msg.redstone_binding_required"), true);
-                } else if (!binding.isGateHost()) {
-                    player.sendStatusMessage(new TextComponentTranslation(
-                            "ntmdoors.msg.redstone_door_gate_only"), true);
-                } else {
-                    binding.linkDoor(player, door);
-                }
-            }
-        }
-        return EnumActionResult.SUCCESS;
-    }
-
-    @Nullable
-    private static TileEntityDoorGeneric findDoor(World world, BlockPos pos) {
-        IBlockState state = world.getBlockState(pos);
-        if (!(state.getBlock() instanceof BlockDoorGeneric)) return null;
-        return ((BlockDoorGeneric) state.getBlock()).getCore(world, pos, state);
-    }
-
-    /** True when either hand holds a Redstone Relay Key. */
-    public static boolean isHeldBy(EntityPlayer player) {
+    public static boolean isHeldBy(PlayerEntity player) {
         return HeldItems.holds(player, ItemRedstoneRelayKey.class);
     }
 
     @Override
-    public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
+    public ActionResult useOnBlock(ItemUsageContext context) {
+        PlayerEntity player = context.getPlayer();
+        if (player == null) return ActionResult.PASS;
+
+        World world = context.getWorld();
+        BlockPos pos = context.getBlockPos();
+        BlockEntity be = world.getBlockEntity(pos);
+
+        if (!player.isSneaking()) {
+            if (be instanceof SpeakerBlockEntity speaker) {
+                if (!world.isClient) {
+                    speaker.getRedstoneBinding().toggle(player);
+                }
+                return ActionResult.success(world.isClient);
+            }
+            return ActionResult.PASS;
+        }
+
+        // Sneaking actions
+        if (world.isClient && be instanceof KeypadBlockEntity) {
+            MinecraftClient.getInstance().setScreen(new KeypadSecurityCodeScreen(pos));
+            return ActionResult.SUCCESS;
+        }
+
+        if (world.isClient) return ActionResult.SUCCESS;
+
+        if (be instanceof RedstoneGateBlockEntity gate) {
+            RedstoneBinding binding = RedstoneBinding.findSession(world, player);
+            if (binding == null) {
+                gate.getRedstoneBinding().toggle(player);
+            } else if (binding.getHost() == gate) {
+                binding.stop(player);
+            } else {
+                binding.bindGate(player, gate);
+            }
+            return ActionResult.SUCCESS;
+        }
+
+        if (be instanceof RedstoneBindingHost host) {
+            host.getRedstoneBinding().toggle(player);
+            return ActionResult.SUCCESS;
+        }
+
+        DoorBlockEntity door = findDoor(world, pos);
+        if (door != null) {
+            RedstoneBinding binding = RedstoneBinding.findSession(world, player);
+            if (binding == null) {
+                player.sendMessage(Text.translatable("ntmdoors.msg.redstone_binding_required"), true);
+            } else if (!binding.isGateHost()) {
+                player.sendMessage(Text.translatable("ntmdoors.msg.redstone_door_gate_only"), true);
+            } else {
+                binding.bindDoor(player, door);
+            }
+            return ActionResult.SUCCESS;
+        }
+
+        return ActionResult.PASS;
+    }
+
+    @Nullable
+    private static DoorBlockEntity findDoor(World world, BlockPos pos) {
+        BlockEntity be = world.getBlockEntity(pos);
+        if (be instanceof DoorBlockEntity door) return door;
+        BlockState state = world.getBlockState(pos);
+        if (state.getBlock() instanceof BlockDoorGeneric doorBlock) {
+            return doorBlock.getCore(world, pos, state);
+        }
+        return null;
+    }
+
+    @Override
+    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
         Names.addDescription(tooltip,
                 "Links keypads, scanners, safes, speakers",
                 "and sensors to a Redstone Gate.",

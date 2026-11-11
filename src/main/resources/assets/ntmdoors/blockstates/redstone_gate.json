@@ -1,6 +1,6 @@
 {
   "variants": {
-    "powered=false": { "model": "ntmdoors:redstone_gate_off" },
-    "powered=true": { "model": "ntmdoors:redstone_gate_on" }
+    "powered=false": { "model": "ntmdoors:block/redstone_gate_off" },
+    "powered=true": { "model": "ntmdoors:block/redstone_gate_on" }
   }
 }

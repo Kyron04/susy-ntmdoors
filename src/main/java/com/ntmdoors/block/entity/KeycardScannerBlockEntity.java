@@ -27,10 +27,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import com.ntmdoors.block.entity.RedstoneBindingHost;
+
 /**
  * Keycard Scanner block entity: state machine, clearance evaluation, lockout alarm, door auto-close.
  */
-public class KeycardScannerBlockEntity extends BlockEntity {
+public class KeycardScannerBlockEntity extends BlockEntity implements RedstoneBindingHost {
 
     public enum State {
         IDLE,
@@ -102,6 +104,18 @@ public class KeycardScannerBlockEntity extends BlockEntity {
 
     public KeycardScannerBlockEntity(net.minecraft.block.entity.BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+        redstoneBinding.setHost(this);
+    }
+
+    @Override
+    public RedstoneBinding getRedstoneBinding() {
+        return redstoneBinding;
+    }
+
+    @Override
+    public void onRedstoneBindingChanged() {
+        markDirty();
+        sync();
     }
 
     public static void tick(World world, BlockPos pos, BlockState state, KeycardScannerBlockEntity be) {

@@ -1,25 +1,25 @@
 package com.ntmdoors.client;
 
-import com.ntmdoors.NTMDoors;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.ntmdoors.block.entity.RedstoneGateBlockEntity;
 import com.ntmdoors.item.ItemRedstoneMonocle;
-import com.ntmdoors.tile.RedstoneBinding;
-import com.ntmdoors.tile.RedstoneBindingHost;
-import com.ntmdoors.tile.TileEntityRedstoneGate;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.tileentity.TileEntity;
+import com.ntmdoors.util.RedstoneBinding;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.VertexFormat;
+import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.client.event.RenderWorldLastEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import org.lwjgl.opengl.GL11;
+import net.minecraft.util.math.Vec3d;
+import org.joml.Matrix4f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,8 +29,7 @@ import java.util.List;
  * Devices are drawn in blue, gate-to-gate links in red, and gate-to-door links in amber. The
  * overlay ignores depth so wiring is visible through walls.
  */
-@SideOnly(Side.CLIENT)
-@Mod.EventBusSubscriber(modid = NTMDoors.MODID, value = Side.CLIENT)
+@Environment(EnvType.CLIENT)
 public final class RedstoneMonocleOverlay {
 
     private static final float[] GATE_GATE = {0.95F, 0.20F, 0.20F, 0.85F};
@@ -47,10 +46,13 @@ public final class RedstoneMonocleOverlay {
         }
     }
 
-    @SubscribeEvent
-    public static void onRenderWorldLast(RenderWorldLastEvent event) {
-        Minecraft mc = Minecraft.getMinecraft();
-        EntityPlayer player = mc.player;
+    public static void init() {
+        WorldRenderEvents.AFTER_TRANSLUCENT.register(RedstoneMonocleOverlay::onRender);
+    }
+
+    private static void onRender(WorldRenderContext context) {
+        MinecraftClient mc = MinecraftClient.getInstance();
+        ClientPlayerEntity player = mc.player;
         if (player == null || mc.world == null) return;
         if (!ItemRedstoneMonocle.isHeldBy(player)) return;
 
@@ -58,70 +60,56 @@ public final class RedstoneMonocleOverlay {
         List<Link> gateDoor = new ArrayList<>();
         List<Link> deviceGate = new ArrayList<>();
 
-        for (TileEntity te : mc.world.loadedTileEntityList) {
-            if (!(te instanceof RedstoneBindingHost)) continue;
-            if (te instanceof TileEntityRedstoneGate) {
-                RedstoneBinding binding = ((TileEntityRedstoneGate) te).getRedstoneBinding();
-                BlockPos gate = te.getPos();
-                for (BlockPos target : binding.getGates()) gateGate.add(new Link(gate, target));
-                for (BlockPos target : binding.getDoors()) gateDoor.add(new Link(gate, target));
+        for (RedstoneBinding binding : RedstoneBinding.ACTIVE_BINDINGS) {
+            BlockEntity be = binding.getHost();
+            if (be == null || be.isRemoved() || be.getWorld() == null || !be.getWorld().isClient()) continue;
+            BlockPos source = be.getPos();
+            if (be instanceof RedstoneGateBlockEntity) {
+                for (BlockPos target : binding.getGates()) gateGate.add(new Link(source, target));
+                for (BlockPos target : binding.getDoors()) gateDoor.add(new Link(source, target));
             } else {
-                RedstoneBinding binding = ((RedstoneBindingHost) te).getRedstoneBinding();
-                BlockPos device = te.getPos();
-                for (BlockPos target : binding.getGates()) deviceGate.add(new Link(device, target));
+                for (BlockPos target : binding.getGates()) deviceGate.add(new Link(source, target));
             }
         }
 
         if (gateGate.isEmpty() && gateDoor.isEmpty() && deviceGate.isEmpty()) return;
 
-        RenderManager renderManager = mc.getRenderManager();
-        GlStateManager.pushMatrix();
-        GlStateManager.translate(-renderManager.viewerPosX, -renderManager.viewerPosY,
-                -renderManager.viewerPosZ);
-        GlStateManager.disableTexture2D();
-        GlStateManager.enableBlend();
-        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA,
-                GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
-                GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-        GlStateManager.disableLighting();
-        GlStateManager.disableCull();
-        GlStateManager.disableFog();
-        GlStateManager.depthMask(false);
-        // The monocle is a diagnostic overlay: keep the links visible through walls.
-        GlStateManager.disableDepth();
-        GL11.glLineWidth(2.0F);
+        Vec3d camPos = context.camera().getPos();
+        MatrixStack matrices = context.matrixStack();
 
-        draw(gateGate, GATE_GATE);
-        draw(gateDoor, GATE_DOOR);
-        draw(deviceGate, DEVICE_GATE);
+        RenderSystem.disableDepthTest();
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
 
-        GL11.glLineWidth(1.0F);
-        GlStateManager.enableDepth();
-        GlStateManager.depthMask(true);
-        GlStateManager.enableFog();
-        GlStateManager.enableCull();
-        GlStateManager.enableLighting();
-        GlStateManager.enableTexture2D();
-        GlStateManager.disableBlend();
-        GlStateManager.color(1F, 1F, 1F, 1F);
-        GlStateManager.popMatrix();
-    }
-
-    private static void draw(List<Link> links, float[] colour) {
-        if (links.isEmpty()) return;
-        GlStateManager.color(colour[0], colour[1], colour[2], colour[3]);
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.getBuffer();
-        buffer.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION);
-        for (Link link : links) {
-            buffer.pos(link.from.getX() + 0.5D, link.from.getY() + 0.5D,
-                    link.from.getZ() + 0.5D).endVertex();
-            buffer.pos(link.to.getX() + 0.5D, link.to.getY() + 0.5D,
-                    link.to.getZ() + 0.5D).endVertex();
-        }
+        buffer.begin(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR);
+
+        Matrix4f posMat = matrices.peek().getPositionMatrix();
+        drawLinks(buffer, posMat, gateGate, GATE_GATE, camPos);
+        drawLinks(buffer, posMat, gateDoor, GATE_DOOR, camPos);
+        drawLinks(buffer, posMat, deviceGate, DEVICE_GATE, camPos);
+
         tessellator.draw();
+
+        RenderSystem.disableBlend();
+        RenderSystem.enableDepthTest();
     }
 
-    private RedstoneMonocleOverlay() {
+    private static void drawLinks(BufferBuilder buffer, Matrix4f posMat, List<Link> links, float[] color, Vec3d camPos) {
+        for (Link link : links) {
+            float x1 = (float) (link.from.getX() + 0.5 - camPos.x);
+            float y1 = (float) (link.from.getY() + 0.5 - camPos.y);
+            float z1 = (float) (link.from.getZ() + 0.5 - camPos.z);
+            float x2 = (float) (link.to.getX() + 0.5 - camPos.x);
+            float y2 = (float) (link.to.getY() + 0.5 - camPos.y);
+            float z2 = (float) (link.to.getZ() + 0.5 - camPos.z);
+
+            buffer.vertex(posMat, x1, y1, z1).color(color[0], color[1], color[2], color[3]).next();
+            buffer.vertex(posMat, x2, y2, z2).color(color[0], color[1], color[2], color[3]).next();
+        }
     }
+
+    private RedstoneMonocleOverlay() {}
 }

@@ -4,11 +4,17 @@ import com.ntmdoors.NTMDoors;
 import com.ntmdoors.block.entity.KeycardProgrammerBlockEntity;
 import com.ntmdoors.block.entity.KeycardScannerBlockEntity;
 import com.ntmdoors.block.entity.KeypadBlockEntity;
+import com.ntmdoors.block.entity.MotionSensorBlockEntity;
+import com.ntmdoors.block.entity.RedstoneGateBlockEntity;
+import com.ntmdoors.block.entity.SafeBlockEntity;
+import com.ntmdoors.block.entity.SpeakerBlockEntity;
 import com.ntmdoors.client.screen.KeypadConfigScreen;
+import com.ntmdoors.client.screen.SafeCodeScreen;
 import com.ntmdoors.client.screen.ScannerKeysScreen;
 import com.ntmdoors.item.ItemOperatorKeycard;
 import com.ntmdoors.item.ItemRelayKey;
 import com.ntmdoors.screen.KeycardProgrammerScreenHandler;
+import com.ntmdoors.screen.SafeScreenHandler;
 import com.ntmdoors.sound.ModSounds;
 import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.PrivateKeys;
@@ -45,6 +51,15 @@ public final class ModMessages {
     public static final Identifier KEYPAD_OPTION_ID = Identifier.of(NTMDoors.MOD_ID, "keypad_option");
     public static final Identifier KEYPAD_SECURITY_CODE_ID = Identifier.of(NTMDoors.MOD_ID, "keypad_security_code");
     public static final Identifier KEYPAD_SECURITY_CODE_RESULT_ID = Identifier.of(NTMDoors.MOD_ID, "keypad_security_code_result");
+    public static final Identifier GATE_OPTION_ID = Identifier.of(NTMDoors.MOD_ID, "gate_option");
+    public static final Identifier SPEAKER_OPTION_ID = Identifier.of(NTMDoors.MOD_ID, "speaker_option");
+    public static final Identifier SAFE_CODE_ID = Identifier.of(NTMDoors.MOD_ID, "safe_code");
+    public static final Identifier SAFE_RESULT_ID = Identifier.of(NTMDoors.MOD_ID, "safe_result");
+    public static final Identifier SAFE_OPTION_ID = Identifier.of(NTMDoors.MOD_ID, "safe_option");
+    public static final Identifier SAFE_PAGE_ID = Identifier.of(NTMDoors.MOD_ID, "safe_page");
+    public static final Identifier MOTION_SENSOR_OPTION_ID = Identifier.of(NTMDoors.MOD_ID, "motion_sensor_option");
+    public static final Identifier MOTION_SENSOR_AREA_ID = Identifier.of(NTMDoors.MOD_ID, "motion_sensor_area");
+    public static final Identifier MOTION_SENSOR_KEY_ID = Identifier.of(NTMDoors.MOD_ID, "motion_sensor_key");
 
     public static void registerC2SPackets() {
         // 1. Relay Key Name
@@ -239,6 +254,131 @@ public final class ModMessages {
                 ServerPlayNetworking.send(player, KEYPAD_SECURITY_CODE_RESULT_ID, resp);
             });
         });
+
+        // 10. Speaker Option
+        ServerPlayNetworking.registerGlobalReceiver(SPEAKER_OPTION_ID, (server, player, handler, buf, responseSender) -> {
+            BlockPos pos = buf.readBlockPos();
+            byte option = buf.readByte();
+            int value = buf.readInt();
+            server.execute(() -> {
+                if (player.squaredDistanceTo(pos.toCenterPos()) > 64.0) return;
+                BlockEntity be = player.getWorld().getBlockEntity(pos);
+                if (be instanceof SpeakerBlockEntity speaker) {
+                    switch (option) {
+                        case 0 -> speaker.setEnabled(value != 0);
+                        case 1 -> speaker.setSound(value);
+                        case 2 -> speaker.setRange(value);
+                        case 3 -> speaker.setVolume(value);
+                    }
+                }
+            });
+        });
+
+        // 11. Redstone Gate Option
+        ServerPlayNetworking.registerGlobalReceiver(GATE_OPTION_ID, (server, player, handler, buf, responseSender) -> {
+            BlockPos pos = buf.readBlockPos();
+            byte option = buf.readByte();
+            boolean value = buf.readBoolean();
+            server.execute(() -> {
+                if (player.squaredDistanceTo(pos.toCenterPos()) > 64.0) return;
+                BlockEntity be = player.getWorld().getBlockEntity(pos);
+                if (be instanceof RedstoneGateBlockEntity gate) {
+                    switch (option) {
+                        case 0 -> gate.setStayActive(value);
+                        case 1 -> gate.setInverted(value);
+                        case 2 -> gate.adjustActiveTicks(20);
+                        case 3 -> gate.adjustActiveTicks(100);
+                        case 4 -> gate.adjustActiveTicks(200);
+                        case 5 -> gate.adjustActiveTicks(400);
+                        case 6 -> gate.adjustActiveTicks(-20);
+                        case 7 -> gate.adjustActiveTicks(-100);
+                        case 8 -> gate.adjustActiveTicks(-200);
+                        case 9 -> gate.adjustActiveTicks(-400);
+                    }
+                }
+            });
+        });
+
+        // 12. Safe Code
+        ServerPlayNetworking.registerGlobalReceiver(SAFE_CODE_ID, (server, player, handler, buf, responseSender) -> {
+            BlockPos pos = buf.readBlockPos();
+            String code = buf.readString();
+            server.execute(() -> {
+                if (player.squaredDistanceTo(pos.toCenterPos()) > 64.0) return;
+                BlockEntity be = player.getWorld().getBlockEntity(pos);
+                if (be instanceof SafeBlockEntity safe) {
+                    safe.submitCode(player, code);
+                }
+            });
+        });
+
+        // 13. Safe Option
+        ServerPlayNetworking.registerGlobalReceiver(SAFE_OPTION_ID, (server, player, handler, buf, responseSender) -> {
+            BlockPos pos = buf.readBlockPos();
+            byte option = buf.readByte();
+            boolean value = buf.readBoolean();
+            server.execute(() -> {
+                if (player.squaredDistanceTo(pos.toCenterPos()) > 64.0) return;
+                BlockEntity be = player.getWorld().getBlockEntity(pos);
+                if (be instanceof SafeBlockEntity safe) {
+                    safe.setOption(player, option, value);
+                }
+            });
+        });
+
+        // 14. Safe Page
+        ServerPlayNetworking.registerGlobalReceiver(SAFE_PAGE_ID, (server, player, handler, buf, responseSender) -> {
+            BlockPos pos = buf.readBlockPos();
+            byte page = buf.readByte();
+            server.execute(() -> {
+                if (player.currentScreenHandler instanceof SafeScreenHandler safeHandler) {
+                    safeHandler.setPage(page);
+                }
+            });
+        });
+
+        // 15. Motion Sensor Option
+        ServerPlayNetworking.registerGlobalReceiver(MOTION_SENSOR_OPTION_ID, (server, player, handler, buf, responseSender) -> {
+            BlockPos pos = buf.readBlockPos();
+            int option = buf.readInt();
+            boolean value = buf.readBoolean();
+            server.execute(() -> {
+                if (player.squaredDistanceTo(pos.toCenterPos()) > 64.0) return;
+                BlockEntity be = player.getWorld().getBlockEntity(pos);
+                if (be instanceof MotionSensorBlockEntity sensor) {
+                    switch (option) {
+                        case 0 -> sensor.setDetectPlayers(value);
+                        case 1 -> sensor.setDetectHostile(value);
+                        case 2 -> sensor.setDetectNeutral(value);
+                        case 3 -> sensor.setPersistWithinBounds(value);
+                        case 4 -> sensor.setPersistOutOfBounds(value);
+                        case 5 -> sensor.setMatchHolder(value);
+                        case 6 -> sensor.setIgnoreKeys(value);
+                        case 7 -> sensor.setIgnoreIds(value);
+                        case 8 -> sensor.setEnabled(value);
+                        case 9 -> sensor.setRedstoneEvent(MotionSensorBlockEntity.RS_AUTHORIZED, value);
+                        case 10 -> sensor.setRedstoneEvent(MotionSensorBlockEntity.RS_UNAUTHORIZED, value);
+                        case 11 -> sensor.setRedstoneEvent(MotionSensorBlockEntity.RS_DISABLED, value);
+                        case 12 -> sensor.setRedstoneEvent(MotionSensorBlockEntity.RS_ENABLED, value);
+                    }
+                }
+            });
+        });
+
+        // 16. Motion Sensor Area
+        ServerPlayNetworking.registerGlobalReceiver(MOTION_SENSOR_AREA_ID, (server, player, handler, buf, responseSender) -> {
+            BlockPos pos = buf.readBlockPos();
+            boolean clear = buf.readBoolean();
+            byte[] depths = buf.readByteArray();
+            server.execute(() -> {
+                if (player.squaredDistanceTo(pos.toCenterPos()) > 64.0) return;
+                BlockEntity be = player.getWorld().getBlockEntity(pos);
+                if (be instanceof MotionSensorBlockEntity sensor) {
+                    if (clear) sensor.clearArea();
+                    else sensor.setAreaDepths(depths);
+                }
+            });
+        });
     }
 
     @Environment(EnvType.CLIENT)
@@ -269,6 +409,16 @@ public final class ModMessages {
                     if (clientInstance.player != null) {
                         clientInstance.player.sendMessage(Text.translatable("ntmdoors.msg.keypad_code_invalid"), true);
                     }
+                }
+            });
+        });
+
+        ClientPlayNetworking.registerGlobalReceiver(SAFE_RESULT_ID, (client, handler, buf, responseSender) -> {
+            BlockPos pos = buf.readBlockPos();
+            byte result = buf.readByte();
+            client.execute(() -> {
+                if (MinecraftClient.getInstance().currentScreen instanceof SafeCodeScreen safeScreen) {
+                    safeScreen.onSafeResult(result);
                 }
             });
         });

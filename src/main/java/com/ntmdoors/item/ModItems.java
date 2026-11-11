@@ -25,6 +25,10 @@ public final class ModItems {
     public static final ItemScrewdriver SCREWDRIVER = reg("screwdriver", new ItemScrewdriver());
     public static final ItemRelayKey RELAY_KEY = reg("relay_key", new ItemRelayKey());
     public static final ItemBiometricRelayKey BIOMETRIC_RELAY_KEY = reg("biometric_relay_key", new ItemBiometricRelayKey());
+    public static final ItemSafeBindingKey SAFE_BINDING_KEY = reg("safe_binding_key", new ItemSafeBindingKey());
+    public static final ItemMotionRelayKey MOTION_RELAY_KEY = reg("motion_relay_key", new ItemMotionRelayKey());
+    public static final ItemRedstoneRelayKey REDSTONE_RELAY_KEY = reg("redstone_relay_key", new ItemRedstoneRelayKey());
+    public static final ItemRedstoneMonocle REDSTONE_MONOCLE = reg("redstone_monocle", new ItemRedstoneMonocle());
 
     // --- 8 RFID Base & Color Cards ---
     public static final ItemRfidCard BLANK_RFID_CARD = reg("blank_rfid_card", new ItemRfidCard("blank_rfid_card", false));
@@ -114,6 +118,11 @@ public final class ModItems {
     public static final ItemBlockKeypad KEYPAD_ITEM = reg("sliding_blast_door_keypad", new ItemBlockKeypad(ModBlocks.KEYPAD));
     public static final ItemBlockKeycardScanner KEYCARD_SCANNER_ITEM = reg("keycard_scanner", new ItemBlockKeycardScanner(ModBlocks.KEYCARD_SCANNER));
     public static final ItemBlockKeycardProgrammer KEYCARD_PROGRAMMER_ITEM = reg("keycard_programmer", new ItemBlockKeycardProgrammer(ModBlocks.KEYCARD_PROGRAMMER));
+    public static final ItemBlockSafe SAFE_ITEM = reg("safe", new ItemBlockSafe(ModBlocks.SAFE, new Item.Settings()));
+    public static final ItemBlockSafe BIOMETRIC_SAFE_ITEM = reg("biometric_safe", new ItemBlockSafe(ModBlocks.BIOMETRIC_SAFE, "ntmdoors.desc.biometric_safe", new Item.Settings()));
+    public static final ItemBlockRedstoneGate REDSTONE_GATE_ITEM = reg("redstone_gate", new ItemBlockRedstoneGate(ModBlocks.REDSTONE_GATE, new Item.Settings()));
+    public static final net.minecraft.item.BlockItem SPEAKER_ITEM = reg("speaker", new net.minecraft.item.BlockItem(ModBlocks.SPEAKER, new Item.Settings()));
+    public static final net.minecraft.item.BlockItem MOTION_SENSOR_ITEM = reg("motion_sensor", new net.minecraft.item.BlockItem(ModBlocks.MOTION_SENSOR, new Item.Settings()));
 
     // --- 31 Palette Cards for Programmer Page 1 ---
     public static final List<ItemRfidCard> PROGRAMMER_CARDS;
@@ -163,7 +172,11 @@ public final class ModItems {
         return item;
     }
 
-    public static void registerModItems() {
+    private static boolean registered = false;
+
+    public static synchronized void registerModItems() {
+        if (registered) return;
+        registered = true;
         for (Map.Entry<String, Item> entry : ITEMS.entrySet()) {
             Registry.register(Registries.ITEM, Identifier.of(NTMDoors.MOD_ID, entry.getKey()), entry.getValue());
             ModItemGroups.addEntry(entry.getValue());

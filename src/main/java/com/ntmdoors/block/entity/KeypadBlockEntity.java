@@ -31,10 +31,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.ntmdoors.block.entity.RedstoneBindingHost;
+
 /**
  * Keypad block entity managing 1-6 digit codes, button hits, feedback states, and door cluster synchronization.
  */
-public class KeypadBlockEntity extends BlockEntity {
+public class KeypadBlockEntity extends BlockEntity implements RedstoneBindingHost {
 
     public enum Mode {
         SET_CODE,
@@ -115,6 +117,13 @@ public class KeypadBlockEntity extends BlockEntity {
 
     public KeypadBlockEntity(net.minecraft.block.entity.BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+        redstoneBinding.setHost(this);
+    }
+
+    @Override
+    public void onRedstoneBindingChanged() {
+        markDirty();
+        sync();
     }
 
     public static void tick(World world, BlockPos pos, BlockState state, KeypadBlockEntity be) {

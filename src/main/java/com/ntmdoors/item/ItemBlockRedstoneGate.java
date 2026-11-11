@@ -1,36 +1,32 @@
 package com.ntmdoors.item;
 
-import com.ntmdoors.NTMDoors;
-import com.ntmdoors.util.Names;
 import net.minecraft.block.Block;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.item.ItemBlock;
+import net.minecraft.client.item.TooltipContext;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
-/** Item form for the Redstone Gate, with its red menu name and binding-output description. */
-public class ItemBlockRedstoneGate extends ItemBlock {
+public class ItemBlockRedstoneGate extends BlockItem {
 
-    public ItemBlockRedstoneGate(Block block) {
-        super(block);
-        setCreativeTab(NTMDoors.TAB);
+    public ItemBlockRedstoneGate(Block block, Settings settings) {
+        super(block, settings);
     }
 
     @Override
-    public String getItemStackDisplayName(ItemStack stack) {
-        return TextFormatting.RED + Names.translationOr(getTranslationKey(stack) + ".name", "Redstone Gate");
+    public Text getName(ItemStack stack) {
+        return super.getName(stack).copy().formatted(Formatting.RED);
     }
 
     @Override
-    public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
-        Names.addDescription(tooltip,
-                "Bound activities from Keypads, Keycard Scanners,",
-                "and Safes will emit a redstone signal.",
-                "Sneak + Right Click with the Redstone Relay Key",
-                "to link other gates and doors to this one.");
+    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
+        tooltip.add(Text.literal("Bound activities from Keypads, Keycard Scanners,").formatted(Formatting.GRAY));
+        tooltip.add(Text.literal("and Safes will emit a redstone signal.").formatted(Formatting.GRAY));
+        tooltip.add(Text.literal("Sneak + Right Click with the Redstone Relay Key").formatted(Formatting.GRAY));
+        tooltip.add(Text.literal("to link other gates and doors to this one.").formatted(Formatting.GRAY));
     }
 }

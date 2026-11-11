@@ -1,8 +1,8 @@
 {
   "variants": {
-    "facing=north": { "model": "ntmdoors:speaker" },
-    "facing=east": { "model": "ntmdoors:speaker", "y": 90 },
-    "facing=south": { "model": "ntmdoors:speaker", "y": 180 },
-    "facing=west": { "model": "ntmdoors:speaker", "y": 270 }
+    "facing=north": { "model": "ntmdoors:block/speaker" },
+    "facing=east": { "model": "ntmdoors:block/speaker", "y": 90 },
+    "facing=south": { "model": "ntmdoors:block/speaker", "y": 180 },
+    "facing=west": { "model": "ntmdoors:block/speaker", "y": 270 }
   }
 }

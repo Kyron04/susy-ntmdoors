@@ -1,22 +1,25 @@
 package com.ntmdoors.client;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.HashSet;
 import java.util.Set;
 
-/** Client-only visibility toggles for the blue Motion Sensor bound-area projection. */
-@SideOnly(Side.CLIENT)
+@Environment(EnvType.CLIENT)
 public final class MotionSensorOverlay {
 
     private static final Set<BlockPos> VISIBLE = new HashSet<>();
 
+    private MotionSensorOverlay() {}
+
     public static void toggle(BlockPos pos) {
         if (pos == null) return;
-        BlockPos key = pos.toImmutable();
-        if (!VISIBLE.remove(key)) VISIBLE.add(key);
+        BlockPos p = pos.toImmutable();
+        if (!VISIBLE.add(p)) {
+            VISIBLE.remove(p);
+        }
     }
 
     public static boolean isVisible(BlockPos pos) {
@@ -25,8 +28,5 @@ public final class MotionSensorOverlay {
 
     public static void clear() {
         VISIBLE.clear();
-    }
-
-    private MotionSensorOverlay() {
     }
 }
