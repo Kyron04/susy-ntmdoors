@@ -75,36 +75,38 @@ public final class RedstoneMonocleOverlay {
         if (gateGate.isEmpty() && gateDoor.isEmpty() && deviceGate.isEmpty()) return;
 
         RenderManager renderManager = mc.getRenderManager();
+        // This event runs after the world is drawn, with lighting and fog already disabled.
+        // Do not touch those states: an exception or a missed restore here would leak a global
+        // GL state into the next frame and corrupt chunk rendering. Depth writes are already
+        // disabled while the depth test is off, so there is no need to change the depth mask.
         GlStateManager.pushMatrix();
-        GlStateManager.translate(-renderManager.viewerPosX, -renderManager.viewerPosY,
-                -renderManager.viewerPosZ);
-        GlStateManager.disableTexture2D();
-        GlStateManager.enableBlend();
-        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA,
-                GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
-                GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-        GlStateManager.disableLighting();
-        GlStateManager.disableCull();
-        GlStateManager.disableFog();
-        GlStateManager.depthMask(false);
-        // The monocle is a diagnostic overlay: keep the links visible through walls.
-        GlStateManager.disableDepth();
-        GL11.glLineWidth(2.0F);
+        try {
+            GlStateManager.translate(-renderManager.viewerPosX, -renderManager.viewerPosY,
+                    -renderManager.viewerPosZ);
+            GlStateManager.disableTexture2D();
+            GlStateManager.enableBlend();
+            GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA,
+                    GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+                    GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+            GlStateManager.disableCull();
+            // The monocle is a diagnostic overlay: keep the links visible through walls.
+            GlStateManager.disableDepth();
+            GL11.glLineWidth(2.0F);
 
-        draw(gateGate, GATE_GATE);
-        draw(gateDoor, GATE_DOOR);
-        draw(deviceGate, DEVICE_GATE);
-
-        GL11.glLineWidth(1.0F);
-        GlStateManager.enableDepth();
-        GlStateManager.depthMask(true);
-        GlStateManager.enableFog();
-        GlStateManager.enableCull();
-        GlStateManager.enableLighting();
-        GlStateManager.enableTexture2D();
-        GlStateManager.disableBlend();
-        GlStateManager.color(1F, 1F, 1F, 1F);
-        GlStateManager.popMatrix();
+            draw(gateGate, GATE_GATE);
+            draw(gateDoor, GATE_DOOR);
+            draw(deviceGate, DEVICE_GATE);
+        } finally {
+            // Always restore, even if a draw call throws. A leaked depth test or texture state
+            // is what turns this overlay into missing-chunk-looking visual corruption.
+            GL11.glLineWidth(1.0F);
+            GlStateManager.enableDepth();
+            GlStateManager.enableCull();
+            GlStateManager.enableTexture2D();
+            GlStateManager.disableBlend();
+            GlStateManager.color(1F, 1F, 1F, 1F);
+            GlStateManager.popMatrix();
+        }
     }
 
     private static void draw(List<Link> links, float[] colour) {
