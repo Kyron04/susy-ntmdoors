@@ -2,12 +2,14 @@ package com.ntmdoors.test.door;
 
 import com.ntmdoors.block.door.BlockDoorGeneric;
 import com.ntmdoors.block.door.DoorPart;
+import com.ntmdoors.block.door.ModDoors;
 import com.ntmdoors.block.entity.DoorBlockEntity;
 import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.DoorDecls;
 import com.ntmdoors.door.DoorPlacementGuard;
 import com.ntmdoors.door.DoorState;
 import net.minecraft.Bootstrap;
+import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
@@ -195,5 +197,33 @@ public class DoorPlacementAndTeardownTest {
                 assertTrue(originFound, "Origin (0,0,0) core must be present in multiblock cells of " + d.name);
             }
         }
+    }
+
+    @Test
+    @DisplayName("Verify Creative Broken Flag Lifecycle")
+    public void testCreativeBrokenFlagLifecycle() {
+        DoorDecl d = DoorDecls.VAULT_DOOR;
+        DoorBlockEntity be = createTestDoor(d, BlockPos.ORIGIN);
+
+        assertFalse(be.isCreativeBroken(), "Door must initially not be creative broken");
+        be.setCreativeBroken(true);
+        assertTrue(be.isCreativeBroken(), "Door must be marked as creative broken");
+        be.setCreativeBroken(false);
+        assertFalse(be.isCreativeBroken(), "Door can be reset from creative broken");
+    }
+
+    @Test
+    @DisplayName("Verify getDroppedStacks returns empty list for all parts")
+    public void testDroppedStacksEmpty() {
+        BlockDoorGeneric doorBlock = ModDoors.VAULT_DOOR;
+        BlockState dummyState = doorBlock.getDefaultState()
+                .with(BlockDoorGeneric.PART, DoorPart.DUMMY)
+                .with(BlockDoorGeneric.FACING, Direction.NORTH);
+        BlockState coreState = doorBlock.getDefaultState()
+                .with(BlockDoorGeneric.PART, DoorPart.CORE)
+                .with(BlockDoorGeneric.FACING, Direction.NORTH);
+
+        assertTrue(doorBlock.getDroppedStacks(dummyState, null).isEmpty(), "Dummy cell must drop 0 items");
+        assertTrue(doorBlock.getDroppedStacks(coreState, null).isEmpty(), "Core cell must drop 0 items from getDroppedStacks");
     }
 }

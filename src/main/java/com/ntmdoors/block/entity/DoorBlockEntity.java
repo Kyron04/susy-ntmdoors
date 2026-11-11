@@ -56,6 +56,7 @@ public class DoorBlockEntity extends BlockEntity {
     private int autoCloseTicks;
 
     private boolean dismantling;
+    private boolean creativeBroken = false;
     private boolean passUpdatePending;
 
     // Breach & Thermite
@@ -134,6 +135,14 @@ public class DoorBlockEntity extends BlockEntity {
         dismantling = true;
         DoorPlacementGuard.unregisterActive(this);
         return true;
+    }
+
+    public boolean isCreativeBroken() {
+        return creativeBroken;
+    }
+
+    public void setCreativeBroken(boolean creativeBroken) {
+        this.creativeBroken = creativeBroken;
     }
 
     // --- State Machine Ticker ---
@@ -277,6 +286,7 @@ public class DoorBlockEntity extends BlockEntity {
     }
 
     public void closeNow() {
+        if ((world != null && world.isClient) || breached || isThermiteFused()) return;
         queuedOpen = null;
         if (state == DoorState.OPEN || state == DoorState.OPENING) {
             startMove(DoorState.CLOSING);
@@ -284,6 +294,7 @@ public class DoorBlockEntity extends BlockEntity {
     }
 
     public void openNow() {
+        if ((world != null && world.isClient) || breached || isThermiteFused()) return;
         queuedOpen = null;
         autoCloseTicks = 0;
         if (state == DoorState.CLOSED || state == DoorState.CLOSING) {

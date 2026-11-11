@@ -157,12 +157,24 @@ public class BlockDoorGeneric extends BlockWithEntity {
     }
 
     @Override
+    public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
+        if (!world.isClient && player.isCreative()) {
+            DoorBlockEntity core = getCore(world, pos, state);
+            if (core != null) core.setCreativeBroken(true);
+        }
+        super.onBreak(world, pos, state, player);
+    }
+
+    @Override
     public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
         if (!state.isOf(newState.getBlock())) {
             if (!world.isClient) {
                 DoorBlockEntity core = getCore(world, pos, state);
                 if (core != null && core.beginDismantle()) {
                     core.unbindFromControllers();
+                    if (!core.isCreativeBroken()) {
+                        dropStack(world, pos, new ItemStack(this.asItem()));
+                    }
                     BlockPos corePos = core.getPos();
                     Direction facing = state.get(FACING);
                     for (BlockPos off : decl.getCells(facing)) {
@@ -256,6 +268,6 @@ public class BlockDoorGeneric extends BlockWithEntity {
 
     @Override
     public List<ItemStack> getDroppedStacks(BlockState state, LootContextParameterSet.Builder builder) {
-        return Collections.singletonList(new ItemStack(this.asItem()));
+        return Collections.emptyList();
     }
 }

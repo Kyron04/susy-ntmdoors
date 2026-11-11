@@ -51,15 +51,11 @@ public class ItemDoorBlock extends BlockItem {
         Direction facing = player != null ? player.getHorizontalFacing().getOpposite() : Direction.NORTH;
         BlockPos[] cells = door.decl.getCells(facing);
 
-        // Placement guard: check moving panels sweep
-        if (DoorPlacementGuard.blocksPlacement(world, origin)) {
-            return ActionResult.FAIL;
-        }
-
-        // Clearance check for all cells
+        // Clearance check and swept-volume guard for all cells
         for (BlockPos off : cells) {
             BlockPos p = origin.add(off);
             if (!world.isInBuildLimit(p) || !world.isChunkLoaded(p)) return ActionResult.FAIL;
+            if (DoorPlacementGuard.blocksPlacement(world, p)) return ActionResult.FAIL;
             if (player != null && !world.canPlayerModifyAt(player, p)) return ActionResult.FAIL;
             if (!world.getBlockState(p).isReplaceable()) return ActionResult.FAIL;
         }
