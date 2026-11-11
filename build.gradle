@@ -1,257 +1,55 @@
-buildscript {
-    repositories {
-        mavenCentral()
-        maven {
-            name = 'forge'
-            url = 'https://maven.minecraftforge.net/'
-        }
-        maven {
-            name = 'forge-snapshots'
-            url = 'https://maven.minecraftforge.net/releases/'
-        }
-    }
-    dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
-    }
+plugins {
+    id 'fabric-loom' version '1.6.12'
+    id 'maven-publish'
 }
 
-apply plugin: 'net.minecraftforge.gradle.forge'
+version = project.mod_version
+group = project.maven_group
 
-// Single source of truth for the jar version; see bumpVersion at the bottom of this file.
-version = project.property('mod_version')
-group = 'com.ntmdoors' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = 'ntmdoors'
-
-sourceCompatibility = targetCompatibility = '1.8'
-compileJava.options.encoding = 'UTF-8'
-
-minecraft {
-    // Last 1.12.2 Forge build that still ships the ForgeGradle 2.3 userdev artifact.
-    // Newer 14.23.5.28xx builds only publish universal jars and do not work with FG 2.3.
-    version = '1.12.2-14.23.5.2847'
-    runDir = 'run'
-    mappings = 'stable_39'
+base {
+    archivesName = project.archives_base_name
 }
 
 repositories {
     mavenCentral()
-    // Chisel 1.12.2-1.0.2.45 (CurseForge project 235279, file 2915375).
-    maven {
-        name = 'curseMaven'
-        url = 'https://cursemaven.com'
-    }
 }
 
 dependencies {
-    // Chisel is the only required mod dependency; its carving registry supplies the chisel groups.
-    deobfCompile 'curse.maven:chisel-235279:2915375'
-    // Chisel requires CTM at runtime; keep it on the dev client classpath.
-    deobfCompile 'curse.maven:ctm-267602:2915363'
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 }
 
 processResources {
-    // This will ensure that this task is redone when the versions change.
-    inputs.property 'version', project.version
-    inputs.property 'mcversion', project.minecraft.version
+    inputs.property "version", project.version
 
-    // Replace version and mcversion in mcmod.info.
-    from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
-        expand 'version': project.version, 'mcversion': project.minecraft.version
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
     }
 
-    // Copy everything else except mcmod.info.
-    from(sourceSets.main.resources.srcDirs) {
-        exclude 'mcmod.info'
-    }
-
-    // Cosmetic monitor wallpapers. Drop the source images in source-art/display using the
-    // names listed in its README; they are packaged under textures/display.
+    // Copy monitor wallpapers from source-art/display
     from('source-art/display') {
-        include '*.png'
-        include '*.jpg'
-        include '*.jpeg'
+        include '*.png', '*.jpg', '*.jpeg'
         into 'assets/ntmdoors/textures/display'
         rename { String name -> name.toLowerCase().replace(' ', '_') }
     }
-
-    // Model and blockstate JSON files are heavily pretty-printed for editing. Strip that
-    // whitespace from the packaged copies; Minecraft's parser does not need it.
-    doLast {
-        fileTree("$buildDir/resources/main/assets") {
-            include '**/*.json'
-        }.each { minifyJson(it) }
-    }
 }
 
-def minifyJson(File file) {
-    String text = file.getText('UTF-8')
-    StringBuilder out = new StringBuilder(text.length())
-    boolean inString = false
-    boolean escaped = false
-    for (int i = 0; i < text.length(); i++) {
-        char c = text.charAt(i)
-        if (inString) {
-            out.append(c)
-            if (escaped) {
-                escaped = false
-            } else if (c == '\\') {
-                escaped = true
-            } else if (c == '"') {
-                inString = false
-            }
-        } else if (c == '"') {
-            inString = true
-            out.append(c)
-        } else if (!Character.isWhitespace(c)) {
-            out.append(c)
-        }
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 17
+    it.options.encoding = "UTF-8"
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
     }
-    file.setText(out.toString(), 'UTF-8')
+    withSourcesJar()
 }
 
 jar {
-    manifest {
-        attributes([
-                'Specification-Title'     : archivesBaseName,
-                'Specification-Vendor'    : 'ntmdoors',
-                'Specification-Version'   : '1',
-                'Implementation-Title'    : project.name,
-                'Implementation-Version'  : project.version,
-                'Implementation-Vendor'   : 'ntmdoors'
-        ])
-    }
-    from('LICENSE.LESSER') {
-        into 'META-INF'
-    }
-    from('NOTICE') {
-        into 'META-INF'
+    from("LICENSE.LESSER") {
+        rename { "${it}_${project.archives_base_name}" }
     }
 }
-
-// ForgeGradle 2.3 downloads game assets from http://resources.download.minecraft.net, which now
-// rejects plain HTTP requests. Fetch the same objects over HTTPS before FG's getAssets task runs.
-def mcVersion = project.minecraft.version.split('-')[0]
-
-task downloadAssets {
-    group = 'forge'
-    description = 'Downloads the Minecraft asset objects over HTTPS for ForgeGradle 2.3.'
-    dependsOn 'getVersionJson'
-
-    doLast {
-        def cacheDir = new File(gradle.gradleUserHomeDir, 'caches/minecraft')
-        def versionJson = new File(cacheDir, "versionJsons/${mcVersion}.json")
-        if (!versionJson.isFile()) {
-            throw new GradleException("Missing ${versionJson}. Run ./gradlew getVersionJson first.")
-        }
-
-        def version = new groovy.json.JsonSlurper().parse(versionJson)
-        def assetIndex = version.assetIndex
-        if (assetIndex == null) {
-            throw new GradleException("No asset index in ${versionJson}.")
-        }
-
-        def indexFile = new File(cacheDir, "assets/indexes/${assetIndex.id}.json")
-        if (!indexFile.isFile() || indexFile.length() != (assetIndex.size as long)) {
-            indexFile.parentFile.mkdirs()
-            logger.lifecycle("Downloading asset index ${assetIndex.id}...")
-            new URL(assetIndex.url as String).openStream().withInputStream { input ->
-                indexFile.withOutputStream { output -> output << input }
-            }
-        }
-
-        def index = new groovy.json.JsonSlurper().parse(indexFile)
-        def objectsDir = new File(cacheDir, 'assets/objects')
-        int downloaded = 0
-        int failed = 0
-        int done = 0
-        int total = index.objects.size()
-
-        index.objects.each { name, entry ->
-            String hash = entry.hash as String
-            long size = entry.size as long
-            File target = new File(objectsDir, "${hash.substring(0, 2)}/${hash}")
-            if (!target.isFile() || target.length() != size) {
-                target.parentFile.mkdirs()
-                File partial = new File(target.path + '.part')
-                boolean ok = false
-                for (int attempt = 1; attempt <= 3 && !ok; attempt++) {
-                    try {
-                        new URL("https://resources.download.minecraft.net/${hash.substring(0, 2)}/${hash}").openStream().withStream { input ->
-                            partial.withOutputStream { output -> output << input }
-                        }
-                        if (partial.length() == size) {
-                            if (target.exists() && !target.delete()) {
-                                throw new IOException("Could not replace ${target}")
-                            }
-                            if (!partial.renameTo(target)) {
-                                throw new IOException("Could not move ${partial} to ${target}")
-                            }
-                            ok = true
-                            downloaded++
-                        }
-                    } catch (Exception ex) {
-                        partial.delete()
-                        if (attempt == 3) {
-                            failed++
-                            logger.warn("Could not download asset ${name}: ${ex.message}")
-                        } else {
-                            Thread.sleep(250L * attempt)
-                        }
-                    }
-                }
-            }
-            done++
-            if (done % 250 == 0) logger.lifecycle("Assets: ${done}/${total}")
-        }
-
-        logger.lifecycle("Assets ready: ${total - failed}/${total} objects (${downloaded} downloaded).")
-        if (failed > 0) {
-            logger.warn("${failed} asset(s) could not be downloaded; the game will run without them.")
-        }
-    }
-}
-
-afterEvaluate {
-    // Run before ForgeGradle's own (HTTP-only) asset downloader.
-    tasks.getAssets.dependsOn tasks.downloadAssets
-}
-
-/**
- * Every jar build advances the patch version, so a jar number is never reused. The bump runs after
- * the archive has been written: that jar (and the compiled @Mod annotation) carry the version from
- * gradle.properties, and the next build picks up the increment.
- */
-task bumpVersion {
-    group = 'build'
-    description = 'Increments mod_version in gradle.properties and NTMDoors.java for the next jar.'
-    // -PnoVersionBump keeps the current number, e.g. when rebuilding an existing release.
-    onlyIf { !project.hasProperty('noVersionBump') }
-
-    doLast {
-        def propsFile = file('gradle.properties')
-        def props = propsFile.getText('UTF-8')
-        def line = props.readLines().find { it.startsWith('mod_version=') }
-        if (line == null) {
-            throw new GradleException('gradle.properties has no mod_version')
-        }
-        def current = line.substring('mod_version='.length()).trim()
-        def parts = current.tokenize('.')
-        if (parts.size() != 3 || !parts.every { it.isInteger() }) {
-            throw new GradleException("mod_version is not MAJOR.MINOR.PATCH: ${current}")
-        }
-        def next = "${parts[0]}.${parts[1]}.${parts[2].toInteger() + 1}"
-        propsFile.setText(props.replace(line, 'mod_version=' + next), 'UTF-8')
-
-        def source = file('src/main/java/com/ntmdoors/NTMDoors.java')
-        def java = source.getText('UTF-8')
-        def updated = java.replace('version = "' + current + '"', 'version = "' + next + '"')
-        if (updated == java) {
-            throw new GradleException("Could not find version = \"${current}\" in NTMDoors.java")
-        }
-        source.setText(updated, 'UTF-8')
-        logger.lifecycle("Version ${current} built. Next jar will be ${next}.")
-    }
-}
-
-tasks.jar.finalizedBy bumpVersion

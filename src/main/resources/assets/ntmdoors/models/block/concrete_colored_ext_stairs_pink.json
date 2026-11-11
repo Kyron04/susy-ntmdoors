@@ -1,8 +1,0 @@
-{
-    "parent": "block/stairs",
-    "textures": {
-        "bottom": "ntmdoors:blocks/concrete_colored_ext.pink",
-        "top": "ntmdoors:blocks/concrete_colored_ext.pink",
-        "side": "ntmdoors:blocks/concrete_colored_ext.pink"
-    }
-}

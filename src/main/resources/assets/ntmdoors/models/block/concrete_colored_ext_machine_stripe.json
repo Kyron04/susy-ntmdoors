@@ -1,8 +1,0 @@
-{
-    "parent": "block/cube_bottom_top",
-    "textures": {
-        "top": "ntmdoors:blocks/concrete_colored_ext.machine",
-        "bottom": "ntmdoors:blocks/concrete_colored_ext.machine",
-        "side": "ntmdoors:blocks/concrete_colored_ext.machine_stripe"
-    }
-}

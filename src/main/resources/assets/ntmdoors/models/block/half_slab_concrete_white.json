@@ -1,8 +1,0 @@
-{
-    "parent": "block/half_slab",
-    "textures": {
-        "bottom": "ntmdoors:blocks/concrete_white",
-        "top": "ntmdoors:blocks/concrete_white",
-        "side": "ntmdoors:blocks/concrete_white"
-    }
-}

@@ -1,6 +1,0 @@
-{
-  "parent": "block/cube_all",
-  "textures": {
-    "all": "ntmdoors:blocks/hlblocks_crete_crete3_flr04"
-  }
-}

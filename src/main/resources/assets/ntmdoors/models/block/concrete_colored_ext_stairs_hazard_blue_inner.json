@@ -1,8 +1,0 @@
-{
-    "parent": "block/inner_stairs",
-    "textures": {
-        "bottom": "ntmdoors:blocks/concrete_colored_ext.hazard_blue",
-        "top": "ntmdoors:blocks/concrete_colored_ext.hazard_blue",
-        "side": "ntmdoors:blocks/concrete_colored_ext.hazard_blue"
-    }
-}

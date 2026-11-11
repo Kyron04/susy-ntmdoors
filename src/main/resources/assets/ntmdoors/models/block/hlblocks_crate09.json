@@ -1,8 +1,0 @@
-{
-  "parent": "block/cube_bottom_top",
-  "textures": {
-    "top": "ntmdoors:blocks/hlblocks_crate09_top",
-    "bottom": "ntmdoors:blocks/hlblocks_crate09_top",
-    "side": "ntmdoors:blocks/hlblocks_crate09"
-  }
-}
