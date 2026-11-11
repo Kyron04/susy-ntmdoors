@@ -28,6 +28,7 @@ public final class KeypadBlockEntityRenderer implements BlockEntityRenderer<Keyp
     public static final Identifier MODEL_ID = Identifier.of(NTMDoors.MOD_ID, "models/doors/keypad.obj");
     public static final Identifier TEX_KEYPAD = Identifier.of(NTMDoors.MOD_ID, "textures/models/doors/keypad.png");
     public static final Identifier TEX_SUCCESS = Identifier.of(NTMDoors.MOD_ID, "textures/models/doors/keypad_success.png");
+    public static final Identifier TEX_ERROR = Identifier.of(NTMDoors.MOD_ID, "textures/models/doors/keypad_error.png");
 
     private static final String[] BUTTON_GROUPS = {
             "K1", "K2", "K3", "K4", "K5", "K6", "K7", "K8", "K9", "KReset", "K0", "KReturn"
@@ -55,13 +56,25 @@ public final class KeypadBlockEntityRenderer implements BlockEntityRenderer<Keyp
         matrices.push();
         matrices.translate(0.5, 0, 0.5);
         matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(Facings.yaw(facing)));
+        matrices.translate(0, KeypadBlock.MODEL_OFFSET_Y, KeypadBlock.MODEL_OFFSET_Z);
+        matrices.scale((float) KeypadBlock.MODEL_SCALE_X, (float) KeypadBlock.MODEL_SCALE_Y, (float) KeypadBlock.MODEL_SCALE_Z);
 
+        KeypadBlockEntity.Feedback fb = be.getFeedback();
+        Identifier activeTex = TEX_KEYPAD;
+        if (fb == KeypadBlockEntity.Feedback.SUCCESS || fb == KeypadBlockEntity.Feedback.RESET_DONE) {
+            activeTex = TEX_SUCCESS;
+        } else if (fb == KeypadBlockEntity.Feedback.DENIED || fb == KeypadBlockEntity.Feedback.UNABLE) {
+            activeTex = TEX_ERROR;
+        }
+
+        VertexConsumer baseConsumer = vertexConsumers.getBuffer(ObjRenderer.getEntityCutoutNoCull(activeTex));
         VertexConsumer keypadConsumer = vertexConsumers.getBuffer(ObjRenderer.getEntityCutoutNoCull(TEX_KEYPAD));
         VertexConsumer successConsumer = vertexConsumers.getBuffer(ObjRenderer.getEntityCutoutNoCull(TEX_SUCCESS));
+        VertexConsumer errorConsumer = vertexConsumers.getBuffer(ObjRenderer.getEntityCutoutNoCull(TEX_ERROR));
 
         // Render Base Plate & Display Housing
-        ObjRenderer.renderGroup(matrices, keypadConsumer, model, "Keypad", light, overlay, null);
-        ObjRenderer.renderGroup(matrices, keypadConsumer, model, "Display", light, overlay, null);
+        ObjRenderer.renderGroup(matrices, baseConsumer, model, "Keypad", light, overlay, null);
+        ObjRenderer.renderGroup(matrices, baseConsumer, model, "Display", light, overlay, null);
 
         // Render 12 Buttons
         for (int i = 0; i < BUTTON_GROUPS.length; i++) {
@@ -70,16 +83,12 @@ public final class KeypadBlockEntityRenderer implements BlockEntityRenderer<Keyp
             if (pressed) {
                 matrices.translate(0, 0, 0.05);
             }
-            VertexConsumer consumer = pressed ? successConsumer : keypadConsumer;
+            VertexConsumer consumer = (activeTex == TEX_ERROR) ? errorConsumer : (pressed ? successConsumer : keypadConsumer);
             ObjRenderer.renderGroup(matrices, consumer, model, BUTTON_GROUPS[i], light, overlay, null);
             matrices.pop();
         }
 
         // Render In-World Button Glyphs
-        matrices.push();
-        matrices.translate(0, KeypadBlock.MODEL_OFFSET_Y, KeypadBlock.MODEL_OFFSET_Z);
-        matrices.scale((float) KeypadBlock.MODEL_SCALE_X, (float) KeypadBlock.MODEL_SCALE_Y, (float) KeypadBlock.MODEL_SCALE_Z);
-
         for (int i = 0; i < KeypadBlockEntity.BUTTON_LAYOUT.length; i++) {
             KeypadBlockEntity.Button btn = KeypadBlockEntity.BUTTON_LAYOUT[i];
             boolean pressed = be.getCooldown(i) > 0;
@@ -104,7 +113,6 @@ public final class KeypadBlockEntityRenderer implements BlockEntityRenderer<Keyp
         int color1 = 0xFFFFFFFF;
         int color2 = 0xFFFFEE00;
 
-        KeypadBlockEntity.Feedback fb = be.getFeedback();
         if (fb != KeypadBlockEntity.Feedback.NONE) {
             switch (fb) {
                 case CODE_SET -> { line1 = "Code Set!"; color1 = 0xFFFFFF00; }
@@ -142,7 +150,6 @@ public final class KeypadBlockEntityRenderer implements BlockEntityRenderer<Keyp
         }
 
         matrices.pop(); // LCD
-        matrices.pop(); // Plate
         matrices.pop(); // Model base
     }
 }

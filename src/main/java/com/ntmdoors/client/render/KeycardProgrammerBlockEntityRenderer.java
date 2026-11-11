@@ -69,7 +69,7 @@ public final class KeycardProgrammerBlockEntityRenderer implements BlockEntityRe
         matrices.push();
         matrices.translate(-0.17F, 0.354F, -0.08F);
         matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(90.0F - SCREEN_TILT));
-        matrices.scale(0.0028F, -0.0028F, 0.0028F);
+        matrices.scale(-0.0028F, -0.0028F, 0.0028F);
 
         String title = "Keycard Programmer N4";
         String subtitle = "Insert keycard";

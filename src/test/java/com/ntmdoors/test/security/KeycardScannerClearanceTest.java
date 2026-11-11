@@ -232,4 +232,47 @@ public class KeycardScannerClearanceTest {
         runScanTicks(scanner);
         assertEquals(KeycardScannerBlockEntity.State.GRANTED, scanner.getState(), "Snapshot must isolate scan from item stack mutations");
     }
+
+    @Test
+    @DisplayName("Verify Operator and Creative keycards swipe clearance")
+    public void testOperatorAndCreativeCardSwipe() {
+        KeycardScannerBlockEntity scanner = createScanner();
+        scanner.assignKey("HQ", "1234567890");
+
+        // 1. Operator Keycard with matching key
+        ItemStack operatorCard = new ItemStack(ModItems.CARD_OPERATOR);
+        PrivateKeys.add(operatorCard, "HQ", "1234567890");
+
+        scanner.startScan(operatorCard, ItemStack.EMPTY, false, UUID.randomUUID());
+        assertEquals(KeycardScannerBlockEntity.State.SCANNING, scanner.getState());
+        runScanTicks(scanner);
+        assertEquals(KeycardScannerBlockEntity.State.GRANTED, scanner.getState(), "Operator card with valid key must be GRANTED");
+        resetToIdle(scanner);
+
+        // 2. Operator Keycard without matching key
+        ItemStack invalidOperator = new ItemStack(ModItems.CARD_OPERATOR);
+        PrivateKeys.add(invalidOperator, "Wrong", "9999999999");
+        scanner.startScan(invalidOperator, ItemStack.EMPTY, false, UUID.randomUUID());
+        runScanTicks(scanner);
+        assertEquals(KeycardScannerBlockEntity.State.DENIED, scanner.getState(), "Operator card without matching key must be DENIED");
+        resetToIdle(scanner);
+
+        // 3. Creative Keycard swipe always granted
+        ItemStack creativeCard = new ItemStack(ModItems.CARD_CREATIVE);
+        scanner.startScan(creativeCard, ItemStack.EMPTY, true, UUID.randomUUID());
+        runScanTicks(scanner);
+        assertEquals(KeycardScannerBlockEntity.State.GRANTED, scanner.getState(), "Creative card must be GRANTED");
+    }
+
+    @Test
+    @DisplayName("Verify Screwdriver crafting recipe JSON definition")
+    public void testScrewdriverRecipeDefinition() throws Exception {
+        java.io.InputStream stream = getClass().getResourceAsStream("/data/ntmdoors/recipes/screwdriver.json");
+        assertNotNull(stream, "screwdriver.json recipe must exist in /data/ntmdoors/recipes/");
+        String content = new String(stream.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue(content.contains("ntmdoors:screwdriver"), "Recipe must output ntmdoors:screwdriver");
+        assertTrue(content.contains("minecraft:iron_ingot"), "Recipe must use iron ingot");
+        assertTrue(content.contains("minecraft:stick"), "Recipe must use stick");
+        assertTrue(content.contains("minecraft:crafting_shaped"), "Recipe must be shaped crafting");
+    }
 }

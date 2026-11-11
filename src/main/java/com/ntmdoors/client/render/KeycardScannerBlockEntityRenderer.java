@@ -49,6 +49,8 @@ public final class KeycardScannerBlockEntityRenderer implements BlockEntityRende
         matrices.push();
         matrices.translate(0.5, 0, 0.5);
         matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(Facings.yaw(facing)));
+        matrices.translate(0, KeycardScannerBlock.MODEL_OFFSET_Y, KeycardScannerBlock.MODEL_OFFSET_Z);
+        matrices.scale((float) KeycardScannerBlock.MODEL_SCALE_X, (float) KeycardScannerBlock.MODEL_SCALE_Y, (float) KeycardScannerBlock.MODEL_SCALE_Z);
 
         VertexConsumer consumer = vertexConsumers.getBuffer(ObjRenderer.getEntityCutoutNoCull(TEX_SCANNER));
 

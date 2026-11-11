@@ -4,6 +4,7 @@ import com.ntmdoors.block.entity.KeycardScannerBlockEntity;
 import com.ntmdoors.block.entity.ModBlockEntities;
 import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.item.ItemOperatorKeycard;
+import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.item.ItemScrewdriver;
 import com.ntmdoors.util.Facings;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
@@ -109,12 +110,20 @@ public class KeycardScannerBlock extends BlockWithEntity {
         if (!(be instanceof KeycardScannerBlockEntity scanner)) return ActionResult.PASS;
 
         ItemStack held = player.getStackInHand(hand);
-        if (held.getItem() instanceof ItemScrewdriver || held.getItem() instanceof ItemOperatorKeycard || held.getItem() instanceof ItemCreativeKeycard) {
+        if (held.getItem() instanceof ItemScrewdriver) {
             return ActionResult.PASS;
         }
 
-        scanner.useCard(player);
-        return ActionResult.SUCCESS;
+        if (player.isSneaking() && (held.getItem() instanceof ItemOperatorKeycard || held.getItem() instanceof ItemCreativeKeycard)) {
+            return ActionResult.PASS;
+        }
+
+        if (held.getItem() instanceof ItemRfidCard || player.getOffHandStack().getItem() instanceof ItemRfidCard) {
+            scanner.useCard(player);
+            return ActionResult.SUCCESS;
+        }
+
+        return ActionResult.PASS;
     }
 
     @Nullable

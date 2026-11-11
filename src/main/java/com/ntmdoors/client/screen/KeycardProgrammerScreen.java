@@ -34,6 +34,9 @@ public class KeycardProgrammerScreen extends HandledScreen<KeycardProgrammerScre
     };
 
     private int currentTab = 0;
+    private ButtonWidget bindButton1;
+    private ButtonWidget bindButton2;
+    private ButtonWidget backupButton;
 
     public KeycardProgrammerScreen(KeycardProgrammerScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
@@ -57,24 +60,33 @@ public class KeycardProgrammerScreen extends HandledScreen<KeycardProgrammerScre
                 .dimensions(x + 117, y + 16, tabWidth, tabHeight).build());
 
         // Page 0: Bind Buttons
-        addDrawableChild(ButtonWidget.builder(Text.literal("Bind"), b -> {
+        this.bindButton1 = addDrawableChild(ButtonWidget.builder(Text.literal("Bind"), b -> {
             if (currentTab == 0) ModMessages.sendProgrammerAction((byte) 0, 0);
         }).dimensions(x + 40, y + 38, 42, 18).build());
 
-        addDrawableChild(ButtonWidget.builder(Text.literal("Bind"), b -> {
+        this.bindButton2 = addDrawableChild(ButtonWidget.builder(Text.literal("Bind"), b -> {
             if (currentTab == 0) ModMessages.sendProgrammerAction((byte) 0, 1);
         }).dimensions(x + 40, y + 78, 42, 18).build());
 
         // Page 2: Backup Button
-        addDrawableChild(ButtonWidget.builder(Text.literal("Start Backup"), b -> {
+        this.backupButton = addDrawableChild(ButtonWidget.builder(Text.literal("Start Backup"), b -> {
             if (currentTab == 2) ModMessages.sendProgrammerAction((byte) 2, 0);
         }).dimensions(x + 48, y + 39, 80, 18).build());
+
+        updateButtonVisibility();
     }
 
     private void setTab(int tab) {
         this.currentTab = tab;
         handler.setPage(tab);
         ModMessages.sendProgrammerPage((byte) tab);
+        updateButtonVisibility();
+    }
+
+    private void updateButtonVisibility() {
+        if (bindButton1 != null) bindButton1.visible = (currentTab == 0);
+        if (bindButton2 != null) bindButton2.visible = (currentTab == 0);
+        if (backupButton != null) backupButton.visible = (currentTab == 2);
     }
 
     @Override
@@ -133,7 +145,7 @@ public class KeycardProgrammerScreen extends HandledScreen<KeycardProgrammerScre
                 int col = i % 8;
                 int row = i / 8;
                 int px = startX + col * 19;
-                int py = startY + row * 10;
+                int py = startY + row * 18;
                 ItemRfidCard card = ModItems.PROGRAMMER_CARDS.get(i);
                 context.drawItem(new ItemStack(card), px, py);
             }
@@ -157,7 +169,7 @@ public class KeycardProgrammerScreen extends HandledScreen<KeycardProgrammerScre
                 int col = i % 8;
                 int row = i / 8;
                 int px = startX + col * 19;
-                int py = startY + row * 10;
+                int py = startY + row * 18;
                 if (mouseX >= px && mouseX < px + 16 && mouseY >= py && mouseY < py + 16) {
                     ModMessages.sendProgrammerAction((byte) 1, i);
                     return true;
