@@ -234,6 +234,12 @@ public class BlockDoorGeneric extends Block {
                                       List<AxisAlignedBB> collidingBoxes, @Nullable Entity entity, boolean isActualState) {
         // A fully open pass-through cell has no collision at all, including its frame cells.
         if (decl.passFallingWhenOpen && state.getValue(PASS)) return;
+        // Open doors should never catch mobs on their frame/leaf edges. Players still collide with
+        // the open frame, but the doorway itself is already clear.
+        if (entity instanceof EntityLiving && !(entity instanceof EntityPlayer)
+                && isPassableNow(state, world, pos)) {
+            return;
+        }
         for (AxisAlignedBB b : getLocalBoxes(state, world, pos, false, 1F)) {
             addCollisionBoxToList(pos, entityBox, collidingBoxes, b);
         }
@@ -294,12 +300,28 @@ public class BlockDoorGeneric extends Block {
      */
     @Override
     public AxisAlignedBB getCollisionBoundingBox(IBlockState state, IBlockAccess world, BlockPos pos) {
-        if (decl.passFallingWhenOpen && state.getValue(PASS)) return NULL_AABB;
+        // An open door cell must not advertise the union of its frame boxes to pathfinders.
+        // The union spans the whole doorway even when the middle is clear, which makes mobs
+        // treat the open doorway as a solid wall. Physical collision still uses the individual
+        // boxes from addCollisionBoxToList.
+        if (isPassableNow(state, world, pos)) return NULL_AABB;
         List<AxisAlignedBB> boxes = getLocalBoxes(state, world, pos, false, 1F);
         if (boxes.isEmpty()) return NULL_AABB;
         AxisAlignedBB u = boxes.get(0);
         for (int i = 1; i < boxes.size(); i++) u = u.union(boxes.get(i));
         return u;
+    }
+
+    /** True when the door is open/breached enough to be walked and pathed through. */
+    private boolean isPassableNow(IBlockState state, IBlockAccess world, BlockPos pos) {
+        if (decl.passFallingWhenOpen && state.getValue(PASS)) return true;
+        TileEntityDoorGeneric core = getCore(world, pos, state);
+        return core != null && (core.isBreached() || core.getOpenFraction(1F) > 0.5F);
+    }
+
+    @Override
+    public boolean isPassable(IBlockAccess world, BlockPos pos) {
+        return isPassableNow(world.getBlockState(pos), world, pos);
     }
 
     /** Skip open pass-through cells entirely when tracing blocks or collecting entity collision. */
@@ -339,11 +361,9 @@ public class BlockDoorGeneric extends Block {
      */
     @Override
     public PathNodeType getAiPathNodeType(IBlockState state, IBlockAccess world, BlockPos pos, @Nullable EntityLiving entity) {
-        TileEntityDoorGeneric core = getCore(world, pos, state);
-        if (core != null && (core.isBreached() || core.getOpenFraction(1F) > 0.5F)) {
-            return PathNodeType.DOOR_OPEN;
-        }
-        return PathNodeType.DOOR_IRON_CLOSED;
+        // WALKABLE rather than DOOR_OPEN: some navigators disable door entry, and the cell is
+        // physically passable once the panel has cleared the middle. Closed doors stay iron.
+        return isPassableNow(state, world, pos) ? PathNodeType.WALKABLE : PathNodeType.DOOR_IRON_CLOSED;
     }
 
     @Override

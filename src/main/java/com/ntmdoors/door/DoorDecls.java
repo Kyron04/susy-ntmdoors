@@ -672,6 +672,24 @@ public final class DoorDecls {
             "models/doors/office_door_2_double.obj", "textures/models/doors/office_door_2.png",
             false);
 
+    /**
+     * Brown single office door based on the Black Mesa office doors. Plain wood leaf, square
+     * rosette and a straight lever on each face.
+     */
+    public static final DoorDecl OFFICE_DOOR_3 = officeDoorSingle(
+            "office_door_3", "Office door 3",
+            "models/doors/office_door_3.obj", "textures/models/doors/office_door_3.png",
+            false);
+
+    /**
+     * Two mirrored brown office leaves, matching the office double layout. The straight levers
+     * sit near the meeting edge on both faces.
+     */
+    public static final DoorDecl OFFICE_DOOR_3_DOUBLE = officeDoorDouble(
+            "office_door_3_double", "Office door 3 (Double)",
+            "models/doors/office_door_3_double.obj", "textures/models/doors/office_door_3.png",
+            false);
+
     private DoorDecls() {
     }
 }
