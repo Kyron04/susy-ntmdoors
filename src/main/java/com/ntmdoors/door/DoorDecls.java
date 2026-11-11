@@ -562,119 +562,115 @@ public final class DoorDecls {
             .sounds(null, SND_GARAGE_MOVE, SND_GARAGE_STOP)
             .anim("plate", PartAnim.translate(0, 3, 0, 0F, 1F)));
 
+    // ------------------------------------------------------------ office door family
+    //
+    // Black Mesa style office doors share the same frame, swing behaviour and latch sounds.
+    // New variants only need id, display name, model/texture paths, and whether the metal
+    // threshold is a clickable selection box (older office doors have it; thresholdless
+    // variants do not).
+
+    /** Common base for a 1x2 single office door (leaf hinged on the right jamb, swings ~90°). */
+    private static DoorDecl officeDoorSingle(String id, String displayName, String modelPath,
+                                             String texturePath, boolean thresholdSelection) {
+        DoorDecl d = new DoorDecl(id)
+                .footprint(0, 0, 0, 1, -1, 0).times(30, 30).strength(8F, 1200F)
+                .displayName(displayName)
+                // The leaf follows its hinge rotation. Eight slices keep the moving AABB close to
+                // the panel as it sweeps through the front clearance cell.
+                .movingBox("Door", box(-0.40, 0.02, -0.04, 0.40, 1.88, 0.04), 8)
+                // Fixed jambs, head and rear stops, flush against the front edge of the cell.
+                .open(box(-0.50, 0.00, -0.50, -0.40, 2.00, -0.30),
+                        box(0.40, 0.00, -0.50, 0.50, 2.00, -0.30),
+                        box(-0.50, 1.90, -0.50, 0.50, 2.00, -0.30),
+                        box(-0.40, 0.02, -0.36, -0.36, 1.90, -0.30),
+                        box(0.36, 0.02, -0.36, 0.40, 1.90, -0.30),
+                        box(-0.36, 1.86, -0.36, 0.36, 1.90, -0.30))
+                .modelPath(modelPath, texturePath)
+                .modelYaw(0F)
+                .modelOffset(0, 0, -0.4)
+                // The open leaf reaches about 0.8 blocks in front of the frame.
+                .renderRadius(2.0)
+                .soundVolume(1.0F)
+                // The latch clicks as the door releases; closing clicks again when it seats.
+                .soundsOpen(SND_LATCH, null, null)
+                .soundsClose(null, null, SND_LATCH)
+                .anim("Door", PartAnim.rotate(-90, 0, 1, 0, 0.395, 0, 0, 0F, 1F));
+        if (thresholdSelection) {
+            // Clickable threshold at the base of the frame; the clearance cell stays unselectable.
+            d.openSelectionOnly(box(-0.40, 0.00, -0.50, 0.40, 0.02, -0.30));
+        }
+        return reg(d);
+    }
+
+    /** Common base for a 2x2 double office door (mirrored leaves hinged at the outer jambs). */
+    private static DoorDecl officeDoorDouble(String id, String displayName, String modelPath,
+                                             String texturePath, boolean thresholdSelection) {
+        DoorDecl d = new DoorDecl(id)
+                .footprint(0, 1, 0, 1, -1, 0).times(30, 30).strength(8F, 1200F)
+                .displayName(displayName)
+                // The leaves meet at x=0 and are hinged at the outer edges.
+                .movingBox("DoorRight", box(0.00, 0.02, -0.04, 0.90, 1.88, 0.04), 8)
+                .movingBox("DoorLeft", box(-0.90, 0.02, -0.04, 0.00, 1.88, 0.04), 8)
+                // Fixed frame, sitting flush against the front edge of the two cells.
+                .open(box(-0.50, 0.00, -0.50, -0.40, 2.00, -0.30),
+                        box(1.40, 0.00, -0.50, 1.50, 2.00, -0.30),
+                        box(-0.50, 1.90, -0.50, 1.50, 2.00, -0.30),
+                        box(-0.40, 0.02, -0.36, -0.36, 1.90, -0.30),
+                        box(1.36, 0.02, -0.36, 1.40, 1.90, -0.30),
+                        box(-0.36, 1.86, -0.36, 1.36, 1.90, -0.30))
+                .modelPath(modelPath, texturePath)
+                .modelYaw(0F)
+                // Centre the two-block model on the boundary between the core and its right neighbour.
+                .modelOffset(0.5, 0, -0.4)
+                .renderRadius(3.0)
+                .soundVolume(1.0F)
+                .soundsOpen(SND_LATCH, null, null)
+                .soundsClose(null, null, SND_LATCH)
+                .anim("DoorRight", PartAnim.rotate(-90, 0, 1, 0, 0.90, 0, 0, 0F, 1F))
+                .anim("DoorLeft", PartAnim.rotate(90, 0, 1, 0, -0.90, 0, 0, 0F, 1F));
+        if (thresholdSelection) {
+            d.openSelectionOnly(box(-0.40, 0.00, -0.50, 1.40, 0.02, -0.30));
+        }
+        return reg(d);
+    }
+
     /**
      * 1x2 Black Mesa style office door. The leaf is hinged on the left and swings toward the
      * front of the door. The footprint is two cells deep so the open leaf has a real cell to
      * occupy; the cell in front of the closed door is clear and can be walked through.
      */
-    public static final DoorDecl BLACK_MESA_DOOR = reg(new DoorDecl("black_mesa_door")
-            .footprint(0, 0, 0, 1, -1, 0).times(30, 30).strength(8F, 1200F)
-            .displayName("Office door 1")
-            // The leaf follows its hinge rotation. Eight slices keep the moving AABB close to
-            // the panel as it sweeps through the front clearance cell.
-            .movingBox("Door", box(-0.40, 0.02, -0.04, 0.40, 1.88, 0.04), 8)
-            // Fixed jambs, head, rear stops and the metal threshold. The whole assembly sits
-            // against the front edge of the cell, on the side nearest the player placing it.
-            .open(box(-0.50, 0.00, -0.50, -0.40, 2.00, -0.30),
-                    box(0.40, 0.00, -0.50, 0.50, 2.00, -0.30),
-                    box(-0.50, 1.90, -0.50, 0.50, 2.00, -0.30),
-                    box(-0.40, 0.02, -0.36, -0.36, 1.90, -0.30),
-                    box(0.36, 0.02, -0.36, 0.40, 1.90, -0.30),
-                    box(-0.36, 1.86, -0.36, 0.36, 1.90, -0.30))
-            // The threshold is clickable at the base of the frame. The empty clearance cell in
-            // front deliberately has no selection box of its own.
-            .openSelectionOnly(box(-0.40, 0.00, -0.50, 0.40, 0.02, -0.30))
-            .modelPath("models/doors/black_mesa_door.obj", "textures/models/doors/black_mesa_door.png")
-            .modelYaw(0F)
-            .modelOffset(0, 0, -0.4)
-            // The open leaf reaches about 0.8 blocks in front of the frame.
-            .renderRadius(2.0)
-            .soundVolume(1.0F)
-            // The latch clicks as the door releases; closing clicks again when it seats.
-            .soundsOpen(SND_LATCH, null, null)
-            .soundsClose(null, null, SND_LATCH)
-            .anim("Door", PartAnim.rotate(-90, 0, 1, 0, 0.395, 0, 0, 0F, 1F)));
+    public static final DoorDecl BLACK_MESA_DOOR = officeDoorSingle(
+            "black_mesa_door", "Office door 1",
+            "models/doors/black_mesa_door.obj", "textures/models/doors/black_mesa_door.png",
+            true);
 
     /**
      * 2x2 double office door. Two mirrored leaves meet in the middle; the right leaf is hinged
      * on the right jamb and the left leaf on the left jamb, so both swing toward the player.
      * The footprint is two cells wide and one cell deep for the open leaves.
      */
-    public static final DoorDecl OFFICE_DOOR_1_DOUBLE = reg(new DoorDecl("office_door_1_double")
-            .footprint(0, 1, 0, 1, -1, 0).times(30, 30).strength(8F, 1200F)
-            .displayName("Office door 1 (Double)")
-            // The leaves meet at x=0 and are hinged at the outer edges.
-            .movingBox("DoorRight", box(0.00, 0.02, -0.04, 0.90, 1.88, 0.04), 8)
-            .movingBox("DoorLeft", box(-0.90, 0.02, -0.04, 0.00, 1.88, 0.04), 8)
-            // Fixed frame, sitting flush against the front edge of the two cells.
-            .open(box(-0.50, 0.00, -0.50, -0.40, 2.00, -0.30),
-                    box(1.40, 0.00, -0.50, 1.50, 2.00, -0.30),
-                    box(-0.50, 1.90, -0.50, 1.50, 2.00, -0.30),
-                    box(-0.40, 0.02, -0.36, -0.36, 1.90, -0.30),
-                    box(1.36, 0.02, -0.36, 1.40, 1.90, -0.30),
-                    box(-0.36, 1.86, -0.36, 1.36, 1.90, -0.30))
-            .openSelectionOnly(box(-0.40, 0.00, -0.50, 1.40, 0.02, -0.30))
-            .modelPath("models/doors/office_door_1_double.obj",
-                    "textures/models/doors/office_door_1_double.png")
-            .modelYaw(0F)
-            // Centre the two-block model on the boundary between the core and its right neighbour.
-            .modelOffset(0.5, 0, -0.4)
-            .renderRadius(3.0)
-            .soundVolume(1.0F)
-            .soundsOpen(SND_LATCH, null, null)
-            .soundsClose(null, null, SND_LATCH)
-            .anim("DoorRight", PartAnim.rotate(-90, 0, 1, 0, 0.90, 0, 0, 0F, 1F))
-            .anim("DoorLeft", PartAnim.rotate(90, 0, 1, 0, -0.90, 0, 0, 0F, 1F)));
+    public static final DoorDecl OFFICE_DOOR_1_DOUBLE = officeDoorDouble(
+            "office_door_1_double", "Office door 1 (Double)",
+            "models/doors/office_door_1_double.obj", "textures/models/doors/office_door_1_double.png",
+            true);
 
     /**
-     * Red single office door based on the Black Mesa fire/office doors. It reuses the Office
-     * door 1 frame and swing behaviour, with a wire-glass window, panic bar and vertical latch
-     * rod on the leaf.
+     * Red single office door based on the Black Mesa fire/office doors. It reuses the office
+     * frame and swing behaviour, with a wire-glass window, panic bar and vertical latch rod.
      */
-    public static final DoorDecl OFFICE_DOOR_2 = reg(new DoorDecl("office_door_2")
-            .footprint(0, 0, 0, 1, -1, 0).times(30, 30).strength(8F, 1200F)
-            .displayName("Office door 2")
-            .movingBox("Door", box(-0.40, 0.02, -0.04, 0.40, 1.88, 0.04), 8)
-            .open(box(-0.50, 0.00, -0.50, -0.40, 2.00, -0.30),
-                    box(0.40, 0.00, -0.50, 0.50, 2.00, -0.30),
-                    box(-0.50, 1.90, -0.50, 0.50, 2.00, -0.30),
-                    box(-0.40, 0.02, -0.36, -0.36, 1.90, -0.30),
-                    box(0.36, 0.02, -0.36, 0.40, 1.90, -0.30),
-                    box(-0.36, 1.86, -0.36, 0.36, 1.90, -0.30))
-            .modelPath("models/doors/office_door_2.obj", "textures/models/doors/office_door_2.png")
-            .modelYaw(0F)
-            .modelOffset(0, 0, -0.4)
-            .renderRadius(2.0)
-            .soundVolume(1.0F)
-            .soundsOpen(SND_LATCH, null, null)
-            .soundsClose(null, null, SND_LATCH)
-            .anim("Door", PartAnim.rotate(-90, 0, 1, 0, 0.395, 0, 0, 0F, 1F)));
+    public static final DoorDecl OFFICE_DOOR_2 = officeDoorSingle(
+            "office_door_2", "Office door 2",
+            "models/doors/office_door_2.obj", "textures/models/doors/office_door_2.png",
+            false);
 
     /**
-     * Two mirrored red office leaves, matching the Office door 1 double layout. The leaves meet
-     * in the middle and swing outward; the hinges are part of the static frame.
+     * Two mirrored red office leaves, matching the office double layout. The leaves meet in the
+     * middle and swing outward; the hinges are part of the static frame.
      */
-    public static final DoorDecl OFFICE_DOOR_2_DOUBLE = reg(new DoorDecl("office_door_2_double")
-            .footprint(0, 1, 0, 1, -1, 0).times(30, 30).strength(8F, 1200F)
-            .displayName("Office door 2 (Double)")
-            .movingBox("DoorRight", box(0.00, 0.02, -0.04, 0.90, 1.88, 0.04), 8)
-            .movingBox("DoorLeft", box(-0.90, 0.02, -0.04, 0.00, 1.88, 0.04), 8)
-            .open(box(-0.50, 0.00, -0.50, -0.40, 2.00, -0.30),
-                    box(1.40, 0.00, -0.50, 1.50, 2.00, -0.30),
-                    box(-0.50, 1.90, -0.50, 1.50, 2.00, -0.30),
-                    box(-0.40, 0.02, -0.36, -0.36, 1.90, -0.30),
-                    box(1.36, 0.02, -0.36, 1.40, 1.90, -0.30),
-                    box(-0.36, 1.86, -0.36, 1.36, 1.90, -0.30))
-            .modelPath("models/doors/office_door_2_double.obj",
-                    "textures/models/doors/office_door_2.png")
-            .modelYaw(0F)
-            .modelOffset(0.5, 0, -0.4)
-            .renderRadius(3.0)
-            .soundVolume(1.0F)
-            .soundsOpen(SND_LATCH, null, null)
-            .soundsClose(null, null, SND_LATCH)
-            .anim("DoorRight", PartAnim.rotate(-90, 0, 1, 0, 0.90, 0, 0, 0F, 1F))
-            .anim("DoorLeft", PartAnim.rotate(90, 0, 1, 0, -0.90, 0, 0, 0F, 1F)));
+    public static final DoorDecl OFFICE_DOOR_2_DOUBLE = officeDoorDouble(
+            "office_door_2_double", "Office door 2 (Double)",
+            "models/doors/office_door_2_double.obj", "textures/models/doors/office_door_2.png",
+            false);
 
     private DoorDecls() {
     }
