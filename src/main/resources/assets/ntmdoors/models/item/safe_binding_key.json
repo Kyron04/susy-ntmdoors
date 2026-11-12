@@ -1,6 +1,6 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "ntmdoors:items/safe_binding_key"
+    "layer0": "ntmdoors:item/safe_binding_key"
   }
 }

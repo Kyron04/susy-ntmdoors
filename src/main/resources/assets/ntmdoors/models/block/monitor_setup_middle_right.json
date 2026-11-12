@@ -3,18 +3,18 @@
     "gui_light":  "front",
     "ambientocclusion":  true,
     "textures":  {
-                     "particle":  "ntmdoors:blocks/desk_wood",
-                     "wood":  "ntmdoors:blocks/desk_wood",
-                     "frame":  "ntmdoors:blocks/desk_frame",
-                     "bezel":  "ntmdoors:blocks/monitor_bezel",
-                     "back":  "ntmdoors:blocks/monitor_back",
-                     "screen":  "ntmdoors:blocks/monitor_screen",
-                     "led":  "ntmdoors:blocks/monitor_led",
-                     "keyboard":  "ntmdoors:blocks/keyboard",
-                     "mouse":  "ntmdoors:blocks/mouse",
-                     "mouse_wheel":  "ntmdoors:blocks/mouse_wheel",
-                     "mousepad":  "ntmdoors:blocks/mousepad",
-                     "keycap":  "ntmdoors:blocks/keycap"
+                     "particle":  "ntmdoors:block/desk_wood",
+                     "wood":  "ntmdoors:block/desk_wood",
+                     "frame":  "ntmdoors:block/desk_frame",
+                     "bezel":  "ntmdoors:block/monitor_bezel",
+                     "back":  "ntmdoors:block/monitor_back",
+                     "screen":  "ntmdoors:block/monitor_screen",
+                     "led":  "ntmdoors:block/monitor_led",
+                     "keyboard":  "ntmdoors:block/keyboard",
+                     "mouse":  "ntmdoors:block/mouse",
+                     "mouse_wheel":  "ntmdoors:block/mouse_wheel",
+                     "mousepad":  "ntmdoors:block/mousepad",
+                     "keycap":  "ntmdoors:block/keycap"
                  },
     "elements":  [
                      {

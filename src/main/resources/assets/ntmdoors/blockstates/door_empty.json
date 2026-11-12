@@ -1,1 +1,7 @@
-{ "variants": { "normal": { "model": "ntmdoors:door_empty" } } }
+{
+  "variants": {
+    "": {
+      "model": "ntmdoors:block/door_empty"
+    }
+  }
+}

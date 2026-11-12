@@ -1,6 +1,6 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "ntmdoors:items/terminal_backup_key"
+    "layer0": "ntmdoors:item/terminal_backup_key"
   }
 }

@@ -1,6 +1,6 @@
 {
   "parent": "ntmdoors:item/rfid_card_base",
   "textures": {
-    "layer0": "ntmdoors:items/googa_security_keycard"
+    "layer0": "ntmdoors:item/googa_security_keycard"
   }
 }

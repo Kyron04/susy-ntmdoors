@@ -2,13 +2,13 @@
   "parent": "block/block",
   "gui_light": "front",
   "textures": {
-    "particle": "ntmdoors:blocks/sensor_plate",
-    "plate": "ntmdoors:blocks/sensor_plate",
-    "body": "ntmdoors:blocks/sensor_body",
-    "bezel": "ntmdoors:blocks/sensor_bezel",
-    "lens": "ntmdoors:blocks/sensor_lens",
-    "led": "ntmdoors:blocks/sensor_led_green",
-    "screw": "ntmdoors:blocks/sensor_screw"
+    "particle": "ntmdoors:block/sensor_plate",
+    "plate": "ntmdoors:block/sensor_plate",
+    "body": "ntmdoors:block/sensor_body",
+    "bezel": "ntmdoors:block/sensor_bezel",
+    "lens": "ntmdoors:block/sensor_lens",
+    "led": "ntmdoors:block/sensor_led_green",
+    "screw": "ntmdoors:block/sensor_screw"
   },
   "elements": [
     {

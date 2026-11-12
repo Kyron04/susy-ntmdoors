@@ -1,6 +1,6 @@
 {
     "parent": "item/generated",
     "textures": {
-        "layer0": "ntmdoors:items/thermite_charge"
+        "layer0": "ntmdoors:item/thermite_charge"
     }
 }

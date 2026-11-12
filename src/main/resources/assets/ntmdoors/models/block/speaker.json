@@ -1,17 +1,17 @@
-﻿{
+{
   "parent": "block/block",
   "gui_light": "front",
   "textures": {
-    "particle": "ntmdoors:blocks/speaker_cabinet",
-    "cabinet": "ntmdoors:blocks/speaker_cabinet",
-    "baffle": "ntmdoors:blocks/speaker_baffle",
-    "trim": "ntmdoors:blocks/speaker_trim",
-    "surround": "ntmdoors:blocks/speaker_surround",
-    "cone": "ntmdoors:blocks/speaker_cone",
-    "dustcap": "ntmdoors:blocks/speaker_dustcap",
-    "tweeter": "ntmdoors:blocks/speaker_tweeter",
-    "port": "ntmdoors:blocks/speaker_port",
-    "screw": "ntmdoors:blocks/speaker_screw"
+    "particle": "ntmdoors:block/speaker_cabinet",
+    "cabinet": "ntmdoors:block/speaker_cabinet",
+    "baffle": "ntmdoors:block/speaker_baffle",
+    "trim": "ntmdoors:block/speaker_trim",
+    "surround": "ntmdoors:block/speaker_surround",
+    "cone": "ntmdoors:block/speaker_cone",
+    "dustcap": "ntmdoors:block/speaker_dustcap",
+    "tweeter": "ntmdoors:block/speaker_tweeter",
+    "port": "ntmdoors:block/speaker_port",
+    "screw": "ntmdoors:block/speaker_screw"
   },
   "elements": [
     {

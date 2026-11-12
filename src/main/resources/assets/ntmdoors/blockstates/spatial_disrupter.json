@@ -1,7 +1,7 @@
 {
-    "variants": {
-        "normal": {
-            "model": "ntmdoors:spatial_disrupter"
-        }
+  "variants": {
+    "": {
+      "model": "ntmdoors:block/spatial_disrupter"
     }
+  }
 }

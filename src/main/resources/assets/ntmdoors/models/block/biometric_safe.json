@@ -2,12 +2,12 @@
   "credit": "NTM Doors",
   "gui_light": "front",
   "textures": {
-    "particle": "ntmdoors:blocks/safe_biometric_body",
-    "body": "ntmdoors:blocks/safe_biometric_body",
-    "door": "ntmdoors:blocks/safe_biometric_door",
-    "trim": "ntmdoors:blocks/safe_biometric_trim",
-    "biometric": "ntmdoors:blocks/safe_biometric",
-    "usb": "ntmdoors:blocks/safe_usb_port"
+    "particle": "ntmdoors:block/safe_biometric_body",
+    "body": "ntmdoors:block/safe_biometric_body",
+    "door": "ntmdoors:block/safe_biometric_door",
+    "trim": "ntmdoors:block/safe_biometric_trim",
+    "biometric": "ntmdoors:block/safe_biometric",
+    "usb": "ntmdoors:block/safe_usb_port"
   },
   "elements": [
     {

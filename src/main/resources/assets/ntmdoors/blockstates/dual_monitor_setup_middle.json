@@ -1,51 +1,51 @@
 {
     "variants":  {
                      "column=left,facing=north":  {
-                                                      "model":  "ntmdoors:dual_monitor_setup_middle_left",
+                                                      "model":  "ntmdoors:block/dual_monitor_setup_middle_left",
                                                       "y":  0
                                                   },
                      "column=left,facing=east":  {
-                                                     "model":  "ntmdoors:dual_monitor_setup_middle_left",
+                                                     "model":  "ntmdoors:block/dual_monitor_setup_middle_left",
                                                      "y":  90
                                                  },
                      "column=left,facing=south":  {
-                                                      "model":  "ntmdoors:dual_monitor_setup_middle_left",
+                                                      "model":  "ntmdoors:block/dual_monitor_setup_middle_left",
                                                       "y":  180
                                                   },
                      "column=left,facing=west":  {
-                                                     "model":  "ntmdoors:dual_monitor_setup_middle_left",
+                                                     "model":  "ntmdoors:block/dual_monitor_setup_middle_left",
                                                      "y":  270
                                                  },
                      "column=center,facing=north":  {
-                                                        "model":  "ntmdoors:dual_monitor_setup_middle_center",
+                                                        "model":  "ntmdoors:block/dual_monitor_setup_middle_center",
                                                         "y":  0
                                                     },
                      "column=center,facing=east":  {
-                                                       "model":  "ntmdoors:dual_monitor_setup_middle_center",
+                                                       "model":  "ntmdoors:block/dual_monitor_setup_middle_center",
                                                        "y":  90
                                                    },
                      "column=center,facing=south":  {
-                                                        "model":  "ntmdoors:dual_monitor_setup_middle_center",
+                                                        "model":  "ntmdoors:block/dual_monitor_setup_middle_center",
                                                         "y":  180
                                                     },
                      "column=center,facing=west":  {
-                                                       "model":  "ntmdoors:dual_monitor_setup_middle_center",
+                                                       "model":  "ntmdoors:block/dual_monitor_setup_middle_center",
                                                        "y":  270
                                                    },
                      "column=right,facing=north":  {
-                                                       "model":  "ntmdoors:dual_monitor_setup_middle_right",
+                                                       "model":  "ntmdoors:block/dual_monitor_setup_middle_right",
                                                        "y":  0
                                                    },
                      "column=right,facing=east":  {
-                                                      "model":  "ntmdoors:dual_monitor_setup_middle_right",
+                                                      "model":  "ntmdoors:block/dual_monitor_setup_middle_right",
                                                       "y":  90
                                                   },
                      "column=right,facing=south":  {
-                                                       "model":  "ntmdoors:dual_monitor_setup_middle_right",
+                                                       "model":  "ntmdoors:block/dual_monitor_setup_middle_right",
                                                        "y":  180
                                                    },
                      "column=right,facing=west":  {
-                                                      "model":  "ntmdoors:dual_monitor_setup_middle_right",
+                                                      "model":  "ntmdoors:block/dual_monitor_setup_middle_right",
                                                       "y":  270
                                                   }
                  }

@@ -1,6 +1,6 @@
 {
   "parent": "ntmdoors:item/rfid_card_base",
   "textures": {
-    "layer0": "ntmdoors:items/labyrinth_keycard"
+    "layer0": "ntmdoors:item/labyrinth_keycard"
   }
 }

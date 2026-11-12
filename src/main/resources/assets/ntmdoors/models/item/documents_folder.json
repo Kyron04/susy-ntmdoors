@@ -3,8 +3,8 @@
   "gui_light": "front",
   "ambientocclusion": false,
   "textures": {
-    "particle": "ntmdoors:items/documents_folder",
-    "paper": "ntmdoors:items/documents_folder"
+    "particle": "ntmdoors:item/documents_folder",
+    "paper": "ntmdoors:item/documents_folder"
   },
   "elements": [
     {

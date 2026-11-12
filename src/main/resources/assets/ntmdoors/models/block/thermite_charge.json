@@ -3,11 +3,11 @@
     "gui_light":  "front",
     "ambientocclusion":  true,
     "textures":  {
-                     "particle":  "ntmdoors:blocks/thermite_charge",
-                     "front":  "ntmdoors:blocks/thermite_charge",
-                     "frame":  "ntmdoors:blocks/thermite_frame",
-                     "casing":  "ntmdoors:blocks/thermite_casing",
-                     "pack":  "ntmdoors:blocks/thermite_pack"
+                     "particle":  "ntmdoors:block/thermite_charge",
+                     "front":  "ntmdoors:block/thermite_charge",
+                     "frame":  "ntmdoors:block/thermite_frame",
+                     "casing":  "ntmdoors:block/thermite_casing",
+                     "pack":  "ntmdoors:block/thermite_pack"
                  },
     "elements":  [
                      {

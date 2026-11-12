@@ -1,6 +1,6 @@
 {
   "parent": "ntmdoors:item/keycard_scanner_base",
   "textures": {
-    "layer0": "ntmdoors:items/keycard_scanner"
+    "layer0": "ntmdoors:item/keycard_scanner"
   }
 }

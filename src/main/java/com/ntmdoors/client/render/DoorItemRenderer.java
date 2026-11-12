@@ -34,6 +34,9 @@ public final class DoorItemRenderer implements BuiltinItemRendererRegistry.Dynam
     public interface DoorItemModelProvider {
         Identifier getModelId(ItemStack stack);
         Identifier getTextureId(ItemStack stack);
+        default Identifier getTextureForGroup(ItemStack stack, String groupName) {
+            return getTextureId(stack);
+        }
         Collection<String> getItemGroups(ItemStack stack);
         float getModelYaw(ItemStack stack);
     }
@@ -51,6 +54,11 @@ public final class DoorItemRenderer implements BuiltinItemRendererRegistry.Dynam
         BOUNDS_CACHE.clear();
     }
 
+    @FunctionalInterface
+    public interface TextureResolver {
+        Identifier getTexture(String groupName);
+    }
+
     @Override
     public void render(ItemStack stack, ModelTransformationMode mode, MatrixStack matrices,
                        VertexConsumerProvider vertexConsumers, int light, int overlay) {
@@ -64,10 +72,10 @@ public final class DoorItemRenderer implements BuiltinItemRendererRegistry.Dynam
         if (model == null) return;
 
         Collection<String> groups = provider.getItemGroups(stack);
-        Identifier texture = provider.getTextureId(stack);
         float yaw = provider.getModelYaw(stack);
 
-        renderNormalizedModel(matrices, vertexConsumers, model, modelId, groups, texture, yaw, overlay);
+        renderNormalizedModel(matrices, vertexConsumers, model, modelId, groups,
+                groupName -> provider.getTextureForGroup(stack, groupName), yaw, overlay);
     }
 
     /**
@@ -76,7 +84,18 @@ public final class DoorItemRenderer implements BuiltinItemRendererRegistry.Dynam
     public static void renderNormalizedModel(MatrixStack matrices, VertexConsumerProvider vertexConsumers,
                                              ObjModel model, Identifier modelId, Collection<String> groups,
                                              Identifier texture, float yawDegrees, int overlay) {
-        if (model == null || texture == null) return;
+        renderNormalizedModel(matrices, vertexConsumers, model, modelId, groups,
+                groupName -> texture, yawDegrees, overlay);
+    }
+
+    /**
+     * Normalizes and renders the given OBJ model within a 1x1x1 box using fullbright lighting
+     * and per-group texture resolution.
+     */
+    public static void renderNormalizedModel(MatrixStack matrices, VertexConsumerProvider vertexConsumers,
+                                             ObjModel model, Identifier modelId, Collection<String> groups,
+                                             TextureResolver textureResolver, float yawDegrees, int overlay) {
+        if (model == null || textureResolver == null) return;
 
         Collection<String> targetGroups = (groups == null || groups.isEmpty()) ? model.groups() : groups;
         ItemBounds bounds = (modelId != null)
@@ -97,13 +116,16 @@ public final class DoorItemRenderer implements BuiltinItemRendererRegistry.Dynam
 
         // Fullbright preview overrides missing/inverted OBJ normals in inventory
         int previewLight = LightmapTextureManager.MAX_LIGHT_COORDINATE;
-        VertexConsumer consumer = vertexConsumers.getBuffer(RenderLayer.getEntityCutoutNoCull(texture));
 
         for (String groupName : targetGroups) {
             ObjModel.MeshGroup group = model.getGroup(groupName);
             if (group != null) {
-                ObjRenderer.renderGroup(matrices, consumer, group, null, null, null,
-                        previewLight, overlay, 1.0f, 1.0f, 1.0f, 1.0f);
+                Identifier texture = textureResolver.getTexture(groupName);
+                if (texture != null) {
+                    VertexConsumer consumer = vertexConsumers.getBuffer(RenderLayer.getEntityCutoutNoCull(texture));
+                    ObjRenderer.renderGroup(matrices, consumer, group, null, null, null,
+                            previewLight, overlay, 1.0f, 1.0f, 1.0f, 1.0f);
+                }
             }
         }
 

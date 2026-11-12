@@ -1,6 +1,6 @@
 {
   "parent": "ntmdoors:item/rfid_card_base",
   "textures": {
-    "layer0": "ntmdoors:items/terragroup_labs_access_keycard"
+    "layer0": "ntmdoors:item/terragroup_labs_access_keycard"
   }
 }

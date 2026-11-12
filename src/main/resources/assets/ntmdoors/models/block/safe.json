@@ -2,12 +2,12 @@
   "credit": "NTM Doors",
   "gui_light": "front",
   "textures": {
-    "particle": "ntmdoors:blocks/safe_body",
-    "body": "ntmdoors:blocks/safe_body",
-    "door": "ntmdoors:blocks/safe_door",
-    "trim": "ntmdoors:blocks/safe_trim",
-    "keypad": "ntmdoors:blocks/safe_keypad",
-    "usb": "ntmdoors:blocks/safe_usb_port"
+    "particle": "ntmdoors:block/safe_body",
+    "body": "ntmdoors:block/safe_body",
+    "door": "ntmdoors:block/safe_door",
+    "trim": "ntmdoors:block/safe_trim",
+    "keypad": "ntmdoors:block/safe_keypad",
+    "usb": "ntmdoors:block/safe_usb_port"
   },
   "elements": [
     {

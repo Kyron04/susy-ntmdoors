@@ -1,6 +1,6 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "ntmdoors:items/biometric_relay_key"
+    "layer0": "ntmdoors:item/biometric_relay_key"
   }
 }

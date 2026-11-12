@@ -1,6 +1,6 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "ntmdoors:items/redstone_relay_key"
+    "layer0": "ntmdoors:item/redstone_relay_key"
   }
 }
