@@ -191,7 +191,7 @@ public final class DoorDecls {
             .movingGroup("Right")
             // Leave only thin jambs. A full-width header would sit at player height and block the
             // open doorway, while these strips keep the frame clickable and still leave a 1.75-wide gap.
-            .open(box(-0.5, 0, -0.5, -0.375, 2, 0.5), box(1.375, 0, -0.5, 1.5, 2, 0.5))
+            .open(box(-0.5, 0, -0.5, -0.375, 2, -0.25), box(1.375, 0, -0.5, 1.5, 2, -0.25))
             .openSelectionOnly(box(-0.5, 0, -0.5, 1.5, 0.0625, -0.25))
             .modelPath("models/doors/qe_sliding_door.obj", "textures/models/doors/qe_sliding_door.png")
             .modelYaw(90F)
@@ -203,7 +203,7 @@ public final class DoorDecls {
             // so the QE door shares those events instead of shipping duplicate audio.
             .soundsOpen(null, SND_SLIDING_OPENING, SND_SLIDING_OPENED)
             .soundsClose(null, SND_SLIDING_OPENING, SND_SLIDING_SHUT)
-            .anim("Left", PartAnim.translate(0, 0, 0.95, 0F, 1F))
+            .anim("Left", PartAnim.translate(0, 0, 1.0625, 0F, 1F))
             .anim("Right", PartAnim.translate(0, 0, -0.95, 0F, 1F)));
 
     /**
@@ -216,7 +216,7 @@ public final class DoorDecls {
             // The right panel follows its model translation; the visible jamb stays static.
             .movingGroup("Right")
             // The visible frame is the original's left jamb; the right edge is the open doorway.
-            .open(box(-0.5, 0, -0.5, -0.375, 2, 0.5))
+            .open(box(-0.5, 0, -0.5, -0.375, 2, -0.25))
             .openSelectionOnly(box(-0.5, 0, -0.5, 0.5, 0.0625, -0.25))
             .modelPath("models/doors/qe_sliding_door.obj", "textures/models/doors/qe_sliding_door.png")
             .modelYaw(90F)

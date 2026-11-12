@@ -168,4 +168,68 @@ public class DoorBoundingBoxSlicingTest {
         assertNotSame(shape1, shape3, "After clearCache, a new instance should be generated");
         assertEquals(shape1.getBoundingBox(), shape3.getBoundingBox(), "Content must be identical");
     }
+
+    @Test
+    @DisplayName("Verify QE Sliding Door and Panel hitboxes: planar against wall, no L-shapes, unobstructed doorway")
+    public void testQeSlidingDoorShapes() {
+        // 1. QE_SLIDING_DOOR
+        DoorDecl qeDoor = DoorDecls.QE_SLIDING_DOOR;
+        qeDoor.prepareGeometry();
+
+        // NORTH facing: wall normal along Z, doorway along X
+        BlockPos cell0 = new BlockPos(0, 0, 0); // left cell
+        BlockPos cell1 = new BlockPos(1, 0, 0); // right cell
+
+        VoxelShape closed0 = DoorVoxelShapes.getStaticShape(qeDoor, Direction.NORTH, cell0, DoorVoxelShapes.ShapeState.CLOSED);
+        VoxelShape closed1 = DoorVoxelShapes.getStaticShape(qeDoor, Direction.NORTH, cell1, DoorVoxelShapes.ShapeState.CLOSED);
+        assertFalse(closed0.isEmpty());
+        assertFalse(closed1.isEmpty());
+        // Closed cells must span entire block width [0, 1] and stay thin in Z (<= 0.25)
+        assertEquals(0.0, closed0.getBoundingBox().minX, 1e-4);
+        assertEquals(1.0, closed0.getBoundingBox().maxX, 1e-4);
+        assertTrue(closed0.getBoundingBox().maxZ <= 0.2501);
+
+        assertEquals(0.0, closed1.getBoundingBox().minX, 1e-4);
+        assertEquals(1.0, closed1.getBoundingBox().maxX, 1e-4);
+        assertTrue(closed1.getBoundingBox().maxZ <= 0.2501);
+
+        // When OPEN:
+        VoxelShape open0 = DoorVoxelShapes.getStaticShape(qeDoor, Direction.NORTH, cell0, DoorVoxelShapes.ShapeState.OPEN);
+        VoxelShape open1 = DoorVoxelShapes.getStaticShape(qeDoor, Direction.NORTH, cell1, DoorVoxelShapes.ShapeState.OPEN);
+        assertFalse(open0.isEmpty());
+        assertFalse(open1.isEmpty());
+
+        // Left jamb must only occupy outer edge x <= 0.125, thin in Z (<= 0.25)
+        assertEquals(0.0, open0.getBoundingBox().minX, 1e-4);
+        assertEquals(0.125, open0.getBoundingBox().maxX, 1e-4);
+        assertTrue(open0.getBoundingBox().maxZ <= 0.2501);
+
+        // Right jamb must only occupy outer edge x >= 0.875, thin in Z (<= 0.25)
+        assertEquals(0.875, open1.getBoundingBox().minX, 1e-4);
+        assertEquals(1.0, open1.getBoundingBox().maxX, 1e-4);
+        assertTrue(open1.getBoundingBox().maxZ <= 0.2501);
+
+        // Verify neither jamb forms an L-shape (only 1 clean rectangular box each)
+        assertEquals(1, open0.getBoundingBoxes().size());
+        assertEquals(1, open1.getBoundingBoxes().size());
+
+        // 2. QE_SLIDING_PANEL
+        DoorDecl qePanel = DoorDecls.QE_SLIDING_PANEL;
+        qePanel.prepareGeometry();
+
+        VoxelShape panelClosed = DoorVoxelShapes.getStaticShape(qePanel, Direction.NORTH, cell0, DoorVoxelShapes.ShapeState.CLOSED);
+        assertFalse(panelClosed.isEmpty());
+        // Must span full cell width [0..1] when closed
+        assertEquals(0.0, panelClosed.getBoundingBox().minX, 1e-4);
+        assertEquals(1.0, panelClosed.getBoundingBox().maxX, 1e-4);
+        assertTrue(panelClosed.getBoundingBox().maxZ <= 0.2501);
+
+        VoxelShape panelOpen = DoorVoxelShapes.getStaticShape(qePanel, Direction.NORTH, cell0, DoorVoxelShapes.ShapeState.OPEN);
+        assertFalse(panelOpen.isEmpty());
+        // When open, only the left jamb post remains (x <= 0.125), doorway is fully clear
+        assertEquals(0.0, panelOpen.getBoundingBox().minX, 1e-4);
+        assertEquals(0.125, panelOpen.getBoundingBox().maxX, 1e-4);
+        assertTrue(panelOpen.getBoundingBox().maxZ <= 0.2501);
+        assertEquals(1, panelOpen.getBoundingBoxes().size());
+    }
 }

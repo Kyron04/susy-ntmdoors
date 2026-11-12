@@ -38,7 +38,7 @@ public final class DoorGeometry {
      * @param ox     model offset X (applied in model space)
      * @param oy     model offset Y
      * @param oz     model offset Z
-     * @param clip   clip volume in model space (after the model offset), or null
+     * @param clip   clip volume in model space (before model offset), or null
      * @return boxes in door-local space, relative to the core cell's bottom centre
      */
     public static Box[] transform(List<PartAnim> steps, float open, Box box,
@@ -62,7 +62,6 @@ public final class DoorGeometry {
         }
 
         Mat mat = new Mat();
-        mat.translate(ox, oy, oz);
         if (steps != null) {
             for (PartAnim a : steps) {
                 double p = a.progress(open);
@@ -106,13 +105,13 @@ public final class DoorGeometry {
             }
             if (mx2 - mx1 <= EPS || my2 - my1 <= EPS || mz2 - mz1 <= EPS) continue;
 
-            // Rotate the clipped model-space box into door space.
+            // Apply model offset and rotate the clipped model-space box into door space.
             double x1 = Double.POSITIVE_INFINITY, y1 = Double.POSITIVE_INFINITY, z1 = Double.POSITIVE_INFINITY;
             double x2 = Double.NEGATIVE_INFINITY, y2 = Double.NEGATIVE_INFINITY, z2 = Double.NEGATIVE_INFINITY;
             for (int corner = 0; corner < 8; corner++) {
-                point[0] = (corner & 1) == 0 ? mx1 : mx2;
-                point[1] = (corner & 2) == 0 ? my1 : my2;
-                point[2] = (corner & 4) == 0 ? mz1 : mz2;
+                point[0] = ((corner & 1) == 0 ? mx1 : mx2) + ox;
+                point[1] = ((corner & 2) == 0 ? my1 : my2) + oy;
+                point[2] = ((corner & 4) == 0 ? mz1 : mz2) + oz;
                 rotateY(point, yaw);
                 if (point[0] < x1) x1 = point[0];
                 if (point[1] < y1) y1 = point[1];
