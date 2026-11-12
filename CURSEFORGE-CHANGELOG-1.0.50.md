@@ -557,3 +557,39 @@ A wall-mounted code panel that binds to the door it touches:
   Spatial Disrupters and UHPC are creative-only unless a pack adds its own recipes.
 - All doors, tools, cards, machines, monitors, concrete and HL Blocks are listed in the NTM Doors
   creative tab.
+
+## Credits and license
+
+NTM Doors is a standalone Minecraft 1.12.2 port of the door system and related security equipment
+from HBM's Nuclear Tech Mod. It is not affiliated with the original authors, and no endorsement is
+implied.
+
+### Credits
+
+- **HBM's Nuclear Tech Mod and contributors** — original door system, door models, textures, sounds
+  and reference behaviour.
+  - GitHub: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
+  - CurseForge: https://www.curseforge.com/minecraft/mc-mods/hbms-nuclear-tech-mod
+- **HBM's Nuclear Tech Mod Community Edition (NTM CE)** — concrete assets and reference behaviour.
+- **NeoRussia's HL Blocks** — HL Blocks assets and original block definitions.
+- **Office-door assets** — original recreations inspired by the Black Mesa/Half-Life office-door
+  style. They are not extracted from Black Mesa or Half-Life game files. Black Mesa and Half-Life
+  are properties of their respective owners; no endorsement is implied.
+- **Developers of the port**
+  - Lead Developer: KYN4
+  - Advisors and Contributors: Oliver509, Unitazer, Yordi111, mxobxx
+  - And an Unknown third party
+- **Playtesters** — Neeyo, Creg2, SuperObama, Juniper Kynour, Gloo.
+
+### License
+
+- The project code and original assets are released under the **GNU Lesser General Public License,
+  version 3 (LGPL-3.0)**. See `LICENSE.LESSER` for the full license text.
+- HBM-derived door models, textures, sounds and behaviour are used under the LGPL-3.0. The concrete
+  set is derived from NTM CE, and the HL Blocks set is derived from NeoRussia's HL Blocks project,
+  both under the LGPL-3.0. See `NOTICE` for the exact file lists, source links and attribution.
+- Office-door models and textures are original recreations and are released under this project's
+  LGPL-3.0 license. The door latch sound was supplied by the project owner.
+- **AI assistance:** AI tools were used during development for code work and some asset variants,
+  under human review and testing. See `AI_DISCLOSURE.md` for the exact scope. All features were
+  tested in singleplayer and on dedicated servers, quality assured, and reviewed before release.
