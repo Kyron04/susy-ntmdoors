@@ -33,18 +33,19 @@ for editing.
   security door records the player who placed it as its owner; that owner can sneak + right-click
   it with the Redstone Monocle to opt it in to redstone and Redstone Gate links. Security doors
   placed before this owner tracking was added have no recorded owner and cannot be enabled until
-  they are replaced. All 26 doors, including both silo hatches and the office-door family, now have a security variant.
+  they are replaced. All 27 doors, including both silo hatches, the office-door family and the Test Door, now have a security variant.
   Security doors take three real hours to mine with any tool, and keypads may bind and drive locked
   doors exactly like normal ones; security doors are off limits to keypads.
 * State dependent collision and selection boxes that follow the door animation continuously
   (walk through when open, click-through gaps)
 * OBJ renderer (TESR) with per-group translate/rotate animations, X/Y/Z clipping and sounds
 * 3D door item rendering (inventory, hand, ground) from the same OBJ model, matching HBM's door item renderer
-* 26 multiblock OBJ doors: the 17 classic HBM doors (`vault_door`, `sliding_blast_door`,
+* 27 multiblock OBJ doors: the 17 classic HBM doors (`vault_door`, `sliding_blast_door`,
   `qe_sliding_door`, `qe_sliding_panel`, `fire_door`, `secure_access_door`, `sliding_seal_door`,
   `round_airlock_door`, `silo_hatch`, `silo_hatch_large`, `large_vehicle_door`, `qe_containment`,
-  `blast_shutter`, `blast_door`, `cargo_door`, `water_door`, `transition_seal`), plus Office Doors
-  1-3 in single, 2x2 double and 3x3 double forms, and a `_locked` copy of each
+  `blast_shutter`, `blast_door`, `cargo_door`, `water_door`, `transition_seal`), the public
+  `test_door` 3x3 containment door, plus Office Doors 1-3 in single, 2x2 double and 3x3 double
+  forms, and a `_locked` copy of each
 * Screwdriver: sneak + right click on a door with alternate skins cycles through them; right click
   a keypad to start its code-reset sequence; sneak + right click an unused keypad cycles its
   binding mode. Every interaction the tool handles plays `button9`, so nearby players hear the
@@ -451,6 +452,7 @@ from its model; the scanner uses a 3D model in the inventory and hand too, like 
 | `cargo_door` | `DoorBot`, `DoorTop` | 3x3 lifting cargo door |
 | `large_vehicle_door` | `Left`, `Right` | 7x6 vehicle door |
 | `qe_containment` | `Door` | 3x3 containment shield |
+| `test_door` | `Door` | 3x3 red/white containment door |
 | `blast_door` | `Tooth`, `Slider1`-`Slider4` | 1x7 roller shutter (Roller Blast Door) |
 | `water_door` | `Door_Cube.003`, `Bolts`, `Top`, `Bottom` | 3x3 swinging water-tight door |
 | `transition_seal` | 20 rigid keyframed groups | converted from HBM `seal.dae`; full Collada action replayed as per-group matrices |

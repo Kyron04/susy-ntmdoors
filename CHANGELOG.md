@@ -9,6 +9,7 @@ FEATURES
 - Added 3x3 double versions of all three office doors. They reuse the 2x2 models at 1.5x scale,
   keep the same skin sets, and use a two-cell-deep front footprint so the longer open leaves have
   working collision.
+- The 3x3 red/white Test Door is included as a public door.
 - Office door textures are now 32x64; the 64x128 originals are preserved in
   source-art/office-doors/64x128.
 - Monitor terminal display state is now stored per screen in a ScreenState value object, with the

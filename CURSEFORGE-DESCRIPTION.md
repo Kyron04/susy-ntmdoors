@@ -6,7 +6,7 @@ NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system and co
 
 **Current version: 1.0.50**
 
-## 26 multiblock doors
+## 27 multiblock doors
 
 - **Vault-Tec Blast Door** — 5x5 rolling gear door
 - **Sliding Blast Door** — 7x4 double-panel blast door
@@ -25,6 +25,7 @@ NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system and co
 - **Silo Hatch** — 5x5 tilting hatch
 - **Large Silo Hatch** — 7x7 tilting hatch
 - **Transition Seal** — huge keyframed 24-second sequence
+- **Test Door** — 3x3 red/white containment door
 - **Office Door 1** — 1x2 Black Mesa style swing door
 - **Office Door 2** — 1x2 red painted office door with a wire-glass window
 - **Office Door 3** — 1x2 brown wood office door with straight levers
@@ -38,7 +39,7 @@ Every door:
 - has state-dependent collision and selection boxes — walk through when open, click-through gaps
 - responds to redstone from any cell (edge-triggered) and right-click
 - is also registered as a redstone-only `<door>_locked` twin for adventure maps
-- has a `<door>_security` variant (all twenty-six doors, including both silo hatches and the office-door family) that by default only a keycard scanner or the Creative Keycard can open
+- has a `<door>_security` variant (all twenty-seven doors, including both silo hatches, the Test Door and the office-door family) that by default only a keycard scanner or the Creative Keycard can open
 - security doors record the player who placed them as their owner; the owner can sneak + right-click with the Redstone Monocle to allow redstone and Redstone Gate links. Older security doors without an owner cannot be enabled until replaced
 - security doors take three real hours of continuous mining with any tool and resist explosions; normal and locked doors keep their original break times
 

@@ -21,6 +21,10 @@ Requires Chisel 1.12.2-1.0.2.45
 - The 3x3 versions use a two-cell-deep front footprint so the longer open leaves keep working collision.
 - The existing 2x2 double doors are unchanged, so both sizes are available.
 
+## Test Door
+
+- The 3x3 red/white containment **Test Door** is included as a public door.
+
 ## Textures
 
 - Office door textures are now **32x64**, reducing their pixel count by 75%.
