@@ -571,7 +571,7 @@ public final class ModMessages {
             int handOrdinal = buf.readByte();
             int lastPage = buf.readByte();
             String customName = buf.readString(ItemDocumentsFolder.MAX_NAME_LENGTH);
-            int count = Math.min((int) buf.readByte(), ItemDocumentsFolder.PAGE_COUNT);
+            int count = Math.max(0, Math.min((int) buf.readByte(), ItemDocumentsFolder.PAGE_COUNT));
             List<String> pages = new ArrayList<>(count);
             for (int i = 0; i < count; i++) {
                 pages.add(buf.readString(ItemDocumentsFolder.MAX_PAGE_LENGTH));

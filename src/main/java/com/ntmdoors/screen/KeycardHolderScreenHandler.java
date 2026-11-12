@@ -97,16 +97,22 @@ public class KeycardHolderScreenHandler extends ScreenHandler {
 
     @Override
     public void onSlotClick(int slotIndex, int button, SlotActionType actionType, PlayerEntity player) {
-        // Never let the open holder be picked up, dropped or swapped
-        if (slotIndex >= 0 && slotIndex < slots.size()) {
-            Slot slot = slots.get(slotIndex);
-            if (slot != null && slot.getStack() == holder) {
-                return;
+        if (slotIndex < 0 || slotIndex >= slots.size()) {
+            // Allow legal vanilla out-of-window clicks (-1 for quickcraft/external, -999 for cursor drop)
+            if (slotIndex == -1 || slotIndex == -999) {
+                super.onSlotClick(slotIndex, button, actionType, player);
             }
+            return;
+        }
+
+        // Never let the open holder be picked up, dropped or swapped
+        Slot slot = slots.get(slotIndex);
+        if (slot != null && slot.getStack() == holder) {
+            return;
         }
 
         // Number-key swaps bypass normal slot validation; prevent forcing non-cards or swapping holder away
-        if (actionType == SlotActionType.SWAP && slotIndex >= 0 && slotIndex < HOLDER_SLOT_COUNT) {
+        if (actionType == SlotActionType.SWAP && slotIndex < HOLDER_SLOT_COUNT) {
             ItemStack hotbar = button >= 0 && button < 9
                     ? player.getInventory().getStack(button)
                     : ItemStack.EMPTY;
