@@ -64,8 +64,6 @@ public class ItemOperatorKeycard extends ItemRfidCard {
 
     public ActionResult openScannerScreen(PlayerEntity player, World world,
                                          KeycardScannerBlockEntity scanner, Hand hand) {
-        if (!scanner.hasBoundDoors()) return ActionResult.PASS;
-
         ItemStack stack = player.getStackInHand(hand);
         if (scanner.isMatchHolder() && Biometrics.isBound(stack)
                 && !Biometrics.isOwnedBy(stack, player)) {

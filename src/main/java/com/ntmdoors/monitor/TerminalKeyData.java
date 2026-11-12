@@ -1,11 +1,11 @@
 package com.ntmdoors.monitor;
 
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.common.util.Constants;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -62,14 +62,14 @@ public final class TerminalKeyData {
 
     @Nullable
     public static Session getSession(ItemStack stack) {
-        NBTTagCompound tag = root(stack, SESSION_ROOT, false);
-        if (tag == null || !tag.hasKey(SESSION_DESK)) return null;
+        NbtCompound tag = root(stack, SESSION_ROOT, false);
+        if (tag == null || !tag.contains(SESSION_DESK, NbtElement.LONG_TYPE)) return null;
 
         BlockPos desk = BlockPos.fromLong(tag.getLong(SESSION_DESK));
-        int dimension = tag.getInteger(SESSION_DIM);
-        int netId = tag.hasKey(SESSION_NET) ? tag.getInteger(SESSION_NET) : 0;
-        List<MonitorDevice> devices = tag.hasKey(SESSION_DEVICES, Constants.NBT.TAG_LIST)
-                ? MonitorDevice.fromNBTList(tag.getTagList(SESSION_DEVICES, Constants.NBT.TAG_COMPOUND))
+        int dimension = tag.getInt(SESSION_DIM);
+        int netId = tag.contains(SESSION_NET, NbtElement.INT_TYPE) ? tag.getInt(SESSION_NET) : 0;
+        List<MonitorDevice> devices = tag.contains(SESSION_DEVICES, NbtElement.LIST_TYPE)
+                ? MonitorDevice.fromNbtList(tag.getList(SESSION_DEVICES, NbtElement.COMPOUND_TYPE))
                 : Collections.emptyList();
         return new Session(desk, dimension, netId, devices);
     }
@@ -77,12 +77,12 @@ public final class TerminalKeyData {
     /** Starts a session for one net, copying that net's confirmed devices into the pending list. */
     public static void start(ItemStack stack, BlockPos desk, int dimension, int netId,
                              List<MonitorDevice> existingDevices) {
-        NBTTagCompound tag = root(stack, SESSION_ROOT, true);
+        NbtCompound tag = root(stack, SESSION_ROOT, true);
         if (tag == null) return;
-        tag.setLong(SESSION_DESK, desk.toLong());
-        tag.setInteger(SESSION_DIM, dimension);
-        tag.setInteger(SESSION_NET, netId);
-        tag.setTag(SESSION_DEVICES, MonitorDevice.toNBTList(existingDevices));
+        tag.putLong(SESSION_DESK, desk.asLong());
+        tag.putInt(SESSION_DIM, dimension);
+        tag.putInt(SESSION_NET, netId);
+        tag.put(SESSION_DEVICES, MonitorDevice.toNbtList(existingDevices));
     }
 
     public static List<MonitorDevice> getDevices(ItemStack stack) {
@@ -91,9 +91,9 @@ public final class TerminalKeyData {
     }
 
     public static void setDevices(ItemStack stack, List<MonitorDevice> devices) {
-        NBTTagCompound tag = root(stack, SESSION_ROOT, true);
+        NbtCompound tag = root(stack, SESSION_ROOT, true);
         if (tag == null) return;
-        tag.setTag(SESSION_DEVICES, MonitorDevice.toNBTList(devices));
+        tag.put(SESSION_DEVICES, MonitorDevice.toNbtList(devices));
     }
 
     /** Adds a device, or replaces the name of the same device if it is already pending. */
@@ -121,26 +121,26 @@ public final class TerminalKeyData {
 
     @Nullable
     public static Link getLink(ItemStack stack) {
-        NBTTagCompound tag = root(stack, LINK_ROOT, false);
-        if (tag == null || !tag.hasKey(LINK_ID) || !tag.hasKey(LINK_DESK)) return null;
+        NbtCompound tag = root(stack, LINK_ROOT, false);
+        if (tag == null || !tag.contains(LINK_ID, NbtElement.STRING_TYPE) || !tag.contains(LINK_DESK, NbtElement.LONG_TYPE)) return null;
         String keyId = tag.getString(LINK_ID);
         if (keyId.isEmpty()) return null;
         return new Link(BlockPos.fromLong(tag.getLong(LINK_DESK)),
-                tag.getInteger(LINK_DIM), tag.getInteger(LINK_NET), keyId);
+                tag.getInt(LINK_DIM), tag.getInt(LINK_NET), keyId);
     }
 
     public static void setLink(ItemStack stack, BlockPos desk, int dimension, int netId,
                                String keyId) {
-        NBTTagCompound tag = root(stack, LINK_ROOT, true);
+        NbtCompound tag = root(stack, LINK_ROOT, true);
         if (tag == null) return;
-        tag.setLong(LINK_DESK, desk.toLong());
-        tag.setInteger(LINK_DIM, dimension);
-        tag.setInteger(LINK_NET, netId);
-        tag.setString(LINK_ID, keyId == null ? "" : keyId);
+        tag.putLong(LINK_DESK, desk.asLong());
+        tag.putInt(LINK_DIM, dimension);
+        tag.putInt(LINK_NET, netId);
+        tag.putString(LINK_ID, keyId == null ? "" : keyId);
     }
 
     public static void clearLink(ItemStack stack) {
-        NBTTagCompound tag = root(stack, LINK_ROOT, false);
+        NbtCompound tag = root(stack, LINK_ROOT, false);
         if (tag == null) return;
         removeRoot(stack, LINK_ROOT);
     }
@@ -150,26 +150,31 @@ public final class TerminalKeyData {
     }
 
     private static void removeRoot(ItemStack stack, String rootName) {
-        if (stack.isEmpty() || !stack.hasTagCompound()) return;
-        NBTTagCompound tag = stack.getTagCompound();
-        tag.removeTag(rootName);
-        if (tag.getSize() == 0) stack.setTagCompound(null);
+        if (stack.isEmpty() || !stack.hasNbt()) return;
+        NbtCompound tag = stack.getNbt();
+        if (tag != null) {
+            tag.remove(rootName);
+            if (tag.isEmpty()) {
+                stack.setNbt(null);
+            }
+        }
     }
 
     @Nullable
-    private static NBTTagCompound root(ItemStack stack, String rootName, boolean create) {
+    private static NbtCompound root(ItemStack stack, String rootName, boolean create) {
         if (stack.isEmpty()) return null;
-        NBTTagCompound tag = stack.getTagCompound();
+        NbtCompound tag = stack.getNbt();
         if (tag == null) {
             if (!create) return null;
-            tag = new NBTTagCompound();
-            stack.setTagCompound(tag);
+            tag = stack.getOrCreateNbt();
         }
-        if (!tag.hasKey(rootName, Constants.NBT.TAG_COMPOUND)) {
+        if (!tag.contains(rootName, NbtElement.COMPOUND_TYPE)) {
             if (!create) return null;
-            tag.setTag(rootName, new NBTTagCompound());
+            NbtCompound sub = new NbtCompound();
+            tag.put(rootName, sub);
+            return sub;
         }
-        return tag.getCompoundTag(rootName);
+        return tag.getCompound(rootName);
     }
 
     private TerminalKeyData() {

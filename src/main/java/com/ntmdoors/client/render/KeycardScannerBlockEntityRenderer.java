@@ -115,22 +115,30 @@ public final class KeycardScannerBlockEntityRenderer implements BlockEntityRende
             }
         }
 
-        // Auto-scale if text exceeds screen width limit
-        int w1 = textRenderer.getWidth(line1);
-        if (w1 * TEXT_SCALE > TEXT_MAX_WIDTH) {
-            float scaleAdjust = TEXT_MAX_WIDTH / (w1 * TEXT_SCALE);
-            matrices.scale(scaleAdjust, scaleAdjust, 1.0F);
-        }
-
-        textRenderer.draw(line1, 0, 0, color1, false, matrices.peek().getPositionMatrix(),
-                vertexConsumers, TextRenderer.TextLayerType.POLYGON_OFFSET, 0, LightmapTextureManager.MAX_LIGHT_COORDINATE);
-
-        if (!line2.isEmpty()) {
-            textRenderer.draw(line2, 0, 10, color2, false, matrices.peek().getPositionMatrix(),
-                    vertexConsumers, TextRenderer.TextLayerType.POLYGON_OFFSET, 0, LightmapTextureManager.MAX_LIGHT_COORDINATE);
+        if (line2.isEmpty()) {
+            drawCentred(textRenderer, matrices, vertexConsumers, line1, -textRenderer.fontHeight / 2.0F, color1);
+        } else {
+            drawCentred(textRenderer, matrices, vertexConsumers, line1, -textRenderer.fontHeight - 1.0F, color1);
+            drawCentred(textRenderer, matrices, vertexConsumers, line2, 2.0F, color2);
         }
 
         matrices.pop(); // LCD
         matrices.pop(); // Base
+    }
+
+    private void drawCentred(TextRenderer font, MatrixStack matrices, VertexConsumerProvider vertexConsumers,
+                            String text, float y, int color) {
+        int width = font.getWidth(text);
+        float limitPixels = TEXT_MAX_WIDTH / TEXT_SCALE;
+        float scale = 1.0F;
+        if (width > limitPixels) {
+            scale = limitPixels / width;
+        }
+
+        matrices.push();
+        matrices.scale(scale, scale, 1.0F);
+        font.draw(text, Math.round(-width / 2.0F), y, color, false, matrices.peek().getPositionMatrix(),
+                vertexConsumers, TextRenderer.TextLayerType.POLYGON_OFFSET, 0, LightmapTextureManager.MAX_LIGHT_COORDINATE);
+        matrices.pop();
     }
 }

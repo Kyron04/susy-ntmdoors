@@ -139,6 +139,8 @@ public final class ModItems {
     public static final ItemMonitorDesk SINGLE_MONITOR_SETUP_ITEM = reg("single_monitor_setup",
             new ItemMonitorDesk(ModBlocks.SINGLE_MONITOR_SETUP, ModBlocks.DESK_SINGLE, new Item.Settings()));
 
+    public static final ItemTerminalRelayKey TERMINAL_RELAY_KEY = reg("terminal_relay_key",
+            new ItemTerminalRelayKey());
     public static final ItemTerminalBackupKey TERMINAL_BACKUP_KEY = reg("terminal_backup_key",
             new ItemTerminalBackupKey(new Item.Settings()));
 

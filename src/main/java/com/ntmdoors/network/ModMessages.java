@@ -17,11 +17,14 @@ import com.ntmdoors.screen.KeycardProgrammerScreenHandler;
 import com.ntmdoors.screen.SafeScreenHandler;
 import com.ntmdoors.block.entity.DoorBlockEntity;
 import com.ntmdoors.block.entity.MonitorDeskBlockEntity;
+import com.ntmdoors.client.screen.MonitorScreen;
 import com.ntmdoors.client.screen.NotepadScreen;
+import com.ntmdoors.item.ItemTerminalRelayKey;
 import com.ntmdoors.monitor.MonitorDevice;
 import com.ntmdoors.monitor.NotepadDocument;
 import com.ntmdoors.monitor.SecurityNet;
 import com.ntmdoors.monitor.SecurityNetSummary;
+import com.ntmdoors.monitor.TerminalKeyData;
 import com.ntmdoors.block.entity.SpatialDisrupterBlockEntity;
 import com.ntmdoors.item.ItemDocumentsFolder;
 import com.ntmdoors.item.ItemWeaponsRelayKey;
@@ -87,6 +90,7 @@ public final class ModMessages {
     public static final Identifier NOTEPAD_ACTION_ID = Identifier.of(NTMDoors.MOD_ID, "notepad_action");
     public static final Identifier NOTEPAD_DATA_ID = Identifier.of(NTMDoors.MOD_ID, "notepad_data");
     public static final Identifier MONITOR_BACKUP_OPEN_ID = Identifier.of(NTMDoors.MOD_ID, "monitor_backup_open");
+    public static final Identifier TERMINAL_BIND_ID = Identifier.of(NTMDoors.MOD_ID, "terminal_bind");
 
     // --- Milestone M6 Packets ---
     public static final Identifier DOCUMENTS_FOLDER_PAGES_ID = Identifier.of(NTMDoors.MOD_ID, "documents_folder_pages");
@@ -618,6 +622,38 @@ public final class ModMessages {
                 player.sendMessage(Text.translatable("ntmdoors.msg.weapons_mode_changed", mode.displayName), true);
             });
         });
+
+        // 27. Terminal Device Bind
+        ServerPlayNetworking.registerGlobalReceiver(TERMINAL_BIND_ID, (server, player, handler, buf, responseSender) -> {
+            Hand hand = buf.readEnumConstant(Hand.class);
+            BlockPos pos = buf.readBlockPos();
+            String name = buf.readString(64);
+            server.execute(() -> {
+                if (player.squaredDistanceTo(pos.toCenterPos()) > 64.0) return;
+                ItemStack stack = player.getStackInHand(hand);
+                if (!(stack.getItem() instanceof ItemTerminalRelayKey)) return;
+
+                TerminalKeyData.Session session = TerminalKeyData.getSession(stack);
+                if (session == null) {
+                    player.sendMessage(Text.translatable("ntmdoors.msg.terminal_binding_required"), true);
+                    return;
+                }
+
+                MonitorDevice device = MonitorDevice.find(player.getWorld(), pos);
+                if (device == null) {
+                    player.sendMessage(Text.translatable("ntmdoors.msg.terminal_device_invalid"), true);
+                    return;
+                }
+
+                String cleanName = PrivateKeys.sanitiseName(name);
+                if (cleanName.isEmpty()) cleanName = device.type.displayName();
+                MonitorDevice bound = device.withName(cleanName);
+                TerminalKeyData.addOrUpdate(stack, bound);
+
+                player.sendMessage(Text.translatable("ntmdoors.msg.terminal_device_bound", bound.name, bound.type.displayName()), true);
+                player.getWorld().playSound(null, pos, ModSounds.BUTTON9, SoundCategory.BLOCKS, 0.8F, 1.0F);
+            });
+        });
     }
 
     @Environment(EnvType.CLIENT)
@@ -668,12 +704,26 @@ public final class ModMessages {
             byte result = buf.readByte();
             boolean hasPassword = buf.readBoolean();
             boolean skipped = buf.readBoolean();
-            int extra = buf.readInt();
+            int screenIndex = buf.readInt();
             client.execute(() -> {
-                if (result == 5) {
-                    MinecraftClient clientInstance = MinecraftClient.getInstance();
-                    if (clientInstance.player != null) {
-                        clientInstance.player.sendMessage(Text.translatable("ntmdoors.msg.monitor_wrong_password"), true);
+                MinecraftClient mc = MinecraftClient.getInstance();
+                if (mc.currentScreen instanceof MonitorScreen screen) {
+                    if (result == 4 || result == 2 || result == 3) {
+                        screen.onPasswordSuccess();
+                    } else if (result == 5) {
+                        screen.onPasswordFail();
+                    }
+                } else {
+                    if (result == 2) {
+                        mc.setScreen(new MonitorScreen(pos, screenIndex, hasPassword, !hasPassword || skipped));
+                    } else if (result == 1) {
+                        mc.setScreen(new MonitorScreen(pos, screenIndex, hasPassword, false));
+                    } else if (result == 3 || result == 4) {
+                        mc.setScreen(new MonitorScreen(pos, screenIndex, hasPassword, true));
+                    } else if (result == 5) {
+                        if (mc.player != null) {
+                            mc.player.sendMessage(Text.translatable("ntmdoors.msg.monitor_wrong_password"), true);
+                        }
                     }
                 }
             });
@@ -683,11 +733,18 @@ public final class ModMessages {
         ClientPlayNetworking.registerGlobalReceiver(MONITOR_NETS_ID, (client, handler, buf, responseSender) -> {
             BlockPos pos = buf.readBlockPos();
             int count = buf.readInt();
+            List<SecurityNetSummary> nets = new ArrayList<>(count);
             for (int i = 0; i < count; i++) {
                 int id = buf.readInt();
                 String name = buf.readString(64);
                 int devCount = buf.readInt();
+                nets.add(new SecurityNetSummary(id, name, devCount));
             }
+            client.execute(() -> {
+                if (MinecraftClient.getInstance().currentScreen instanceof MonitorScreen screen) {
+                    screen.updateNets(nets);
+                }
+            });
         });
 
         // 26. Monitor Devices (Full device list)
@@ -698,13 +755,20 @@ public final class ModMessages {
             int eventMask = buf.readInt();
             String keyName = buf.readString(64);
             int count = buf.readInt();
+            List<MonitorDevice> devs = new ArrayList<>(count);
             for (int i = 0; i < count; i++) {
                 byte type = buf.readByte();
                 BlockPos devPos = buf.readBlockPos();
                 String devName = buf.readString(64);
                 boolean enabled = buf.readBoolean();
                 boolean loaded = buf.readBoolean();
+                devs.add(new MonitorDevice(MonitorDevice.Type.byId(type), devPos, devName, enabled, loaded));
             }
+            client.execute(() -> {
+                if (MinecraftClient.getInstance().currentScreen instanceof MonitorScreen screen) {
+                    screen.updateDevices(netId, name, eventMask, keyName, devs);
+                }
+            });
         });
 
         // 27. Notepad Data (Multi-document notepad sync)
@@ -960,6 +1024,15 @@ public final class ModMessages {
         buf.writeEnumConstant(hand);
         buf.writeByte(mode.id);
         ClientPlayNetworking.send(WEAPONS_KEY_MODE_ID, buf);
+    }
+
+    @Environment(EnvType.CLIENT)
+    public static void sendTerminalBind(Hand hand, BlockPos pos, String name) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeEnumConstant(hand);
+        buf.writeBlockPos(pos);
+        buf.writeString(name == null ? "" : name, 64);
+        ClientPlayNetworking.send(TERMINAL_BIND_ID, buf);
     }
 
     private ModMessages() {}

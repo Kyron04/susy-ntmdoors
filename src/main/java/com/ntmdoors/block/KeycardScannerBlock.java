@@ -5,8 +5,10 @@ import com.ntmdoors.block.entity.ModBlockEntities;
 import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.item.ItemKeycardHolder;
 import com.ntmdoors.item.ItemOperatorKeycard;
+import com.ntmdoors.item.ItemRedstoneRelayKey;
 import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.item.ItemScrewdriver;
+import com.ntmdoors.item.ItemTerminalRelayKey;
 import com.ntmdoors.util.Facings;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.minecraft.block.Block;
@@ -105,31 +107,35 @@ public class KeycardScannerBlock extends BlockWithEntity {
 
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-        if (world.isClient) return ActionResult.SUCCESS;
+        ItemStack held = player.getStackInHand(hand);
+
+        // Tool and configuration items must be allowed to trigger their useOnBlock on both client & server
+        if (held.getItem() instanceof ItemScrewdriver || held.getItem() instanceof ItemRedstoneRelayKey
+                || held.getItem() instanceof ItemTerminalRelayKey) {
+            return ActionResult.PASS;
+        }
+
+        if (player.isSneaking() && (held.getItem() instanceof ItemOperatorKeycard
+                || held.getItem() instanceof ItemCreativeKeycard
+                || held.getItem() instanceof ItemKeycardHolder)) {
+            return ActionResult.PASS;
+        }
 
         BlockEntity be = world.getBlockEntity(pos);
         if (!(be instanceof KeycardScannerBlockEntity scanner)) return ActionResult.PASS;
 
-        ItemStack held = player.getStackInHand(hand);
-        if (held.getItem() instanceof ItemScrewdriver) {
-            return ActionResult.PASS;
-        }
-
-        if (player.isSneaking() && (held.getItem() instanceof ItemOperatorKeycard || held.getItem() instanceof ItemCreativeKeycard)) {
-            return ActionResult.PASS;
-        }
-
         if (held.getItem() instanceof ItemKeycardHolder) {
-            if (player.isSneaking()) {
-                return ActionResult.PASS;
+            if (!world.isClient) {
+                scanner.useHolder(player, held);
             }
-            scanner.useHolder(player, held);
-            return ActionResult.SUCCESS;
+            return ActionResult.success(world.isClient);
         }
 
         if (held.getItem() instanceof ItemRfidCard || player.getOffHandStack().getItem() instanceof ItemRfidCard) {
-            scanner.useCard(player);
-            return ActionResult.SUCCESS;
+            if (!world.isClient) {
+                scanner.useCard(player);
+            }
+            return ActionResult.success(world.isClient);
         }
 
         return ActionResult.PASS;
