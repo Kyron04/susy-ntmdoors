@@ -13,6 +13,7 @@ import com.ntmdoors.client.render.KeypadBlockEntityRenderer;
 import com.ntmdoors.client.render.ObjModel;
 import com.ntmdoors.client.render.MonitorDeskBlockEntityRenderer;
 import com.ntmdoors.client.render.MotionSensorBlockEntityRenderer;
+import com.ntmdoors.client.screen.KeycardHolderScreen;
 import com.ntmdoors.client.screen.KeycardProgrammerScreen;
 import com.ntmdoors.client.screen.SafeScreen;
 import com.ntmdoors.client.screen.TerminalBackupScreen;
@@ -51,6 +52,7 @@ public class NTMDoorsClient implements ClientModInitializer {
         HandledScreens.register(ModScreenHandlerTypes.KEYCARD_PROGRAMMER, KeycardProgrammerScreen::new);
         HandledScreens.register(ModScreenHandlerTypes.SAFE, SafeScreen::new);
         HandledScreens.register(ModScreenHandlerTypes.TERMINAL_BACKUP, TerminalBackupScreen::new);
+        HandledScreens.register(ModScreenHandlerTypes.KEYCARD_HOLDER, KeycardHolderScreen::new);
 
         // Register Overlays
         RedstoneMonocleOverlay.init();

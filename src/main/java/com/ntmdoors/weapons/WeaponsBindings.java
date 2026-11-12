@@ -1,12 +1,13 @@
 package com.ntmdoors.weapons;
 
 import com.ntmdoors.util.BlockPositions;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.PersistentState;
 import net.minecraft.world.World;
-import net.minecraft.world.storage.MapStorage;
-import net.minecraft.world.storage.WorldSavedData;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -17,25 +18,24 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Per-save registry of explosives bound by a Weapons Relay Key. Stored world-wide (keyed by
- * dimension + position) so it works for any explosive block, including blocks without a tile
- * entity such as vanilla TNT.
+ * Per-save registry of explosives bound by a Weapons Relay Key on Fabric 1.20.1.
+ * Extends PersistentState and is stored on the Overworld's PersistentStateManager.
  */
-public class WeaponsBindings extends WorldSavedData {
+public class WeaponsBindings extends PersistentState {
 
     public static final String DATA_NAME = "ntmdoors_weapons_bindings";
 
     /** One bound explosive and the gates it is linked to. */
     public static final class Binding {
-        public final int dimension;
+        public final String dimension;
         public final BlockPos pos;
         public final UUID keyId;
         public final UUID ownerId;
         public final WeaponsMode mode;
         public final Set<BlockPos> gates = new LinkedHashSet<>();
 
-        Binding(int dimension, BlockPos pos, UUID keyId, UUID ownerId, WeaponsMode mode) {
-            this.dimension = dimension;
+        public Binding(String dimension, BlockPos pos, UUID keyId, UUID ownerId, WeaponsMode mode) {
+            this.dimension = dimension != null ? dimension : "";
             this.pos = pos;
             this.keyId = keyId;
             this.ownerId = ownerId;
@@ -46,34 +46,31 @@ public class WeaponsBindings extends WorldSavedData {
     private final Map<String, Binding> bindings = new LinkedHashMap<>();
 
     public WeaponsBindings() {
-        super(DATA_NAME);
+        super();
     }
 
-    public WeaponsBindings(String name) {
-        super(name);
+    public static String dimKey(World world) {
+        if (world == null) return "";
+        return world.getRegistryKey().getValue().toString();
     }
-
-    // ------------------------------------------------------------ lookup
 
     public static WeaponsBindings get(World world) {
-        if (world == null || world.isRemote) return null;
-        World overworld = world.getMinecraftServer() == null
-                ? world : world.getMinecraftServer().getWorld(0);
-        MapStorage storage = overworld.getMapStorage();
-        WeaponsBindings data = (WeaponsBindings) storage.getOrLoadData(
-                WeaponsBindings.class, DATA_NAME);
-        if (data == null) {
-            data = new WeaponsBindings();
-            storage.setData(DATA_NAME, data);
+        if (world == null || world.isClient()) return null;
+        if (world instanceof ServerWorld serverWorld) {
+            return serverWorld.getServer().getOverworld().getPersistentStateManager().getOrCreate(
+                    WeaponsBindings::fromNbt,
+                    WeaponsBindings::new,
+                    DATA_NAME
+            );
         }
-        return data;
+        return null;
     }
 
     /** The live binding at a position, or null. Stale records are pruned on access. */
     public static Binding find(World world, BlockPos pos) {
         WeaponsBindings data = get(world);
         if (data == null || pos == null) return null;
-        String key = key(world.provider.getDimension(), pos);
+        String key = key(dimKey(world), pos);
         Binding binding = data.bindings.get(key);
         if (binding != null && !Explosives.isExplosive(world, pos)) {
             data.bindings.remove(key);
@@ -83,12 +80,10 @@ public class WeaponsBindings extends WorldSavedData {
         return binding;
     }
 
-    public static Binding bind(World world, BlockPos pos, UUID keyId, UUID ownerId,
-                               WeaponsMode mode) {
+    public static Binding bind(World world, BlockPos pos, UUID keyId, UUID ownerId, WeaponsMode mode) {
         WeaponsBindings data = get(world);
         if (data == null || pos == null || keyId == null) return null;
-        Binding binding = new Binding(world.provider.getDimension(), pos.toImmutable(),
-                keyId, ownerId, mode);
+        Binding binding = new Binding(dimKey(world), pos.toImmutable(), keyId, ownerId, mode);
         data.bindings.put(key(binding.dimension, binding.pos), binding);
         data.markDirty();
         return binding;
@@ -97,7 +92,7 @@ public class WeaponsBindings extends WorldSavedData {
     public static void unbind(World world, BlockPos pos) {
         WeaponsBindings data = get(world);
         if (data == null || pos == null) return;
-        if (data.bindings.remove(key(world.provider.getDimension(), pos)) != null) {
+        if (data.bindings.remove(key(dimKey(world), pos)) != null) {
             data.markDirty();
         }
     }
@@ -106,7 +101,7 @@ public class WeaponsBindings extends WorldSavedData {
     public static boolean toggleGate(World world, BlockPos explosive, BlockPos gate) {
         WeaponsBindings data = get(world);
         if (data == null || explosive == null || gate == null) return false;
-        Binding binding = data.bindings.get(key(world.provider.getDimension(), explosive));
+        Binding binding = data.bindings.get(key(dimKey(world), explosive));
         if (binding == null) return false;
         BlockPos immutable = gate.toImmutable();
         boolean linked;
@@ -124,18 +119,18 @@ public class WeaponsBindings extends WorldSavedData {
     public static void onGatePowered(World world, BlockPos gate) {
         WeaponsBindings data = get(world);
         if (data == null || gate == null) return;
-        int dimension = world.provider.getDimension();
+        String dimension = dimKey(world);
         List<Binding> triggered = new ArrayList<>();
         for (Binding binding : data.bindings.values()) {
-            if (binding.dimension == dimension
+            if (binding.dimension.equals(dimension)
                     && binding.mode == WeaponsMode.REGULAR
                     && binding.gates.contains(gate)) {
                 triggered.add(binding);
             }
         }
         for (Binding binding : triggered) {
-            if (!world.isBlockLoaded(binding.pos)) {
-                // Keep the binding for a later pulse instead of force-loading the chunk.
+            if (!world.isChunkLoaded(binding.pos.getX() >> 4, binding.pos.getZ() >> 4)) {
+                // Keep the binding for a later pulse instead of force-loading the chunk
                 continue;
             }
             trigger(world, binding);
@@ -149,20 +144,20 @@ public class WeaponsBindings extends WorldSavedData {
         if (data == null || binding == null) return;
         data.bindings.remove(key(binding.dimension, binding.pos));
         data.markDirty();
-        if (world.isBlockLoaded(binding.pos) && Explosives.isExplosive(world, binding.pos)) {
+        if (world.isChunkLoaded(binding.pos.getX() >> 4, binding.pos.getZ() >> 4)
+                && Explosives.isExplosive(world, binding.pos)) {
             Explosives.trigger(world, binding.pos);
         }
     }
 
-    /** All bindings of the requested mode within {@code radius} blocks (Chebyshev distance). */
-    public static List<Binding> findNear(World world, BlockPos pos, int radius,
-                                         WeaponsMode mode) {
+    /** All bindings of the requested mode within radius blocks (Chebyshev distance). */
+    public static List<Binding> findNear(World world, BlockPos pos, int radius, WeaponsMode mode) {
         List<Binding> out = new ArrayList<>();
         WeaponsBindings data = get(world);
         if (data == null || pos == null) return out;
-        int dimension = world.provider.getDimension();
+        String dimension = dimKey(world);
         for (Binding binding : data.bindings.values()) {
-            if (binding.dimension != dimension) continue;
+            if (!binding.dimension.equals(dimension)) continue;
             if (mode != null && binding.mode != mode) continue;
             if (Math.abs(binding.pos.getX() - pos.getX()) <= radius
                     && Math.abs(binding.pos.getY() - pos.getY()) <= radius
@@ -177,10 +172,10 @@ public class WeaponsBindings extends WorldSavedData {
     public static void onGateRemoved(World world, BlockPos gate) {
         WeaponsBindings data = get(world);
         if (data == null || gate == null) return;
-        int dimension = world.provider.getDimension();
+        String dimension = dimKey(world);
         boolean changed = false;
         for (Binding binding : data.bindings.values()) {
-            if (binding.dimension == dimension && binding.gates.remove(gate)) {
+            if (binding.dimension.equals(dimension) && binding.gates.remove(gate)) {
                 changed = true;
             }
         }
@@ -189,44 +184,49 @@ public class WeaponsBindings extends WorldSavedData {
 
     // ------------------------------------------------------------ persistence
 
-    @Override
-    public void readFromNBT(NBTTagCompound nbt) {
-        bindings.clear();
-        NBTTagList list = nbt.getTagList("bindings", 10);
-        for (int i = 0; i < list.tagCount(); i++) {
-            NBTTagCompound tag = list.getCompoundTagAt(i);
+    public static WeaponsBindings fromNbt(NbtCompound nbt) {
+        WeaponsBindings data = new WeaponsBindings();
+        NbtList list = nbt.getList("bindings", NbtElement.COMPOUND_TYPE);
+        for (int i = 0; i < list.size(); i++) {
+            NbtCompound tag = list.getCompound(i);
             try {
-                Binding binding = new Binding(tag.getInteger("dim"),
+                String dim = tag.contains("dim", NbtElement.STRING_TYPE)
+                        ? tag.getString("dim")
+                        : String.valueOf(tag.getInt("dim"));
+                Binding binding = new Binding(
+                        dim,
                         BlockPos.fromLong(tag.getLong("pos")),
                         UUID.fromString(tag.getString("key")),
                         UUID.fromString(tag.getString("owner")),
-                        WeaponsMode.byId(tag.getInteger("mode")));
+                        WeaponsMode.byId(tag.getInt("mode"))
+                );
                 binding.gates.addAll(BlockPositions.decodeList(tag.getString("gates")));
-                bindings.put(key(binding.dimension, binding.pos), binding);
-            } catch (IllegalArgumentException ignored) {
-                // Skip malformed entries instead of losing the whole save.
+                data.bindings.put(key(binding.dimension, binding.pos), binding);
+            } catch (Exception ignored) {
+                // Skip malformed entries
             }
         }
+        return data;
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
-        NBTTagList list = new NBTTagList();
+    public NbtCompound writeNbt(NbtCompound nbt) {
+        NbtList list = new NbtList();
         for (Binding binding : bindings.values()) {
-            NBTTagCompound tag = new NBTTagCompound();
-            tag.setInteger("dim", binding.dimension);
-            tag.setLong("pos", binding.pos.toLong());
-            tag.setString("key", binding.keyId.toString());
-            tag.setString("owner", binding.ownerId.toString());
-            tag.setInteger("mode", binding.mode.id);
-            tag.setString("gates", BlockPositions.encodeList(binding.gates));
-            list.appendTag(tag);
+            NbtCompound tag = new NbtCompound();
+            tag.putString("dim", binding.dimension);
+            tag.putLong("pos", binding.pos.asLong());
+            tag.putString("key", binding.keyId.toString());
+            tag.putString("owner", binding.ownerId.toString());
+            tag.putInt("mode", binding.mode.id);
+            tag.putString("gates", BlockPositions.encodeList(binding.gates));
+            list.add(tag);
         }
-        nbt.setTag("bindings", list);
+        nbt.put("bindings", list);
         return nbt;
     }
 
-    private static String key(int dimension, BlockPos pos) {
-        return dimension + ":" + pos.toLong();
+    private static String key(String dimension, BlockPos pos) {
+        return dimension + ":" + pos.asLong();
     }
 }

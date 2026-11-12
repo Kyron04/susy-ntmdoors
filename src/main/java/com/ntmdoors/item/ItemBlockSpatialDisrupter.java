@@ -1,25 +1,25 @@
 package com.ntmdoors.item;
 
-import com.ntmdoors.util.Names;
 import net.minecraft.block.Block;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.item.ItemBlock;
+import net.minecraft.client.item.TooltipContext;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 /** Item form for the Spatial Disrupter, carrying its description line. */
-public class ItemBlockSpatialDisrupter extends ItemBlock {
+public class ItemBlockSpatialDisrupter extends BlockItem {
 
-    public ItemBlockSpatialDisrupter(Block block) {
-        super(block);
+    public ItemBlockSpatialDisrupter(Block block, Settings settings) {
+        super(block, settings);
     }
 
     @Override
-    public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip,
-                               ITooltipFlag flag) {
-        Names.addDescription(tooltip, "Weakens the structural integrity of UHPC");
+    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
+        tooltip.add(Text.literal("Weakens the structural integrity of blast-resistant blocks").formatted(Formatting.GRAY));
     }
 }

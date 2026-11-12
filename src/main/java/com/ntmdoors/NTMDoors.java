@@ -45,5 +45,8 @@ public class NTMDoors implements ModInitializer {
 
         // 7. Register C2S Networking Packets
         ModMessages.registerC2SPackets();
+
+        // 8. Register Fabric API Interaction Events & Anti-Tamper Callbacks
+        com.ntmdoors.weapons.WeaponsBindingEvents.register();
     }
 }

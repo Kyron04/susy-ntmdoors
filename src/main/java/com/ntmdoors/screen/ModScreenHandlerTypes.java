@@ -30,6 +30,12 @@ public final class ModScreenHandlerTypes {
             new ExtendedScreenHandlerType<>(TerminalBackupScreenHandler::new)
     );
 
+    public static final ScreenHandlerType<KeycardHolderScreenHandler> KEYCARD_HOLDER = Registry.register(
+            Registries.SCREEN_HANDLER,
+            Identifier.of(NTMDoors.MOD_ID, "keycard_holder"),
+            new ExtendedScreenHandlerType<>(KeycardHolderScreenHandler::new)
+    );
+
     public static void registerScreenHandlers() {
         // Triggers static initialization
     }

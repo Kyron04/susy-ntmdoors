@@ -2,10 +2,8 @@ package com.ntmdoors.weapons;
 
 /** The two binding behaviours offered by the Weapons Relay Key. */
 public enum WeaponsMode {
-    REGULAR(0, "Regular Bounding",
-            "Bind explosives to Redstone Gates."),
-    DEAD_MANS_HAND(1, "Dead Man's Hand",
-            "Hard lock: only the matching key can break it.");
+    REGULAR(0, "Regular Binding", "Bind explosives to Redstone Gates."),
+    DEAD_MANS_HAND(1, "Dead Man's Hand", "Hard lock: only the matching key can break it.");
 
     public final int id;
     public final String displayName;

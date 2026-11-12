@@ -24,6 +24,8 @@ public final class ModBlocks {
     public static final RedstoneGateBlock REDSTONE_GATE = reg("redstone_gate", new RedstoneGateBlock());
     public static final SpeakerBlock SPEAKER = reg("speaker", new SpeakerBlock());
     public static final MotionSensorBlock MOTION_SENSOR = reg("motion_sensor", new MotionSensorBlock());
+    public static final BlockThermiteCharge THERMITE_CHARGE = reg("thermite_charge", new BlockThermiteCharge());
+    public static final BlockSpatialDisrupter SPATIAL_DISRUPTER = reg("spatial_disrupter", new BlockSpatialDisrupter());
 
     // --- Monitor Desks (Milestone M5) ---
     // 6-Monitor Desk

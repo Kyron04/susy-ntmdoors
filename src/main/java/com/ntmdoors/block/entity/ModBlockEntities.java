@@ -79,6 +79,18 @@ public final class ModBlockEntities {
             ).build()
     );
 
+    public static final BlockEntityType<ThermiteChargeBlockEntity> THERMITE_CHARGE = Registry.register(
+            Registries.BLOCK_ENTITY_TYPE,
+            Identifier.of(NTMDoors.MOD_ID, "thermite_charge"),
+            FabricBlockEntityTypeBuilder.create(ThermiteChargeBlockEntity::new, ModBlocks.THERMITE_CHARGE).build()
+    );
+
+    public static final BlockEntityType<SpatialDisrupterBlockEntity> SPATIAL_DISRUPTER = Registry.register(
+            Registries.BLOCK_ENTITY_TYPE,
+            Identifier.of(NTMDoors.MOD_ID, "spatial_disrupter"),
+            FabricBlockEntityTypeBuilder.create(SpatialDisrupterBlockEntity::new, ModBlocks.SPATIAL_DISRUPTER).build()
+    );
+
     public static void registerModBlockEntities() {
         // Triggers static initialization
     }

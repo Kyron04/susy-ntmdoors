@@ -158,7 +158,12 @@ public final class ModDoors {
         return block;
     }
 
-    public static void registerModDoors() {
+    private static boolean registered = false;
+
+    public static synchronized void registerModDoors() {
+        if (registered) return;
+        registered = true;
+
         if (DOOR_BLOCK_ENTITY == null) {
             DOOR_BLOCK_ENTITY = Registry.register(
                     Registries.BLOCK_ENTITY_TYPE,

@@ -5,6 +5,7 @@ import com.ntmdoors.block.RedstoneGateBlock;
 import com.ntmdoors.util.BlockPositions;
 import com.ntmdoors.util.RedstoneBinding;
 import com.ntmdoors.util.TimedSources;
+import com.ntmdoors.weapons.WeaponsBindings;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -158,6 +159,7 @@ public class RedstoneGateBlockEntity extends BlockEntity implements RedstoneBind
         boundDevices.clear();
         holds.clear();
         linkedInputs.clear();
+        WeaponsBindings.onGateRemoved(world, pos);
         markDirty();
     }
 
@@ -319,6 +321,9 @@ public class RedstoneGateBlockEntity extends BlockEntity implements RedstoneBind
             world.updateNeighbors(above, state.getBlock());
         }
         redstoneBinding.applyGateOutput(powered);
+        if (powered) {
+            WeaponsBindings.onGatePowered(world, pos);
+        }
     }
 
     // --- NBT Serialization ---

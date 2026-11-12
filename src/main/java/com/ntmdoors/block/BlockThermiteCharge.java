@@ -1,245 +1,165 @@
 package com.ntmdoors.block;
 
-import com.ntmdoors.NTMDoors;
-import com.ntmdoors.tile.TileEntityThermiteCharge;
+import com.ntmdoors.block.entity.ModBlockEntities;
+import com.ntmdoors.block.entity.ThermiteChargeBlockEntity;
 import com.ntmdoors.util.Facings;
+import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.minecraft.block.Block;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.material.EnumPushReaction;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.PropertyDirection;
-import net.minecraft.block.properties.PropertyInteger;
-import net.minecraft.block.state.BlockFaceShape;
-import net.minecraft.block.state.BlockStateContainer;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.BlockRenderLayer;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.block.BlockRenderType;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.BlockWithEntity;
+import net.minecraft.block.MapColor;
+import net.minecraft.block.ShapeContext;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityTicker;
+import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Items;
+import net.minecraft.sound.BlockSoundGroup;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.state.StateManager;
+import net.minecraft.state.property.DirectionProperty;
+import net.minecraft.state.property.IntProperty;
+import net.minecraft.state.property.Properties;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-
-import javax.annotation.Nullable;
-import java.util.Random;
+import org.jetbrains.annotations.Nullable;
 
 /**
- * Framed thermite breaching charge. The charge mounts flush against the face it was clicked on and
- * points away from that surface. On doors it is inset by the hit point so it sits on the door's
- * hitbox rather than floating at the cell boundary; the inset is stored in
- * {@link TileEntityThermiteCharge} and selected by the {@code inset} blockstate property.
- *
- * <p>Flint and steel lights the fuse. While it burns the attached door ignores its controls, and
- * detonation removes the door's moving panel and collision while leaving the static frame.</p>
+ * Framed thermite breaching charge for Fabric 1.20.1.
+ * Mounts flush against the face it was clicked on and points away from that surface.
+ * On doors it is inset by the hit point (0..15 sixteenths of a block) so it sits on the door's
+ * hitbox rather than floating at the cell boundary.
  */
-public class BlockThermiteCharge extends Block {
+public class BlockThermiteCharge extends BlockWithEntity {
 
-    public static final PropertyDirection FACING = PropertyDirection.create("facing");
-    /** 0..15 sixteenths of a block, from the cell face toward the mounted surface. */
-    public static final PropertyInteger INSET = PropertyInteger.create("inset", 0, 15);
+    public static final DirectionProperty FACING = Properties.FACING;
+    public static final IntProperty INSET = IntProperty.of("inset", 0, 15);
 
-    /** One texture pixel. */
     private static final double P = 1.0 / 16.0;
-    /** Panel depth in model pixels: the supplied model spans z 6.76..9.176. */
     private static final double DEPTH = 2.416;
 
+    private static final VoxelShape[][] SHAPES = new VoxelShape[6][16];
+
+    static {
+        for (Direction dir : Direction.values()) {
+            for (int inset = 0; inset < 16; inset++) {
+                int pixels = inset;
+                Box box;
+                switch (dir) {
+                    case UP -> box = new Box(1 * P, -pixels * P, 0, 15 * P, (DEPTH - pixels) * P, 1);
+                    case DOWN -> box = new Box(1 * P, (16 - DEPTH + pixels) * P, 0, 15 * P, (16 + pixels) * P, 1);
+                    default -> {
+                        Box local = new Box(1 * P - 0.5, 0, (16 - DEPTH + pixels) * P - 0.5, 15 * P - 0.5, 1, (16 + pixels) * P - 0.5);
+                        box = Facings.rotate(local, dir).offset(0.5, 0, 0.5);
+                    }
+                }
+                SHAPES[dir.getId()][inset] = VoxelShapes.cuboid(box);
+            }
+        }
+    }
+
     public BlockThermiteCharge() {
-        super(Material.IRON);
-        setRegistryName(NTMDoors.MODID, "thermite_charge");
-        setTranslationKey(NTMDoors.MODID + ".thermite_charge");
-        setCreativeTab(NTMDoors.TAB);
-        setHardness(1.5F);
-        setResistance(10F);
-        setSoundType(SoundType.METAL);
-        setHarvestLevel("pickaxe", 0);
-        // The panel is thin and has transparent pixels in its front sprite; it must not block
-        // light or force neighbouring faces to be culled.
-        setLightOpacity(0);
-        setDefaultState(blockState.getBaseState()
-                .withProperty(FACING, EnumFacing.NORTH)
-                .withProperty(INSET, 0));
+        super(FabricBlockSettings.create()
+                .mapColor(MapColor.IRON_GRAY)
+                .strength(1.5F, 10.0F)
+                .sounds(BlockSoundGroup.METAL)
+                .nonOpaque());
+        setDefaultState(getStateManager().getDefaultState()
+                .with(FACING, Direction.NORTH)
+                .with(INSET, 0));
     }
 
     @Override
-    protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, FACING, INSET);
+    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+        builder.add(FACING, INSET);
     }
 
     @Override
-    public IBlockState getStateFromMeta(int meta) {
-        EnumFacing facing = EnumFacing.byIndex(meta & 7);
-        if (facing == null) facing = EnumFacing.NORTH;
-        return getDefaultState().withProperty(FACING, facing).withProperty(INSET, 0);
+    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+        return SHAPES[state.get(FACING).getId()][state.get(INSET)];
     }
 
     @Override
-    public int getMetaFromState(IBlockState state) {
-        return state.getValue(FACING).getIndex();
+    public VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+        return getOutlineShape(state, world, pos, context);
     }
 
     @Override
-    public IBlockState getActualState(IBlockState state, IBlockAccess world, BlockPos pos) {
-        return state.withProperty(INSET, insetAt(world, pos));
-    }
-
-    private static int insetAt(IBlockAccess world, BlockPos pos) {
-        TileEntity te = world.getTileEntity(pos);
-        return te instanceof TileEntityThermiteCharge
-                ? ((TileEntityThermiteCharge) te).getInset() : 0;
-    }
-
-    /**
-     * The clicked face is the direction the charge points. The block is placed in the cell in
-     * front of that face, so the charge's back sits against the clicked surface. The inset is
-     * applied by the item after placement, once it knows which door hitbox was clicked.
-     */
-    @Override
-    public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing,
-                                            float hitX, float hitY, float hitZ, int meta,
-                                            EntityLivingBase placer, EnumHand hand) {
-        return getDefaultState().withProperty(FACING, facing == null ? EnumFacing.NORTH : facing);
-    }
-
-    /** World-space box for the mounted panel. */
-    public static AxisAlignedBB shape(EnumFacing facing, int inset) {
-        int pixels = Math.max(0, Math.min(15, inset));
-        switch (facing) {
-            case UP:
-                // Base z becomes -y under the x=270 model rotation; the back sits at -inset.
-                return new AxisAlignedBB(
-                        1 * P, -pixels * P, 0,
-                        15 * P, (DEPTH - pixels) * P, 1);
-            case DOWN:
-                // Base z becomes +y under the x=90 model rotation.
-                return new AxisAlignedBB(
-                        1 * P, (16 - DEPTH + pixels) * P, 0,
-                        15 * P, (16 + pixels) * P, 1);
-            default:
-                AxisAlignedBB local = new AxisAlignedBB(
-                        1 * P - 0.5, 0, (16 - DEPTH + pixels) * P - 0.5,
-                        15 * P - 0.5, 1, (16 + pixels) * P - 0.5);
-                return Facings.rotate(local, facing).offset(0.5, 0, 0.5);
-        }
-    }
-
-    @Override
-    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
-        return shape(state.getValue(FACING), insetAt(source, pos));
+    public BlockRenderType getRenderType(BlockState state) {
+        return BlockRenderType.MODEL;
     }
 
     @Nullable
     @Override
-    public AxisAlignedBB getCollisionBoundingBox(IBlockState state, IBlockAccess world, BlockPos pos) {
-        return shape(state.getValue(FACING), insetAt(world, pos));
-    }
-
-    @Override
-    public boolean hasTileEntity(IBlockState state) {
-        return true;
+    public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+        return new ThermiteChargeBlockEntity(pos, state);
     }
 
     @Nullable
     @Override
-    public TileEntity createTileEntity(World world, IBlockState state) {
-        return new TileEntityThermiteCharge();
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+        return checkType(type, ModBlockEntities.THERMITE_CHARGE, ThermiteChargeBlockEntity::tick);
     }
 
     @Override
-    public boolean isOpaqueCube(IBlockState state) {
-        return false;
-    }
-
-    @Override
-    public boolean isFullCube(IBlockState state) {
-        return false;
-    }
-
-    @Override
-    public BlockFaceShape getBlockFaceShape(IBlockAccess world, IBlockState state, BlockPos pos,
-                                            EnumFacing face) {
-        return BlockFaceShape.UNDEFINED;
-    }
-
-    /** The front sprite has transparent corners, so cut them out instead of rendering them. */
-    @SideOnly(Side.CLIENT)
-    @Override
-    public BlockRenderLayer getRenderLayer() {
-        return BlockRenderLayer.CUTOUT;
-    }
-
-    @Override
-    public EnumPushReaction getPushReaction(IBlockState state) {
-        return EnumPushReaction.BLOCK;
-    }
-
-    /** Flint and steel lights the fuse. */
-    @Override
-    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player,
-                                    EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
-        TileEntity te = world.getTileEntity(pos);
-        if (!(te instanceof TileEntityThermiteCharge)) return false;
-        ItemStack stack = player.getHeldItem(hand);
-        if (stack.getItem() != Items.FLINT_AND_STEEL) return false;
-        if (world.isRemote) return true;
-        TileEntityThermiteCharge charge = (TileEntityThermiteCharge) te;
-        if (charge.isLit()) return true;
-        if (!charge.light()) return true;
-        world.playSound(null, pos, SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1F, 0.8F);
-        if (!player.capabilities.isCreativeMode) stack.damageItem(1, player);
-        player.swingArm(hand);
-        return true;
-    }
-
-    /**
-     * The charge's tile entity schedules this when its door starts moving or the fuse ends.
-     * Running the removal here keeps it outside the tile-entity tick loop.
-     */
-    @Override
-    public void updateTick(World world, BlockPos pos, IBlockState state, Random rand) {
-        TileEntity te = world.getTileEntity(pos);
-        if (!(te instanceof TileEntityThermiteCharge)) return;
-        TileEntityThermiteCharge charge = (TileEntityThermiteCharge) te;
-        if (charge.isPendingExplosion()) {
-            charge.explode();
-        } else if (charge.isPendingBreak()) {
-            world.destroyBlock(pos, true);
+    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+        if (player.getStackInHand(hand).isOf(Items.FLINT_AND_STEEL)) {
+            BlockEntity be = world.getBlockEntity(pos);
+            if (be instanceof ThermiteChargeBlockEntity charge) {
+                if (charge.isLit()) return ActionResult.SUCCESS;
+                if (!world.isClient()) {
+                    if (charge.light()) {
+                        world.playSound(null, pos, SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1.0F, 0.8F);
+                        if (!player.isCreative()) {
+                            player.getStackInHand(hand).damage(1, player, p -> p.sendToolBreakStatus(hand));
+                        }
+                    }
+                }
+                return ActionResult.SUCCESS;
+            }
         }
+        return ActionResult.PASS;
     }
 
-    /** Drop or detonate the charge when the surface it is mounted on disappears. */
     @Override
-    public void neighborChanged(IBlockState state, World world, BlockPos pos, Block block, BlockPos fromPos) {
-        if (world.isRemote) return;
-        EnumFacing facing = state.getValue(FACING);
+    public void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify) {
+        super.neighborUpdate(state, world, pos, sourceBlock, sourcePos, notify);
+        if (world.isClient()) return;
+
+        Direction facing = state.get(FACING);
         BlockPos support = pos.offset(facing.getOpposite());
-        IBlockState supportState = world.getBlockState(support);
-        if (world.isAirBlock(support) || supportState.getBlock().isReplaceable(world, support)) {
-            TileEntity te = world.getTileEntity(pos);
-            if (te instanceof TileEntityThermiteCharge
-                    && ((TileEntityThermiteCharge) te).isLit()) {
-                ((TileEntityThermiteCharge) te).scheduleExplosion();
-            } else {
-                dropBlockAsItem(world, pos, state, 0);
-                world.setBlockToAir(pos);
+        BlockState supportState = world.getBlockState(support);
+
+        if (supportState.isAir() || supportState.isReplaceable()) {
+            BlockEntity be = world.getBlockEntity(pos);
+            if (be instanceof ThermiteChargeBlockEntity charge) {
+                if (charge.isLit()) {
+                    charge.scheduleExplosion();
+                } else {
+                    world.breakBlock(pos, true);
+                }
             }
         }
     }
 
     @Override
-    public void breakBlock(World world, BlockPos pos, IBlockState state) {
-        TileEntity te = world.getTileEntity(pos);
-        if (te instanceof TileEntityThermiteCharge) {
-            ((TileEntityThermiteCharge) te).onRemoved();
+    public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
+        if (!state.isOf(newState.getBlock())) {
+            BlockEntity be = world.getBlockEntity(pos);
+            if (be instanceof ThermiteChargeBlockEntity charge) {
+                charge.onRemoved();
+            }
+            super.onStateReplaced(state, world, pos, newState, moved);
         }
-        super.breakBlock(world, pos, state);
     }
 }

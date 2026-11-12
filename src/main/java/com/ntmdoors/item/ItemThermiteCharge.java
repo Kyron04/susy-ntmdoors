@@ -1,96 +1,87 @@
 package com.ntmdoors.item;
 
-import com.ntmdoors.block.BlockDoorGeneric;
+import com.ntmdoors.block.door.BlockDoorGeneric;
+import com.ntmdoors.block.entity.DoorBlockEntity;
+import com.ntmdoors.block.entity.ThermiteChargeBlockEntity;
 import com.ntmdoors.door.DoorPlacementGuard;
-import com.ntmdoors.tile.TileEntityDoorGeneric;
-import com.ntmdoors.tile.TileEntityThermiteCharge;
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemBlock;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.BlockItem;
+import net.minecraft.item.ItemUsageContext;
+import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 /**
- * Item form of the Thermite Charge. Placement runs before the clicked block's own interaction, so
- * a charge can be attached directly to doors, safes and other machines without opening them.
- *
- * <p>When the clicked block is a supported door, the hit point is converted into a 0..15 pixel
- * inset and stored on the charge's tile entity. The large/complex doors in
- * {@link #isExcludedDoor} refuse placement instead.</p>
+ * Item form of the Thermite Charge.
+ * Intercepts door clicks to calculate hit inset (0..15) and record mount onto the block entity,
+ * while preventing mounting on excluded blast/vault/hatch doors.
  */
-public class ItemThermiteCharge extends ItemBlock {
+public class ItemThermiteCharge extends BlockItem {
 
     public ItemThermiteCharge(Block block) {
-        super(block);
+        super(block, new Settings());
     }
 
     @Override
-    public EnumActionResult onItemUseFirst(EntityPlayer player, World world, BlockPos pos, EnumFacing side,
-                                           float hitX, float hitY, float hitZ, EnumHand hand) {
-        IBlockState clicked = world.getBlockState(pos);
-        BlockDoorGeneric door = clicked.getBlock() instanceof BlockDoorGeneric
-                ? (BlockDoorGeneric) clicked.getBlock() : null;
+    public ActionResult useOnBlock(ItemUsageContext context) {
+        World world = context.getWorld();
+        BlockPos pos = context.getBlockPos();
+        BlockState clicked = world.getBlockState(pos);
+        PlayerEntity player = context.getPlayer();
+        Direction side = context.getSide();
+
+        BlockDoorGeneric door = clicked.getBlock() instanceof BlockDoorGeneric d ? d : null;
         if (door != null && isExcludedDoor(door)) {
-            if (!world.isRemote) {
-                player.sendStatusMessage(new TextComponentTranslation(
-                        "ntmdoors.msg.thermite_door_unsupported"), true);
+            if (!world.isClient() && player != null) {
+                player.sendMessage(Text.translatable("ntmdoors.msg.thermite_door_unsupported"), true);
             }
-            // Consume the click so the door itself does not open.
-            return EnumActionResult.SUCCESS;
+            return ActionResult.SUCCESS;
         }
 
-        ItemStack stack = player.getHeldItem(hand);
-        int count = stack.getCount();
-        BlockPos placedPos = clicked.getBlock().isReplaceable(world, pos) ? pos : pos.offset(side);
+        BlockPos placedPos = clicked.isReplaceable() ? pos : pos.offset(side);
         if (DoorPlacementGuard.blocksPlacement(world, placedPos)) {
-            return EnumActionResult.FAIL;
-        }
-        EnumActionResult result = onItemUse(player, world, pos, hand, side, hitX, hitY, hitZ);
-
-        // ItemBlock.onItemUse always shrinks; the normal creative path restores the count itself,
-        // but onItemUseFirst bypasses that path.
-        if (player.capabilities.isCreativeMode) {
-            stack.setCount(count);
+            return ActionResult.FAIL;
         }
 
-        if (result == EnumActionResult.SUCCESS && door != null) {
+        ActionResult result = super.useOnBlock(context);
+
+        if (result.isAccepted() && door != null) {
+            Vec3d hitPos = context.getHitPos();
+            double hitX = hitPos.x - pos.getX();
+            double hitY = hitPos.y - pos.getY();
+            double hitZ = hitPos.z - pos.getZ();
             int inset = insetFromHit(side, hitX, hitY, hitZ);
-            TileEntity te = world.getTileEntity(placedPos);
-            if (te instanceof TileEntityThermiteCharge) {
-                TileEntityDoorGeneric core = door.getCore(world, pos, clicked);
-                BlockPos corePos = core == null ? door.getCorePos(world, pos, clicked) : core.getPos();
-                float fraction = core == null ? 0F : core.getOpenFraction(1F);
-                ((TileEntityThermiteCharge) te).setMount(inset, corePos, fraction);
+
+            if (world.getBlockEntity(placedPos) instanceof ThermiteChargeBlockEntity charge) {
+                DoorBlockEntity core = BlockDoorGeneric.getCore(world, pos, clicked);
+                BlockPos corePos = core != null ? core.getPos() : (world.getBlockEntity(pos) instanceof com.ntmdoors.block.entity.DoorPartBlockEntity part ? part.getCorePos() : pos);
+                float fraction = core == null ? 0.0F : core.getOpenFraction(1.0F);
+                charge.setMount(inset, corePos, fraction);
             }
         }
 
-        // Only consume the click when the charge actually placed; otherwise let the block react.
-        return result == EnumActionResult.SUCCESS ? EnumActionResult.SUCCESS : EnumActionResult.PASS;
+        return result;
     }
 
-    private static int insetFromHit(EnumFacing side, float hitX, float hitY, float hitZ) {
-        double surface;
-        switch (side) {
-            case SOUTH: surface = 1.0D - hitZ; break;
-            case NORTH: surface = hitZ; break;
-            case EAST: surface = 1.0D - hitX; break;
-            case WEST: surface = hitX; break;
-            case UP: surface = 1.0D - hitY; break;
-            case DOWN: surface = hitY; break;
-            default: surface = 0.0D; break;
-        }
-        return Math.max(0, Math.min(15, (int) Math.round(surface * 16.0D)));
+    public static int insetFromHit(Direction side, double hitX, double hitY, double hitZ) {
+        double surface = switch (side) {
+            case SOUTH -> 1.0 - hitZ;
+            case NORTH -> hitZ;
+            case EAST  -> 1.0 - hitX;
+            case WEST  -> hitX;
+            case UP    -> 1.0 - hitY;
+            case DOWN  -> hitY;
+        };
+        return Math.max(0, Math.min(15, (int) Math.round(surface * 16.0)));
     }
 
-    /** The doors that must not receive a charge. */
-    private static boolean isExcludedDoor(BlockDoorGeneric door) {
+    public static boolean isExcludedDoor(BlockDoorGeneric door) {
+        if (door == null || door.decl == null) return false;
         String name = door.decl.name;
         return "silo_hatch".equals(name)
                 || "silo_hatch_large".equals(name)

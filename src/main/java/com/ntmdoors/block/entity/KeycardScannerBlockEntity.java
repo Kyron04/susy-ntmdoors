@@ -1,11 +1,14 @@
 package com.ntmdoors.block.entity;
 
 import com.ntmdoors.item.ItemCreativeKeycard;
+import com.ntmdoors.item.ItemKeycardHolder;
+import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.sound.ModSounds;
 import com.ntmdoors.util.Biometrics;
 import com.ntmdoors.util.Codes;
 import com.ntmdoors.util.PrivateKeys;
 import com.ntmdoors.util.RedstoneBinding;
+import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -155,6 +158,20 @@ public class KeycardScannerBlockEntity extends BlockEntity implements RedstoneBi
     public void useCard(PlayerEntity player) {
         if (player == null) return;
         startScan(player.getMainHandStack(), player.getOffHandStack(), ItemCreativeKeycard.isHeldBy(player), player.getUuid());
+    }
+
+    public void useHolder(PlayerEntity player, ItemStack holder) {
+        if (holder == null) return;
+        boolean creative = player != null && ItemCreativeKeycard.isHeldBy(player);
+        UUID playerId = player != null ? player.getUuid() : null;
+        DefaultedList<ItemStack> cards = ItemKeycardHolder.readContents(holder);
+        for (ItemStack card : cards) {
+            if (!card.isEmpty() && card.getItem() instanceof ItemRfidCard) {
+                startScan(card, ItemStack.EMPTY, creative, playerId);
+                return;
+            }
+        }
+        startScan(ItemStack.EMPTY, ItemStack.EMPTY, creative, playerId);
     }
 
     public void startScan(ItemStack main, ItemStack off, boolean creative, UUID playerId) {

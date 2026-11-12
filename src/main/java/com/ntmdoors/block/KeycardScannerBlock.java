@@ -3,6 +3,7 @@ package com.ntmdoors.block;
 import com.ntmdoors.block.entity.KeycardScannerBlockEntity;
 import com.ntmdoors.block.entity.ModBlockEntities;
 import com.ntmdoors.item.ItemCreativeKeycard;
+import com.ntmdoors.item.ItemKeycardHolder;
 import com.ntmdoors.item.ItemOperatorKeycard;
 import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.item.ItemScrewdriver;
@@ -116,6 +117,14 @@ public class KeycardScannerBlock extends BlockWithEntity {
 
         if (player.isSneaking() && (held.getItem() instanceof ItemOperatorKeycard || held.getItem() instanceof ItemCreativeKeycard)) {
             return ActionResult.PASS;
+        }
+
+        if (held.getItem() instanceof ItemKeycardHolder) {
+            if (player.isSneaking()) {
+                return ActionResult.PASS;
+            }
+            scanner.useHolder(player, held);
+            return ActionResult.SUCCESS;
         }
 
         if (held.getItem() instanceof ItemRfidCard || player.getOffHandStack().getItem() instanceof ItemRfidCard) {

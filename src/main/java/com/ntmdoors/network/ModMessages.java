@@ -22,6 +22,11 @@ import com.ntmdoors.monitor.MonitorDevice;
 import com.ntmdoors.monitor.NotepadDocument;
 import com.ntmdoors.monitor.SecurityNet;
 import com.ntmdoors.monitor.SecurityNetSummary;
+import com.ntmdoors.block.entity.SpatialDisrupterBlockEntity;
+import com.ntmdoors.item.ItemDocumentsFolder;
+import com.ntmdoors.item.ItemWeaponsRelayKey;
+import com.ntmdoors.weapons.WeaponsKeyData;
+import com.ntmdoors.weapons.WeaponsMode;
 import com.ntmdoors.sound.ModSounds;
 import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.PrivateKeys;
@@ -82,6 +87,11 @@ public final class ModMessages {
     public static final Identifier NOTEPAD_ACTION_ID = Identifier.of(NTMDoors.MOD_ID, "notepad_action");
     public static final Identifier NOTEPAD_DATA_ID = Identifier.of(NTMDoors.MOD_ID, "notepad_data");
     public static final Identifier MONITOR_BACKUP_OPEN_ID = Identifier.of(NTMDoors.MOD_ID, "monitor_backup_open");
+
+    // --- Milestone M6 Packets ---
+    public static final Identifier DOCUMENTS_FOLDER_PAGES_ID = Identifier.of(NTMDoors.MOD_ID, "documents_folder_pages");
+    public static final Identifier SPATIAL_DISRUPTER_ACTIVATE_ID = Identifier.of(NTMDoors.MOD_ID, "spatial_disrupter_activate");
+    public static final Identifier WEAPONS_KEY_MODE_ID = Identifier.of(NTMDoors.MOD_ID, "weapons_key_mode");
 
     public static void registerC2SPackets() {
         // 1. Relay Key Name
@@ -555,6 +565,59 @@ public final class ModMessages {
                 }
             });
         });
+
+        // 24. Documents Folder Pages
+        ServerPlayNetworking.registerGlobalReceiver(DOCUMENTS_FOLDER_PAGES_ID, (server, player, handler, buf, responseSender) -> {
+            int handOrdinal = buf.readByte();
+            int lastPage = buf.readByte();
+            String customName = buf.readString(ItemDocumentsFolder.MAX_NAME_LENGTH);
+            int count = Math.min((int) buf.readByte(), ItemDocumentsFolder.PAGE_COUNT);
+            List<String> pages = new ArrayList<>(count);
+            for (int i = 0; i < count; i++) {
+                pages.add(buf.readString(ItemDocumentsFolder.MAX_PAGE_LENGTH));
+            }
+
+            server.execute(() -> {
+                Hand hand = handOrdinal == 1 ? Hand.OFF_HAND : Hand.MAIN_HAND;
+                ItemStack stack = player.getStackInHand(hand);
+                if (stack.isEmpty() || !(stack.getItem() instanceof ItemDocumentsFolder)) return;
+
+                List<String> cleanPages = ItemDocumentsFolder.clean(pages);
+                ItemDocumentsFolder.setPages(stack, cleanPages);
+                ItemDocumentsFolder.setCustomName(stack, customName);
+                ItemDocumentsFolder.setLastPage(stack, cleanPages.isEmpty() ? 0 : lastPage);
+
+                HeldItems.sync(player);
+            });
+        });
+
+        // 25. Spatial Disrupter Activate
+        ServerPlayNetworking.registerGlobalReceiver(SPATIAL_DISRUPTER_ACTIVATE_ID, (server, player, handler, buf, responseSender) -> {
+            BlockPos pos = buf.readBlockPos();
+            server.execute(() -> {
+                if (player.squaredDistanceTo(pos.toCenterPos()) > 64.0) return;
+                BlockEntity be = player.getWorld().getBlockEntity(pos);
+                if (be instanceof SpatialDisrupterBlockEntity disrupter) {
+                    disrupter.activate(player);
+                }
+            });
+        });
+
+        // 26. Weapons Key Mode
+        ServerPlayNetworking.registerGlobalReceiver(WEAPONS_KEY_MODE_ID, (server, player, handler, buf, responseSender) -> {
+            Hand hand = buf.readEnumConstant(Hand.class);
+            int modeId = buf.readByte();
+            server.execute(() -> {
+                ItemStack stack = player.getStackInHand(hand);
+                if (!(stack.getItem() instanceof ItemWeaponsRelayKey)) return;
+
+                WeaponsMode mode = WeaponsMode.byId(modeId);
+                WeaponsKeyData.setMode(stack, mode);
+                WeaponsKeyData.clearSession(stack);
+                HeldItems.sync(player);
+                player.sendMessage(Text.translatable("ntmdoors.msg.weapons_mode_changed", mode.displayName), true);
+            });
+        });
     }
 
     @Environment(EnvType.CLIENT)
@@ -867,6 +930,36 @@ public final class ModMessages {
         buf.writeBlockPos(pos);
         buf.writeBoolean(restore);
         ClientPlayNetworking.send(MONITOR_BACKUP_OPEN_ID, buf);
+    }
+
+    @Environment(EnvType.CLIENT)
+    public static void sendDocumentsFolderPages(Hand hand, int lastPage, String customName, List<String> pages) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeByte(hand == Hand.OFF_HAND ? 1 : 0);
+        buf.writeByte(Math.max(0, Math.min(ItemDocumentsFolder.PAGE_COUNT - 1, lastPage)));
+        buf.writeString(customName != null ? customName : "", ItemDocumentsFolder.MAX_NAME_LENGTH);
+        int count = Math.min(pages.size(), ItemDocumentsFolder.PAGE_COUNT);
+        buf.writeByte(count);
+        for (int i = 0; i < count; i++) {
+            String p = pages.get(i);
+            buf.writeString(p != null ? p : "", ItemDocumentsFolder.MAX_PAGE_LENGTH);
+        }
+        ClientPlayNetworking.send(DOCUMENTS_FOLDER_PAGES_ID, buf);
+    }
+
+    @Environment(EnvType.CLIENT)
+    public static void sendSpatialDisrupterActivate(BlockPos pos) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeBlockPos(pos);
+        ClientPlayNetworking.send(SPATIAL_DISRUPTER_ACTIVATE_ID, buf);
+    }
+
+    @Environment(EnvType.CLIENT)
+    public static void sendWeaponsKeyMode(Hand hand, WeaponsMode mode) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeEnumConstant(hand);
+        buf.writeByte(mode.id);
+        ClientPlayNetworking.send(WEAPONS_KEY_MODE_ID, buf);
     }
 
     private ModMessages() {}

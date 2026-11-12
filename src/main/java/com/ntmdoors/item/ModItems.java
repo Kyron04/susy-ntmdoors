@@ -29,6 +29,7 @@ public final class ModItems {
     public static final ItemMotionRelayKey MOTION_RELAY_KEY = reg("motion_relay_key", new ItemMotionRelayKey());
     public static final ItemRedstoneRelayKey REDSTONE_RELAY_KEY = reg("redstone_relay_key", new ItemRedstoneRelayKey());
     public static final ItemRedstoneMonocle REDSTONE_MONOCLE = reg("redstone_monocle", new ItemRedstoneMonocle());
+    public static final ItemWeaponsRelayKey WEAPONS_RELAY_KEY = reg("weapons_relay_key", new ItemWeaponsRelayKey());
 
     // --- 8 RFID Base & Color Cards ---
     public static final ItemRfidCard BLANK_RFID_CARD = reg("blank_rfid_card", new ItemRfidCard("blank_rfid_card", false));
@@ -140,6 +141,12 @@ public final class ModItems {
 
     public static final ItemTerminalBackupKey TERMINAL_BACKUP_KEY = reg("terminal_backup_key",
             new ItemTerminalBackupKey(new Item.Settings()));
+
+    // --- Portable Accessories & Breaching (Milestone M6) ---
+    public static final ItemKeycardHolder KEYCARD_HOLDER = reg("keycard_holder", new ItemKeycardHolder());
+    public static final ItemDocumentsFolder DOCUMENTS_FOLDER = reg("documents_folder", new ItemDocumentsFolder());
+    public static final ItemThermiteCharge THERMITE_CHARGE = reg("thermite_charge", new ItemThermiteCharge(ModBlocks.THERMITE_CHARGE));
+    public static final ItemBlockSpatialDisrupter SPATIAL_DISRUPTER = reg("spatial_disrupter", new ItemBlockSpatialDisrupter(ModBlocks.SPATIAL_DISRUPTER, new Item.Settings()));
 
     // --- 31 Palette Cards for Programmer Page 1 ---
     public static final List<ItemRfidCard> PROGRAMMER_CARDS;

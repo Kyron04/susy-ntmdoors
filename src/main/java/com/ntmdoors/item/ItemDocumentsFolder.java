@@ -1,22 +1,25 @@
 package com.ntmdoors.item;
 
-import com.ntmdoors.NTMDoors;
-import com.ntmdoors.util.Names;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.player.EntityPlayer;
+import com.ntmdoors.client.screen.DocumentsFolderScreen;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.item.TooltipContext;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
-import net.minecraft.nbt.NBTTagString;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtString;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
+import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.Constants;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,58 +31,55 @@ import java.util.List;
  */
 public class ItemDocumentsFolder extends Item {
 
-    /** Pages a folder holds. */
     public static final int PAGE_COUNT = 20;
-
-    /** Hard cap per page, shared by the editor and the network message. */
     public static final int MAX_PAGE_LENGTH = 1024;
-
-    /** Longest editable folder name. */
     public static final int MAX_NAME_LENGTH = 24;
 
-    private static final String TAG_PAGES = "pages";
-    private static final String TAG_PAGE = "lastPage";
+    public static final String TAG_PAGES = "pages";
+    public static final String TAG_PAGE = "lastPage";
 
     public ItemDocumentsFolder() {
-        setRegistryName(NTMDoors.MODID, "documents_folder");
-        setTranslationKey(NTMDoors.MODID + ".documents_folder");
-        setCreativeTab(NTMDoors.TAB);
-        setMaxStackSize(1);
+        super(new Item.Settings().maxCount(1));
     }
 
     @Override
-    public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
-        ItemStack stack = player.getHeldItem(hand);
-        // The editor is client side only; it sends the finished pages to the server when it closes.
-        if (world.isRemote) {
-            NTMDoors.proxy.openDocumentsFolderGui(hand);
+    public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
+        ItemStack stack = player.getStackInHand(hand);
+        if (world.isClient()) {
+            openClientScreen(hand, stack);
+            player.playSound(SoundEvents.ITEM_BOOK_PAGE_TURN, 0.8F, 1.0F);
         }
-        return new ActionResult<>(EnumActionResult.SUCCESS, stack);
+        return TypedActionResult.success(stack, world.isClient());
+    }
+
+    @Environment(EnvType.CLIENT)
+    private void openClientScreen(Hand hand, ItemStack stack) {
+        MinecraftClient.getInstance().setScreen(new DocumentsFolderScreen(hand, stack));
     }
 
     @Override
-    public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
-        Names.addDescription(tooltip,
-                "Effectively a glorified book with a cooler aesthetic.",
-                "Right-click to open and write.");
+    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
+        tooltip.add(Text.literal("Effectively a glorified book with a cooler aesthetic.").formatted(Formatting.GRAY));
+        tooltip.add(Text.literal("Right-click to open and write.").formatted(Formatting.GRAY));
         int written = writtenPageCount(stack);
         if (written > 0) {
-            tooltip.add(TextFormatting.GRAY + "Pages written: " + written + " / " + PAGE_COUNT);
+            tooltip.add(Text.literal("Pages written: " + written + " / " + PAGE_COUNT).formatted(Formatting.GRAY));
         }
     }
 
-    // ------------------------------------------------------------ pages
-
-    /** Reads the stored pages, padded with empty strings up to {@link #PAGE_COUNT}. */
+    /** Reads the stored pages, padded with empty strings up to PAGE_COUNT. */
     public static List<String> getPages(ItemStack stack) {
-        NBTTagList list = null;
-        if (!stack.isEmpty() && stack.hasTagCompound()) {
-            list = stack.getTagCompound().getTagList(TAG_PAGES, Constants.NBT.TAG_STRING);
+        List<String> pages = new ArrayList<>(PAGE_COUNT);
+        NbtList list = null;
+        if (!stack.isEmpty() && stack.hasNbt()) {
+            NbtCompound tag = stack.getNbt();
+            if (tag != null && tag.contains(TAG_PAGES, NbtElement.LIST_TYPE)) {
+                list = tag.getList(TAG_PAGES, NbtElement.STRING_TYPE);
+            }
         }
 
-        List<String> pages = new ArrayList<>(PAGE_COUNT);
         for (int i = 0; i < PAGE_COUNT; i++) {
-            pages.add(list != null && i < list.tagCount() ? list.getStringTagAt(i) : "");
+            pages.add(list != null && i < list.size() ? list.getString(i) : "");
         }
         return pages;
     }
@@ -89,24 +89,21 @@ public class ItemDocumentsFolder extends Item {
         if (stack.isEmpty()) return;
 
         List<String> clean = clean(pages);
-        NBTTagCompound tag = stack.getTagCompound();
+        NbtCompound tag = stack.getNbt();
         if (clean.isEmpty()) {
             if (tag != null) {
-                tag.removeTag(TAG_PAGES);
-                if (tag.isEmpty()) stack.setTagCompound(null);
+                tag.remove(TAG_PAGES);
+                if (tag.isEmpty()) stack.setNbt(null);
             }
             return;
         }
 
-        if (tag == null) {
-            tag = new NBTTagCompound();
-            stack.setTagCompound(tag);
-        }
-        NBTTagList list = new NBTTagList();
+        tag = stack.getOrCreateNbt();
+        NbtList list = new NbtList();
         for (String page : clean) {
-            list.appendTag(new NBTTagString(page));
+            list.add(NbtString.of(page));
         }
-        tag.setTag(TAG_PAGES, list);
+        tag.put(TAG_PAGES, list);
     }
 
     /** Clamps a page list to the folder limits and drops trailing empty pages. */
@@ -137,65 +134,60 @@ public class ItemDocumentsFolder extends Item {
         return count;
     }
 
-    // ------------------------------------------------------------ page marker
-
     /** The page the folder was last closed on, clamped to a real page. */
     public static int getLastPage(ItemStack stack) {
-        if (stack.isEmpty() || !stack.hasTagCompound()) return 0;
-        return Math.max(0, Math.min(PAGE_COUNT - 1, stack.getTagCompound().getInteger(TAG_PAGE)));
+        if (stack.isEmpty() || !stack.hasNbt()) return 0;
+        NbtCompound tag = stack.getNbt();
+        if (tag == null || !tag.contains(TAG_PAGE, NbtElement.INT_TYPE)) return 0;
+        return Math.max(0, Math.min(PAGE_COUNT - 1, tag.getInt(TAG_PAGE)));
     }
 
-    /** Remembers the current page; page zero is the default, so it removes the tag instead. */
+    /** Remembers the current page; page zero is default, so it removes the tag instead. */
     public static void setLastPage(ItemStack stack, int page) {
         if (stack.isEmpty()) return;
 
         int value = Math.max(0, Math.min(PAGE_COUNT - 1, page));
-        NBTTagCompound tag = stack.getTagCompound();
+        NbtCompound tag = stack.getNbt();
         if (value == 0) {
             if (tag != null) {
-                tag.removeTag(TAG_PAGE);
-                if (tag.isEmpty()) stack.setTagCompound(null);
+                tag.remove(TAG_PAGE);
+                if (tag.isEmpty()) stack.setNbt(null);
             }
             return;
         }
 
-        if (tag == null) {
-            tag = new NBTTagCompound();
-            stack.setTagCompound(tag);
-        }
-        tag.setInteger(TAG_PAGE, value);
+        tag = stack.getOrCreateNbt();
+        tag.putInt(TAG_PAGE, value);
     }
 
-    // ------------------------------------------------------------ name
-
-    /** The custom folder name, or an empty string when the default item name is in use. */
+    /** The custom folder name, or empty string when default item name is in use. */
     public static String getCustomName(ItemStack stack) {
-        if (stack.isEmpty() || !stack.hasDisplayName()) return "";
-        return cleanName(stack.getDisplayName());
+        if (stack.isEmpty() || !stack.hasCustomName()) return "";
+        return cleanName(stack.getName().getString());
     }
 
-    /** Sets the custom folder name; an empty name restores the default item name. */
+    /** Sets the custom folder name; an empty name restores default item name. */
     public static void setCustomName(ItemStack stack, String name) {
         if (stack.isEmpty()) return;
 
         String clean = cleanName(name);
         if (clean.isEmpty()) {
-            stack.clearCustomName();
+            stack.removeCustomName();
         } else {
-            stack.setStackDisplayName(clean);
+            stack.setCustomName(Text.literal(clean));
         }
     }
 
     /** Strips formatting and control characters and enforces the name limit. */
     public static String cleanName(String name) {
         if (name == null) return "";
-        String text = TextFormatting.getTextWithoutFormattingCodes(name);
+        String text = Formatting.strip(name);
         if (text == null) return "";
 
         StringBuilder out = new StringBuilder();
         for (int i = 0; i < text.length() && out.length() < MAX_NAME_LENGTH; i++) {
             char c = text.charAt(i);
-            if (c >= ' ' && c != 127 && c != 167) out.append(c);
+            if (c >= ' ' && c != 127 && c != '§') out.append(c);
         }
         return out.toString().trim();
     }

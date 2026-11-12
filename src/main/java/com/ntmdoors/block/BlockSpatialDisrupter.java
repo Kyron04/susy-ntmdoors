@@ -1,82 +1,72 @@
 package com.ntmdoors.block;
 
-import com.ntmdoors.NTMDoors;
-import com.ntmdoors.tile.TileEntitySpatialDisrupter;
-import net.minecraft.block.Block;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.material.EnumPushReaction;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
+import com.ntmdoors.block.entity.ModBlockEntities;
+import com.ntmdoors.block.entity.SpatialDisrupterBlockEntity;
+import com.ntmdoors.client.screen.SpatialDisrupterScreen;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
+import net.minecraft.block.BlockRenderType;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.BlockWithEntity;
+import net.minecraft.block.MapColor;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityTicker;
+import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.block.piston.PistonBehavior;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.sound.BlockSoundGroup;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
-
-import javax.annotation.Nullable;
-import java.util.Random;
+import org.jetbrains.annotations.Nullable;
 
 /**
- * Spatial Disrupter. Bedrock-hard: it cannot be mined or blown up, and only its own completed
- * operation removes it. Right-clicking opens its activation screen; the tile entity performs the
- * UHPC scan and destroys the machine when it finishes.
+ * Spatial Disrupter for Fabric 1.20.1.
+ * Unbreakable in survival (hardness -1.0F, blast resistance 6,000,000F).
+ * Right-clicking opens its activation screen; the block entity performs a 16x16 chunk
+ * block scan and self-destructs upon completion.
  */
-public class BlockSpatialDisrupter extends Block {
+public class BlockSpatialDisrupter extends BlockWithEntity {
 
     public BlockSpatialDisrupter() {
-        super(Material.ROCK);
-        setRegistryName(NTMDoors.MODID, "spatial_disrupter");
-        setTranslationKey(NTMDoors.MODID + ".spatial_disrupter");
-        setCreativeTab(NTMDoors.TAB);
-        setBlockUnbreakable();
-        setResistance(6000000F);
-        setSoundType(SoundType.STONE);
-        setHarvestLevel("pickaxe", 0);
+        super(FabricBlockSettings.create()
+                .mapColor(MapColor.STONE_GRAY)
+                .strength(-1.0F, 6000000.0F)
+                .sounds(BlockSoundGroup.STONE)
+                .pistonBehavior(PistonBehavior.BLOCK));
     }
 
     @Override
-    public boolean hasTileEntity(IBlockState state) {
-        return true;
+    public BlockRenderType getRenderType(BlockState state) {
+        return BlockRenderType.MODEL;
     }
 
     @Nullable
     @Override
-    public TileEntity createTileEntity(World world, IBlockState state) {
-        return new TileEntitySpatialDisrupter();
+    public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+        return new SpatialDisrupterBlockEntity(pos, state);
     }
 
-    /** No explosion, including modded warheads, can remove it. */
+    @Nullable
     @Override
-    public float getExplosionResistance(World world, BlockPos pos, @Nullable Entity exploder,
-                                        Explosion explosion) {
-        return Float.MAX_VALUE;
-    }
-
-    /** Pistons cannot move it. */
-    @Override
-    public EnumPushReaction getPushReaction(IBlockState state) {
-        return EnumPushReaction.BLOCK;
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+        return checkType(type, ModBlockEntities.SPATIAL_DISRUPTER, SpatialDisrupterBlockEntity::tick);
     }
 
     @Override
-    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state,
-                                    EntityPlayer player, EnumHand hand, EnumFacing side,
-                                    float hitX, float hitY, float hitZ) {
-        if (world.isRemote) {
-            NTMDoors.proxy.openSpatialDisrupterGui(pos);
+    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+        if (world.isClient()) {
+            openClientScreen(pos);
         }
-        return true;
+        return ActionResult.SUCCESS;
     }
 
-    /**
-     * The tile entity schedules this after its final scan tick. Removing the block here happens
-     * outside the world's tile-entity tick loop, so the machine can safely consume itself.
-     */
-    @Override
-    public void updateTick(World world, BlockPos pos, IBlockState state, Random rand) {
-        world.setBlockToAir(pos);
+    @Environment(EnvType.CLIENT)
+    private void openClientScreen(BlockPos pos) {
+        MinecraftClient.getInstance().setScreen(new SpatialDisrupterScreen(pos));
     }
 }
