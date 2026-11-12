@@ -20,6 +20,9 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Mod(modid = NTMDoors.MODID, name = "NTM Doors", version = "1.0.72",
         acceptedMinecraftVersions = "[1.12.2]", dependencies = "required-after:chisel")
 public class NTMDoors {
@@ -47,9 +50,9 @@ public class NTMDoors {
          */
         @Override
         public void displayAllRelevantItems(NonNullList<ItemStack> items) {
-            for (BlockDoorGeneric door : ModContent.NORMAL_DOORS) items.add(new ItemStack(door));
-            for (BlockDoorGeneric door : ModContent.LOCKED_DOORS) items.add(new ItemStack(door));
-            for (BlockDoorGeneric door : ModContent.SECURITY_DOORS) items.add(new ItemStack(door));
+            for (BlockDoorGeneric door : displayOrder(ModContent.NORMAL_DOORS)) items.add(new ItemStack(door));
+            for (BlockDoorGeneric door : displayOrder(ModContent.LOCKED_DOORS)) items.add(new ItemStack(door));
+            for (BlockDoorGeneric door : displayOrder(ModContent.SECURITY_DOORS)) items.add(new ItemStack(door));
             items.add(new ItemStack(ModContent.SCREWDRIVER));
             items.add(new ItemStack(ModContent.KEYPAD));
             items.add(new ItemStack(ModContent.KEYCARD_SCANNER));
@@ -96,6 +99,30 @@ public class NTMDoors {
             return Names.canTranslate(key) ? key : "NTM Doors";
         }
     };
+
+    /** Moves each 3x3 door directly after its 2x2 counterpart for creative-tab display. */
+    private static List<BlockDoorGeneric> displayOrder(List<BlockDoorGeneric> doors) {
+        List<BlockDoorGeneric> out = new ArrayList<>(doors);
+        for (int i = 0; i < out.size(); i++) {
+            BlockDoorGeneric door = out.get(i);
+            String name = door.decl.name;
+            if (!name.endsWith("_3x3")) continue;
+            String base = name.substring(0, name.length() - 4);
+            int baseIndex = -1;
+            for (int j = 0; j < out.size(); j++) {
+                if (out.get(j).decl.name.equals(base)) {
+                    baseIndex = j;
+                    break;
+                }
+            }
+            if (baseIndex >= 0 && baseIndex < i) {
+                out.remove(i);
+                out.add(baseIndex + 1, door);
+                i = baseIndex + 1;
+            }
+        }
+        return out;
+    }
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {

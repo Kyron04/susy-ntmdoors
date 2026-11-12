@@ -1,5 +1,24 @@
-HBM DOORS: 1.0.44
+HBM DOORS: 1.0.72
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.72
+FEATURES
+- Added colour skin cycles to Office Doors 1, 2 and 3. The original texture stays skin 0; the
+  screwdriver cycles exactly like the other skinned doors. Office Door 1 handles are split into
+  separate groups so the leaf edges can be recoloured without tinting the hardware.
+- Added 3x3 double versions of all three office doors. They reuse the 2x2 models at 1.5x scale,
+  keep the same skin sets, and use a two-cell-deep front footprint so the longer open leaves have
+  working collision.
+- Office door textures are now 32x64; the 64x128 originals are preserved in
+  source-art/office-doors/64x128.
+- Monitor terminal display state is now stored per screen in a ScreenState value object, with the
+  Display page extracted into GuiMonitorDisplayController.
+FIXES
+- Fixed the Redstone Monocle overlay leaking GL state into the next frame, which could make chunk
+  rendering look like unloaded chunks. State is now restored in a finally block.
+INTERNAL
+- New doors register after every existing block and item so saved numeric IDs stay stable.
+- Backup files are excluded from packaged resources.
 
 1.0.44
 FEATURES
