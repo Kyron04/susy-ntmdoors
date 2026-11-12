@@ -1,4 +1,4 @@
-﻿{
+{
     "variants": {        "facing=north,inset=0": { "model": "ntmdoors:thermite_charge_mounted" },
         "facing=east,inset=0": { "model": "ntmdoors:thermite_charge_mounted", "y": 90 },
         "facing=south,inset=0": { "model": "ntmdoors:thermite_charge_mounted", "y": 180 },

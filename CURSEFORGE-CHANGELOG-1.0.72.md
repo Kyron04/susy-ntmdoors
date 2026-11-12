@@ -4,7 +4,7 @@ Minecraft 1.12.2 / Forge 14.23.5.2847+ (tested on 14.23.5.2860)
 Requires Chisel 1.12.2-1.0.2.45
 
 **File:** `ntmdoors-1.0.72.jar`
-**SHA-256:** `753D0CAF46B7E4E4A18C601376182C1900BBB012ED70EAFACBF566C9A6E6049D`
+**SHA-256:** `03325EE6C82AAC9A5C29EBD38B1C1679F1A7A09BCFED5DECBD1C37A2BFDECD0D`
 
 ## Office doors
 
@@ -30,6 +30,7 @@ Requires Chisel 1.12.2-1.0.2.45
 ## Fixes
 
 - Fixed the **Redstone Monocle** overlay leaking GL state into the next frame. The link overlay now restores depth, cull, texture and blend state in a `finally` block, preventing missing-chunk-looking visual corruption.
+- Removed UTF-8 BOMs from block/item model JSON files. Some model loaders rejected the BOM and left items with placeholder icons.
 - Stale `.bak` files are no longer packaged into the jar.
 
 ## Internal

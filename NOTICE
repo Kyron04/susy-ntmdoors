@@ -25,6 +25,23 @@ materials/metal/bms_metaldoor_2.vtf (Crowbar Collective) and is included for
 private testing only; it is not LGPL-licensed and must be replaced or licensed
 before public redistribution. The latch sound was supplied by the project owner.
 
+The following office-door assets are derivatives of that Black Mesa test asset
+and carry the same restriction:
+
+  * assets/ntmdoors/models/doors/office_door_1_double.obj
+  * assets/ntmdoors/models/doors/office_door_1_double_3x3.obj
+  * assets/ntmdoors/textures/models/doors/office_door_1_double*.png
+  * assets/ntmdoors/textures/models/doors/black_mesa_door*.png
+  * source-art/office-doors/64x128/office_door_1_double.png
+  * source-art/office-doors/64x128/black_mesa_door*.png
+
+They may not be redistributed publicly until the Black Mesa material is licensed
+or the assets are replaced.
+
+Office Door 2 and Office Door 3 are described in DoorDecls as based on Black Mesa
+office/fire doors. Their asset provenance is not separately recorded; confirm they
+are original or covered by a Black Mesa licence before public redistribution.
+
 The concrete building set is derived from HBM's Nuclear Tech Mod Community
 Edition (NTM CE):
   https://github.com/Warfactory-Official/Hbm-s-Nuclear-Tech-CE

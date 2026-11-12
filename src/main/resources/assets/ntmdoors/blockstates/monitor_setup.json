@@ -1,4 +1,4 @@
-﻿{
+{
     "variants":  {
                      "column=left,facing=north":  {
                                                       "model":  "ntmdoors:monitor_setup_bottom_left",

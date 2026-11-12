@@ -16,6 +16,8 @@ FEATURES
 FIXES
 - Fixed the Redstone Monocle overlay leaking GL state into the next frame, which could make chunk
   rendering look like unloaded chunks. State is now restored in a finally block.
+- Removed UTF-8 BOMs from block/item model JSON files that could leave items with placeholder
+  icons in some model loader configurations.
 INTERNAL
 - New doors register after every existing block and item so saved numeric IDs stay stable.
 - Backup files are excluded from packaged resources.

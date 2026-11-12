@@ -1,4 +1,4 @@
-﻿{
+{
   "variants": {
     "facing=north": { "model": "ntmdoors:biometric_safe" },
     "facing=east": { "model": "ntmdoors:biometric_safe", "y": 90 },

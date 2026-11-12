@@ -1,4 +1,4 @@
-﻿{
+{
   "parent": "ntmdoors:item/rfid_card_base",
   "textures": {
     "layer0": "ntmdoors:items/level_2_access_keycard"
