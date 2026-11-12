@@ -60,9 +60,10 @@ processResources {
         expand 'version': project.version, 'mcversion': project.minecraft.version
     }
 
-    // Copy everything else except mcmod.info.
+    // Copy everything else except mcmod.info and local editor backups.
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
+        exclude '**/*.bak'
     }
 
     // Cosmetic monitor wallpapers. Drop the source images in source-art/display using the
