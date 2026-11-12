@@ -388,6 +388,7 @@ public final class ObjModel {
 
         public void render(MatrixStack matrices, VertexConsumer consumer, int light, int overlay,
                            float red, float green, float blue, float alpha, ClipBounds clipBounds) {
+            VertexConsumer quadConsumer = QuadAdaptingVertexConsumer.wrap(consumer);
             MatrixStack.Entry entry = matrices.peek();
             Matrix4f posMatrix = entry.getPositionMatrix();
             Matrix3f normMatrix = entry.getNormalMatrix();
@@ -397,7 +398,7 @@ public final class ObjModel {
                 float[] d = this.vertices;
                 int len = d.length;
                 for (int i = 0; i < len; i += 8) {
-                    consumer.vertex(posMatrix, d[i], d[i + 1], d[i + 2])
+                    quadConsumer.vertex(posMatrix, d[i], d[i + 1], d[i + 2])
                             .color(red, green, blue, alpha)
                             .texture(d[i + 3], d[i + 4])
                             .overlay(overlay)
@@ -413,7 +414,7 @@ public final class ObjModel {
                     ObjClipping.clipAndEmitTriangle(
                             posMatrix, normMatrix,
                             null, null,
-                            consumer, d, i, i + 8, i + 16,
+                            quadConsumer, d, i, i + 8, i + 16,
                             clipBounds, light, overlay, red, green, blue, alpha
                     );
                 }

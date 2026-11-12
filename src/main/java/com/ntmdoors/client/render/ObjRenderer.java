@@ -79,6 +79,9 @@ public final class ObjRenderer {
     ) {
         if (group == null || group.vertexCount() == 0) return;
 
+        // Wrap consumer to adapt streaming triangles to Minecraft's DrawMode.QUADS buffer
+        VertexConsumer quadConsumer = QuadAdaptingVertexConsumer.wrap(consumer);
+
         boolean needsClip = clipBounds != null && !clipBounds.isInfinite();
 
         if (!needsClip) {
@@ -97,7 +100,7 @@ public final class ObjRenderer {
             int len = d.length;
 
             for (int i = 0; i < len; i += 8) {
-                consumer.vertex(posMat, d[i], d[i + 1], d[i + 2])
+                quadConsumer.vertex(posMat, d[i], d[i + 1], d[i + 2])
                         .color(r, g, b, a)
                         .texture(d[i + 3], d[i + 4])
                         .overlay(overlay)
@@ -118,7 +121,7 @@ public final class ObjRenderer {
                 ObjClipping.clipAndEmitTriangle(
                     modelMatrix, modelNormal,
                     groupAnimTransform, groupAnimNormal,
-                    consumer, d, i, i + 8, i + 16,
+                    quadConsumer, d, i, i + 8, i + 16,
                     clipBounds, light, overlay, r, g, b, a
                 );
             }
