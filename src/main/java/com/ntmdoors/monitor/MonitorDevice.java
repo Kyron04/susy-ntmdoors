@@ -4,8 +4,10 @@ import com.ntmdoors.block.BlockMonitorDesk;
 import com.ntmdoors.block.BlockMonitorSetup;
 import com.ntmdoors.block.door.BlockDoorGeneric;
 import com.ntmdoors.block.entity.DoorBlockEntity;
+import com.ntmdoors.block.entity.DoorPartBlockEntity;
 import com.ntmdoors.block.entity.KeycardScannerBlockEntity;
 import com.ntmdoors.block.entity.KeypadBlockEntity;
+import com.ntmdoors.block.entity.MonitorDeskBlockEntity;
 import com.ntmdoors.block.entity.MotionSensorBlockEntity;
 import com.ntmdoors.block.entity.RedstoneGateBlockEntity;
 import com.ntmdoors.block.entity.SpeakerBlockEntity;
@@ -139,10 +141,19 @@ public final class MonitorDevice {
         Block block = state.getBlock();
         if (block instanceof BlockDoorGeneric doorBlock) {
             DoorBlockEntity core = doorBlock.getCore(world, clicked, state);
-            return core == null ? null : new MonitorDevice(Type.DOOR, core.getPos(), null);
+            if (core != null) return new MonitorDevice(Type.DOOR, core.getPos(), null);
         }
 
         BlockEntity be = world.getBlockEntity(clicked);
+        if (be instanceof DoorBlockEntity door) {
+            return new MonitorDevice(Type.DOOR, door.getPos(), null);
+        }
+        if (be instanceof DoorPartBlockEntity part) {
+            BlockEntity coreBe = world.getBlockEntity(part.getCorePos());
+            if (coreBe instanceof DoorBlockEntity core) {
+                return new MonitorDevice(Type.DOOR, core.getPos(), null);
+            }
+        }
         if (be instanceof KeypadBlockEntity) {
             return new MonitorDevice(Type.KEYPAD, clicked, null);
         }
@@ -166,18 +177,33 @@ public final class MonitorDevice {
     public static BlockPos deskCore(World world, BlockPos clicked) {
         if (world == null || clicked == null) return null;
 
+        BlockEntity direct = world.getBlockEntity(clicked);
+        if (direct instanceof MonitorDeskBlockEntity) {
+            return clicked;
+        }
+
         BlockState state = world.getBlockState(clicked);
         Block block = state.getBlock();
         if (block instanceof BlockMonitorSetup setup) {
-            return clicked.subtract(setup.offset(
+            BlockPos core = clicked.subtract(setup.offset(
                     state.get(BlockMonitorSetup.COLUMN),
                     state.get(BlockMonitorSetup.FACING)));
+            if (world.getBlockEntity(core) instanceof MonitorDeskBlockEntity) return core;
         }
         if (block instanceof BlockMonitorDesk deskBlock) {
-            return clicked.subtract(deskBlock.desk().offset(
+            BlockPos core = clicked.subtract(deskBlock.desk().offset(
                     deskBlock,
                     state.get(deskBlock.columnProperty()),
                     state.get(BlockMonitorDesk.FACING)));
+            if (world.getBlockEntity(core) instanceof MonitorDeskBlockEntity) return core;
+        }
+
+        if (block instanceof BlockMonitorSetup || block instanceof BlockMonitorDesk) {
+            for (BlockPos p : BlockPos.iterate(clicked.add(-2, -2, -2), clicked.add(2, 2, 2))) {
+                if (world.getBlockEntity(p) instanceof MonitorDeskBlockEntity) {
+                    return p.toImmutable();
+                }
+            }
         }
         return null;
     }

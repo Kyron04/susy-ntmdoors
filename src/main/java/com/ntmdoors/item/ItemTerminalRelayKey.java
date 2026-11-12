@@ -6,6 +6,7 @@ import com.ntmdoors.monitor.MonitorDevice;
 import com.ntmdoors.monitor.SecurityNet;
 import com.ntmdoors.monitor.TerminalKeyData;
 import com.ntmdoors.sound.ModSounds;
+import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.Names;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -47,7 +48,7 @@ public class ItemTerminalRelayKey extends Item {
     @Override
     public ActionResult useOnBlock(ItemUsageContext context) {
         PlayerEntity player = context.getPlayer();
-        if (player == null || !player.isSneaking()) return ActionResult.PASS;
+        if (player == null) return ActionResult.PASS;
 
         World world = context.getWorld();
         BlockPos pos = context.getBlockPos();
@@ -62,18 +63,18 @@ public class ItemTerminalRelayKey extends Item {
             return ActionResult.success(world.isClient);
         }
 
+        if (!player.isSneaking()) return ActionResult.PASS;
+
         MonitorDevice device = MonitorDevice.find(world, pos);
         if (device != null) {
-            TerminalKeyData.Session session = TerminalKeyData.getSession(stack);
             if (world.isClient) {
-                if (session != null) {
-                    MonitorDevice pending = TerminalKeyData.find(stack, device);
-                    String defaultName = pending == null ? device.type.displayName() : pending.name;
-                    openDeviceNameGui(hand, device.pos, defaultName, device.type.displayName());
-                }
+                MonitorDevice pending = TerminalKeyData.find(stack, device);
+                String defaultName = pending == null ? device.type.displayName() : pending.name;
+                openDeviceNameGui(hand, device.pos, defaultName, device.type.displayName());
                 return ActionResult.SUCCESS;
             }
 
+            TerminalKeyData.Session session = TerminalKeyData.getSession(stack);
             if (session == null) {
                 player.sendMessage(Text.translatable("ntmdoors.msg.terminal_binding_required"), true);
             }
@@ -125,6 +126,7 @@ public class ItemTerminalRelayKey extends Item {
         }
 
         TerminalKeyData.start(stack, deskPos, 0, target.id, target.getDevices());
+        HeldItems.sync(player);
         player.sendMessage(Text.translatable("ntmdoors.msg.terminal_binding_started_net",
                 target.displayName(), target.getDevices().size()), true);
         world.playSound(null, deskPos, ModSounds.BUTTON9, SoundCategory.BLOCKS, 0.8F, 1.0F);
@@ -142,6 +144,7 @@ public class ItemTerminalRelayKey extends Item {
         if (net == null) {
             player.sendMessage(Text.translatable("ntmdoors.msg.terminal_net_missing"), true);
             TerminalKeyData.clearSession(stack);
+            HeldItems.sync(player);
             return;
         }
 
@@ -149,6 +152,7 @@ public class ItemTerminalRelayKey extends Item {
         pending.removeIf(device -> !MonitorDevice.stillValid(world, device));
         desk.setNetDevices(session.netId, pending);
         TerminalKeyData.clearSession(stack);
+        HeldItems.sync(player);
         player.sendMessage(Text.translatable("ntmdoors.msg.terminal_binding_confirmed_net",
                 net.displayName(), pending.size()), true);
         world.playSound(null, deskPos, ModSounds.BUTTON9, SoundCategory.BLOCKS, 0.8F, 1.0F);

@@ -649,6 +649,7 @@ public final class ModMessages {
                 if (cleanName.isEmpty()) cleanName = device.type.displayName();
                 MonitorDevice bound = device.withName(cleanName);
                 TerminalKeyData.addOrUpdate(stack, bound);
+                HeldItems.sync(player);
 
                 player.sendMessage(Text.translatable("ntmdoors.msg.terminal_device_bound", bound.name, bound.type.displayName()), true);
                 player.getWorld().playSound(null, pos, ModSounds.BUTTON9, SoundCategory.BLOCKS, 0.8F, 1.0F);

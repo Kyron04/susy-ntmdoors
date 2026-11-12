@@ -146,7 +146,7 @@ public class KeycardProgrammerBlockEntity extends BlockEntity implements Invento
         ItemStack target = inventory.get(row == 0 ? SLOT_OPERATOR : SLOT_RFID_PAGE_ONE);
 
         if (source.isEmpty() || target.isEmpty()) return BindFailure.EMPTY;
-        if (!(source.getItem() instanceof ItemRelayKey)) return BindFailure.NO_KEY;
+        if (!(source.getItem() instanceof ItemRelayKey || source.getItem() instanceof ItemOperatorKeycard)) return BindFailure.NO_KEY;
 
         boolean sourceHasKey = !PrivateKeys.isBlank(source);
         boolean sourceHasBio = Biometrics.isBound(source);

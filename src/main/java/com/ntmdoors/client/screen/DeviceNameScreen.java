@@ -44,6 +44,7 @@ public class DeviceNameScreen extends Screen {
         nameField.setMaxLength(48);
         nameField.setText(defaultName);
         addSelectableChild(nameField);
+        setFocused(nameField);
 
         addDrawableChild(ButtonWidget.builder(Text.literal("Bind"), b -> submit())
                 .dimensions(left + 14, top + 68, 92, 20).build());

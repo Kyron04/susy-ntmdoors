@@ -137,6 +137,7 @@ public class BlockDoorGeneric extends BlockWithEntity {
 
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+        if (player.isSneaking()) return ActionResult.PASS;
         if (world.isClient) return ActionResult.SUCCESS;
         DoorBlockEntity core = getCore(world, pos, state);
         if (core != null) {
