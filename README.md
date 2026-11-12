@@ -1,8 +1,8 @@
 # NTM Doors (Minecraft 1.12.2, Forge 14.23.5.2847)
 
-Standalone port of the HBM's Nuclear Tech Mod door system and concrete building set to Minecraft
-1.12.2. The implementation and the included door, concrete and HL Blocks assets are used under the
-LGPL-3.0. See `LICENSE.LESSER` and `NOTICE` for attribution and source information.
+Standalone port of the HBM's Nuclear Tech Mod door system, security equipment and concrete building
+set to Minecraft 1.12.2. The implementation and the included door, concrete and HL Blocks assets are
+used under the LGPL-3.0. See `LICENSE.LESSER` and `NOTICE` for attribution and source information.
 
 Current development version: see `gradle.properties` (`mod_version`).
 
@@ -477,9 +477,9 @@ for explicit model-space bounds; `.collisionSplits(n)` tightens rotating parts b
 
 ## Not included
 Crafting recipes for the doors (the originals need NTM materials), for the keypad, programmer,
-scanner, cards, Keycard Holder and Documents Folder; configs, NEI/JEI, and other NTM items. Only the
-screwdriver has a recipe. The concrete and HL Block sets added in 1.0.46 do have recipes, listed
-below.
+scanner, cards, Keycard Holder and Documents Folder; configs, NEI/JEI, and other NTM items. The
+screwdriver and the concrete set added in 1.0.46 have recipes, listed below; the included HL Blocks
+are creative-only.
 
 ## Concrete and HL Blocks
 
@@ -562,10 +562,10 @@ opacity. Both blocks are creative-only (no recipes) and are not registered in a 
 | `ntmdoors:ultra_high_performance_concrete` | 6 (original, light gray, gray, dark gray, charcoal, black) | Three-hour mining time; only ICBM nuclear, antimatter and red matter blasts damage it |
 | `ntmdoors:ultra_high_performance_concrete_panel` | 6 (same textures) | Vanilla-concrete hardness (1.8); breaks and blasts apart normally |
 
-Both sets carry the `GBU-57 not included` tooltip and register under the `concrete` and
-`blockConcrete` ore dictionary entries. The hard set reports iron as its material so ICBM's
-exothermic/endothermic terrain beams skip it; add it to ICBM's flying-block ban list to stop the
-beam's flying-block phase as well.
+Both sets register under the `concrete` and `blockConcrete` ore dictionary entries. The hard set
+carries the `GBU-57 not included` tooltip; the soft panels do not. The hard set reports iron as its
+material so ICBM's exothermic/endothermic terrain beams skip it; add it to ICBM's flying-block ban
+list to stop the beam's flying-block phase as well.
 
 #### Slab model note
 

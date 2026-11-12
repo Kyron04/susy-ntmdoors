@@ -2,7 +2,7 @@
 
 **HBM's doors, without the rest of the mod.**
 
-NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system and concrete building set from HBM's Nuclear Tech Mod. No NTM installation is required. Chisel 1.12.2-1.0.2.45 is required. Every model, texture and sound is bundled.
+NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system, security equipment and concrete building set from HBM's Nuclear Tech Mod. No NTM installation is required. Chisel 1.12.2-1.0.2.45 is required. Every model, texture and sound is bundled.
 
 **Current version: 1.0.50**
 
@@ -81,7 +81,7 @@ Screwdriver + sneak + right-click cycles door skins:
 ## Keycard access control
 
 - **Keycard Scanner** — wall-mounted reader with an LCD, security stripe and green/yellow/red lenses. Bind up to nine closed doors within 32 blocks using the screwdriver; bound doors close again after ten seconds. Cards only open a scanner when they carry one of its assigned private keys, and the Creative Keycard opens everything.
-- **Keycard Programmer** — desk console with a card slot, live screen and three GUI pages. Bind Relay Keys to Operator Keycards and RFID cards, recolour cards with seven colour options, and run the Legacy Backup Programmer with its five-stage progress bar.
+- **Keycard Programmer** — desk console with a card slot, live screen and three GUI pages. Bind Relay Keys to Operator Keycards and RFID cards, restyle a card from the 31-entry palette (seven colours, five themed cards, six SCP clearance cards, the Googa card and the Level 1–12 access cards), and run the Legacy Backup Programmer with its five-stage progress bar.
 - **RFID cards** — blank plus red, violet, green, blue, black, orange and yellow variants.
 - **Themed keycards** — Keycard with Blue Marking, Labyrinth, Engine Room, Terminal and Terragroup Labs Access.
 - **Operator Keycard** - aimed at a bound scanner, opens its security code screen; aimed at a Redstone Gate, opens its settings screen. The Biometric Operator Keycard does the same. Elsewhere it shows its private keys.
@@ -91,12 +91,14 @@ Screwdriver + sneak + right-click cycles door skins:
 - **Keycard Holder** — carried 3x4 case for twelve keycards, with its own NBT storage, empty-slot ghosts and shift-click transfer.
 - **Keycard Viewer** — sneak-right-click a card to read every private key stored on it.
 - **SCP access cards** — SCP Level 0–5 clearance cards, plus the Googa security keycard with its gold name and `Security is goog` tooltip.
+- **Level 1–12 Access Keycards** — numbered cards that can be programmed and used like normal RFID cards, available from the programmer's card palette.
+- **Developer Keycard** — a gold-named pack-development card that behaves like a normal RFID card but displays stored private keys and biometric IDs as Unknown. Excluded from the programmer's card palette.
 
 ### Scanner security code and assignment
 
 - Security code screen: set a 1–6 digit code with one entry; later visits repeat it. Correct and wrong codes show `SUCCESS!!!` / `FAILED!!!` cards.
 - Key assignment screen: `ASSIGNED KEYS` on the left, `NON-ASSIGNED KEYS` from the held Operator Keycard on the right, with click-to-move rows and wheel scrolling.
-- Options: Match biometric holder, Lockdown mode, Lockout mode, Ignore private keys, Ignore biometric IDs, Override door locks and Force close.
+- Options: Match biometric holder, Lockdown mode, Lockout mode, Ignore private keys, Ignore biometric IDs, Override door locks, Force close and Reset security code.
 - Lockdown closes every bound door and refuses cards, codes, keypads and redstone until it is lifted.
 - Lockout shuts the reader for five minutes after three bad cards or codes; the Biometric Operator Keycard can still reach the code screen.
 - Scanner audio: button3 on insert/success, button8 on denial and a looping bell1 while scanning.
@@ -104,12 +106,28 @@ Screwdriver + sneak + right-click cycles door skins:
 ## Safes
 
 - **Code Safe** - a 1x1x1 steel safe with a keypad. The first accepted 1-6 digit code becomes its code; later entries must match. There is no owner restriction, so anyone who knows the code can open it. A correct code shows the `SUCCESS!!!` card and then opens a 27-slot container. Safes take three real hours of continuous mining with any tool and resist explosions.
-- **Biometric Safe** — the same shell and 27-slot container, opened by a bound Biometric Operator Keycard or the Creative Keycard. `Match user` restricts access to the card's enrolled holder; with it off, any bound biometric operator card opens the safe.
-- Both safes save their contents and settings, drop their inventory when broken, and show full item names and NBT tooltip lines in the container. Their slots are not exposed to hoppers or logistics automation; only the opened container can access them.
+- **Biometric Safe** — the same shell and 27-slot container, opened by a bound Biometric Operator Keycard or the Creative Keycard. A newly placed safe records the placer's biometric ID, and only a card carrying that ID can open it; safes placed before this change stay unowned and accept any valid biometric card. `Match user` restricts access to the card's enrolled holder; with it off, any bound biometric operator card carrying the safe owner's ID opens the safe.
+- Both safes save their contents and settings, show full item names and NBT tooltip lines in the container, and keep their slots hidden from hoppers and logistics automation.
 - Each safe has a second options page:
-  - Code Safe: Binding Activities, Lockout mode and Reset code.
-  - Biometric Safe: Match user, Binding Activities and Lockout mode.
+  - Code Safe: Binding Activities, Lockout mode, Reset code and Void on destroy.
+  - Biometric Safe: Match user, Binding Activities, Lockout mode and Void on destroy.
 - Lockout mode stops access for five minutes after three failed codes or cards. Reset code clears the code so the next entry sets a new one.
+- `Void on destroy` starts on: breaking the safe voids the safe item and everything inside it. Switching it off makes the broken safe drop its contents again.
+
+## Monitor desks and security terminal
+
+- **Monitor desks** — five placeable desk variants: **6 Monitor Setup** (3x3x1), **3 Monitor Setup** (3x2x1), **Dual Monitor Setup** (3x2x1), **Dual Monitor Setup (short table)** (2x2x1) and **Monitor** (2x2x1). Each places as one item, faces the player, reserves its full footprint and breaks as one structure. The upper monitor cells use a half-depth collision wall so you can stand on the front of the desk but cannot walk through the screens.
+- Every monitor cell opens the same **password-gated terminal**. The first open offers to set a per-desk password; later opens require it. Passwords are stored as SHA-256 hashes on the desk core and checked server-side.
+- The terminal task menu lists **Security**, **Opencomputers**, **Factory**, **Display**, **Notepad** and **Terminal Backup**. Opencomputers and Factory are reserved entries; the other four are fully implemented.
+- Physical monitor screens mirror the live terminal page. Each screen keeps its own page, selected Security net, tab and scroll position, so using one monitor never changes another.
+- **Security nets** — named device lists stored per desk. Add, rename and delete nets, then bind doors, keypads, keycard scanners, motion sensors, Redstone Gates and speakers with the **Terminal Relay Key**. A net page has a key slot with Bind, Rename and Unlink controls.
+- Security net **Devices** tab: Open/Close buttons drive any linked door directly, even one with no scanner or keypad binding; every other device has an ON/OFF switch that disables its input, detection, output or sound. The switch state is saved on the device.
+- Security net **Events** tab: System Shutdown, System Lockdown, Trigger Alarms, Disable Keypads, Disable Scanners, Disable Sensors and Disable Redstone Gates, plus one-shot Close all doors and Open all doors. Event state is stored in the world save and stays enforced while the desk chunk is unloaded.
+- Remote access: click a linked device in the terminal to open its screen while you remain at the desk. The session requires you to stay within reach of the desk and the device to remain in the confirmed net, and expires after ten minutes of inactivity. Keypads and scanners still ask for their security codes.
+- Each physical screen renders a passive `SECURITY` status panel with net and device counts and the active event state; clicking any screen opens the terminal.
+- **Display** — a per-screen wallpaper chooser with five built-in images and a `Terminal` tile. The custom tab accepts a direct `http://` or `https://` PNG/JPG URL; each client downloads it locally with 8 MB / 4096 px limits, static images only. The choice is saved on the desk.
+- **Notepad** — a shared editor storing up to 16 documents of 8,192 characters each. The sidebar creates, renames and deletes documents; the paper page supports wrapped-line editing, scrolling, Save and an unsaved-changes prompt. The current document and list can stay visible on the physical monitor, and a saved wallpaper returns on the task menu.
+- **Terminal Backup** — the **Terminal Backup Key** stores a complete snapshot: Security nets, device bindings, event state, Notepad documents, wallpapers, saved screen pages, next IDs and the terminal password hash. `Initiate backup` copies the snapshot to a blank key with a ten-second progress bar; `Restore backup` overwrites the terminal from a key. The key is not consumed.
 
 ## Concrete and HL Blocks
 
@@ -117,9 +135,10 @@ Screwdriver + sneak + right-click cycles door skins:
 - **HL Blocks** - three simple blocks and seven metadata groups: freezer, fifties, crete, duct, lab, tunnel and generic.
 - **Ultra High Performance Concrete** — six grayscale shades (original plus five darker tones).
   Every variant takes three real hours of continuous mining, and only ICBM nuclear, antimatter and
-  red matter warheads can damage it; every other explosion is fully resisted. A decorative **UHPC
-  Panel** set shares the same textures with vanilla-concrete hardness.
-- Both sets have recipes, `concrete` / `blockConcrete` / `blockhl` ore dictionary entries, and flat Chisel carving groups.
+  red matter warheads can damage it; every other explosion is fully resisted. The hard set carries
+  the `GBU-57 not included` tooltip. A decorative **UHPC Panel** set shares the same textures with
+  vanilla-concrete hardness and no tooltip.
+- Concrete has recipes and flat Chisel carving groups; both concrete and HL Blocks register `concrete` / `blockConcrete` / `blockhl` ore dictionary entries. HL Blocks are creative-only.
 - All concrete and HL Blocks are listed in the NTM Doors creative tab.
 - Shift + scroll cycles a held concrete or HL stack through its texture family. The cycle modifier is rebindable under Controls.
 - Chisel 1.12.2-1.0.2.45 is required.
@@ -127,7 +146,7 @@ Screwdriver + sneak + right-click cycles door skins:
 ## Decorative blocks
 
 - **Speaker** - a 1x1x1 black-ash cabinet with a woofer, tweeter and bass reflex port. Shift-right-click (with any item or an empty hand) opens a safe-style toggle screen with **Enabled**, four selectable sounds (**Air Raid**, **Facility**, **Industrial**, **EAS**), a 1-64 block range slider and a 0-100% volume slider; anyone may use it. While enabled and receiving redstone power, it loops the selected alarm until the signal or **Enabled** is removed. The sound, range, volume and enabled state are saved with the block. A normal right-click with the Redstone Relay Key starts/finishes a wireless binding session, and starting the alarm pulses every linked Redstone Gate.
-- **Motion Sensor** - a compact 8x8x1.375 surface-mounted PIR sensor with an off-white ABS housing, charcoal bezel, ringed concentric Fresnel lens and a status light. It can be placed on floors, walls and ceilings; the clicked face becomes the lens direction. Green means no motion, blue means authorised personnel, yellow means maintenance and red means motion detected. Creative right-click cycles the light for preview. The sensor scans its configured 5x5 area, checks the cards and biometric IDs assigned to it, and drives linked Redstone Gates.
+- **Motion Sensor** - a compact 8x8x1.375 surface-mounted PIR sensor with an off-white ABS housing, charcoal bezel, ringed concentric Fresnel lens and a status light. It can be placed on floors, walls and ceilings; the clicked face becomes the lens direction. Green means no motion, blue means authorised personnel, yellow means maintenance and red means motion detected. Creative right-click cycles the light for preview. The sensor scans its configured 5x5 area, checks the cards and biometric IDs assigned to it, and drives linked Redstone Gates. A **Motion Relay Key** opens its console for the 5x5 depth grid, player/hostile/neutral detection toggles, persist-within/persist-out-of-bounds modes and the four redstone entry events.
   - [Final model preview](https://github.com/Kyron04/susy-ntmdoors/blob/main/source-art/motion-sensor/motion-sensor-model-preview-final.png)
 - **Spatial Disrupter** - a decorative machine block with a blue/red emblem on the sides and a grey plate on the top and bottom. Tooltip: `Weakens the structural integrity of UHPC`. Right-click opens a one-action screen; activating it scans a 16x16 chunk area and turns every hard UHPC block into the soft UHPC Panel of the same shade, then consumes itself. The machine is bedrock-hard in survival and cannot be blown up or pushed; creative players can break it, and its own completed operation also removes it.
 - **Thermite Charge** - a framed breaching charge that mounts flush to the clicked block or door face in any direction. Flint and steel lights a five-second fuse with a beep countdown, smoke and flame particles; the attached door locks its controls while burning, and breaking the charge defuses it. Detonation removes the door's moving panel and collision while leaving the static frame, permanently disabling that door; on a normal block it destroys the attached block. Silo hatches, the transition seal, the roller blast door and the Vault-Tec door refuse placement. The placed block uses a 3D model, while the item form uses a flat 16x16 sprite.
@@ -136,7 +155,7 @@ Screwdriver + sneak + right-click cycles door skins:
 
 - Normal and locked doors respond to redstone. Security doors require a keycard scanner or the Creative Keycard by default; their owner can enable redstone and gate links with the Redstone Monocle. Lockdown still blocks redstone edges.
 - **Redstone Gate** - a full-cube redstone component with separate off and on textures. It starts off, turns on while it receives redstone power or a wireless pulse, and emits a full-strength signal while on. A wireless event powers it for the gate's configured duration, and another event extends the pulse. Both Operator Keycards and the Creative Keycard open its settings screen: `Stay active after signal`, `Invert operation`, and +1/+5/+10/+20 second activation duration controls with matching subtract buttons. A gate can also be the start of a relay-key session: link other gates and doors to its output, and they follow it on and off. Links are directional, work in the same dimension, and a link that would close a feedback loop is refused.
-- **Redstone Relay Key** - a red-named creative key. Sneak + right-click a safe or keycard scanner to start/finish a wireless binding session, then sneak + right-click a Redstone Gate to link or unlink it. On a keypad or speaker, a normal right-click starts/finishes the session; sneak + right-click opens the keypad screen, while the speaker uses shift-right-click for its own screen. Sneak + right-click a gate to start/finish a gate session, then sneak + right-click other gates to relay the signal or doors to open and close them with that gate. Devices and gates can be linked many-to-many in the same dimension; doors are driven by gate sessions only, breached doors refuse the link, and security doors accept it only after their owner enables Redstone access with the Monocle.
+- **Redstone Relay Key** - a red-named creative key. Sneak + right-click a safe, keycard scanner or motion sensor to start/finish a wireless binding session, then sneak + right-click a Redstone Gate to link or unlink it. On a keypad or speaker, a normal right-click starts/finishes the session; sneak + right-click opens the keypad screen, while the speaker uses shift-right-click for its own screen. Sneak + right-click a gate to start/finish a gate session, then sneak + right-click other gates to relay the signal or doors to open and close them with that gate. Devices and gates can be linked many-to-many in the same dimension; doors are driven by gate sessions only, breached doors refuse the link, and security doors accept it only after their owner enables Redstone access with the Monocle.
 - **Redstone Monocle** - a red-named creative diagnostic item. While held in either hand it draws the loaded wireless links through walls: red for gate-to-gate, amber for gate-to-door, and blue for device-to-gate. Sneak + right-click a security door as its owner to toggle whether that door accepts redstone and gate links; other players are refused.
 - **Weapons Relay Key** - a red creative key. Sneak + right-click opens a mode screen: **Regular Bounding** links any explosive block to Redstone Gates (a powered gate triggers it immediately), and **Dead Man's Hand** hard-locks the explosive so anyone without the matching key sets it off by right-clicking, left-clicking, breaking it, or placing/breaking a block next to it. The key holder can mine it safely. Works with any explosive block.
 - Both safes and the keycard scanner have a third **Redstone** page with a red panel tint and scrolling. Event toggles start off and pulse every linked gate for that gate's configured activation duration when enabled:
