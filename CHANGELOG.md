@@ -1,7 +1,7 @@
-HBM DOORS: 1.0.72
+HBM DOORS: 1.0.50
 Minecraft 1.12.2 / Forge 14.23.5.2847
 
-1.0.72
+1.0.50
 FEATURES
 - Added colour skin cycles to Office Doors 1, 2 and 3. The original texture stays skin 0; the
   screwdriver cycles exactly like the other skinned doors. Office Door 1 handles are split into

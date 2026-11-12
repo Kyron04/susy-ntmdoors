@@ -4,7 +4,7 @@
 
 NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system and concrete building set from HBM's Nuclear Tech Mod. No NTM installation is required. Chisel 1.12.2-1.0.2.45 is required. Every model, texture and sound is bundled.
 
-**Current version: 1.0.72**
+**Current version: 1.0.50**
 
 ## 26 multiblock doors
 
@@ -181,6 +181,7 @@ HBM CurseForge page: https://www.curseforge.com/minecraft/mc-mods/hbms-nuclear-t
 
 Concrete assets and reference behaviour: HBM's Nuclear Tech Mod Community Edition.
 HL Blocks assets and original block definitions: NeoRussia's HL Blocks project.
+Office-door models and textures are original recreations inspired by the Black Mesa/Half-Life office-door style; no Black Mesa or Half-Life game assets are included.
 
 Developers of the port:
 
