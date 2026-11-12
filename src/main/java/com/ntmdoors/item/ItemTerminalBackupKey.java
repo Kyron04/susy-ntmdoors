@@ -1,15 +1,14 @@
 package com.ntmdoors.item;
 
-import com.ntmdoors.NTMDoors;
 import com.ntmdoors.monitor.TerminalBackupData;
-import com.ntmdoors.util.Names;
-import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.client.item.TooltipContext;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -20,30 +19,28 @@ import java.util.List;
  */
 public class ItemTerminalBackupKey extends Item {
 
+    public ItemTerminalBackupKey(Settings settings) {
+        super(settings.maxCount(1));
+    }
+
     public ItemTerminalBackupKey() {
-        setRegistryName(NTMDoors.MODID, "terminal_backup_key");
-        setTranslationKey(NTMDoors.MODID + ".terminal_backup_key");
-        setCreativeTab(NTMDoors.TAB);
-        setMaxStackSize(1);
+        this(new Settings());
     }
 
     @Override
-    public String getItemStackDisplayName(ItemStack stack) {
-        return TextFormatting.DARK_RED + super.getItemStackDisplayName(stack);
+    public Text getName(ItemStack stack) {
+        return Text.translatable(this.getTranslationKey(stack)).formatted(Formatting.DARK_RED);
     }
 
     @Override
-    public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip,
-                               ITooltipFlag flag) {
+    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
         if (TerminalBackupData.hasBackup(stack)) {
-            tooltip.add(TextFormatting.GREEN + "Terminal backup data");
-            Names.addDescription(tooltip,
-                    TerminalBackupData.getNetCount(stack) + " security nets, "
-                            + TerminalBackupData.getDocumentCount(stack) + " documents");
+            tooltip.add(Text.literal("Terminal backup data").formatted(Formatting.GREEN));
+            tooltip.add(Text.literal(TerminalBackupData.getNetCount(stack) + " security nets, "
+                    + TerminalBackupData.getDocumentCount(stack) + " documents").formatted(Formatting.GRAY));
         } else {
-            Names.addDescription(tooltip,
-                    "Blank key for the Terminal Backup system.",
-                    "Upload terminal data from the backup screen.");
+            tooltip.add(Text.literal("Blank key for the Terminal Backup system.").formatted(Formatting.GRAY));
+            tooltip.add(Text.literal("Upload terminal data from the backup screen.").formatted(Formatting.GRAY));
         }
     }
 }

@@ -124,6 +124,23 @@ public final class ModItems {
     public static final net.minecraft.item.BlockItem SPEAKER_ITEM = reg("speaker", new net.minecraft.item.BlockItem(ModBlocks.SPEAKER, new Item.Settings()));
     public static final net.minecraft.item.BlockItem MOTION_SENSOR_ITEM = reg("motion_sensor", new net.minecraft.item.BlockItem(ModBlocks.MOTION_SENSOR, new Item.Settings()));
 
+    // --- Monitor Desk Items (Milestone M5) ---
+    public static final ItemMonitorSetup MONITOR_SETUP_ITEM = reg("monitor_setup",
+            new ItemMonitorSetup(ModBlocks.MONITOR_SETUP,
+                    List.of(ModBlocks.MONITOR_SETUP, ModBlocks.MONITOR_SETUP_MIDDLE, ModBlocks.MONITOR_SETUP_TOP),
+                    new Item.Settings()));
+    public static final ItemMonitorDesk TRIPLE_MONITOR_SETUP_ITEM = reg("triple_monitor_setup",
+            new ItemMonitorDesk(ModBlocks.TRIPLE_MONITOR_SETUP, ModBlocks.DESK_THREE, new Item.Settings()));
+    public static final ItemMonitorDesk DUAL_MONITOR_SETUP_ITEM = reg("dual_monitor_setup",
+            new ItemMonitorDesk(ModBlocks.DUAL_MONITOR_SETUP, ModBlocks.DESK_DUAL, new Item.Settings()));
+    public static final ItemMonitorDesk DUAL_MONITOR_SETUP_2X2_ITEM = reg("dual_monitor_setup_2x2",
+            new ItemMonitorDesk(ModBlocks.DUAL_MONITOR_SETUP_2X2, ModBlocks.DESK_TWO_BY_TWO, new Item.Settings()));
+    public static final ItemMonitorDesk SINGLE_MONITOR_SETUP_ITEM = reg("single_monitor_setup",
+            new ItemMonitorDesk(ModBlocks.SINGLE_MONITOR_SETUP, ModBlocks.DESK_SINGLE, new Item.Settings()));
+
+    public static final ItemTerminalBackupKey TERMINAL_BACKUP_KEY = reg("terminal_backup_key",
+            new ItemTerminalBackupKey(new Item.Settings()));
+
     // --- 31 Palette Cards for Programmer Page 1 ---
     public static final List<ItemRfidCard> PROGRAMMER_CARDS;
 

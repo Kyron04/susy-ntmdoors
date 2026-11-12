@@ -1,8 +1,8 @@
 package com.ntmdoors.monitor;
 
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -29,13 +29,23 @@ public final class MonitorWallpaper {
     public static final class Builtin {
         public final String id;
         public final String label;
-        public final ResourceLocation texture;
+        public final Identifier texture;
 
-        private Builtin(String id, String label) {
+        public Builtin(String id, String label) {
             this.id = id;
             this.label = label;
-            this.texture = new ResourceLocation("ntmdoors", "textures/display/" + id + ".png");
+            this.texture = Identifier.of("ntmdoors", "textures/display/" + id + ".png");
         }
+
+        public Builtin(String id, String label, Identifier texture) {
+            this.id = id;
+            this.label = label;
+            this.texture = texture;
+        }
+
+        public String id() { return id; }
+        public String label() { return label; }
+        public Identifier texture() { return texture; }
     }
 
     private static final List<Builtin> BUILTINS;
@@ -93,7 +103,7 @@ public final class MonitorWallpaper {
     }
 
     @Nullable
-    public static ResourceLocation texture(@Nullable String value) {
+    public static Identifier texture(@Nullable String value) {
         String id = builtinId(value);
         if (id == null) return null;
         Builtin builtin = BUILTIN_BY_ID.get(id);

@@ -1,0 +1,242 @@
+package com.ntmdoors.client.display;
+
+import com.ntmdoors.NTMDoors;
+import com.ntmdoors.monitor.MonitorWallpaper;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.texture.NativeImage;
+import net.minecraft.client.texture.NativeImageBackedTexture;
+import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+/**
+ * Client-side texture cache and async HTTP/HTTPS downloader for cosmetic monitor wallpapers.
+ *
+ * <p>Enforces strict safety clamps: 8 MB maximum download payload, 4096 px maximum image dimension,
+ * connection timeouts, and isolated 2-thread daemon pool. The dedicated server never executes outbound
+ * HTTP requests.</p>
+ */
+@Environment(EnvType.CLIENT)
+public final class DisplayImages {
+
+    public static final int MAX_BYTES = 8 * 1024 * 1024; // 8 MB
+    public static final int MAX_DIMENSION = 4096;        // 4096 px
+    public static final int CONNECT_TIMEOUT_MS = 10_000; // 10s
+    public static final int READ_TIMEOUT_MS = 15_000;    // 15s
+
+    private static final Map<String, Remote> REMOTE = new ConcurrentHashMap<>();
+    private static final Map<Identifier, Boolean> BUILTIN_EXISTS = new HashMap<>();
+
+    /** Two daemon workers; one thread per URL could be abused by a server full of unique URLs. */
+    private static final ExecutorService DOWNLOADER = Executors.newFixedThreadPool(2, task -> {
+        Thread thread = new Thread(task, "NTMDoors display image loader");
+        thread.setDaemon(true);
+        return thread;
+    });
+
+    private static final class Remote {
+        private final Identifier location;
+        private volatile boolean started;
+        private volatile boolean ready;
+        private volatile boolean failed;
+
+        private Remote(Identifier location) {
+            this.location = location;
+        }
+    }
+
+    /** Frees dynamic URL textures and cached probes when the client leaves a world. */
+    public static void clear() {
+        MinecraftClient mc = MinecraftClient.getInstance();
+        for (Remote remote : REMOTE.values()) {
+            if (remote.ready && mc != null && mc.getTextureManager() != null) {
+                mc.getTextureManager().destroyTexture(remote.location);
+            }
+        }
+        REMOTE.clear();
+        BUILTIN_EXISTS.clear();
+    }
+
+    /** Returns the texture location for a stored wallpaper, or null for the terminal page. */
+    @Nullable
+    public static Identifier textureFor(String wallpaper) {
+        Identifier builtin = MonitorWallpaper.texture(wallpaper);
+        if (builtin != null) return builtin;
+        String url = MonitorWallpaper.urlOf(wallpaper);
+        if (url == null) return null;
+        Remote remote = remote(url);
+        start(remote, url);
+        return remote.location;
+    }
+
+    /** True when the wallpaper can be drawn instead of a loading/error card. */
+    public static boolean isReady(String wallpaper) {
+        Identifier builtin = MonitorWallpaper.texture(wallpaper);
+        if (builtin != null) return builtinExists(builtin);
+        String url = MonitorWallpaper.urlOf(wallpaper);
+        if (url == null) return false;
+        Remote remote = remote(url);
+        start(remote, url);
+        return remote.ready;
+    }
+
+    public static boolean isFailed(String wallpaper) {
+        String url = MonitorWallpaper.urlOf(wallpaper);
+        if (url == null) return false;
+        Remote remote = remote(url);
+        start(remote, url);
+        return remote.failed;
+    }
+
+    public static boolean isLoading(String wallpaper) {
+        String url = MonitorWallpaper.urlOf(wallpaper);
+        if (url == null) return false;
+        Remote remote = remote(url);
+        start(remote, url);
+        return remote.started && !remote.ready && !remote.failed;
+    }
+
+    public static boolean builtinExists(String id) {
+        MonitorWallpaper.Builtin builtin = MonitorWallpaper.builtinById(id);
+        if (builtin == null) return false;
+        return builtinExists(builtin.texture);
+    }
+
+    private static boolean builtinExists(Identifier location) {
+        Boolean cached = BUILTIN_EXISTS.get(location);
+        if (cached != null) return cached;
+        boolean exists;
+        try {
+            MinecraftClient mc = MinecraftClient.getInstance();
+            if (mc != null && mc.getResourceManager() != null) {
+                exists = mc.getResourceManager().getResource(location).isPresent();
+            } else {
+                exists = false;
+            }
+        } catch (Exception ex) {
+            exists = false;
+        }
+        BUILTIN_EXISTS.put(location, exists);
+        return exists;
+    }
+
+    private static Remote remote(String url) {
+        return REMOTE.computeIfAbsent(url, key -> new Remote(Identifier.of(
+                "ntmdoors", "remote_display/" + sha1(key))));
+    }
+
+    private static void start(Remote remote, String url) {
+        if (remote.started) return;
+        synchronized (remote) {
+            if (remote.started) return;
+            remote.started = true;
+        }
+        DOWNLOADER.execute(() -> download(remote, url));
+    }
+
+    private static void download(Remote remote, String url) {
+        HttpURLConnection connection = null;
+        try {
+            URL parsed = new URL(url);
+            connection = (HttpURLConnection) parsed.openConnection();
+            connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
+            connection.setReadTimeout(READ_TIMEOUT_MS);
+            connection.setInstanceFollowRedirects(true);
+            connection.setRequestProperty("User-Agent", "NTMDoors/1.0");
+            int status = connection.getResponseCode();
+            if (status < 200 || status >= 300) {
+                throw new IOException("HTTP " + status);
+            }
+            int declared = connection.getContentLength();
+            if (declared > MAX_BYTES) throw new IOException("Image is too large");
+
+            byte[] bytes;
+            try (InputStream input = connection.getInputStream()) {
+                bytes = readLimited(input, MAX_BYTES);
+            }
+            NativeImage image;
+            try (ByteArrayInputStream bais = new ByteArrayInputStream(bytes)) {
+                image = NativeImage.read(bais);
+            }
+            if (image == null) throw new IOException("Unsupported image format");
+            if (image.getWidth() <= 0 || image.getHeight() <= 0
+                    || image.getWidth() > MAX_DIMENSION || image.getHeight() > MAX_DIMENSION) {
+                image.close();
+                throw new IOException("Image dimensions are out of range: " + image.getWidth() + "x" + image.getHeight());
+            }
+
+            MinecraftClient mc = MinecraftClient.getInstance();
+            if (mc != null) {
+                mc.execute(() -> {
+                    // The world may have unloaded while the image was downloading.
+                    if (REMOTE.get(url) != remote) {
+                        image.close();
+                        return;
+                    }
+                    try {
+                        NativeImageBackedTexture texture = new NativeImageBackedTexture(image);
+                        mc.getTextureManager().registerTexture(remote.location, texture);
+                        remote.ready = true;
+                    } catch (Throwable ex) {
+                        image.close();
+                        remote.failed = true;
+                        NTMDoors.LOGGER.warn("Could not upload display image {}: {}", url, ex.toString());
+                    }
+                });
+            } else {
+                image.close();
+            }
+        } catch (Throwable ex) {
+            remote.failed = true;
+            NTMDoors.LOGGER.warn("Could not load display image {}: {}", url, ex.toString());
+        } finally {
+            if (connection != null) connection.disconnect();
+        }
+    }
+
+    public static byte[] readLimited(InputStream input, int limit) throws IOException {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        byte[] buffer = new byte[8192];
+        int total = 0;
+        int read;
+        while ((read = input.read(buffer)) != -1) {
+            total += read;
+            if (total > limit) throw new IOException("Image is too large");
+            output.write(buffer, 0, read);
+        }
+        return output.toByteArray();
+    }
+
+    private static String sha1(String value) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-1");
+            byte[] bytes = digest.digest(value.getBytes(StandardCharsets.UTF_8));
+            StringBuilder out = new StringBuilder(bytes.length * 2);
+            for (byte b : bytes) {
+                out.append(Character.forDigit((b >>> 4) & 0xF, 16));
+                out.append(Character.forDigit(b & 0xF, 16));
+            }
+            return out.toString();
+        } catch (Exception ex) {
+            return Integer.toHexString(value.hashCode());
+        }
+    }
+
+    private DisplayImages() {
+    }
+}

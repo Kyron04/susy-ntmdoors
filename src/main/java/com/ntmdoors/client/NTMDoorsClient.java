@@ -11,9 +11,11 @@ import com.ntmdoors.client.render.KeycardScannerBlockEntityRenderer;
 import com.ntmdoors.client.render.KeyframeAnimation;
 import com.ntmdoors.client.render.KeypadBlockEntityRenderer;
 import com.ntmdoors.client.render.ObjModel;
+import com.ntmdoors.client.render.MonitorDeskBlockEntityRenderer;
 import com.ntmdoors.client.render.MotionSensorBlockEntityRenderer;
 import com.ntmdoors.client.screen.KeycardProgrammerScreen;
 import com.ntmdoors.client.screen.SafeScreen;
+import com.ntmdoors.client.screen.TerminalBackupScreen;
 import com.ntmdoors.network.ModMessages;
 import com.ntmdoors.screen.ModScreenHandlerTypes;
 import net.fabricmc.api.ClientModInitializer;
@@ -43,10 +45,12 @@ public class NTMDoorsClient implements ClientModInitializer {
         BlockEntityRendererRegistry.register(ModBlockEntities.KEYCARD_SCANNER, KeycardScannerBlockEntityRenderer::new);
         BlockEntityRendererRegistry.register(ModBlockEntities.KEYCARD_PROGRAMMER, KeycardProgrammerBlockEntityRenderer::new);
         BlockEntityRendererRegistry.register(ModBlockEntities.MOTION_SENSOR, MotionSensorBlockEntityRenderer::new);
+        BlockEntityRendererRegistry.register(ModBlockEntities.MONITOR_DESK, MonitorDeskBlockEntityRenderer::new);
 
         // Register Screen Handlers
         HandledScreens.register(ModScreenHandlerTypes.KEYCARD_PROGRAMMER, KeycardProgrammerScreen::new);
         HandledScreens.register(ModScreenHandlerTypes.SAFE, SafeScreen::new);
+        HandledScreens.register(ModScreenHandlerTypes.TERMINAL_BACKUP, TerminalBackupScreen::new);
 
         // Register Overlays
         RedstoneMonocleOverlay.init();
@@ -68,8 +72,13 @@ public class NTMDoorsClient implements ClientModInitializer {
                         KeyframeAnimation.clearCache();
                         DoorItemRenderer.clearCache();
                         DoorVoxelShapes.clearCache();
+                        com.ntmdoors.client.display.DisplayImages.clear();
                     }
                 }
+        );
+
+        net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.DISCONNECT.register(
+                (handler, client) -> com.ntmdoors.client.display.DisplayImages.clear()
         );
     }
 }

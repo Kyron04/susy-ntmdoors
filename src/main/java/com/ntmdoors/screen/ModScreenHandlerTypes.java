@@ -24,6 +24,12 @@ public final class ModScreenHandlerTypes {
             new ExtendedScreenHandlerType<>(SafeScreenHandler::new)
     );
 
+    public static final ScreenHandlerType<TerminalBackupScreenHandler> TERMINAL_BACKUP = Registry.register(
+            Registries.SCREEN_HANDLER,
+            Identifier.of(NTMDoors.MOD_ID, "terminal_backup"),
+            new ExtendedScreenHandlerType<>(TerminalBackupScreenHandler::new)
+    );
+
     public static void registerScreenHandlers() {
         // Triggers static initialization
     }

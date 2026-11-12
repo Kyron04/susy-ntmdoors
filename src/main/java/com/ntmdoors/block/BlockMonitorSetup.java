@@ -1,106 +1,100 @@
 package com.ntmdoors.block;
 
-import com.ntmdoors.NTMDoors;
+import com.ntmdoors.block.entity.MonitorDeskBlockEntity;
+import com.ntmdoors.item.ModItems;
 import com.ntmdoors.monitor.SecurityEvents;
-import com.ntmdoors.network.MessageMonitorState;
-import com.ntmdoors.network.ModNetwork;
-import com.ntmdoors.registry.ModContent;
-import com.ntmdoors.tile.TileEntityMonitorDesk;
+import com.ntmdoors.network.ModMessages;
 import com.ntmdoors.util.Facings;
 import net.minecraft.block.Block;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.material.EnumPushReaction;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.PropertyDirection;
-import net.minecraft.block.properties.PropertyEnum;
-import net.minecraft.block.state.BlockStateContainer;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.Item;
+import net.minecraft.block.BlockRenderType;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.BlockWithEntity;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.ShapeContext;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityTicker;
+import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.IStringSerializable;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.BlockSoundGroup;
+import net.minecraft.state.StateManager;
+import net.minecraft.state.property.DirectionProperty;
+import net.minecraft.state.property.EnumProperty;
+import net.minecraft.state.property.Properties;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
+import net.minecraft.util.StringIdentifiable;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
-
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 /**
- * A 3x3x1 six-monitor desk. Three block types (bottom, middle, top) each carry three columns, so
- * the part and facing fit in the four block-metadata bits. A single tickless tile entity on the
- * bottom-centre core stores the terminal password. Each part renders one slice of the supplied
- * 48x41x16 model.
- *
- * <p>The model is authored facing north; the blockstate rotates each part for the other facings.
- * The bottom row is solid; the two upper rows add a half-depth collision wall on the monitor side
- * so the player can stand on the front half of the desk but cannot walk through the monitors.
- * The core is the bottom-centre block, named {@code ntmdoors:monitor_setup}.</p>
+ * A 3x3x1 six-monitor desk. Three block types (bottom, middle, top) each carry three columns.
+ * A single block entity on the bottom-centre core stores the terminal state and password.
  */
-public class BlockMonitorSetup extends Block {
+public class BlockMonitorSetup extends BlockWithEntity {
 
-    public static final PropertyDirection FACING =
-            PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
-    public static final PropertyEnum<Column> COLUMN = PropertyEnum.create("column", Column.class);
+    public static final DirectionProperty FACING = Properties.HORIZONTAL_FACING;
+    public static final EnumProperty<Column> COLUMN = EnumProperty.of("column", Column.class);
 
-    /** One block type per horizontal row of the desk. */
     public enum Layer {
         BOTTOM,
         MIDDLE,
         TOP
     }
 
-    /** Left, centre and right cell within a row. */
-    public enum Column implements IStringSerializable {
+    public enum Column implements StringIdentifiable {
         LEFT,
         CENTER,
         RIGHT;
 
         @Override
-        public String getName() {
+        public String asString() {
             return name().toLowerCase();
         }
     }
 
-    private static final ThreadLocal<Boolean> DISMANTLING = ThreadLocal.withInitial(() -> false);
-    /** Authored monitor wall: the south half of a block, centred so it can be rotated. */
-    private static final AxisAlignedBB MONITOR_LOCAL = new AxisAlignedBB(-0.5, 0, 0, 0.5, 1, 0.5);
-    private static final AxisAlignedBB MONITOR_NORTH = rotatedMonitorBox(EnumFacing.NORTH);
-    private static final AxisAlignedBB MONITOR_SOUTH = rotatedMonitorBox(EnumFacing.SOUTH);
-    private static final AxisAlignedBB MONITOR_EAST = rotatedMonitorBox(EnumFacing.EAST);
-    private static final AxisAlignedBB MONITOR_WEST = rotatedMonitorBox(EnumFacing.WEST);
+    public static final VoxelShape SHAPE_BOTTOM = VoxelShapes.fullCube();
+    public static final VoxelShape SHAPE_MONITOR_NORTH = VoxelShapes.cuboid(0.0, 0.0, 0.5, 1.0, 1.0, 1.0);
+    public static final VoxelShape SHAPE_MONITOR_SOUTH = VoxelShapes.cuboid(0.0, 0.0, 0.0, 1.0, 1.0, 0.5);
+    public static final VoxelShape SHAPE_MONITOR_EAST  = VoxelShapes.cuboid(0.0, 0.0, 0.0, 0.5, 1.0, 1.0);
+    public static final VoxelShape SHAPE_MONITOR_WEST  = VoxelShapes.cuboid(0.5, 0.0, 0.0, 1.0, 1.0, 1.0);
 
     private final Layer layer;
 
     public BlockMonitorSetup(String name, Layer layer) {
-        super(Material.WOOD);
+        super(Settings.create()
+                .strength(2.5F, 6.0F)
+                .sounds(BlockSoundGroup.WOOD)
+                .nonOpaque());
         this.layer = layer;
-        setRegistryName(NTMDoors.MODID, name);
-        setTranslationKey(NTMDoors.MODID + "." + name);
-        setCreativeTab(NTMDoors.TAB);
-        setHardness(2.5F);
-        setResistance(6F);
-        setSoundType(SoundType.WOOD);
-        // The upper cells are mostly open space; they must not darken the room or cull neighbours.
-        setLightOpacity(0);
-        setDefaultState(blockState.getBaseState()
-                .withProperty(FACING, EnumFacing.NORTH)
-                .withProperty(COLUMN, Column.CENTER));
+        setDefaultState(getStateManager().getDefaultState()
+                .with(FACING, Direction.NORTH)
+                .with(COLUMN, Column.CENTER));
     }
 
     public Layer layer() {
         return layer;
     }
 
-    /** World offset of one cell relative to the bottom-centre core, rotated for the facing. */
-    public static BlockPos offset(Layer layer, Column column, EnumFacing facing) {
+    @Override
+    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+        builder.add(FACING, COLUMN);
+    }
+
+    @Override
+    public BlockRenderType getRenderType(BlockState state) {
+        return BlockRenderType.MODEL;
+    }
+
+    public static BlockPos offset(Layer layer, Column column, Direction facing) {
         int dx = column.ordinal() - 1;
         return new BlockPos(
                 (int) Math.round(Facings.worldX(dx, 0, facing)),
@@ -108,178 +102,103 @@ public class BlockMonitorSetup extends Block {
                 (int) Math.round(Facings.worldZ(dx, 0, facing)));
     }
 
-    /** Offset of this block's own layer. */
-    public BlockPos offset(Column column, EnumFacing facing) {
+    public BlockPos offset(Column column, Direction facing) {
         return offset(layer, column, facing);
     }
 
     @Override
-    protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, FACING, COLUMN);
-    }
-
-    @Override
-    public IBlockState getStateFromMeta(int meta) {
-        EnumFacing facing = EnumFacing.byHorizontalIndex(meta & 3);
-        if (facing == null) facing = EnumFacing.NORTH;
-        int column = (meta >> 2) & 3;
-        Column[] columns = Column.values();
-        return getDefaultState().withProperty(FACING, facing)
-                .withProperty(COLUMN, column < columns.length ? columns[column] : Column.CENTER);
-    }
-
-    @Override
-    public int getMetaFromState(IBlockState state) {
-        return state.getValue(FACING).getHorizontalIndex() | (state.getValue(COLUMN).ordinal() << 2);
-    }
-
-    /** The desk faces the player, matching the safes, speaker and sensor. */
-    @Override
-    public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing,
-                                            float hitX, float hitY, float hitZ, int meta,
-                                            EntityLivingBase placer, EnumHand hand) {
-        EnumFacing face = placer == null ? EnumFacing.NORTH : placer.getHorizontalFacing().getOpposite();
-        return getDefaultState().withProperty(FACING, face).withProperty(COLUMN, Column.CENTER);
-    }
-
-    /** Only the bottom-centre core owns the desk's password tile entity. */
-    @Override
-    public boolean hasTileEntity(IBlockState state) {
-        return layer == Layer.BOTTOM && state.getValue(COLUMN) == Column.CENTER;
+    public BlockState getPlacementState(ItemPlacementContext ctx) {
+        Direction face = ctx.getPlayer() == null ? Direction.NORTH : ctx.getPlayer().getHorizontalFacing().getOpposite();
+        return getDefaultState().with(FACING, face).with(COLUMN, Column.CENTER);
     }
 
     @Nullable
     @Override
-    public TileEntity createTileEntity(World world, IBlockState state) {
-        return hasTileEntity(state) ? new TileEntityMonitorDesk() : null;
+    public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+        return (layer == Layer.BOTTOM && state.get(COLUMN) == Column.CENTER)
+                ? new MonitorDeskBlockEntity(pos, state)
+                : null;
     }
 
-    /**
-     * Right-clicking a monitor cell asks the server to open the terminal. The solid bottom row
-     * stays inert so the tabletop keeps its normal block/item interactions, and sneaking bypasses
-     * the screen so blocks can still be placed against the monitors.
-     */
+    @Nullable
     @Override
-    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player,
-                                    EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-        if (layer == Layer.BOTTOM || player.isSneaking()) return false;
-        if (!world.isRemote && player instanceof EntityPlayerMP) {
-            BlockPos core = pos.subtract(offset(state.getValue(COLUMN), state.getValue(FACING)));
-            TileEntityMonitorDesk monitor = TileEntityMonitorDesk.at(world, core);
-            if (monitor != null) {
-                int screenIndex = (layer == Layer.TOP ? 3 : 0)
-                        + state.getValue(COLUMN).ordinal();
-                ModNetwork.INSTANCE.sendTo(new MessageMonitorState(core,
-                        MessageMonitorState.OPEN, monitor.hasPassword(),
-                        monitor.isPasswordSkipped(), screenIndex), (EntityPlayerMP) player);
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+        if (layer != Layer.BOTTOM || state.get(COLUMN) != Column.CENTER) return null;
+        return (w, p, s, be) -> {
+            if (be instanceof MonitorDeskBlockEntity deskBe) {
+                MonitorDeskBlockEntity.tick(w, p, s, deskBe);
+            }
+        };
+    }
+
+    @Override
+    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+        if (layer == Layer.BOTTOM || player.isSneaking()) return ActionResult.PASS;
+        if (!world.isClient() && player instanceof ServerPlayerEntity serverPlayer) {
+            BlockPos core = pos.subtract(offset(state.get(COLUMN), state.get(FACING)));
+            BlockEntity be = world.getBlockEntity(core);
+            if (be instanceof MonitorDeskBlockEntity monitor) {
+                int screenIndex = (layer == Layer.TOP ? 3 : 0) + state.get(COLUMN).ordinal();
+                ModMessages.sendMonitorState(serverPlayer, core, (byte) 2, monitor.hasPassword(), monitor.isPasswordSkipped(), screenIndex);
             }
         }
-        return true;
+        return ActionResult.SUCCESS;
     }
 
-    /**
-     * Removing any cell removes the whole desk. The core is derived from the broken cell's layer,
-     * column and facing, so this works without a tile entity. The thread-local guard stops the
-     * removed cells from recursively dismantling the rest.
-     */
     @Override
-    public void breakBlock(World world, BlockPos pos, IBlockState state) {
-        if (!world.isRemote && !DISMANTLING.get()) {
-            EnumFacing facing = state.getValue(FACING);
-            BlockPos corePos = pos.subtract(offset(state.getValue(COLUMN), facing));
-            // The backup keys live on the core cell. Drop them before the dismantle loop removes
-            // the core, otherwise breaking any cell of the desk would destroy them.
-            TileEntity tile = world.getTileEntity(corePos);
-            if (tile instanceof TileEntityMonitorDesk) {
-                ((TileEntityMonitorDesk) tile).dropBackupContents(world, corePos);
+    public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
+        if (!world.isClient() && player.isCreative()) {
+            BlockPos corePos = pos.subtract(offset(state.get(COLUMN), state.get(FACING)));
+            BlockEntity be = world.getBlockEntity(corePos);
+            if (be instanceof MonitorDeskBlockEntity core) {
+                core.setCreativeBroken(true);
             }
-            SecurityEvents.removeDesk(world, corePos);
-            DISMANTLING.set(true);
-            try {
+        }
+        super.onBreak(world, pos, state, player);
+    }
+
+    @Override
+    public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
+        if (!state.isOf(newState.getBlock()) && !world.isClient()) {
+            Direction facing = state.get(FACING);
+            BlockPos corePos = pos.subtract(offset(state.get(COLUMN), facing));
+            BlockEntity be = world.getBlockEntity(corePos);
+            if (be instanceof MonitorDeskBlockEntity core && core.beginDismantle()) {
+                core.dropBackupContents(world, corePos);
+                SecurityEvents.removeDesk(world, corePos);
+                if (!core.isCreativeBroken()) {
+                    dropStack(world, pos, new ItemStack(ModItems.MONITOR_SETUP_ITEM));
+                }
                 for (Layer l : Layer.values()) {
                     for (Column c : Column.values()) {
                         BlockPos p = corePos.add(offset(l, c, facing));
                         if (!p.equals(pos) && world.getBlockState(p).getBlock() instanceof BlockMonitorSetup) {
-                            world.setBlockState(p, Blocks.AIR.getDefaultState(), 2);
+                            world.setBlockState(p, Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL);
                         }
                     }
                 }
-            } finally {
-                DISMANTLING.set(false);
             }
         }
-        super.breakBlock(world, pos, state);
-    }
-
-    /**
-     * The bottom row keeps the full cube. The middle and top rows use the back half only, forming
-     * one continuous half-depth wall over the monitors while leaving the front half of the desk
-     * walkable and jumpable.
-     */
-    @Override
-    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess world, BlockPos pos) {
-        return layer == Layer.BOTTOM ? FULL_BLOCK_AABB : monitorBox(state.getValue(FACING));
+        super.onStateReplaced(state, world, pos, newState, moved);
     }
 
     @Override
-    public AxisAlignedBB getCollisionBoundingBox(IBlockState state, IBlockAccess world, BlockPos pos) {
-        return layer == Layer.BOTTOM ? FULL_BLOCK_AABB : monitorBox(state.getValue(FACING));
+    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+        return layer == Layer.BOTTOM ? SHAPE_BOTTOM : getMonitorShape(state.get(FACING));
     }
 
-    /** Rotates the authored south-half monitor wall into the block's facing. */
-    private static AxisAlignedBB monitorBox(EnumFacing facing) {
+    @Override
+    public VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+        return layer == Layer.BOTTOM ? SHAPE_BOTTOM : getMonitorShape(state.get(FACING));
+    }
+
+    public static VoxelShape getMonitorShape(Direction facing) {
         switch (facing) {
-            case SOUTH:
-                return MONITOR_SOUTH;
-            case EAST:
-                return MONITOR_EAST;
-            case WEST:
-                return MONITOR_WEST;
+            case SOUTH: return SHAPE_MONITOR_SOUTH;
+            case EAST:  return SHAPE_MONITOR_EAST;
+            case WEST:  return SHAPE_MONITOR_WEST;
             case NORTH:
-            default:
-                return MONITOR_NORTH;
+            default:    return SHAPE_MONITOR_NORTH;
         }
-    }
-
-    private static AxisAlignedBB rotatedMonitorBox(EnumFacing facing) {
-        return Facings.rotate(MONITOR_LOCAL, facing).offset(0.5D, 0D, 0.5D);
-    }
-
-    @Override
-    public boolean isOpaqueCube(IBlockState state) {
-        return false;
-    }
-
-    @Override
-    public boolean isFullCube(IBlockState state) {
-        return false;
-    }
-
-    @Override
-    public boolean isTopSolid(IBlockState state) {
-        return layer == Layer.BOTTOM;
-    }
-
-    @Override
-    public boolean isSideSolid(IBlockState state, IBlockAccess world, BlockPos pos, EnumFacing side) {
-        return layer == Layer.BOTTOM;
-    }
-
-    @Override
-    public EnumPushReaction getPushReaction(IBlockState state) {
-        return EnumPushReaction.BLOCK;
-    }
-
-    /** Middle/top blocks have no item of their own, so all cells drop the desk item. */
-    @Override
-    public Item getItemDropped(IBlockState state, java.util.Random rand, int fortune) {
-        return Item.getItemFromBlock(ModContent.MONITOR_SETUP);
-    }
-
-    /** Middle-clicking any cell should pick the desk item, not an itemless upper block. */
-    @Override
-    public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world,
-                                  BlockPos pos, EntityPlayer player) {
-        return new ItemStack(ModContent.MONITOR_SETUP);
     }
 }

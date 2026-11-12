@@ -2,13 +2,13 @@ package com.ntmdoors.monitor;
 
 import com.ntmdoors.item.ItemTerminalBackupKey;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompressedStreamTools;
-import net.minecraft.nbt.NBTSizeTracker;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.NbtTagSizeTracker;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.common.util.Constants;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -56,7 +56,7 @@ public final class TerminalBackupData {
      * Server side: replaces the key's payload with a compressed copy of {@code snapshot}.
      * Returns false when the snapshot cannot be compressed or would be too large for a key.
      */
-    public static boolean write(ItemStack stack, NBTTagCompound snapshot, int dimension,
+    public static boolean write(ItemStack stack, NbtCompound snapshot, String dimension,
                                 @Nullable BlockPos sourcePos) {
         if (!isKey(stack) || snapshot == null) return false;
 
@@ -68,31 +68,34 @@ public final class TerminalBackupData {
         }
         if (compressed.length == 0 || compressed.length > MAX_COMPRESSED_BYTES) return false;
 
-        NBTTagCompound root = new NBTTagCompound();
-        root.setInteger(FORMAT, SCHEMA);
-        root.setLong(CREATED, System.currentTimeMillis());
-        root.setInteger(SOURCE_DIM, dimension);
-        root.setLong(SOURCE_POS, sourcePos == null ? 0L : sourcePos.toLong());
-        root.setInteger(NET_COUNT, snapshot.getTagList("SecurityNets",
-                Constants.NBT.TAG_COMPOUND).tagCount());
-        root.setInteger(DOCUMENT_COUNT, snapshot.getTagList("Notepad",
-                Constants.NBT.TAG_COMPOUND).tagCount());
-        root.setByteArray(DATA, compressed);
-        stack.setTagCompound(root);
+        NbtCompound root = new NbtCompound();
+        root.putInt(FORMAT, SCHEMA);
+        root.putLong(CREATED, System.currentTimeMillis());
+        root.putString(SOURCE_DIM, dimension != null ? dimension : "minecraft:overworld");
+        root.putLong(SOURCE_POS, sourcePos == null ? 0L : sourcePos.asLong());
+        root.putInt(NET_COUNT, snapshot.getList("SecurityNets", NbtElement.COMPOUND_TYPE).size());
+        root.putInt(DOCUMENT_COUNT, snapshot.getList("Notepad", NbtElement.COMPOUND_TYPE).size());
+        root.putByteArray(DATA, compressed);
+        stack.setNbt(root);
         return true;
+    }
+
+    public static boolean write(ItemStack stack, NbtCompound snapshot, int dimension,
+                                @Nullable BlockPos sourcePos) {
+        return write(stack, snapshot, String.valueOf(dimension), sourcePos);
     }
 
     /** Reads and decompresses a key's snapshot, or null when the key is blank or damaged. */
     @Nullable
-    public static NBTTagCompound read(ItemStack stack) {
-        NBTTagCompound root = root(stack);
+    public static NbtCompound read(ItemStack stack) {
+        NbtCompound root = root(stack);
         if (root == null) return null;
         byte[] compressed = root.getByteArray(DATA);
         if (compressed.length == 0 || compressed.length > MAX_COMPRESSED_BYTES) return null;
 
         try {
-            NBTTagCompound snapshot = decompress(compressed);
-            if (snapshot.getInteger("Schema") != SCHEMA) return null;
+            NbtCompound snapshot = decompress(compressed);
+            if (snapshot.getInt("Schema") != SCHEMA) return null;
             return snapshot;
         } catch (IOException | RuntimeException ex) {
             return null;
@@ -108,10 +111,10 @@ public final class TerminalBackupData {
     }
 
     @Nullable
-    private static NBTTagCompound root(ItemStack stack) {
+    private static NbtCompound root(ItemStack stack) {
         if (!isKey(stack)) return null;
-        NBTTagCompound tag = stack.getTagCompound();
-        if (tag == null || tag.getInteger(FORMAT) != SCHEMA || !tag.hasKey(DATA)) {
+        NbtCompound tag = stack.getNbt();
+        if (tag == null || tag.getInt(FORMAT) != SCHEMA || !tag.contains(DATA, NbtElement.BYTE_ARRAY_TYPE)) {
             return null;
         }
         int length = tag.getByteArray(DATA).length;
@@ -119,22 +122,22 @@ public final class TerminalBackupData {
     }
 
     private static int metaInt(ItemStack stack, String key) {
-        NBTTagCompound root = root(stack);
-        return root == null ? 0 : root.getInteger(key);
+        NbtCompound root = root(stack);
+        return root == null ? 0 : root.getInt(key);
     }
 
-    private static byte[] compress(NBTTagCompound tag) throws IOException {
+    public static byte[] compress(NbtCompound tag) throws IOException {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         try (DataOutputStream out = new DataOutputStream(new GZIPOutputStream(bytes))) {
-            CompressedStreamTools.write(tag, out);
+            NbtIo.write(tag, out);
         }
         return bytes.toByteArray();
     }
 
-    private static NBTTagCompound decompress(byte[] bytes) throws IOException {
+    public static NbtCompound decompress(byte[] bytes) throws IOException {
         try (DataInputStream in = new DataInputStream(new BufferedInputStream(
                 new GZIPInputStream(new ByteArrayInputStream(bytes))))) {
-            return CompressedStreamTools.read(in, new NBTSizeTracker(MAX_UNCOMPRESSED_BYTES));
+            return NbtIo.read(in, new NbtTagSizeTracker(MAX_UNCOMPRESSED_BYTES));
         }
     }
 }

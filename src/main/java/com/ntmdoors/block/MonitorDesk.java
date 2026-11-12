@@ -1,8 +1,8 @@
 package com.ntmdoors.block;
 
 import com.ntmdoors.util.Facings;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -54,7 +54,7 @@ public final class MonitorDesk {
     }
 
     /** World offset of one cell relative to the bottom core block, rotated for the facing. */
-    public BlockPos offset(BlockMonitorDesk block, BlockMonitorSetup.Column column, EnumFacing facing) {
+    public BlockPos offset(BlockMonitorDesk block, BlockMonitorSetup.Column column, Direction facing) {
         int dx = columns == 3
                 ? column.ordinal() - 1
                 : (column == BlockMonitorSetup.Column.LEFT ? 0 : 1);

@@ -1,12 +1,15 @@
 package com.ntmdoors.block;
 
-import net.minecraft.block.properties.PropertyEnum;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.state.StateManager;
+import net.minecraft.state.property.EnumProperty;
 
 /** Two-wide monitor desk cell; only left and right columns exist. */
 public class BlockMonitorDesk2 extends BlockMonitorDesk {
 
-    private static final PropertyEnum<BlockMonitorSetup.Column> COLUMN_2 =
-            PropertyEnum.create("column", BlockMonitorSetup.Column.class,
+    public static final EnumProperty<BlockMonitorSetup.Column> COLUMN_2 =
+            EnumProperty.of("column", BlockMonitorSetup.Column.class,
                     BlockMonitorSetup.Column.LEFT, BlockMonitorSetup.Column.RIGHT);
 
     public BlockMonitorDesk2(MonitorDesk desk, String name, BlockMonitorSetup.Layer layer,
@@ -15,7 +18,12 @@ public class BlockMonitorDesk2 extends BlockMonitorDesk {
     }
 
     @Override
-    public PropertyEnum<BlockMonitorSetup.Column> columnProperty() {
+    public EnumProperty<BlockMonitorSetup.Column> columnProperty() {
         return COLUMN_2;
+    }
+
+    @Override
+    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+        builder.add(FACING, COLUMN_2);
     }
 }

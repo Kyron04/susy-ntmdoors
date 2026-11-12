@@ -20,6 +20,9 @@ public final class ModContent {
     public static final Block KEYPAD = ModBlocks.KEYPAD;
     public static final Block KEYCARD_SCANNER = ModBlocks.KEYCARD_SCANNER;
     public static final Block KEYCARD_PROGRAMMER = ModBlocks.KEYCARD_PROGRAMMER;
+    public static final Block MONITOR_SETUP = ModBlocks.MONITOR_SETUP;
+    public static final Block SINGLE_MONITOR_SETUP_MIDDLE = ModBlocks.SINGLE_MONITOR_SETUP_MIDDLE;
+    public static final Block DUAL_MONITOR_SETUP_2X2_MIDDLE = ModBlocks.DUAL_MONITOR_SETUP_2X2_MIDDLE;
 
     private ModContent() {}
 }

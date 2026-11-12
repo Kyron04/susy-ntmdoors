@@ -1,8 +1,8 @@
 package com.ntmdoors.monitor;
 
-import com.ntmdoors.tile.TileEntityDoorGeneric;
-import com.ntmdoors.tile.TileEntityMonitorDesk;
-import net.minecraft.tileentity.TileEntity;
+import com.ntmdoors.block.entity.DoorBlockEntity;
+import com.ntmdoors.block.entity.MonitorDeskBlockEntity;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -57,7 +57,7 @@ public final class SecurityEvents {
     }
 
     /** Refreshes the persistent index from a desk's current nets and device bindings. */
-    public static void updateDesk(TileEntityMonitorDesk desk) {
+    public static void updateDesk(MonitorDeskBlockEntity desk) {
         SecurityEventData.updateDesk(desk);
     }
 
@@ -68,20 +68,20 @@ public final class SecurityEvents {
 
     /** Closes every loaded door in the net. */
     public static void closeAllDoors(World world, SecurityNet net) {
-        if (world == null || world.isRemote || net == null) return;
+        if (world == null || world.isClient() || net == null) return;
         for (MonitorDevice device : net.getDevices()) {
             if (device.type != MonitorDevice.Type.DOOR) continue;
-            if (!world.isBlockLoaded(device.pos)) continue;
-            TileEntity te = world.getTileEntity(device.pos);
-            if (te instanceof TileEntityDoorGeneric) {
-                ((TileEntityDoorGeneric) te).closeForSystem();
+            if (!world.isChunkLoaded(device.pos)) continue;
+            BlockEntity be = world.getBlockEntity(device.pos);
+            if (be instanceof DoorBlockEntity door) {
+                door.closeForSystem();
             }
         }
     }
 
     /** Opens every loaded door in the net unless shutdown or lockdown is active. */
     public static void openAllDoors(World world, SecurityNet net) {
-        if (world == null || world.isRemote || net == null) return;
+        if (world == null || world.isClient() || net == null) return;
         if (net.getEventEnabled(SecurityNet.EVENT_SYSTEM_SHUTDOWN)
                 || net.getEventEnabled(SecurityNet.EVENT_SYSTEM_LOCKDOWN)) {
             closeAllDoors(world, net);
@@ -89,10 +89,10 @@ public final class SecurityEvents {
         }
         for (MonitorDevice device : net.getDevices()) {
             if (device.type != MonitorDevice.Type.DOOR) continue;
-            if (!world.isBlockLoaded(device.pos)) continue;
-            TileEntity te = world.getTileEntity(device.pos);
-            if (te instanceof TileEntityDoorGeneric) {
-                ((TileEntityDoorGeneric) te).openForSystem();
+            if (!world.isChunkLoaded(device.pos)) continue;
+            BlockEntity be = world.getBlockEntity(device.pos);
+            if (be instanceof DoorBlockEntity door) {
+                door.openForSystem();
             }
         }
     }

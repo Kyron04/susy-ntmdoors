@@ -1,14 +1,15 @@
 package com.ntmdoors.monitor;
 
-import com.ntmdoors.tile.TileEntityMonitorDesk;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
+import com.ntmdoors.block.entity.MonitorDeskBlockEntity;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.PersistentState;
 import net.minecraft.world.World;
-import net.minecraft.world.storage.WorldSavedData;
-import net.minecraftforge.common.util.Constants;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,9 +21,9 @@ import java.util.Map;
  * save so shutdown and lockdown stay enforced away from the terminal. Updating a desk replaces only
  * that desk's contribution; device bindings on the desk itself are never modified.</p>
  */
-public final class SecurityEventData extends WorldSavedData {
+public final class SecurityEventData extends PersistentState {
 
-    private static final String DATA_NAME = "ntmdoors_security_events";
+    public static final String DATA_NAME = "ntmdoors_security_events";
     private static final String DESKS = "Desks";
     private static final String DESK_POS = "Desk";
     private static final String DEVICES = "Devices";
@@ -33,27 +34,27 @@ public final class SecurityEventData extends WorldSavedData {
     private final Map<BlockPos, Map<BlockPos, Integer>> contributions = new HashMap<>();
     /** Combined view across every desk, rebuilt lazily after a change. */
     private final Map<BlockPos, Integer> deviceStates = new HashMap<>();
-    private boolean dirty = true;
+    private boolean dirtyCache = true;
 
-    public SecurityEventData(String name) {
-        super(name);
+    public SecurityEventData() {
     }
 
     @Nullable
     public static SecurityEventData get(World world) {
-        if (world == null || world.isRemote) return null;
-        WorldSavedData data = world.getPerWorldStorage()
-                .getOrLoadData(SecurityEventData.class, DATA_NAME);
-        if (data instanceof SecurityEventData) return (SecurityEventData) data;
-
-        SecurityEventData created = new SecurityEventData(DATA_NAME);
-        world.getPerWorldStorage().setData(DATA_NAME, created);
-        return created;
+        if (world == null || world.isClient()) return null;
+        if (world instanceof ServerWorld serverWorld) {
+            return serverWorld.getPersistentStateManager().getOrCreate(
+                    SecurityEventData::fromNbt,
+                    SecurityEventData::new,
+                    DATA_NAME
+            );
+        }
+        return null;
     }
 
     /** Rebuilds one desk's contribution from its current nets and device bindings. */
-    public static void updateDesk(TileEntityMonitorDesk desk) {
-        if (desk == null || desk.getWorld() == null || desk.getWorld().isRemote) return;
+    public static void updateDesk(MonitorDeskBlockEntity desk) {
+        if (desk == null || desk.getWorld() == null || desk.getWorld().isClient()) return;
         SecurityEventData data = get(desk.getWorld());
         if (data == null) return;
 
@@ -106,24 +107,24 @@ public final class SecurityEventData extends WorldSavedData {
             if (contribution.equals(previous)) return;
             data.contributions.put(deskPos, contribution);
         }
-        data.dirty = true;
+        data.dirtyCache = true;
         data.markDirty();
     }
 
     /** Removes a destroyed desk's contribution without touching any device bindings. */
     public static void removeDesk(World world, BlockPos deskPos) {
-        if (world == null || world.isRemote || deskPos == null) return;
+        if (world == null || world.isClient() || deskPos == null) return;
         SecurityEventData data = get(world);
         if (data == null) return;
         if (data.contributions.remove(deskPos.toImmutable()) != null) {
-            data.dirty = true;
+            data.dirtyCache = true;
             data.markDirty();
         }
     }
 
     public int state(BlockPos devicePos) {
         if (devicePos == null) return 0;
-        if (dirty) rebuildDeviceStates();
+        if (dirtyCache) rebuildDeviceStates();
         Integer value = deviceStates.get(devicePos);
         return value == null ? 0 : value;
     }
@@ -135,47 +136,52 @@ public final class SecurityEventData extends WorldSavedData {
                 deviceStates.merge(entry.getKey(), entry.getValue(), (a, b) -> a | b);
             }
         }
-        dirty = false;
+        dirtyCache = false;
     }
 
-    @Override
-    public void readFromNBT(NBTTagCompound nbt) {
+    public static SecurityEventData fromNbt(NbtCompound nbt) {
+        SecurityEventData data = new SecurityEventData();
+        data.readNbt(nbt);
+        return data;
+    }
+
+    public void readNbt(NbtCompound nbt) {
         contributions.clear();
-        NBTTagList desks = nbt.getTagList(DESKS, Constants.NBT.TAG_COMPOUND);
-        for (int i = 0; i < desks.tagCount(); i++) {
-            NBTTagCompound deskTag = desks.getCompoundTagAt(i);
+        NbtList desks = nbt.getList(DESKS, NbtElement.COMPOUND_TYPE);
+        for (int i = 0; i < desks.size(); i++) {
+            NbtCompound deskTag = desks.getCompound(i);
             BlockPos deskPos = BlockPos.fromLong(deskTag.getLong(DESK_POS));
             Map<BlockPos, Integer> contribution = new HashMap<>();
-            NBTTagList devices = deskTag.getTagList(DEVICES, Constants.NBT.TAG_COMPOUND);
-            for (int j = 0; j < devices.tagCount(); j++) {
-                NBTTagCompound deviceTag = devices.getCompoundTagAt(j);
-                int flags = deviceTag.getInteger(DEVICE_FLAGS);
+            NbtList devices = deskTag.getList(DEVICES, NbtElement.COMPOUND_TYPE);
+            for (int j = 0; j < devices.size(); j++) {
+                NbtCompound deviceTag = devices.getCompound(j);
+                int flags = deviceTag.getInt(DEVICE_FLAGS);
                 if (flags == 0) continue;
                 contribution.put(BlockPos.fromLong(deviceTag.getLong(DEVICE_POS)), flags);
             }
             if (!contribution.isEmpty()) contributions.put(deskPos, contribution);
         }
-        dirty = true;
+        dirtyCache = true;
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
-        NBTTagList desks = new NBTTagList();
+    public NbtCompound writeNbt(NbtCompound nbt) {
+        NbtList desks = new NbtList();
         for (Map.Entry<BlockPos, Map<BlockPos, Integer>> deskEntry : contributions.entrySet()) {
-            NBTTagCompound deskTag = new NBTTagCompound();
-            deskTag.setLong(DESK_POS, deskEntry.getKey().toLong());
+            NbtCompound deskTag = new NbtCompound();
+            deskTag.putLong(DESK_POS, deskEntry.getKey().asLong());
 
-            NBTTagList devices = new NBTTagList();
+            NbtList devices = new NbtList();
             for (Map.Entry<BlockPos, Integer> deviceEntry : deskEntry.getValue().entrySet()) {
-                NBTTagCompound deviceTag = new NBTTagCompound();
-                deviceTag.setLong(DEVICE_POS, deviceEntry.getKey().toLong());
-                deviceTag.setInteger(DEVICE_FLAGS, deviceEntry.getValue());
-                devices.appendTag(deviceTag);
+                NbtCompound deviceTag = new NbtCompound();
+                deviceTag.putLong(DEVICE_POS, deviceEntry.getKey().asLong());
+                deviceTag.putInt(DEVICE_FLAGS, deviceEntry.getValue());
+                devices.add(deviceTag);
             }
-            deskTag.setTag(DEVICES, devices);
-            desks.appendTag(deskTag);
+            deskTag.put(DEVICES, devices);
+            desks.add(deskTag);
         }
-        nbt.setTag(DESKS, desks);
+        nbt.put(DESKS, desks);
         return nbt;
     }
 }

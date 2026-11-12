@@ -61,6 +61,24 @@ public final class ModBlockEntities {
             FabricBlockEntityTypeBuilder.create(MotionSensorBlockEntity::new, ModBlocks.MOTION_SENSOR).build()
     );
 
+    public static final BlockEntityType<MonitorDeskBlockEntity> MONITOR_DESK = Registry.register(
+            Registries.BLOCK_ENTITY_TYPE,
+            Identifier.of(NTMDoors.MOD_ID, "monitor_desk"),
+            FabricBlockEntityTypeBuilder.create(MonitorDeskBlockEntity::new,
+                    ModBlocks.MONITOR_SETUP,
+                    ModBlocks.MONITOR_SETUP_MIDDLE,
+                    ModBlocks.MONITOR_SETUP_TOP,
+                    ModBlocks.TRIPLE_MONITOR_SETUP,
+                    ModBlocks.TRIPLE_MONITOR_SETUP_MIDDLE,
+                    ModBlocks.DUAL_MONITOR_SETUP,
+                    ModBlocks.DUAL_MONITOR_SETUP_MIDDLE,
+                    ModBlocks.DUAL_MONITOR_SETUP_2X2,
+                    ModBlocks.DUAL_MONITOR_SETUP_2X2_MIDDLE,
+                    ModBlocks.SINGLE_MONITOR_SETUP,
+                    ModBlocks.SINGLE_MONITOR_SETUP_MIDDLE
+            ).build()
+    );
+
     public static void registerModBlockEntities() {
         // Triggers static initialization
     }

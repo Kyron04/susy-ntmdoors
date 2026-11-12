@@ -1,9 +1,10 @@
 package com.ntmdoors.monitor;
 
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -45,13 +46,23 @@ public final class SecurityNet {
         return name.isEmpty() ? "Security net " + (id + 1) : name;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name == null ? "" : name;
+    }
+
     public List<MonitorDevice> getDevices() {
         return Collections.unmodifiableList(devices);
     }
 
     public void setDevices(List<MonitorDevice> newDevices) {
         devices.clear();
-        devices.addAll(newDevices);
+        if (newDevices != null) {
+            devices.addAll(newDevices);
+        }
     }
 
     public String getLinkedKeyId() {
@@ -97,7 +108,6 @@ public final class SecurityNet {
         }
     }
 
-    /** Server side: stores one Events tab toggle. Event behavior is handled separately. */
     public void setEventEnabled(int eventId, boolean enabled) {
         switch (eventId) {
             case EVENT_SYSTEM_SHUTDOWN:
@@ -135,30 +145,30 @@ public final class SecurityNet {
         return mask;
     }
 
-    public NBTTagCompound toNBT() {
-        NBTTagCompound tag = new NBTTagCompound();
-        tag.setInteger("Id", id);
-        tag.setString("Name", name);
-        tag.setTag("Devices", MonitorDevice.toNBTList(devices));
-        tag.setString("LinkedKeyId", linkedKeyId);
-        tag.setString("LinkedKeyName", linkedKeyName);
-        tag.setBoolean("SystemShutdown", systemShutdown);
-        tag.setBoolean("SystemLockdown", systemLockdown);
-        tag.setBoolean("TriggerAlarms", triggerAlarms);
-        tag.setBoolean("DisableKeypads", disableKeypads);
-        tag.setBoolean("DisableScanners", disableScanners);
-        tag.setBoolean("DisableSensors", disableSensors);
-        tag.setBoolean("DisableRedstoneGates", disableRedstoneGates);
+    public NbtCompound toNbt() {
+        NbtCompound tag = new NbtCompound();
+        tag.putInt("Id", id);
+        tag.putString("Name", name);
+        tag.put("Devices", MonitorDevice.toNbtList(devices));
+        tag.putString("LinkedKeyId", linkedKeyId);
+        tag.putString("LinkedKeyName", linkedKeyName);
+        tag.putBoolean("SystemShutdown", systemShutdown);
+        tag.putBoolean("SystemLockdown", systemLockdown);
+        tag.putBoolean("TriggerAlarms", triggerAlarms);
+        tag.putBoolean("DisableKeypads", disableKeypads);
+        tag.putBoolean("DisableScanners", disableScanners);
+        tag.putBoolean("DisableSensors", disableSensors);
+        tag.putBoolean("DisableRedstoneGates", disableRedstoneGates);
         return tag;
     }
 
     @Nullable
-    public static SecurityNet fromNBT(NBTTagCompound tag) {
-        if (!tag.hasKey("Id")) return null;
-        SecurityNet net = new SecurityNet(tag.getInteger("Id"), tag.getString("Name"));
-        if (tag.hasKey("Devices", Constants.NBT.TAG_LIST)) {
-            net.devices.addAll(MonitorDevice.fromNBTList(
-                    tag.getTagList("Devices", Constants.NBT.TAG_COMPOUND)));
+    public static SecurityNet fromNbt(NbtCompound tag) {
+        if (!tag.contains("Id")) return null;
+        SecurityNet net = new SecurityNet(tag.getInt("Id"), tag.getString("Name"));
+        if (tag.contains("Devices", NbtElement.LIST_TYPE)) {
+            net.devices.addAll(MonitorDevice.fromNbtList(
+                    tag.getList("Devices", NbtElement.COMPOUND_TYPE)));
         }
         net.linkedKeyId = tag.getString("LinkedKeyId");
         net.linkedKeyName = tag.getString("LinkedKeyName");

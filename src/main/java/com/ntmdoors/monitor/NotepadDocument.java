@@ -1,6 +1,6 @@
 package com.ntmdoors.monitor;
 
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NbtCompound;
 
 /**
  * One shared note stored on a monitor desk. Documents live in the desk's saved NBT and are
@@ -20,6 +20,10 @@ public final class NotepadDocument {
         this.id = id;
         this.name = cleanName(name);
         this.text = cleanText(text);
+    }
+
+    public int getId() {
+        return id;
     }
 
     public String getName() {
@@ -55,16 +59,15 @@ public final class NotepadDocument {
         return value;
     }
 
-    public NBTTagCompound toNBT() {
-        NBTTagCompound tag = new NBTTagCompound();
-        tag.setInteger("Id", id);
-        tag.setString("Name", name);
-        tag.setString("Text", text);
+    public NbtCompound toNbt() {
+        NbtCompound tag = new NbtCompound();
+        tag.putInt("Id", id);
+        tag.putString("Name", name);
+        tag.putString("Text", text);
         return tag;
     }
 
-    public static NotepadDocument fromNBT(NBTTagCompound tag) {
-        return new NotepadDocument(tag.getInteger("Id"), tag.getString("Name"),
-                tag.getString("Text"));
+    public static NotepadDocument fromNbt(NbtCompound tag) {
+        return new NotepadDocument(tag.getInt("Id"), tag.getString("Name"), tag.getString("Text"));
     }
 }

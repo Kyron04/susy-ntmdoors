@@ -15,10 +15,19 @@ import com.ntmdoors.item.ItemOperatorKeycard;
 import com.ntmdoors.item.ItemRelayKey;
 import com.ntmdoors.screen.KeycardProgrammerScreenHandler;
 import com.ntmdoors.screen.SafeScreenHandler;
+import com.ntmdoors.block.entity.DoorBlockEntity;
+import com.ntmdoors.block.entity.MonitorDeskBlockEntity;
+import com.ntmdoors.client.screen.NotepadScreen;
+import com.ntmdoors.monitor.MonitorDevice;
+import com.ntmdoors.monitor.NotepadDocument;
+import com.ntmdoors.monitor.SecurityNet;
+import com.ntmdoors.monitor.SecurityNetSummary;
 import com.ntmdoors.sound.ModSounds;
 import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.PrivateKeys;
 import io.netty.buffer.Unpooled;
+import java.util.ArrayList;
+import java.util.List;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -60,6 +69,19 @@ public final class ModMessages {
     public static final Identifier MOTION_SENSOR_OPTION_ID = Identifier.of(NTMDoors.MOD_ID, "motion_sensor_option");
     public static final Identifier MOTION_SENSOR_AREA_ID = Identifier.of(NTMDoors.MOD_ID, "motion_sensor_area");
     public static final Identifier MOTION_SENSOR_KEY_ID = Identifier.of(NTMDoors.MOD_ID, "motion_sensor_key");
+
+    // --- Monitor & Terminal OS Packets (Milestone M5) ---
+    public static final Identifier MONITOR_ACTION_ID = Identifier.of(NTMDoors.MOD_ID, "monitor_action");
+    public static final Identifier MONITOR_STATE_ID = Identifier.of(NTMDoors.MOD_ID, "monitor_state");
+    public static final Identifier MONITOR_DISPLAY_ID = Identifier.of(NTMDoors.MOD_ID, "monitor_display");
+    public static final Identifier MONITOR_DEVICE_CONTROL_ID = Identifier.of(NTMDoors.MOD_ID, "monitor_device_control");
+    public static final Identifier MONITOR_NET_REQUEST_ID = Identifier.of(NTMDoors.MOD_ID, "monitor_net_request");
+    public static final Identifier MONITOR_NETS_ID = Identifier.of(NTMDoors.MOD_ID, "monitor_nets");
+    public static final Identifier MONITOR_DEVICES_ID = Identifier.of(NTMDoors.MOD_ID, "monitor_devices");
+    public static final Identifier MONITOR_WALLPAPER_ID = Identifier.of(NTMDoors.MOD_ID, "monitor_wallpaper");
+    public static final Identifier NOTEPAD_ACTION_ID = Identifier.of(NTMDoors.MOD_ID, "notepad_action");
+    public static final Identifier NOTEPAD_DATA_ID = Identifier.of(NTMDoors.MOD_ID, "notepad_data");
+    public static final Identifier MONITOR_BACKUP_OPEN_ID = Identifier.of(NTMDoors.MOD_ID, "monitor_backup_open");
 
     public static void registerC2SPackets() {
         // 1. Relay Key Name
@@ -379,6 +401,160 @@ public final class ModMessages {
                 }
             });
         });
+
+        // 17. Monitor Action (Password setup/skip/check, net create/remove/rename)
+        ServerPlayNetworking.registerGlobalReceiver(MONITOR_ACTION_ID, (server, player, handler, buf, responseSender) -> {
+            BlockPos pos = buf.readBlockPos();
+            int action = buf.readInt();
+            String strParam = buf.readString(256);
+            int intParam = buf.readInt();
+            server.execute(() -> {
+                if (player.squaredDistanceTo(pos.toCenterPos()) > 64.0) return;
+                BlockEntity be = player.getWorld().getBlockEntity(pos);
+                if (be instanceof MonitorDeskBlockEntity desk) {
+                    switch (action) {
+                        case 0 -> {
+                            boolean ok = desk.setPasswordHash(strParam);
+                            sendMonitorState(player, pos, (byte) (ok ? 2 : 1), desk.hasPassword(), desk.isPasswordSkipped(), 0);
+                        }
+                        case 1 -> {
+                            boolean ok = desk.skipPasswordSetup();
+                            sendMonitorState(player, pos, (byte) (ok ? 3 : 1), desk.hasPassword(), desk.isPasswordSkipped(), 0);
+                        }
+                        case 2 -> {
+                            boolean ok = desk.checkPasswordHash(strParam);
+                            sendMonitorState(player, pos, (byte) (ok ? 4 : 5), desk.hasPassword(), desk.isPasswordSkipped(), 0);
+                        }
+                        case 3 -> desk.createNet(strParam);
+                        case 4 -> desk.removeNet(intParam);
+                        case 5 -> desk.renameNet(intParam, strParam);
+                    }
+                }
+            });
+        });
+
+        // 18. Monitor Display (Navigation & heartbeat)
+        ServerPlayNetworking.registerGlobalReceiver(MONITOR_DISPLAY_ID, (server, player, handler, buf, responseSender) -> {
+            BlockPos pos = buf.readBlockPos();
+            int screenIndex = buf.readInt();
+            boolean viewing = buf.readBoolean();
+            int stage = buf.readInt();
+            int netId = buf.readInt();
+            int docId = buf.readInt();
+            boolean eventsTab = buf.readBoolean();
+            server.execute(() -> {
+                if (player.squaredDistanceTo(pos.toCenterPos()) > 64.0) return;
+                BlockEntity be = player.getWorld().getBlockEntity(pos);
+                if (be instanceof MonitorDeskBlockEntity desk) {
+                    desk.setScreenViewing(screenIndex, viewing, player.getUuid());
+                    desk.setScreenStage(screenIndex, stage);
+                    desk.setScreenNetId(screenIndex, netId);
+                    desk.setScreenNotepadDocId(screenIndex, docId);
+                }
+            });
+        });
+
+        // 19. Monitor Device Control (Door open/close, device enable/disable, net events)
+        ServerPlayNetworking.registerGlobalReceiver(MONITOR_DEVICE_CONTROL_ID, (server, player, handler, buf, responseSender) -> {
+            BlockPos deskPos = buf.readBlockPos();
+            int netId = buf.readInt();
+            int command = buf.readInt();
+            BlockPos targetPos = buf.readBlockPos();
+            int eventId = buf.readInt();
+            boolean state = buf.readBoolean();
+            server.execute(() -> {
+                if (player.squaredDistanceTo(deskPos.toCenterPos()) > 64.0) return;
+                BlockEntity be = player.getWorld().getBlockEntity(deskPos);
+                if (be instanceof MonitorDeskBlockEntity desk) {
+                    if (command == 0) {
+                        BlockEntity target = player.getWorld().getBlockEntity(targetPos);
+                        if (target instanceof DoorBlockEntity door) door.openForSystem();
+                    } else if (command == 1) {
+                        BlockEntity target = player.getWorld().getBlockEntity(targetPos);
+                        if (target instanceof DoorBlockEntity door) door.closeForSystem();
+                    } else if (command == 2) {
+                        MonitorDevice dev = MonitorDevice.find(player.getWorld(), targetPos);
+                        if (dev != null) MonitorDevice.setEnabled(player.getWorld(), dev, state);
+                    } else if (command == 3) {
+                        desk.setNetEvent(netId, eventId, state);
+                    }
+                }
+            });
+        });
+
+        // 20. Monitor Net Request
+        ServerPlayNetworking.registerGlobalReceiver(MONITOR_NET_REQUEST_ID, (server, player, handler, buf, responseSender) -> {
+            BlockPos pos = buf.readBlockPos();
+            int netId = buf.readInt();
+            server.execute(() -> {
+                if (player.squaredDistanceTo(pos.toCenterPos()) > 64.0) return;
+                BlockEntity be = player.getWorld().getBlockEntity(pos);
+                if (be instanceof MonitorDeskBlockEntity desk) {
+                    if (netId == -1) {
+                        sendMonitorNets(player, pos, desk.getNetSummaries());
+                    } else {
+                        SecurityNet net = desk.getNet(netId);
+                        if (net != null) {
+                            sendMonitorDevices(player, pos, net);
+                        }
+                    }
+                }
+            });
+        });
+
+        // 21. Monitor Wallpaper
+        ServerPlayNetworking.registerGlobalReceiver(MONITOR_WALLPAPER_ID, (server, player, handler, buf, responseSender) -> {
+            BlockPos pos = buf.readBlockPos();
+            byte screenIndex = buf.readByte();
+            String wallpaper = buf.readString(512);
+            server.execute(() -> {
+                if (player.squaredDistanceTo(pos.toCenterPos()) > 64.0) return;
+                BlockEntity be = player.getWorld().getBlockEntity(pos);
+                if (be instanceof MonitorDeskBlockEntity desk) {
+                    desk.setScreenWallpaper(screenIndex, wallpaper);
+                }
+            });
+        });
+
+        // 22. Notepad Action
+        ServerPlayNetworking.registerGlobalReceiver(NOTEPAD_ACTION_ID, (server, player, handler, buf, responseSender) -> {
+            BlockPos pos = buf.readBlockPos();
+            byte action = buf.readByte();
+            int docId = buf.readInt();
+            String text = buf.readString(8192);
+            server.execute(() -> {
+                if (player.squaredDistanceTo(pos.toCenterPos()) > 64.0) return;
+                BlockEntity be = player.getWorld().getBlockEntity(pos);
+                if (be instanceof MonitorDeskBlockEntity desk) {
+                    switch (action) {
+                        case 0 -> sendNotepadData(player, pos, docId, desk.getNotepadDocuments());
+                        case 1 -> {
+                            NotepadDocument created = desk.createNotepadDocument();
+                            sendNotepadData(player, pos, created != null ? created.getId() : -1, desk.getNotepadDocuments());
+                        }
+                        case 2 -> desk.saveNotepadText(docId, text);
+                        case 3 -> desk.renameNotepadDocument(docId, text);
+                        case 4 -> {
+                            desk.deleteNotepadDocument(docId);
+                            sendNotepadData(player, pos, -1, desk.getNotepadDocuments());
+                        }
+                    }
+                }
+            });
+        });
+
+        // 23. Monitor Backup Open
+        ServerPlayNetworking.registerGlobalReceiver(MONITOR_BACKUP_OPEN_ID, (server, player, handler, buf, responseSender) -> {
+            BlockPos pos = buf.readBlockPos();
+            boolean restore = buf.readBoolean();
+            server.execute(() -> {
+                if (player.squaredDistanceTo(pos.toCenterPos()) > 64.0) return;
+                BlockEntity be = player.getWorld().getBlockEntity(pos);
+                if (be instanceof MonitorDeskBlockEntity desk) {
+                    player.openHandledScreen(desk);
+                }
+            });
+        });
     }
 
     @Environment(EnvType.CLIENT)
@@ -422,6 +598,128 @@ public final class ModMessages {
                 }
             });
         });
+
+        // 24. Monitor State (Authentication result)
+        ClientPlayNetworking.registerGlobalReceiver(MONITOR_STATE_ID, (client, handler, buf, responseSender) -> {
+            BlockPos pos = buf.readBlockPos();
+            byte result = buf.readByte();
+            boolean hasPassword = buf.readBoolean();
+            boolean skipped = buf.readBoolean();
+            int extra = buf.readInt();
+            client.execute(() -> {
+                if (result == 5) {
+                    MinecraftClient clientInstance = MinecraftClient.getInstance();
+                    if (clientInstance.player != null) {
+                        clientInstance.player.sendMessage(Text.translatable("ntmdoors.msg.monitor_wrong_password"), true);
+                    }
+                }
+            });
+        });
+
+        // 25. Monitor Nets (Net list summaries)
+        ClientPlayNetworking.registerGlobalReceiver(MONITOR_NETS_ID, (client, handler, buf, responseSender) -> {
+            BlockPos pos = buf.readBlockPos();
+            int count = buf.readInt();
+            for (int i = 0; i < count; i++) {
+                int id = buf.readInt();
+                String name = buf.readString(64);
+                int devCount = buf.readInt();
+            }
+        });
+
+        // 26. Monitor Devices (Full device list)
+        ClientPlayNetworking.registerGlobalReceiver(MONITOR_DEVICES_ID, (client, handler, buf, responseSender) -> {
+            BlockPos pos = buf.readBlockPos();
+            int netId = buf.readInt();
+            String name = buf.readString(64);
+            int eventMask = buf.readInt();
+            String keyName = buf.readString(64);
+            int count = buf.readInt();
+            for (int i = 0; i < count; i++) {
+                byte type = buf.readByte();
+                BlockPos devPos = buf.readBlockPos();
+                String devName = buf.readString(64);
+                boolean enabled = buf.readBoolean();
+                boolean loaded = buf.readBoolean();
+            }
+        });
+
+        // 27. Notepad Data (Multi-document notepad sync)
+        ClientPlayNetworking.registerGlobalReceiver(NOTEPAD_DATA_ID, (client, handler, buf, responseSender) -> {
+            BlockPos pos = buf.readBlockPos();
+            int docId = buf.readInt();
+            int count = buf.readInt();
+            List<NotepadDocument> docs = new ArrayList<>(count);
+            for (int i = 0; i < count; i++) {
+                int id = buf.readInt();
+                String name = buf.readString(48);
+                String text = buf.readString(8192);
+                docs.add(new NotepadDocument(id, name, text));
+            }
+            client.execute(() -> {
+                MinecraftClient mc = MinecraftClient.getInstance();
+                if (mc.currentScreen instanceof NotepadScreen notepad) {
+                    notepad.updateDocuments(docs, docId);
+                } else {
+                    mc.setScreen(new NotepadScreen(pos, docId, docs));
+                }
+            });
+        });
+    }
+
+    // Server send helpers
+    public static void sendMonitorState(ServerPlayerEntity player, BlockPos pos, byte result, boolean hasPassword, boolean skipped, int extra) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeBlockPos(pos);
+        buf.writeByte(result);
+        buf.writeBoolean(hasPassword);
+        buf.writeBoolean(skipped);
+        buf.writeInt(extra);
+        ServerPlayNetworking.send(player, MONITOR_STATE_ID, buf);
+    }
+
+    public static void sendMonitorNets(ServerPlayerEntity player, BlockPos pos, List<SecurityNetSummary> nets) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeBlockPos(pos);
+        buf.writeInt(nets.size());
+        for (SecurityNetSummary net : nets) {
+            buf.writeInt(net.id);
+            buf.writeString(net.name == null ? "" : net.name, 64);
+            buf.writeInt(net.deviceCount);
+        }
+        ServerPlayNetworking.send(player, MONITOR_NETS_ID, buf);
+    }
+
+    public static void sendMonitorDevices(ServerPlayerEntity player, BlockPos pos, SecurityNet net) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeBlockPos(pos);
+        buf.writeInt(net.id);
+        buf.writeString(net.getName(), 64);
+        buf.writeInt(net.getEventMask());
+        buf.writeString(net.getLinkedKeyName(), 64);
+        List<MonitorDevice> devs = net.getDevices();
+        buf.writeInt(devs.size());
+        for (MonitorDevice d : devs) {
+            buf.writeByte(d.type.ordinal());
+            buf.writeBlockPos(d.pos);
+            buf.writeString(d.name, 64);
+            buf.writeBoolean(d.enabled);
+            buf.writeBoolean(d.loaded);
+        }
+        ServerPlayNetworking.send(player, MONITOR_DEVICES_ID, buf);
+    }
+
+    public static void sendNotepadData(ServerPlayerEntity player, BlockPos pos, int docId, List<NotepadDocument> docs) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeBlockPos(pos);
+        buf.writeInt(docId);
+        buf.writeInt(docs.size());
+        for (NotepadDocument d : docs) {
+            buf.writeInt(d.getId());
+            buf.writeString(d.getName(), 48);
+            buf.writeString(d.getText(), 8192);
+        }
+        ServerPlayNetworking.send(player, NOTEPAD_DATA_ID, buf);
     }
 
     // Client send helpers
@@ -499,6 +797,76 @@ public final class ModMessages {
         buf.writeBlockPos(pos);
         buf.writeString(code, 6);
         ClientPlayNetworking.send(KEYPAD_SECURITY_CODE_ID, buf);
+    }
+
+    @Environment(EnvType.CLIENT)
+    public static void sendMonitorAction(BlockPos pos, int action, String strParam, int intParam) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeBlockPos(pos);
+        buf.writeInt(action);
+        buf.writeString(strParam == null ? "" : strParam, 256);
+        buf.writeInt(intParam);
+        ClientPlayNetworking.send(MONITOR_ACTION_ID, buf);
+    }
+
+    @Environment(EnvType.CLIENT)
+    public static void sendMonitorDisplay(BlockPos pos, int screenIndex, boolean viewing, int stage, int netId, int docId, boolean eventsTab) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeBlockPos(pos);
+        buf.writeInt(screenIndex);
+        buf.writeBoolean(viewing);
+        buf.writeInt(stage);
+        buf.writeInt(netId);
+        buf.writeInt(docId);
+        buf.writeBoolean(eventsTab);
+        ClientPlayNetworking.send(MONITOR_DISPLAY_ID, buf);
+    }
+
+    @Environment(EnvType.CLIENT)
+    public static void sendMonitorDeviceControl(BlockPos deskPos, int netId, int command, BlockPos targetPos, int eventId, boolean state) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeBlockPos(deskPos);
+        buf.writeInt(netId);
+        buf.writeInt(command);
+        buf.writeBlockPos(targetPos);
+        buf.writeInt(eventId);
+        buf.writeBoolean(state);
+        ClientPlayNetworking.send(MONITOR_DEVICE_CONTROL_ID, buf);
+    }
+
+    @Environment(EnvType.CLIENT)
+    public static void sendMonitorNetRequest(BlockPos pos, int netId) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeBlockPos(pos);
+        buf.writeInt(netId);
+        ClientPlayNetworking.send(MONITOR_NET_REQUEST_ID, buf);
+    }
+
+    @Environment(EnvType.CLIENT)
+    public static void sendMonitorWallpaper(BlockPos pos, byte screenIndex, String wallpaper) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeBlockPos(pos);
+        buf.writeByte(screenIndex);
+        buf.writeString(wallpaper == null ? "" : wallpaper, 512);
+        ClientPlayNetworking.send(MONITOR_WALLPAPER_ID, buf);
+    }
+
+    @Environment(EnvType.CLIENT)
+    public static void sendNotepadAction(BlockPos pos, byte action, int docId, String text) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeBlockPos(pos);
+        buf.writeByte(action);
+        buf.writeInt(docId);
+        buf.writeString(text == null ? "" : text, 8192);
+        ClientPlayNetworking.send(NOTEPAD_ACTION_ID, buf);
+    }
+
+    @Environment(EnvType.CLIENT)
+    public static void sendMonitorBackupOpen(BlockPos pos, boolean restore) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeBlockPos(pos);
+        buf.writeBoolean(restore);
+        ClientPlayNetworking.send(MONITOR_BACKUP_OPEN_ID, buf);
     }
 
     private ModMessages() {}

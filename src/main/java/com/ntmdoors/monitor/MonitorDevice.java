@@ -1,37 +1,30 @@
 package com.ntmdoors.monitor;
 
-import com.ntmdoors.block.BlockDoorGeneric;
 import com.ntmdoors.block.BlockMonitorDesk;
 import com.ntmdoors.block.BlockMonitorSetup;
-import com.ntmdoors.tile.TileEntityDoorGeneric;
-import com.ntmdoors.tile.TileEntityDoorKeypad;
-import com.ntmdoors.tile.TileEntityKeycardScanner;
-import com.ntmdoors.tile.TileEntityMotionSensor;
-import com.ntmdoors.tile.TileEntityRedstoneGate;
-import com.ntmdoors.tile.TileEntitySpeaker;
+import com.ntmdoors.block.door.BlockDoorGeneric;
+import com.ntmdoors.block.entity.DoorBlockEntity;
+import com.ntmdoors.block.entity.KeycardScannerBlockEntity;
+import com.ntmdoors.block.entity.KeypadBlockEntity;
+import com.ntmdoors.block.entity.MotionSensorBlockEntity;
+import com.ntmdoors.block.entity.RedstoneGateBlockEntity;
+import com.ntmdoors.block.entity.SpeakerBlockEntity;
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 /**
  * One device that a Security Terminal can list. Doors are stored at their core cell; every other
- * device is stored at the block that owns its tile entity.
- *
- * <p>The same entry shape is used by the Terminal Relay Key's pending list and by the desk's
- * confirmed list, so confirming a session is a straight copy:</p>
- *
- * <pre>
- * { Type: "DOOR", Pos: 123456789, Name: "Main Entrance" }
- * </pre>
+ * device is stored at the block that owns its block entity.
  */
 public final class MonitorDevice {
 
@@ -45,7 +38,6 @@ public final class MonitorDevice {
         SPEAKER("Speaker");
 
         private static final Type[] VALUES = values();
-
         private final String displayName;
 
         Type(String displayName) {
@@ -74,10 +66,6 @@ public final class MonitorDevice {
     public final Type type;
     public final BlockPos pos;
     public final String name;
-    /**
-     * Runtime view state sent to the terminal. It is not part of the saved net entry: the device
-     * tile remains the source of truth. Unloaded devices keep the default so old NBT stays valid.
-     */
     public final boolean enabled;
     public final boolean loaded;
 
@@ -98,7 +86,6 @@ public final class MonitorDevice {
         return new MonitorDevice(type, pos, name, enabled, loaded);
     }
 
-    /** A copy carrying the live tile state for the terminal list. */
     public MonitorDevice withState(boolean enabled, boolean loaded) {
         return new MonitorDevice(type, pos, name, enabled, loaded);
     }
@@ -107,32 +94,34 @@ public final class MonitorDevice {
         return other != null && type == other.type && pos.equals(other.pos);
     }
 
-    public NBTTagCompound toNBT() {
-        NBTTagCompound tag = new NBTTagCompound();
-        tag.setString("Type", type.name());
-        tag.setLong("Pos", pos.toLong());
-        tag.setString("Name", name);
+    public NbtCompound toNbt() {
+        NbtCompound tag = new NbtCompound();
+        tag.putString("Type", type.name());
+        tag.putLong("Pos", pos.asLong());
+        tag.putString("Name", name);
         return tag;
     }
 
     @Nullable
-    public static MonitorDevice fromNBT(NBTTagCompound tag) {
+    public static MonitorDevice fromNbt(NbtCompound tag) {
         Type type = Type.byName(tag.getString("Type"));
-        if (type == null || !tag.hasKey("Pos")) return null;
+        if (type == null || !tag.contains("Pos")) return null;
         BlockPos pos = BlockPos.fromLong(tag.getLong("Pos"));
         return new MonitorDevice(type, pos, tag.getString("Name"));
     }
 
-    public static NBTTagList toNBTList(List<MonitorDevice> devices) {
-        NBTTagList list = new NBTTagList();
-        for (MonitorDevice device : devices) list.appendTag(device.toNBT());
+    public static NbtList toNbtList(List<MonitorDevice> devices) {
+        NbtList list = new NbtList();
+        if (devices != null) {
+            for (MonitorDevice device : devices) list.add(device.toNbt());
+        }
         return list;
     }
 
-    public static List<MonitorDevice> fromNBTList(NBTTagList list) {
-        List<MonitorDevice> devices = new ArrayList<>(list.tagCount());
-        for (int i = 0; i < list.tagCount(); i++) {
-            MonitorDevice device = fromNBT(list.getCompoundTagAt(i));
+    public static List<MonitorDevice> fromNbtList(NbtList list) {
+        List<MonitorDevice> devices = new ArrayList<>(list.size());
+        for (int i = 0; i < list.size(); i++) {
+            MonitorDevice device = fromNbt(list.getCompound(i));
             if (device != null) devices.add(device);
         }
         return devices;
@@ -146,27 +135,27 @@ public final class MonitorDevice {
     public static MonitorDevice find(World world, BlockPos clicked) {
         if (world == null || clicked == null) return null;
 
-        IBlockState state = world.getBlockState(clicked);
+        BlockState state = world.getBlockState(clicked);
         Block block = state.getBlock();
-        if (block instanceof BlockDoorGeneric) {
-            TileEntityDoorGeneric core = ((BlockDoorGeneric) block).getCore(world, clicked, state);
+        if (block instanceof BlockDoorGeneric doorBlock) {
+            DoorBlockEntity core = doorBlock.getCore(world, clicked, state);
             return core == null ? null : new MonitorDevice(Type.DOOR, core.getPos(), null);
         }
 
-        TileEntity te = world.getTileEntity(clicked);
-        if (te instanceof TileEntityDoorKeypad) {
+        BlockEntity be = world.getBlockEntity(clicked);
+        if (be instanceof KeypadBlockEntity) {
             return new MonitorDevice(Type.KEYPAD, clicked, null);
         }
-        if (te instanceof TileEntityKeycardScanner) {
+        if (be instanceof KeycardScannerBlockEntity) {
             return new MonitorDevice(Type.SCANNER, clicked, null);
         }
-        if (te instanceof TileEntityMotionSensor) {
+        if (be instanceof MotionSensorBlockEntity) {
             return new MonitorDevice(Type.MOTION_SENSOR, clicked, null);
         }
-        if (te instanceof TileEntityRedstoneGate) {
+        if (be instanceof RedstoneGateBlockEntity) {
             return new MonitorDevice(Type.REDSTONE_GATE, clicked, null);
         }
-        if (te instanceof TileEntitySpeaker) {
+        if (be instanceof SpeakerBlockEntity) {
             return new MonitorDevice(Type.SPEAKER, clicked, null);
         }
         return null;
@@ -177,19 +166,18 @@ public final class MonitorDevice {
     public static BlockPos deskCore(World world, BlockPos clicked) {
         if (world == null || clicked == null) return null;
 
-        IBlockState state = world.getBlockState(clicked);
+        BlockState state = world.getBlockState(clicked);
         Block block = state.getBlock();
-        if (block instanceof BlockMonitorSetup) {
-            BlockMonitorSetup setup = (BlockMonitorSetup) block;
+        if (block instanceof BlockMonitorSetup setup) {
             return clicked.subtract(setup.offset(
-                    state.getValue(BlockMonitorSetup.COLUMN),
-                    state.getValue(BlockMonitorSetup.FACING)));
+                    state.get(BlockMonitorSetup.COLUMN),
+                    state.get(BlockMonitorSetup.FACING)));
         }
-        if (block instanceof BlockMonitorDesk) {
-            BlockMonitorDesk desk = (BlockMonitorDesk) block;
-            return clicked.subtract(desk.offset(
-                    state.getValue(desk.columnProperty()),
-                    state.getValue(BlockMonitorDesk.FACING)));
+        if (block instanceof BlockMonitorDesk deskBlock) {
+            return clicked.subtract(deskBlock.desk().offset(
+                    deskBlock,
+                    state.get(deskBlock.columnProperty()),
+                    state.get(BlockMonitorDesk.FACING)));
         }
         return null;
     }
@@ -199,48 +187,53 @@ public final class MonitorDevice {
         return device != null && device.type != Type.DOOR;
     }
 
-    /** Reads the live enabled state from the device tile. Doors always report enabled. */
+    /** Reads the live enabled state from the device block entity. Doors always report enabled. */
     public static boolean isEnabled(World world, MonitorDevice device) {
         if (device == null || device.type == Type.DOOR || world == null) return true;
-        TileEntity te = world.getTileEntity(device.pos);
-        if (te instanceof TileEntityDoorKeypad) {
-            return ((TileEntityDoorKeypad) te).isEnabled();
+        BlockEntity be = world.getBlockEntity(device.pos);
+        if (be instanceof KeypadBlockEntity keypad) {
+            return keypad.isEnabled();
         }
-        if (te instanceof TileEntityKeycardScanner) {
-            return ((TileEntityKeycardScanner) te).isEnabled();
+        if (be instanceof KeycardScannerBlockEntity scanner) {
+            return scanner.isEnabled();
         }
-        if (te instanceof TileEntityMotionSensor) {
-            return ((TileEntityMotionSensor) te).isEnabled();
+        if (be instanceof MotionSensorBlockEntity sensor) {
+            return sensor.isEnabled();
         }
-        if (te instanceof TileEntityRedstoneGate) {
-            return ((TileEntityRedstoneGate) te).isEnabled();
+        if (be instanceof RedstoneGateBlockEntity gate) {
+            return gate.isEnabled();
         }
-        if (te instanceof TileEntitySpeaker) {
-            return ((TileEntitySpeaker) te).isEnabled();
+        if (be instanceof SpeakerBlockEntity speaker) {
+            return speaker.isEnabled();
         }
         return true;
     }
 
     /** Server side: changes the live enabled state of one linked device. */
     public static boolean setEnabled(World world, MonitorDevice device, boolean enabled) {
-        if (device == null || device.type == Type.DOOR || world == null || world.isRemote) {
+        if (device == null || device.type == Type.DOOR || world == null || world.isClient()) {
             return false;
         }
-        TileEntity te = world.getTileEntity(device.pos);
-        if (te instanceof TileEntityDoorKeypad) {
-            return ((TileEntityDoorKeypad) te).setEnabled(enabled);
+        BlockEntity be = world.getBlockEntity(device.pos);
+        if (be instanceof KeypadBlockEntity keypad) {
+            keypad.setEnabled(enabled);
+            return true;
         }
-        if (te instanceof TileEntityKeycardScanner) {
-            return ((TileEntityKeycardScanner) te).setEnabled(enabled);
+        if (be instanceof KeycardScannerBlockEntity scanner) {
+            scanner.setEnabled(enabled);
+            return true;
         }
-        if (te instanceof TileEntityMotionSensor) {
-            return ((TileEntityMotionSensor) te).setEnabled(enabled);
+        if (be instanceof MotionSensorBlockEntity sensor) {
+            sensor.setEnabled(enabled);
+            return true;
         }
-        if (te instanceof TileEntityRedstoneGate) {
-            return ((TileEntityRedstoneGate) te).setEnabled(enabled);
+        if (be instanceof RedstoneGateBlockEntity gate) {
+            gate.setEnabled(enabled);
+            return true;
         }
-        if (te instanceof TileEntitySpeaker) {
-            return ((TileEntitySpeaker) te).setEnabled(enabled);
+        if (be instanceof SpeakerBlockEntity speaker) {
+            speaker.setEnabled(enabled);
+            return true;
         }
         return false;
     }
@@ -251,7 +244,7 @@ public final class MonitorDevice {
      */
     public static boolean stillValid(World world, MonitorDevice device) {
         if (device == null) return false;
-        if (!world.isBlockLoaded(device.pos)) return true;
+        if (!world.isChunkLoaded(device.pos)) return true;
         MonitorDevice current = find(world, device.pos);
         return current != null && current.type == device.type && current.pos.equals(device.pos);
     }
