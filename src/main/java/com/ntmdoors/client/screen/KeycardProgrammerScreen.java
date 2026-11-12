@@ -6,6 +6,9 @@ import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.item.ModItems;
 import com.ntmdoors.network.ModMessages;
 import com.ntmdoors.screen.KeycardProgrammerScreenHandler;
+import com.ntmdoors.sound.ModSounds;
+import com.ntmdoors.util.Biometrics;
+import com.ntmdoors.util.PrivateKeys;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.DrawContext;
@@ -37,6 +40,9 @@ public class KeycardProgrammerScreen extends HandledScreen<KeycardProgrammerScre
     private ButtonWidget bindButton1;
     private ButtonWidget bindButton2;
     private ButtonWidget backupButton;
+    private String status = "";
+    private int statusTicks = 0;
+    private int statusColor = 0xFFFF5555;
 
     public KeycardProgrammerScreen(KeycardProgrammerScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
@@ -59,27 +65,66 @@ public class KeycardProgrammerScreen extends HandledScreen<KeycardProgrammerScre
         addDrawableChild(ButtonWidget.builder(Text.literal("Backup"), b -> setTab(2))
                 .dimensions(x + 117, y + 16, tabWidth, tabHeight).build());
 
-        // Page 0: Bind Buttons
+        // Page 0: Bind Buttons (placed to the right of target card slot)
         this.bindButton1 = addDrawableChild(ButtonWidget.builder(Text.literal("Bind"), b -> {
-            if (currentTab == 0) ModMessages.sendProgrammerAction((byte) 0, 0);
-        }).dimensions(x + 40, y + 38, 42, 18).build());
+            if (currentTab == 0) handleBindClick(0);
+        }).dimensions(x + 120, y + 38, 46, 18).build());
 
         this.bindButton2 = addDrawableChild(ButtonWidget.builder(Text.literal("Bind"), b -> {
-            if (currentTab == 0) ModMessages.sendProgrammerAction((byte) 0, 1);
-        }).dimensions(x + 40, y + 78, 42, 18).build());
+            if (currentTab == 0) handleBindClick(1);
+        }).dimensions(x + 120, y + 78, 46, 18).build());
 
         // Page 2: Backup Button
         this.backupButton = addDrawableChild(ButtonWidget.builder(Text.literal("Start Backup"), b -> {
-            if (currentTab == 2) ModMessages.sendProgrammerAction((byte) 2, 0);
+            if (currentTab == 2) {
+                setStatus("Backup started...", 0xFF55FF55);
+                ModMessages.sendProgrammerAction((byte) 2, 0);
+            }
         }).dimensions(x + 48, y + 39, 80, 18).build());
 
         updateButtonVisibility();
+    }
+
+    private void handleBindClick(int row) {
+        ItemStack source = handler.slots.get(row == 0 ? 0 : 2).getStack();
+        ItemStack target = handler.slots.get(row == 0 ? 1 : 3).getStack();
+
+        KeycardProgrammerBlockEntity.BindFailure failure = KeycardProgrammerBlockEntity.checkBindFailure(source, target, row);
+        if (failure != KeycardProgrammerBlockEntity.BindFailure.NONE) {
+            String msg = switch (failure) {
+                case EMPTY -> "Insert items into both slots";
+                case NO_KEY -> "Source key has no security key!";
+                case NO_BIOMETRIC -> "Source key has no biometric data!";
+                case INVALID_TARGET -> (row == 0) ? "Top row requires Operator Card" : "Bottom row requires RFID Card";
+                case BLANK_CARD -> "Blank card must be coloured on Palette first";
+                case ALREADY_BOUND -> "Key already bound to this card";
+                case BIOMETRIC_TAKEN -> "Target card already has biometric ID";
+                case BIOMETRIC_ALREADY -> "Target card already has this biometric ID";
+                default -> "Cannot bind key";
+            };
+            setStatus(msg, 0xFFFF5555);
+            if (client != null && client.player != null) {
+                client.player.playSound(ModSounds.SCANNER_BUTTON8, 0.8F, 1.0F);
+            }
+            return;
+        }
+
+        setStatus("Key bound successfully!", 0xFF55FF55);
+        ModMessages.sendProgrammerAction((byte) 0, row);
+    }
+
+    private void setStatus(String text, int color) {
+        this.status = text;
+        this.statusColor = color;
+        this.statusTicks = 120;
     }
 
     private void setTab(int tab) {
         this.currentTab = tab;
         handler.setPage(tab);
         ModMessages.sendProgrammerPage((byte) tab);
+        this.status = "";
+        this.statusTicks = 0;
         updateButtonVisibility();
     }
 
@@ -118,6 +163,12 @@ public class KeycardProgrammerScreen extends HandledScreen<KeycardProgrammerScre
                 context.fill(sx - 1, sy - 1, sx + 17, sy + 17, 0xFFB8B8B8);
                 context.fill(sx, sy, sx + 16, sy + 16, 0xFF141416);
             }
+        }
+
+        // Arrows in Tab 0
+        if (currentTab == 0) {
+            context.drawText(textRenderer, Text.literal("==>"), left + 54, top + 42, 0xFF75FF82, false);
+            context.drawText(textRenderer, Text.literal("==>"), left + 54, top + 82, 0xFF75FF82, false);
         }
 
         // Draw Player Inventory Slots
@@ -171,6 +222,7 @@ public class KeycardProgrammerScreen extends HandledScreen<KeycardProgrammerScre
                 int px = startX + col * 19;
                 int py = startY + row * 18;
                 if (mouseX >= px && mouseX < px + 16 && mouseY >= py && mouseY < py + 16) {
+                    setStatus("Color applied!", 0xFF55FF55);
                     ModMessages.sendProgrammerAction((byte) 1, i);
                     return true;
                 }
@@ -183,12 +235,64 @@ public class KeycardProgrammerScreen extends HandledScreen<KeycardProgrammerScre
     protected void drawForeground(DrawContext context, int mouseX, int mouseY) {
         context.drawText(textRenderer, title, 8, 4, 0xFF2A2B2E, false);
         context.drawText(textRenderer, playerInventoryTitle, 8, 98, 0xFF2A2B2E, false);
+
+        if (currentTab == 0) {
+            // Row 0 labels
+            context.drawText(textRenderer, Text.literal("Source"), 11, 26, 0xFF8A8A8A, false);
+            context.drawText(textRenderer, Text.literal("Operator Card"), 94, 26, 0xFF8A8A8A, false);
+
+            // Row 1 labels
+            context.drawText(textRenderer, Text.literal("Source"), 11, 66, 0xFF8A8A8A, false);
+            context.drawText(textRenderer, Text.literal("RFID Card"), 94, 66, 0xFF8A8A8A, false);
+
+            // Status feedback
+            if (statusTicks > 0 && !status.isEmpty()) {
+                int sw = textRenderer.getWidth(status);
+                context.drawText(textRenderer, Text.literal(status), Math.max(8, (backgroundWidth - sw) / 2), 58, statusColor, false);
+            }
+        } else if (currentTab == 1) {
+            context.drawText(textRenderer, Text.literal("Place RFID card:"), 11, 42, 0xFF8A8A8A, false);
+            if (statusTicks > 0 && !status.isEmpty()) {
+                int sw = textRenderer.getWidth(status);
+                context.drawText(textRenderer, Text.literal(status), Math.max(8, (backgroundWidth - sw) / 2), 26, statusColor, false);
+            }
+        } else if (currentTab == 2) {
+            context.drawText(textRenderer, Text.literal("Source"), 24, 28, 0xFF8A8A8A, false);
+            context.drawText(textRenderer, Text.literal("Target"), 136, 28, 0xFF8A8A8A, false);
+            if (handler.isBackupActive()) {
+                context.drawText(textRenderer, Text.literal("Backing up data..."), 44, 82, 0xFFE0E0E0, false);
+            } else if (handler.isBackupSuccess()) {
+                context.drawText(textRenderer, Text.literal("Backup Complete!"), 48, 82, 0xFF75FF82, false);
+            }
+        }
     }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        if (statusTicks > 0) statusTicks--;
         renderBackground(context);
         super.render(context, mouseX, mouseY, delta);
         drawMouseoverTooltip(context, mouseX, mouseY);
+
+        // Ghost tooltip for empty programmer slots
+        if (focusedSlot != null && !focusedSlot.hasStack() && client != null && client.player != null && focusedSlot.inventory != client.player.getInventory()) {
+            String ghostText = getGhostTooltip(focusedSlot.getIndex());
+            if (ghostText != null) {
+                context.drawTooltip(textRenderer, Text.literal(ghostText), mouseX, mouseY);
+            }
+        }
+    }
+
+    private String getGhostTooltip(int slotIndex) {
+        return switch (slotIndex) {
+            case KeycardProgrammerBlockEntity.SLOT_RELAY_ONE -> "Relay Key or Operator Keycard (Source)";
+            case KeycardProgrammerBlockEntity.SLOT_OPERATOR -> "Operator Keycard (Target)";
+            case KeycardProgrammerBlockEntity.SLOT_RELAY_TWO -> "Relay Key or Operator Keycard (Source)";
+            case KeycardProgrammerBlockEntity.SLOT_RFID_PAGE_ONE -> "Coloured RFID Card (Target)";
+            case KeycardProgrammerBlockEntity.SLOT_RFID_PAGE_TWO -> "RFID Card (Place to recolour)";
+            case KeycardProgrammerBlockEntity.SLOT_LEGACY_LEFT -> "Source Key / Card to back up";
+            case KeycardProgrammerBlockEntity.SLOT_LEGACY_RIGHT -> "Blank Key / Card to receive backup";
+            default -> null;
+        };
     }
 }

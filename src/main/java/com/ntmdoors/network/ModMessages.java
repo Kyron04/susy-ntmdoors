@@ -48,6 +48,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -217,12 +218,42 @@ public final class ModMessages {
             server.execute(() -> {
                 if (player.currentScreenHandler instanceof KeycardProgrammerScreenHandler screenHandler) {
                     KeycardProgrammerBlockEntity be = screenHandler.getBlockEntity();
-                    if (action == 0) {
-                        be.bind(param);
-                    } else if (action == 1) {
-                        be.applyColor(param);
-                    } else if (action == 2) {
-                        be.startBackup();
+                    if (be != null) {
+                        if (action == 0) {
+                            KeycardProgrammerBlockEntity.BindFailure failure = be.getBindFailure(param);
+                            if (failure == KeycardProgrammerBlockEntity.BindFailure.NONE) {
+                                boolean changed = be.bind(param);
+                                screenHandler.sendContentUpdates();
+                                if (changed) {
+                                    player.sendMessage(Text.literal("Key bound successfully!").formatted(Formatting.GREEN), true);
+                                    player.playSound(ModSounds.SCANNER_BUTTON3, SoundCategory.PLAYERS, 0.8F, 1.0F);
+                                } else {
+                                    player.sendMessage(Text.literal("Key already bound to this card!").formatted(Formatting.YELLOW), true);
+                                    player.playSound(ModSounds.SCANNER_BUTTON8, SoundCategory.PLAYERS, 0.8F, 1.0F);
+                                }
+                            } else {
+                                String msg = switch (failure) {
+                                    case EMPTY -> "Insert items into both slots.";
+                                    case NO_KEY -> "Source key has no security key! Sneak-right-click blank Relay Key in air first.";
+                                    case NO_BIOMETRIC -> "Source key has no biometric data!";
+                                    case INVALID_TARGET -> (param == 0) ? "Top row requires an Operator Keycard as target!" : "Bottom row requires a Coloured RFID Card as target!";
+                                    case BLANK_CARD -> "Blank RFID Card must be coloured first! (Use Palette tab)";
+                                    case ALREADY_BOUND -> "Key is already bound to this card!";
+                                    case BIOMETRIC_TAKEN -> "Target card already has a biometric identity!";
+                                    case BIOMETRIC_ALREADY -> "Target card already has this biometric identity!";
+                                    default -> "Cannot bind: invalid combination.";
+                                };
+                                player.sendMessage(Text.literal(msg).formatted(Formatting.RED), true);
+                                player.playSound(ModSounds.SCANNER_BUTTON8, SoundCategory.PLAYERS, 0.8F, 1.0F);
+                            }
+                        } else if (action == 1) {
+                            be.applyColor(param);
+                            screenHandler.sendContentUpdates();
+                            player.sendMessage(Text.literal("Card appearance updated!").formatted(Formatting.GREEN), true);
+                        } else if (action == 2) {
+                            be.startBackup();
+                            screenHandler.sendContentUpdates();
+                        }
                     }
                 }
             });

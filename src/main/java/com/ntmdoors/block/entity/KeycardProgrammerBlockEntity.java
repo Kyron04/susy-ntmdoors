@@ -141,10 +141,7 @@ public class KeycardProgrammerBlockEntity extends BlockEntity implements Invento
         }
     }
 
-    public BindFailure getBindFailure(int row) {
-        ItemStack source = inventory.get(row == 0 ? SLOT_RELAY_ONE : SLOT_RELAY_TWO);
-        ItemStack target = inventory.get(row == 0 ? SLOT_OPERATOR : SLOT_RFID_PAGE_ONE);
-
+    public static BindFailure checkBindFailure(ItemStack source, ItemStack target, int row) {
         if (source.isEmpty() || target.isEmpty()) return BindFailure.EMPTY;
         if (!(source.getItem() instanceof ItemRelayKey || source.getItem() instanceof ItemOperatorKeycard)) return BindFailure.NO_KEY;
 
@@ -163,7 +160,24 @@ public class KeycardProgrammerBlockEntity extends BlockEntity implements Invento
             return BindFailure.BIOMETRIC_TAKEN;
         }
 
+        if (sourceHasKey && !sourceHasBio) {
+            boolean hasNewKey = false;
+            for (PrivateKeys.Key key : PrivateKeys.getKeys(source)) {
+                if (!PrivateKeys.hasSerial(target, key.serial)) {
+                    hasNewKey = true;
+                    break;
+                }
+            }
+            if (!hasNewKey) return BindFailure.ALREADY_BOUND;
+        }
+
         return BindFailure.NONE;
+    }
+
+    public BindFailure getBindFailure(int row) {
+        ItemStack source = inventory.get(row == 0 ? SLOT_RELAY_ONE : SLOT_RELAY_TWO);
+        ItemStack target = inventory.get(row == 0 ? SLOT_OPERATOR : SLOT_RFID_PAGE_ONE);
+        return checkBindFailure(source, target, row);
     }
 
     public boolean bind(int row) {
