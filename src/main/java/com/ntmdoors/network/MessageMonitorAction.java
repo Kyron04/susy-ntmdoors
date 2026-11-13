@@ -1,6 +1,7 @@
 package com.ntmdoors.network;
 
 import com.ntmdoors.tile.TileEntityMonitorDesk;
+import com.ntmdoors.monitor.MonitorAuth;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.math.BlockPos;
@@ -86,6 +87,12 @@ public class MessageMonitorAction implements IMessage {
 
             ModNetwork.INSTANCE.sendTo(new MessageMonitorState(message.pos, result,
                     monitor.hasPassword(), monitor.isPasswordSkipped()), player);
+
+            if (result == MessageMonitorState.SET_OK
+                    || result == MessageMonitorState.SKIP_OK
+                    || result == MessageMonitorState.CHECK_OK) {
+                MonitorAuth.authorize(player, message.pos);
+            }
         }
     }
 }

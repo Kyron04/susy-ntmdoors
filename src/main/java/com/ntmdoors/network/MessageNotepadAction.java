@@ -1,6 +1,7 @@
 package com.ntmdoors.network;
 
 import com.ntmdoors.monitor.NotepadDocument;
+import com.ntmdoors.monitor.MonitorAuth;
 import com.ntmdoors.tile.TileEntityMonitorDesk;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -69,6 +70,7 @@ public class MessageNotepadAction implements IMessage {
             }
             TileEntityMonitorDesk desk = TileEntityMonitorDesk.at(player.world, message.deskPos);
             if (desk == null) return;
+            if (!MonitorAuth.isAuthorized(player, message.deskPos)) return;
 
             int focusId = -1;
             switch (message.action) {

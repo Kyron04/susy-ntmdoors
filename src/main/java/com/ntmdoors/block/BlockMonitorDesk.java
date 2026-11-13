@@ -2,6 +2,7 @@ package com.ntmdoors.block;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.monitor.SecurityEvents;
+import com.ntmdoors.monitor.MonitorAuth;
 import com.ntmdoors.network.MessageMonitorState;
 import com.ntmdoors.network.ModNetwork;
 import com.ntmdoors.tile.TileEntityMonitorDesk;
@@ -164,6 +165,9 @@ public class BlockMonitorDesk extends Block {
                     state.getValue(FACING)));
             TileEntityMonitorDesk monitor = TileEntityMonitorDesk.at(world, core);
             if (monitor != null) {
+                if (!monitor.hasPassword() && monitor.isPasswordSkipped()) {
+                    MonitorAuth.authorize(player, core);
+                }
                 int screenIndex = state.getValue(columnProperty()).ordinal();
                 ModNetwork.INSTANCE.sendTo(new MessageMonitorState(core,
                         MessageMonitorState.OPEN, monitor.hasPassword(),

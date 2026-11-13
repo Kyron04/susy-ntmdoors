@@ -117,7 +117,7 @@ Screwdriver + sneak + right-click cycles door skins:
 ## Monitor desks and security terminal
 
 - **Monitor desks** — five placeable desk variants: **6 Monitor Setup** (3x3x1), **3 Monitor Setup** (3x2x1), **Dual Monitor Setup** (3x2x1), **Dual Monitor Setup (short table)** (2x2x1) and **Monitor** (2x2x1). Each places as one item, faces the player, reserves its full footprint and breaks as one structure. The upper monitor cells use a half-depth collision wall so you can stand on the front of the desk but cannot walk through the screens.
-- Every monitor cell opens the same **password-gated terminal**. The first open offers to set a per-desk password; later opens require it. Passwords are stored as SHA-256 hashes on the desk core and checked server-side.
+- Every monitor cell opens the same **password-gated terminal**. The first open offers to set a per-desk password; later opens require it. Passwords are stored as SHA-256 hashes on the desk core and checked server-side; a successful check creates a short-lived session, and terminal actions sent without that session are ignored.
 - The terminal task menu lists **Security**, **Opencomputers**, **Factory**, **Display**, **Notepad** and **Terminal Backup**. Opencomputers and Factory are reserved entries; the other four are fully implemented.
 - Physical monitor screens mirror the live terminal page. Each screen keeps its own page, selected Security net, tab and scroll position, so using one monitor never changes another.
 - **Security nets** — named device lists stored per desk. Add, rename and delete nets, then bind doors, keypads, keycard scanners, motion sensors, Redstone Gates and speakers with the **Terminal Relay Key**. A net page has a key slot with Bind, Rename and Unlink controls.

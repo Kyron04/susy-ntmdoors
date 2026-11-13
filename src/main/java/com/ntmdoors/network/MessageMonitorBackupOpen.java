@@ -2,6 +2,7 @@ package com.ntmdoors.network;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.gui.GuiHandler;
+import com.ntmdoors.monitor.MonitorAuth;
 import com.ntmdoors.tile.TileEntityMonitorDesk;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -51,6 +52,7 @@ public class MessageMonitorBackupOpen implements IMessage {
             }
             TileEntityMonitorDesk desk = TileEntityMonitorDesk.at(player.world, message.deskPos);
             if (desk == null) return;
+            if (!MonitorAuth.isAuthorized(player, message.deskPos)) return;
             player.openGui(NTMDoors.INSTANCE,
                     message.restore ? GuiHandler.TERMINAL_BACKUP_RESTORE
                             : GuiHandler.TERMINAL_BACKUP,

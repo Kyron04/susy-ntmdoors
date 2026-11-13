@@ -1,6 +1,7 @@
 package com.ntmdoors.network;
 
 import com.ntmdoors.tile.TileEntityMonitorDesk;
+import com.ntmdoors.monitor.MonitorAuth;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.math.BlockPos;
@@ -94,6 +95,7 @@ public class MessageMonitorDisplay implements IMessage {
             }
             TileEntityMonitorDesk desk = TileEntityMonitorDesk.at(player.world, message.deskPos);
             if (desk == null) return;
+            if (!MonitorAuth.isAuthorized(player, message.deskPos)) return;
             desk.setScreenDisplayState(message.screenIndex, message.stage, message.netId,
                     message.notepadDocId, message.eventsTab, message.netsScroll,
                     message.securityScroll, message.eventsScroll,

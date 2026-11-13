@@ -212,8 +212,9 @@ for editing.
   cell opens the black-and-orange terminal: the first open offers to set a per-desk password,
   later opens require it, and the unlocked screen lists Security, Opencomputers, Factory, Display,
   Notepad and Terminal Backup. Passwords are stored as SHA-256 hashes on a tile entity on the desk
-  core and are checked server-side. Every page carries an `EXIT` button in the footer. The
-  desk/keyboard row stays inert, and sneak-right-click still lets blocks be placed against the
+  core and are checked server-side; a successful check creates a short-lived session, and terminal
+  actions sent without that session are ignored. Every page carries an `EXIT` button in the footer.
+  The desk/keyboard row stays inert, and sneak-right-click still lets blocks be placed against the
   monitors. Security-net events provide the redstone side of the terminal, including shutdown,
   lockdown, alarms, and per-family device disables.
   The desk is split into nine cell models so every element stays inside the 1.12 model limits;

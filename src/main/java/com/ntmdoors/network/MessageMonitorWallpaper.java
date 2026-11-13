@@ -1,6 +1,7 @@
 package com.ntmdoors.network;
 
 import com.ntmdoors.monitor.MonitorWallpaper;
+import com.ntmdoors.monitor.MonitorAuth;
 import com.ntmdoors.tile.TileEntityMonitorDesk;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -60,6 +61,7 @@ public class MessageMonitorWallpaper implements IMessage {
             if (!MonitorWallpaper.isValid(message.wallpaper)) return;
             TileEntityMonitorDesk desk = TileEntityMonitorDesk.at(player.world, message.deskPos);
             if (desk == null) return;
+            if (!MonitorAuth.isAuthorized(player, message.deskPos)) return;
             desk.setScreenWallpaper(message.screenIndex, MonitorWallpaper.normalize(message.wallpaper));
         }
     }

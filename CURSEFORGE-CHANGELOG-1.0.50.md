@@ -4,7 +4,7 @@ Minecraft 1.12.2 / Forge 14.23.5.2847+ (tested on 14.23.5.2860)
 Requires Chisel 1.12.2-1.0.2.45
 
 **File:** `ntmdoors-1.0.50.jar`
-**SHA-256:** `EB87FF970680BDD6F940548C6145158ED6FB12949C2C6774DA94DA288B6459F8`
+**SHA-256:** `94573324C74A939A30676DABA37150DFDAFCB39F70B1C7B2EE1D5B7B4DF8755D`
 
 This is the complete feature changelog for 1.0.50. The first section lists what changed in this
 build; the rest is the full feature inventory for players upgrading from 1.0.44 or earlier.
@@ -52,6 +52,9 @@ build; the rest is the full feature inventory for players upgrading from 1.0.44 
 
 - Removed the monitor's custom URL wallpaper import. The Display page now offers only the packaged
   built-in images, so clients no longer make outbound HTTP requests for monitor content.
+- Monitor terminal actions now require a server-side session created by a successful password
+  check or by opening a passwordless desk. Direct action packets sent without unlocking are
+  ignored.
 - Fixed the **Redstone Monocle** overlay leaking GL state into the next frame. The overlay now
   restores depth, cull, texture and blend state in a `finally` block, preventing
   missing-chunk-looking visual corruption.

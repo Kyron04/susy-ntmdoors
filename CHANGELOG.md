@@ -44,6 +44,9 @@ RELEASE HIGHLIGHTS
 ### Rendering and data fixes
 - Removed the monitor's custom URL wallpaper import. The Display page now offers only the packaged
   built-in images, so clients no longer make outbound HTTP requests for monitor content.
+- Monitor terminal actions now require a server-side session created by a successful password
+  check or by opening a passwordless desk. Direct action packets sent without unlocking are
+  ignored.
 - Fixed the Redstone Monocle overlay leaking GL state into the next frame. The overlay now restores
   depth, cull, texture and blend state in a finally block, preventing missing-chunk-looking visual
   corruption.

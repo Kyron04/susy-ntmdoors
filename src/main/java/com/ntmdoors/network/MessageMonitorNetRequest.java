@@ -1,6 +1,7 @@
 package com.ntmdoors.network;
 
 import com.ntmdoors.monitor.MonitorAccess;
+import com.ntmdoors.monitor.MonitorAuth;
 import com.ntmdoors.monitor.MonitorDevice;
 import com.ntmdoors.monitor.SecurityEvents;
 import com.ntmdoors.monitor.SecurityNet;
@@ -123,6 +124,7 @@ public class MessageMonitorNetRequest implements IMessage {
 
             TileEntityMonitorDesk desk = TileEntityMonitorDesk.at(player.world, message.deskPos);
             if (desk == null) return;
+            if (!MonitorAuth.isAuthorized(player, message.deskPos)) return;
 
             switch (message.action) {
                 case REQUEST_NETS:

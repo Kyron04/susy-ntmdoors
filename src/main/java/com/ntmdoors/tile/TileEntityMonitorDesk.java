@@ -197,6 +197,14 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
         return passwordSkipped;
     }
 
+    /**
+     * Server-side authorization fingerprint. It changes if the desk's password state changes, so
+     * an old terminal session cannot keep working after a new password is set.
+     */
+    public String getPasswordFingerprint() {
+        return passwordHash + ":" + passwordSet + ":" + passwordSkipped;
+    }
+
     /** Increments whenever a client receives a new display snapshot. */
     public int getDisplayRevision() {
         return displayRevision;
