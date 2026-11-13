@@ -315,6 +315,19 @@ public class MonitorScreen extends Screen {
                 addDrawableChild(ButtonWidget.builder(Text.literal("Close"), b -> {
                     ModMessages.sendMonitorDeviceControl(deskPos, selectedNetId, 1, dev.pos, 0, false);
                 }).dimensions(rightX + rightW - 38, rowY, 36, 14).build());
+            } else if (dev.type == MonitorDevice.Type.REDSTONE_GATE) {
+                addDrawableChild(ButtonWidget.builder(Text.literal("Pulse"), b -> {
+                    ModMessages.sendMonitorDeviceControl(deskPos, selectedNetId, 4, dev.pos, 0, false);
+                }).dimensions(rightX + rightW - 86, rowY, 40, 14).build());
+
+                String btnText = dev.enabled ? "ON" : "OFF";
+                addDrawableChild(ButtonWidget.builder(Text.literal(btnText), b -> {
+                    MonitorDevice current = devices.get(rowIdx);
+                    boolean newState = !current.enabled;
+                    ModMessages.sendMonitorDeviceControl(deskPos, selectedNetId, 2, current.pos, 0, newState);
+                    devices.set(rowIdx, current.withState(newState, current.loaded));
+                    b.setMessage(Text.literal(newState ? "ON" : "OFF"));
+                }).dimensions(rightX + rightW - 44, rowY, 42, 14).build());
             } else {
                 String btnText = dev.enabled ? "ON" : "OFF";
                 addDrawableChild(ButtonWidget.builder(Text.literal(btnText), b -> {

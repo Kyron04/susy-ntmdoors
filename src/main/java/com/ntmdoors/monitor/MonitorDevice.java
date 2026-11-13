@@ -227,7 +227,7 @@ public final class MonitorDevice {
             return sensor.isEnabled();
         }
         if (be instanceof RedstoneGateBlockEntity gate) {
-            return gate.isEnabled();
+            return gate.isManualPower() || gate.isPoweredOn();
         }
         if (be instanceof SpeakerBlockEntity speaker) {
             return speaker.isEnabled();
@@ -254,7 +254,7 @@ public final class MonitorDevice {
             return true;
         }
         if (be instanceof RedstoneGateBlockEntity gate) {
-            gate.setEnabled(enabled);
+            gate.setManualPower(enabled);
             return true;
         }
         if (be instanceof SpeakerBlockEntity speaker) {

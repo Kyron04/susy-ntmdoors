@@ -522,6 +522,11 @@ public final class ModMessages {
                         if (dev != null) MonitorDevice.setEnabled(player.getWorld(), dev, state);
                     } else if (command == 3) {
                         desk.setNetEvent(netId, eventId, state);
+                    } else if (command == 4) {
+                        BlockEntity target = player.getWorld().getBlockEntity(targetPos);
+                        if (target instanceof RedstoneGateBlockEntity gate) {
+                            gate.pulse();
+                        }
                     }
                 }
             });

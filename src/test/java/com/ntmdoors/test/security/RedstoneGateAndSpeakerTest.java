@@ -110,6 +110,13 @@ public class RedstoneGateAndSpeakerTest {
         gate.setEnabled(false);
         assertFalse(gate.isEnabled());
         assertTrue(gate.isSystemIdle());
+
+        // Toggle manualPower
+        assertFalse(gate.isManualPower());
+        gate.setManualPower(true);
+        assertTrue(gate.isManualPower());
+        gate.setManualPower(false);
+        assertFalse(gate.isManualPower());
     }
 
     @Test

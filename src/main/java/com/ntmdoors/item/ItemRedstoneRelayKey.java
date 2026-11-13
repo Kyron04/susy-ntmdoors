@@ -62,6 +62,12 @@ public class ItemRedstoneRelayKey extends Item {
                 }
                 return ActionResult.success(world.isClient);
             }
+            if (be instanceof KeypadBlockEntity keypad) {
+                if (!world.isClient) {
+                    keypad.getRedstoneBinding().toggle(player);
+                }
+                return ActionResult.success(world.isClient);
+            }
             return ActionResult.PASS;
         }
 
@@ -124,7 +130,7 @@ public class ItemRedstoneRelayKey extends Item {
                 "and sensors to a Redstone Gate.",
                 "Sneak + Right Click a gate to bind",
                 "other gates and doors to its output.",
-                "Normal Right Click a Speaker to bind it.",
+                "Right Click a Keypad or Speaker to bind it.",
                 "Sneak + Right Click a Keypad to configure it.",
                 "Sneak + Right Click a Motion Sensor to bind it.");
     }

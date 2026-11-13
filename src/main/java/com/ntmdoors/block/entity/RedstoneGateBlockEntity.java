@@ -55,6 +55,7 @@ public class RedstoneGateBlockEntity extends BlockEntity implements RedstoneBind
     private boolean enabled = true;
     private boolean stayActive;
     private boolean invert;
+    private boolean manualPower;
     private int activeTicks = WIRELESS_PULSE_TICKS;
 
     public RedstoneGateBlockEntity(BlockPos pos, BlockState state) {
@@ -179,6 +180,18 @@ public class RedstoneGateBlockEntity extends BlockEntity implements RedstoneBind
         markDirty();
     }
 
+    public boolean isManualPower() {
+        return manualPower;
+    }
+
+    public void setManualPower(boolean manualPower) {
+        if (this.manualPower == manualPower) return;
+        this.manualPower = manualPower;
+        refreshPower();
+        markDirty();
+        sync();
+    }
+
     public boolean isStayActive() {
         return stayActive;
     }
@@ -292,7 +305,7 @@ public class RedstoneGateBlockEntity extends BlockEntity implements RedstoneBind
             setPowered(false);
             return;
         }
-        boolean active = isPulsing() || isHeld() || isLinkedPowered()
+        boolean active = isPulsing() || isHeld() || isLinkedPowered() || manualPower
                 || RedstoneGateBlock.isReceivingPower(world, pos);
         if (stayActive && !invert) {
             if (active) setPowered(true);
@@ -336,6 +349,7 @@ public class RedstoneGateBlockEntity extends BlockEntity implements RedstoneBind
         tag.putBoolean("enabled", enabled);
         tag.putBoolean("stayActive", stayActive);
         tag.putBoolean("invert", invert);
+        tag.putBoolean("manualPower", manualPower);
         tag.putInt("activeTicks", activeTicks);
         if (!linkedInputs.isEmpty()) tag.putString("linkedInputs", BlockPositions.encodeList(linkedInputs.keys()));
         redstoneBinding.writeNbt(tag);
@@ -356,6 +370,7 @@ public class RedstoneGateBlockEntity extends BlockEntity implements RedstoneBind
         enabled = !tag.contains("enabled") || tag.getBoolean("enabled");
         stayActive = tag.getBoolean("stayActive");
         invert = tag.getBoolean("invert");
+        manualPower = tag.getBoolean("manualPower");
         activeTicks = tag.contains("activeTicks") ? tag.getInt("activeTicks") : WIRELESS_PULSE_TICKS;
         activeTicks = Math.max(MIN_ACTIVE_TICKS, Math.min(MAX_ACTIVE_TICKS, activeTicks));
     }
