@@ -318,9 +318,11 @@ public class MonitorScreen extends Screen {
             } else {
                 String btnText = dev.enabled ? "ON" : "OFF";
                 addDrawableChild(ButtonWidget.builder(Text.literal(btnText), b -> {
-                    ModMessages.sendMonitorDeviceControl(deskPos, selectedNetId, 2, dev.pos, 0, !dev.enabled);
-                    devices.set(rowIdx, dev.withState(!dev.enabled, dev.loaded));
-                    b.setMessage(Text.literal(!dev.enabled ? "ON" : "OFF"));
+                    MonitorDevice current = devices.get(rowIdx);
+                    boolean newState = !current.enabled;
+                    ModMessages.sendMonitorDeviceControl(deskPos, selectedNetId, 2, current.pos, 0, newState);
+                    devices.set(rowIdx, current.withState(newState, current.loaded));
+                    b.setMessage(Text.literal(newState ? "ON" : "OFF"));
                 }).dimensions(rightX + rightW - 48, rowY, 46, 14).build());
             }
 
