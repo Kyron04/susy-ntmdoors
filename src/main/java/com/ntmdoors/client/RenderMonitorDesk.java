@@ -426,30 +426,13 @@ public class RenderMonitorDesk extends TileEntitySpecialRenderer<TileEntityMonit
         buffer.pos(x1, y2, z).color(r, g, b, a).endVertex();
     }
 
-    /** Draws a cosmetic wallpaper, or a status card while a custom image loads or fails. */
+    /** Draws a cosmetic wallpaper, or a missing-image card if the packaged texture is absent. */
     private static void drawWallpaper(Screen screen, String wallpaper) {
-        if (!DisplayImages.isReady(wallpaper)) {
-            String title;
-            String subtitle;
-            if (DisplayImages.isFailed(wallpaper)) {
-                title = "DISPLAY UNAVAILABLE";
-                subtitle = wallpaper.startsWith(MonitorWallpaper.URL_PREFIX)
-                        ? wallpaper.substring(MonitorWallpaper.URL_PREFIX.length()) : "";
-            } else if (DisplayImages.isLoading(wallpaper)) {
-                title = "LOADING DISPLAY...";
-                subtitle = "";
-            } else {
-                title = "IMAGE MISSING";
-                subtitle = wallpaper.startsWith(MonitorWallpaper.BUILTIN_PREFIX)
-                        ? wallpaper.substring(MonitorWallpaper.BUILTIN_PREFIX.length()) : "";
-            }
-            drawWallpaperMessage(screen, title, subtitle);
-            return;
-        }
-
         ResourceLocation texture = DisplayImages.textureFor(wallpaper);
         if (texture == null) {
-            drawWallpaperMessage(screen, "DISPLAY UNAVAILABLE", "");
+            String subtitle = wallpaper.startsWith(MonitorWallpaper.BUILTIN_PREFIX)
+                    ? wallpaper.substring(MonitorWallpaper.BUILTIN_PREFIX.length()) : "";
+            drawWallpaperMessage(screen, "IMAGE MISSING", subtitle);
             return;
         }
 

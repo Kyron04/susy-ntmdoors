@@ -12,9 +12,8 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 /**
  * Client to server: choose the cosmetic wallpaper for one physical monitor screen.
- * Empty means the normal terminal, {@code builtin:<id>} is a packaged image and
- * {@code url:<http(s)>} is a static remote image. The server stores the description only;
- * clients download custom images themselves.
+ * Empty means the normal terminal and {@code builtin:<id>} is a packaged image. Remote URLs are
+ * deliberately not supported; the server stores only a packaged wallpaper id.
  */
 public class MessageMonitorWallpaper implements IMessage {
 

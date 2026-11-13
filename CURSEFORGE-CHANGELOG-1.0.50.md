@@ -4,7 +4,7 @@ Minecraft 1.12.2 / Forge 14.23.5.2847+ (tested on 14.23.5.2860)
 Requires Chisel 1.12.2-1.0.2.45
 
 **File:** `ntmdoors-1.0.50.jar`
-**SHA-256:** `3E1CDAD34E8A944EEED1502627F660664C79F08B4A9EF098B247927B9FF6F2C0`
+**SHA-256:** `EB87FF970680BDD6F940548C6145158ED6FB12949C2C6774DA94DA288B6459F8`
 
 This is the complete feature changelog for 1.0.50. The first section lists what changed in this
 build; the rest is the full feature inventory for players upgrading from 1.0.44 or earlier.
@@ -50,6 +50,8 @@ build; the rest is the full feature inventory for players upgrading from 1.0.44 
 
 ### Rendering and data fixes
 
+- Removed the monitor's custom URL wallpaper import. The Display page now offers only the packaged
+  built-in images, so clients no longer make outbound HTTP requests for monitor content.
 - Fixed the **Redstone Monocle** overlay leaking GL state into the next frame. The overlay now
   restores depth, cull, texture and blend state in a `finally` block, preventing
   missing-chunk-looking visual corruption.
@@ -340,9 +342,8 @@ A wall-mounted code panel that binds to the door it touches:
 - A per-screen **Display** task: five built-in wallpapers plus a `Terminal` tile that restores the
   normal terminal page.
 - Selecting a tile applies it immediately to the screen that was clicked.
-- The custom tab accepts a direct `http://` or `https://` PNG/JPG URL. Each viewing client downloads
-  it locally with 8 MB / 4096 px limits. Static images only; video and animated GIFs are not
-  supported.
+- Only packaged images are offered; custom URL import is not supported, so a monitor never makes an
+  outbound network request.
 - The choice is stored on the desk and survives restarts. Built-in source images live in
   `source-art/display/` and are packaged under `assets/ntmdoors/textures/display/`.
 

@@ -3,28 +3,22 @@ package com.ntmdoors.monitor;
 import net.minecraft.util.ResourceLocation;
 
 import javax.annotation.Nullable;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 /**
  * Shared description of the cosmetic wallpapers a monitor screen can show.
  *
- * <p>A stored wallpaper is either empty (the normal terminal), {@code builtin:<id>} for one of
- * the packaged display images, or {@code url:<http(s) URL>} for a user-supplied static image.
- * The URL is deliberately only a string on the server; each client downloads and decodes it
- * locally, so a dedicated server never makes outbound requests for a player's wallpaper.</p>
+ * <p>A stored wallpaper is either empty (the normal terminal) or {@code builtin:<id>} for one of
+ * the packaged display images. Custom/remote URLs are deliberately not supported: the monitor
+ * never makes outbound network requests on behalf of a player.</p>
  */
 public final class MonitorWallpaper {
 
     public static final String BUILTIN_PREFIX = "builtin:";
-    public static final String URL_PREFIX = "url:";
-    public static final int MAX_URL_LENGTH = 512;
 
     public static final class Builtin {
         public final String id;
@@ -67,16 +61,8 @@ public final class MonitorWallpaper {
         return BUILTIN_PREFIX + id;
     }
 
-    public static String url(String url) {
-        return URL_PREFIX + url;
-    }
-
     public static boolean isBuiltin(@Nullable String value) {
         return value != null && value.startsWith(BUILTIN_PREFIX);
-    }
-
-    public static boolean isUrl(@Nullable String value) {
-        return value != null && value.startsWith(URL_PREFIX);
     }
 
     @Nullable
@@ -84,12 +70,6 @@ public final class MonitorWallpaper {
         if (!isBuiltin(value)) return null;
         String id = value.substring(BUILTIN_PREFIX.length());
         return builtinById(id) == null ? null : id;
-    }
-
-    @Nullable
-    public static String urlOf(@Nullable String value) {
-        if (!isUrl(value)) return null;
-        return value.substring(URL_PREFIX.length());
     }
 
     @Nullable
@@ -103,17 +83,13 @@ public final class MonitorWallpaper {
     public static String label(@Nullable String value) {
         String id = builtinId(value);
         Builtin builtin = builtinById(id);
-        if (builtin != null) return builtin.label;
-        if (isUrl(value)) return "CUSTOM IMAGE";
-        return "TERMINAL";
+        return builtin != null ? builtin.label : "TERMINAL";
     }
 
     /** Empty values are valid and mean "show the normal terminal page". */
     public static boolean isValid(@Nullable String value) {
         if (value == null || value.isEmpty()) return true;
-        if (isBuiltin(value)) return builtinId(value) != null;
-        if (isUrl(value)) return isValidHttpUrl(urlOf(value));
-        return false;
+        return isBuiltin(value) && builtinId(value) != null;
     }
 
     /** Returns a clean stored value, or an empty string when the input is not supported. */
@@ -121,37 +97,9 @@ public final class MonitorWallpaper {
         if (value == null) return "";
         String trimmed = value.trim();
         if (trimmed.isEmpty()) return "";
-        if (isBuiltin(trimmed)) {
-            String id = builtinId(trimmed);
-            return id == null ? "" : builtin(id);
-        }
-        if (isUrl(trimmed)) {
-            String raw = urlOf(trimmed);
-            if (raw == null) return "";
-            raw = raw.trim();
-            return isValidHttpUrl(raw) ? url(raw) : "";
-        }
-        return "";
-    }
-
-    public static boolean isValidHttpUrl(@Nullable String raw) {
-        if (raw == null) return false;
-        String value = raw.trim();
-        if (value.isEmpty() || value.length() > MAX_URL_LENGTH) return false;
-        for (int i = 0; i < value.length(); i++) {
-            char c = value.charAt(i);
-            if (c <= 32 || c == 127) return false;
-        }
-        try {
-            URI uri = new URI(value);
-            String scheme = uri.getScheme();
-            if (scheme == null) return false;
-            scheme = scheme.toLowerCase(Locale.ROOT);
-            return ("http".equals(scheme) || "https".equals(scheme))
-                    && uri.getHost() != null && !uri.getHost().isEmpty();
-        } catch (URISyntaxException ex) {
-            return false;
-        }
+        if (!isBuiltin(trimmed)) return "";
+        String id = builtinId(trimmed);
+        return id == null ? "" : builtin(id);
     }
 
     private MonitorWallpaper() {

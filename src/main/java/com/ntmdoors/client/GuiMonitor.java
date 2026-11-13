@@ -15,7 +15,6 @@ import com.ntmdoors.network.MessageMonitorDoorScannerResult;
 import com.ntmdoors.network.MessageMonitorKeyResult;
 import com.ntmdoors.network.MessageMonitorNetRequest;
 import com.ntmdoors.network.MessageMonitorState;
-import com.ntmdoors.network.MessageMonitorWallpaper;
 import com.ntmdoors.network.ModNetwork;
 import com.ntmdoors.registry.ModContent;
 import com.ntmdoors.tile.TileEntityMonitorDesk;
@@ -128,10 +127,8 @@ public class GuiMonitor extends GuiScreen {
     static final int DOOR_BUTTON_WIDTH = 38;
     static final int DOOR_BUTTON_HEIGHT = 15;
     static final int DOOR_BUTTON_GAP = 4;
-    static final int DISPLAY_TAB_HEIGHT = 18;
     static final int DISPLAY_TILE_GAP = 8;
     static final int DISPLAY_TILE_HEIGHT = 78;
-    static final int DISPLAY_URL_LENGTH = MonitorWallpaper.MAX_URL_LENGTH;
     static final int BACKUP_OPTION_HEIGHT = 36;
 
     final BlockPos origin;
@@ -1509,10 +1506,6 @@ public class GuiMonitor extends GuiScreen {
         }
 
         if (waiting) return;
-        if (stage == Stage.DISPLAY) {
-            display.handleKey(typedChar, keyCode);
-            return;
-        }
         if (stage == Stage.NAME_NET || stage == Stage.NAME_KEY) {
             if (keyCode == Keyboard.KEY_RETURN || keyCode == Keyboard.KEY_NUMPADENTER) {
                 submitName();

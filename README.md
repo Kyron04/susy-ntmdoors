@@ -221,13 +221,12 @@ for editing.
   angle. Three block types (bottom/middle/top) each carry three columns, so the part and facing
   fit in the four metadata bits; the bottom core carries the terminal tile entity.
 * Display (`Display` in the terminal task list): a cosmetic wallpaper chooser for each physical
-  monitor panel. The built-in tab shows five packaged images plus a `Terminal` tile that
-  restores the normal terminal page. Selecting a tile applies it immediately to the screen that
-  was clicked. The custom tab accepts a direct `http://` or `https://` PNG/JPG URL; each viewing
-  client downloads it locally (8 MB / 4096 px limits) and static images only, so video and
-  animated GIFs are not supported. The choice is stored on the desk and survives restarts.
-  Built-in source images live in `source-art/display/` and are packaged under
-  `assets/ntmdoors/textures/display/` by the build.
+  monitor panel. It offers five packaged images plus a `Terminal` tile that restores the normal
+  terminal page. Selecting a tile applies it immediately to the screen that was clicked. Only
+  packaged images are offered; custom URLs are not supported, so a monitor never makes an outbound
+  network request. The choice is stored on the desk and survives restarts. Built-in source images
+  live in `source-art/display/` and are packaged under `assets/ntmdoors/textures/display/` by the
+  build.
 * Notepad (`Notepad` in the terminal task list): a shared multi-document editor stored on the
   desk. The sliding left sidebar lists documents, creates new ones, and renames or deletes the
   selected document. Notes open as a blank paper page with keyboard editing, wrapped lines and

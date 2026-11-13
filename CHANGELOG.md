@@ -42,6 +42,8 @@ RELEASE HIGHLIGHTS
 - Fixed an empty-cell selection crash on doors.
 
 ### Rendering and data fixes
+- Removed the monitor's custom URL wallpaper import. The Display page now offers only the packaged
+  built-in images, so clients no longer make outbound HTTP requests for monitor content.
 - Fixed the Redstone Monocle overlay leaking GL state into the next frame. The overlay now restores
   depth, cull, texture and blend state in a finally block, preventing missing-chunk-looking visual
   corruption.
@@ -309,8 +311,8 @@ Display wallpapers:
 - A per-screen Display task: five built-in wallpapers plus a Terminal tile that restores the normal
   terminal page.
 - Selecting a tile applies it immediately to the screen that was clicked.
-- The custom tab accepts a direct http:// or https:// PNG/JPG URL. Each viewing client downloads it
-  locally with 8 MB / 4096 px limits. Static images only; video and animated GIFs are not supported.
+- Only packaged images are offered; custom URL import is not supported, so a monitor never makes an
+  outbound network request.
 - The choice is stored on the desk and survives restarts. Built-in source images live in
   source-art/display/ and are packaged under assets/ntmdoors/textures/display/.
 

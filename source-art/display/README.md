@@ -15,8 +15,6 @@ The built-in display grid expects these file names:
 | `world_map.png` | WORLD MAP |
 | `windows_error.png` | WINDOWS ERROR |
 
-The five source images are included. Custom URL images selected in-game do not go here;
-they are downloaded by each client.
-
-Keep the originals reasonably small (the client rejects downloads over 8 MB and images larger
-than 4096 pixels on either axis). PNG or JPG is supported; animated GIFs and video are not.
+The five source images are included. Only packaged images are supported; the monitor does not
+download custom URLs. Keep the originals reasonably small because they are packaged directly into
+the mod jar.
