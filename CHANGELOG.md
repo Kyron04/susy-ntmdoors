@@ -1,5 +1,16 @@
-HBM DOORS: 1.0.50
+HBM DOORS: 1.0.51
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.51
+SECURITY
+- Removed the monitor's custom URL wallpaper import. The Display page now offers only the packaged
+  built-in images, so clients no longer make outbound HTTP requests for monitor content.
+- Monitor terminal actions now require a server-side session created by a successful password
+  check or by opening a passwordless desk. Direct action packets sent without unlocking are
+  ignored.
+COMPATIBILITY
+- The feature set is otherwise unchanged from 1.0.50. Existing worlds load normally.
+- Clients and servers must both update; older jars keep the old behavior.
 
 1.0.50
 This entry is the complete feature changelog for 1.0.50. The first part lists what changed in this
