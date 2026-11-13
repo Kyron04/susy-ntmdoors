@@ -519,7 +519,13 @@ public final class ModMessages {
                         if (target instanceof DoorBlockEntity door) door.closeForSystem();
                     } else if (command == 2) {
                         MonitorDevice dev = MonitorDevice.find(player.getWorld(), targetPos);
-                        if (dev != null) MonitorDevice.setEnabled(player.getWorld(), dev, state);
+                        if (dev != null) {
+                            MonitorDevice.setEnabled(player.getWorld(), dev, state);
+                            SecurityNet net = desk.getNet(netId);
+                            if (net != null) {
+                                sendMonitorDevices(player, deskPos, net);
+                            }
+                        }
                     } else if (command == 3) {
                         desk.setNetEvent(netId, eventId, state);
                     } else if (command == 4) {
@@ -864,11 +870,13 @@ public final class ModMessages {
         List<MonitorDevice> devs = net.getDevices();
         buf.writeInt(devs.size());
         for (MonitorDevice d : devs) {
+            boolean loaded = player.getWorld().isChunkLoaded(d.pos);
+            boolean enabled = !loaded || MonitorDevice.isEnabled(player.getWorld(), d);
             buf.writeByte(d.type.ordinal());
             buf.writeBlockPos(d.pos);
             buf.writeString(d.name, 64);
-            buf.writeBoolean(d.enabled);
-            buf.writeBoolean(d.loaded);
+            buf.writeBoolean(enabled);
+            buf.writeBoolean(loaded);
         }
         ServerPlayNetworking.send(player, MONITOR_DEVICES_ID, buf);
     }

@@ -318,16 +318,16 @@ public class MonitorScreen extends Screen {
             } else if (dev.type == MonitorDevice.Type.REDSTONE_GATE) {
                 addDrawableChild(ButtonWidget.builder(Text.literal("Pulse"), b -> {
                     ModMessages.sendMonitorDeviceControl(deskPos, selectedNetId, 4, dev.pos, 0, false);
-                }).dimensions(rightX + rightW - 86, rowY, 40, 14).build());
+                }).dimensions(rightX + rightW - 100, rowY, 42, 14).build());
 
-                String btnText = dev.enabled ? "ON" : "OFF";
+                String btnText = dev.enabled ? "Power OFF" : "Power ON";
                 addDrawableChild(ButtonWidget.builder(Text.literal(btnText), b -> {
                     MonitorDevice current = devices.get(rowIdx);
                     boolean newState = !current.enabled;
                     ModMessages.sendMonitorDeviceControl(deskPos, selectedNetId, 2, current.pos, 0, newState);
                     devices.set(rowIdx, current.withState(newState, current.loaded));
-                    b.setMessage(Text.literal(newState ? "ON" : "OFF"));
-                }).dimensions(rightX + rightW - 44, rowY, 42, 14).build());
+                    b.setMessage(Text.literal(newState ? "Power OFF" : "Power ON"));
+                }).dimensions(rightX + rightW - 56, rowY, 54, 14).build());
             } else {
                 String btnText = dev.enabled ? "ON" : "OFF";
                 addDrawableChild(ButtonWidget.builder(Text.literal(btnText), b -> {
@@ -457,8 +457,8 @@ public class MonitorScreen extends Screen {
                 MonitorDevice dev = devices.get(i);
                 String tag = "[" + dev.type.displayName() + "] ";
                 String name = dev.name;
-                if (textRenderer.getWidth(tag + name) > rightW - 80) {
-                    name = textRenderer.trimToWidth(name, rightW - 80 - textRenderer.getWidth(tag) - 8) + "..";
+                if (textRenderer.getWidth(tag + name) > rightW - 104) {
+                    name = textRenderer.trimToWidth(name, rightW - 104 - textRenderer.getWidth(tag) - 8) + "..";
                 }
 
                 int color = dev.enabled ? 0xFFFFD9A8 : 0xFF7A3D00;

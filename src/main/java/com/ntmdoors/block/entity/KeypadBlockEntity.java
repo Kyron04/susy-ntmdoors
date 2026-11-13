@@ -131,6 +131,7 @@ public class KeypadBlockEntity extends BlockEntity implements RedstoneBindingHos
     }
 
     public void tick() {
+        redstoneBinding.update();
         for (int i = 0; i < cooldowns.length; i++) {
             if (cooldowns[i] > 0) cooldowns[i]--;
         }

@@ -175,9 +175,24 @@ public class RedstoneGateBlockEntity extends BlockEntity implements RedstoneBind
     }
 
     public void setEnabled(boolean enabled) {
+        if (this.enabled == enabled) return;
         this.enabled = enabled;
-        refreshPower();
+        if (!enabled) {
+            pulseEnd = 0;
+            holds.clear();
+            linkedInputs.clear();
+            inputSettleTicks = 0;
+            invertProbeTicks = 0;
+            ignoreNeighborTicks = 1;
+            systemIdle = true;
+            setPowered(false);
+        } else {
+            systemIdle = false;
+            ignoreNeighborTicks = 1;
+            refreshPower();
+        }
         markDirty();
+        sync();
     }
 
     public boolean isManualPower() {
@@ -187,7 +202,13 @@ public class RedstoneGateBlockEntity extends BlockEntity implements RedstoneBind
     public void setManualPower(boolean manualPower) {
         if (this.manualPower == manualPower) return;
         this.manualPower = manualPower;
-        refreshPower();
+        if (!manualPower && !invert && isPoweredOn() && !isPulsing() && !isHeld() && !isLinkedPowered()) {
+            inputSettleTicks = INPUT_SETTLE_TICKS;
+            ignoreNeighborTicks = 2;
+            setPowered(false);
+        } else {
+            refreshPower();
+        }
         markDirty();
         sync();
     }
@@ -200,9 +221,11 @@ public class RedstoneGateBlockEntity extends BlockEntity implements RedstoneBind
         if (stayActive == val) return;
         stayActive = val;
         if (!stayActive) {
-            if (invert) startInvertProbe();
-            else {
+            if (invert && isPoweredOn()) {
+                startInvertProbe();
+            } else {
                 inputSettleTicks = INPUT_SETTLE_TICKS;
+                ignoreNeighborTicks = 2;
                 setPowered(false);
             }
         } else {
@@ -219,8 +242,19 @@ public class RedstoneGateBlockEntity extends BlockEntity implements RedstoneBind
     public void setInverted(boolean val) {
         if (invert == val) return;
         invert = val;
-        if (invert) startInvertProbe();
-        else refreshPower();
+        if (stayActive) {
+            refreshPower();
+            ignoreNeighborTicks = 1;
+        } else if (val && isPoweredOn()) {
+            startInvertProbe();
+        } else if (!val && isPoweredOn()) {
+            inputSettleTicks = INPUT_SETTLE_TICKS;
+            ignoreNeighborTicks = 2;
+            setPowered(false);
+        } else {
+            refreshPower();
+            ignoreNeighborTicks = 1;
+        }
         markDirty();
         sync();
     }
@@ -256,8 +290,30 @@ public class RedstoneGateBlockEntity extends BlockEntity implements RedstoneBind
 
     public void onNeighborChanged() {
         if (world == null || world.isClient) return;
-        if (ignoreNeighborTicks > 0) return;
-        refreshPower();
+        if (isSystemIdle()) return;
+        if (inputSettleTicks > 0 || invertProbeTicks > 0 || ignoreNeighborTicks > 0) return;
+        if (stayActive && !invert) {
+            if (RedstoneGateBlock.isReceivingPower(world, pos) || isPulsing() || isHeld()
+                    || isLinkedPowered() || manualPower) {
+                setPowered(true);
+            }
+            return;
+        }
+        if (isPulsing() || isHeld() || isLinkedPowered() || manualPower) return;
+
+        if (invert) {
+            if (isPoweredOn()) startInvertProbe();
+            else refreshPower();
+        } else {
+            boolean powered = RedstoneGateBlock.isReceivingPower(world, pos);
+            if (!powered && isPoweredOn()) {
+                inputSettleTicks = INPUT_SETTLE_TICKS;
+                ignoreNeighborTicks = 1;
+                setPowered(false);
+            } else {
+                setPowered(powered);
+            }
+        }
     }
 
     public void tick(World world, BlockPos pos, BlockState state) {
@@ -284,11 +340,17 @@ public class RedstoneGateBlockEntity extends BlockEntity implements RedstoneBind
         }
 
         pulseEnd = 0;
+        if (isHeld() || isLinkedPowered() || manualPower) {
+            refreshPower();
+            ignoreNeighborTicks = 1;
+            return;
+        }
         if (invert) {
             refreshPower();
             ignoreNeighborTicks = 1;
         } else {
             inputSettleTicks = INPUT_SETTLE_TICKS;
+            ignoreNeighborTicks = 2;
             setPowered(false);
         }
     }
