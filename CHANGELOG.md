@@ -1,7 +1,34 @@
-HBM DOORS: 1.0.44
-Minecraft 1.12.2 / Forge 14.23.5.2847
+# NTM Doors Changelog
 
-1.0.44
+## 1.0.0 (Minecraft 1.20.1 / Fabric)
+### Full Fabric 1.20.1 Port & Rewrite
+- **Pure Fabric OBJ Rendering**:
+  - Implemented standalone OBJ model parser and software clipping renderer (no Forge hooks or native libraries required).
+  - Added `QuadAdaptingVertexConsumer` to dynamically convert OBJ triangular geometry into vanilla `QUADS` vertex buffers with full ambient occlusion and block lighting.
+  - Implemented 3D dynamic item rendering (`DoorItemRenderer`) matching original in-hand, inventory, and ground transforms.
+- **Multiblock Doors (22 Declarations / 66 Total Blocks)**:
+  - All 22 door types ported with Normal, Locked, and Security variants.
+  - Continuous animation-tracking bounding and collision boxes (e.g. QE sliding door tracks, transition seal open frames).
+  - Swept placement guards preventing placement into occupied or obstructed cells.
+  - Custom audio cues and synchronized sound event triggers.
+- **Complete Security Ecosystem**:
+  - **Keypads**: Real-time code entry, 1–6 digit security codes, screwdriver reset sequence, distance/multi-door binding, and wireless RF Redstone Gate links.
+  - **Keycard Scanners**: Access clearance verification, biometric authentication, failure lockouts, and 10s automatic door closing.
+  - **Keycard Programmer**: Interactive GUI inventory, card renaming, private key backup slots, and clearance level assignment.
+  - **Keycards**: Standard, colored, numbered (Levels 1–12), developer, and biometric RFID access cards.
+  - **Safes & Biometric Safes**: Heavy steel storage with keypad/biometric lockouts and remote gate linking.
+  - **Redstone Gates**: Configurable activation pulses (1s to 5m), latch modes (`stayActive`), signal inversion, and settled-wire feedback loop protection.
+  - **Speakers & Motion Sensors**: 32-block attenuated spatial audio and AABB entity presence/vacancy detection.
+- **Terminal OS & Monitor Desks**:
+  - 1- to 6-monitor setups with master password setup, live security net device controls, physical screen wallpaper customization, and shared desk Notepad documents.
+- **Crafting Recipes**:
+  - 104 standard vanilla crafting recipes covering all doors, machines, cards, relay tools, and monitor setups.
+- **Automated Test Suite**:
+  - 43 JUnit test suites covering door state machines, collision math, biometrics, networking codecs, and recipe validation.
+
+---
+
+## 1.0.44 (Minecraft 1.12.2 / Forge)
 FEATURES
 - Security doors now record the player who placed them as their owner. By default they still
   require a keycard scanner or the Creative Keycard; the owner can opt a security door in to

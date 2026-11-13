@@ -6,10 +6,13 @@
   "description": "Port of the multiblock door system and security apparatus to Fabric 1.20.1.",
   "authors": [
     "Hbm",
-    "NTM Contributors"
+    "NTM Contributors",
+    "Kyron04",
+    "KubLuk24"
   ],
   "contact": {
-    "homepage": "https://github.com/Kyron04/susy-ntmdoors"
+    "homepage": "https://github.com/Kyron04/susy-ntmdoors",
+    "sources": "https://github.com/Kyron04/susy-ntmdoors"
   },
   "license": "LGPL-3.0",
   "icon": "assets/ntmdoors/icon.png",

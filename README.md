@@ -1,579 +1,112 @@
-# NTM Doors (Minecraft 1.12.2, Forge 14.23.5.2847)
+# NTM Doors (Minecraft 1.20.1 / Fabric)
 
-Standalone port of the HBM's Nuclear Tech Mod door system and concrete building set to Minecraft
-1.12.2. The implementation and the included door, concrete and HL Blocks assets are used under the
-LGPL-3.0. See `LICENSE.LESSER` and `NOTICE` for attribution and source information.
+[![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1-blue.svg)](https://minecraft.net/)
+[![Fabric](https://img.shields.io/badge/Loader-Fabric-orange.svg)](https://fabricmc.net/)
+[![Java](https://img.shields.io/badge/Java-17-green.svg)](https://adoptium.net/)
+[![License: LGPL v3](https://img.shields.io/badge/License-LGPL_v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
 
-Current development version: see `gradle.properties` (`mod_version`).
+A standalone port of the iconic multiblock doors and high-tech security apparatus from **HBM's Nuclear Tech Mod** to **Minecraft 1.20.1** on the **Fabric Loader**.
 
-Source design reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
+Originally built for 1.12.2 Forge, this version is a complete ground-up rewrite for modern Fabric, featuring a pure Fabric OBJ software-clipping renderer, full animation collision tracking, a complete security and terminal network system, and 104 balanced vanilla crafting recipes for survival mode.
 
-## Build
-Needs JDK 8 (ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs). Chisel 1.12.2-1.0.2.45 is
-required at runtime. The Gradle wrapper is included, so:
+---
 
-    export JAVA_HOME=/path/to/jdk8
-    ./gradlew setupDecompWorkspace   # one-time: downloads + decompiles Minecraft
-    ./gradlew build                  # jar in build/libs
-    ./gradlew runClient
+## Requirements
+- **Minecraft**: `1.20.1`
+- **Fabric Loader**: `>= 0.15.11`
+- **Fabric API**: Required
+- **Java**: `17+`
 
-The jar version lives in `gradle.properties` (`mod_version`). Every successful `build` writes its
-jar with that version and then bumps the patch number, so the next jar is never the same version.
-Pass `-PnoVersionBump` to rebuild the current version without advancing it. The build strips
-insignificant whitespace from packaged model and blockstate JSON; the source files stay formatted
-for editing.
+---
 
-## What is implemented
-* Multiblock doors of any footprint, placed in one click, rotate with the player, removed as one piece
-* Core tile entity with state machine CLOSED / OPENING / OPEN / CLOSING, synced to clients
-* Redstone from any cell of the door (edge triggered), right click toggle
-* Every door is also registered as a locked copy named `<door>_locked`, and as a `<door>_security`
-  copy that only a keycard scanner (or the Creative Keycard directly) can open. Normal and locked
-  doors respond to redstone; security doors refuse it by default, as they do hand clicks. A
-  security door records the player who placed it as its owner; that owner can sneak + right-click
-  it with the Redstone Monocle to opt it in to redstone and Redstone Gate links. Security doors
-  placed before this owner tracking was added have no recorded owner and cannot be enabled until
-  they are replaced. All 19 doors, including both silo hatches, now have a security variant.
-  Security doors take three real hours to mine with any tool, and keypads may bind and drive locked
-  doors exactly like normal ones; security doors are off limits to keypads.
-* State dependent collision and selection boxes that follow the door animation continuously
-  (walk through when open, click-through gaps)
-* OBJ renderer (TESR) with per-group translate/rotate animations, X/Y/Z clipping and sounds
-* 3D door item rendering (inventory, hand, ground) from the same OBJ model, matching HBM's door item renderer
-* 19 multiblock OBJ doors: `vault_door`, `sliding_blast_door`, `qe_sliding_door`, `qe_sliding_panel`,
-  `fire_door`, `secure_access_door`, `sliding_seal_door`, `round_airlock_door`, `silo_hatch`,
-  `silo_hatch_large`, `large_vehicle_door`, `qe_containment`, `blast_shutter`, `blast_door`,
-  `cargo_door`, `water_door`, `black_mesa_door`, `office_door_1_double`, and `transition_seal`,
-  plus a `_locked` copy of each
-* Screwdriver: sneak + right click on a door with alternate skins cycles through them; right click
-  a keypad to start its code-reset sequence; sneak + right click an unused keypad cycles its
-  binding mode. Every interaction the tool handles plays `button9`, so nearby players hear the
-  tool being used
-* Keypad: wall-mounted code panel that locks/unlocks the door it is placed
-  next to. Set a 1-6 digit code and enter it to toggle the door; `R` closes an open door. The first
-  code set is bound to the door, and every keypad on that door must use the same code to open it.
-  A keypad only binds or auto-syncs when it touches one of the door's cells; placing it next to an
-  already-bound door copies the code automatically and shows `Code synced`. The binding stays on
-  the door when a keypad is broken, until the door itself is destroyed. Every key press clicks, and
-  each result chimes at the pad: the scanner's granted sound for an accepted code, a set or reset
-  code, or an auto-synced code, and the denied sound for a wrong code or an impossible binding.
-  With a screwdriver: first
-  click shows `Reset code?`, second click confirms, then entering the current code clears the
-  binding from the door, every keypad linked to it, and any further doors those keypads controlled
-* Keypad binding modes (sneak + right click with the screwdriver, only while the pad is unused):
-  off → **Distance** → **Multi** → off. In either mode, sneak + right click each **closed** door
-  within 32 blocks to link it. Distance binds one door; Multi holds up to nine, next to the pad or
-  away from it. Both modes share one code, and the pad shows `Confirm Door Bounding?` (with
-  `X Doors` under Multi) until `E` accepts the links; the LCD then shows `Input code` /
-  `Input multi code`, and the code typed there toggles every linked door. Pressing any key ends
-  linking. Once a code or link exists the mode is fixed and the screwdriver can only reset the
-  pad, which clears every link and code. A keypad placed next to an already-bound door auto-syncs
-  its code and skips the confirmation. A keypad never binds or drives a security door: placing one
-  against a security door shows `Unable to bound` in red on the LCD. A door is also driven by
-  keypads or keycard scanners, never both, so a pad refuses a door a scanner already controls.
-  Keypads have two codes: the normal door code above, and a separate security code that gates the
-  Redstone Relay Key screen. Sneak + right click a keypad with that key to enter (or first set) the
-  security code; the screen then sets the first door code, toggles `On fail` / `On success`
-  Redstone Gate outputs, resets the door code, overrides door locks, or force-closes its doors.
-  A normal click with the Redstone Relay Key starts/finishes its wireless gate binding session.
-* Keycard Scanner (`ntmdoors:keycard_scanner`): wall-mounted card reader with a black display, a
-  blue security stripe and green / yellow / red indicator lenses. Sneak + right click it with the
-  screwdriver to start a binding session, sneak + right click up to nine closed doors within 32
-  blocks, then right click the scanner with the screwdriver again to confirm. Normal, locked and
-  security doors can all be bound. Scanning a card shows `Scanning`; the Creative Keycard grants
-  access to every door, and any other card opens the bound doors only when one of its private keys
-  is assigned to that scanner. The doors close themselves again after ten seconds. The LCD shows
-  `Please insert key` while idle, and the matching lens lights yellow while scanning/binding, green
-  on access and red on denial. A card insert and a successful scan play `button3`, a denied scan
-  plays `button8`, and `bell1` loops while the scan runs. Once at least one door is bound, sneak +
-  right clicking the scanner while holding an Operator Keycard opens its security code screen: the
-  first visit sets a 1-6 digit code with a single entry, and later visits must repeat it. The screen
-  is a black panel in a light metal case with a green readout and twelve green keycaps, including
-  `CLR` and `ENTER`; a correct code plays the granted chime, a wrong one plays the denied chime and
-  clears the entry. The code lives only on the server and is never sent to clients. A correct code
-  (or a newly set one) shows a glowing green `SUCCESS!!!` card, a wrong one a glowing red
-  `FAILED!!!` card. Success then opens the `KEYCARD SCANNER` assignment screen: `ASSIGNED KEYS` on
-  the left, `NON-ASSIGNED KEYS` from the held Operator Keycard on the right, with click-to-move rows
-  and wheel scrolling. Assigned keys are stored on the scanner and copied from the card, so any
-  keycard that carries one can open the scanner's doors; the screen stays usable for two minutes
-  after the code. Placement and facing match the keypad; the item uses a matching 3D model in
-  the inventory and hand.
-* Scanner options: the assignment screen also carries the switches `Match biometric holder`,
-  `Lockdown mode`, `Lockout mode`, `Ignore private keys`, `Ignore biometric IDs`, `Override door
-  locks`, `Force close` and `Reset security code`. Lockdown is an emergency lock: raising it closes
-  every bound door and keeps them shut, refusing cards, codes, keypads and redstone until it is
-  lifted. Lockout mode locks the reader itself for five minutes after three bad cards or codes, and
-  turning the mode off clears a running lockout. A lockout only shuts the reader; the Biometric
-  Operator Keycard can still reach the code screen during one, and the `Override door locks` and
-  `Force close` actions move the doors regardless of a lockdown. `Reset security code` clears the
-  code on the scanner and its bound doors, so the next Operator Keycard visit sets a new one.
-* Keycard Programmer (`ntmdoors:keycard_programmer`): a low desk console that sits inside one block
-  and rotates to face the player, with a flat OBJ body, a sloped screen recess and no card reader
-  tower. The front carries a card slit with an `Insert here` label and two buttons on the player's
-  left, plus a green indicator and a small USB port on the right; the vent slots are on the back.
-  The screen shows `Keycard Programmer N4` over `Insert keycard`, drawn live with the font renderer
-  like the scanner's. Right clicking opens a three-page GUI: page one has the `Relay Key` /
-  `Operator Keycard` and `Relay Key` / `RFID Card` binding rows, where Bind instantly copies the
-  Relay Key's private key onto the card and keeps any keys the card already holds, page two has the
-  RFID card slot plus a scrollable two-row palette of every non-privileged, non-biometric card
-  style, and page three is the
-  `Legacy Backup Programmer` with a used source slot on the left, a fresh target slot on the right,
-  a `Backup` button and a five-frame ten-second progress bar. A backup copies the source item's NBT
-  to the target: Relay → Relay, Relay → Operator and Operator → Operator are allowed, Operator →
-  Relay is not. The source needs NBT and the target must have none. Changing either slot cancels the
-  backup, and the scanner loop plays during the fill at half the chime volume, with the scanner
-  denied/granted sounds on cancellation/success. Empty named slots on pages one and two show a
-  dimmed, desaturated copy of
-  the item they expect, and every machine slot only accepts its allowed item type or types. Shift
-  clicking moves items between the player inventory and the slots of the page on screen, so nothing
-  is dropped into a hidden page. The GUI darkens the world like a normal container GUI and draws
-  item tooltips above JEI/HEI. There is no recipe; it is in the NTM Doors creative tab with a flat
-  16x16 icon derived from the model.
-* Safe (`ntmdoors:safe`): a 1x1x1 steel safe with a keypad front and two small USB ports under
-  the pad. Right clicking opens the same keypad screen as the scanner. The first accepted code
-  becomes the safe's code; later entries must match. The code safe has no owner restriction, so
-  anyone who knows the code can open it. A correct code shows the `SUCCESS!!!` card and then opens
-  a 27-slot container. Page two of the container has `Binding Activities`, `Lockout mode`,
-  `Reset code` and `Void on destroy`; `Binding Activities` enables door linking and the
-  lockout-door response, `Lockout mode` locks the keypad for five minutes after three bad codes,
-  `Reset code` clears the code so the next entry sets a new one, and `Void on destroy` makes the
-  broken safe and everything inside it vanish instead of dropping. The inventory, the code and the
-  option are saved with the block; `Void on destroy` starts on, and switching it off makes the
-  broken safe drop its contents again. A safe takes three real hours of continuous mining with any
-  tool.
-  Neither safe exposes its slots to hoppers or logistics automation; only the opened container can
-  access them. The Creative Keycard bypasses the keypad and opens the container immediately.
-* Biometric Safe (`ntmdoors:biometric_safe`): the same shell, inventory and options page, but its
-  reader accepts the Biometric Operator Keycard, or the Creative Keycard. Right clicking with a
-  bound biometric card shows a short `SCANNING...` screen, then the same `SUCCESS!!!` / `FAILED!!!`
-  card before opening the container. A newly placed safe records the placer's biometric ID, and
-  only a card carrying that ID can open it; safes placed before this change stay unowned and accept
-  any valid biometric card as before. `Match user` limits the card to the identity it carries; with
-  it off, any bound Biometric Operator Keycard carrying the safe owner's ID opens the safe.
-  `Lockout mode` works like the scanner's, and the card's owner can still bypass a lockout to turn
-  it off. The normal Biometric Keycard and the plain Operator Keycard are refused; the Creative
-  Keycard opens it directly.
-* Safe Binding Key (`ntmdoors:safe_binding_key`): a small green USB key with a green name. Sneak
-  right-click a safe to start or finish a binding session, then sneak right-click closed doors to
-  link or unlink them. A door can belong to one safe, but a door already controlled by a keypad or
-  scanner keeps that binding and can still be linked to a safe. With `Binding Activities` on, the
-  safe's lockout closes every linked door once. Breaking the safe clears the links.
-* Speaker (`ntmdoors:speaker`): a 1x1x1 black-ash cabinet with a woofer, tweeter and bass reflex
-  port. Shift-right-click (with any item or an empty hand) opens a safe-style toggle screen with
-  `Enabled`, four selectable sounds (`Air Raid`, `Facility`, `Industrial`, `EAS`), a 1-64 block
-  range slider and a 0-100% volume slider; anyone may use it. While enabled and receiving redstone
-  power, it loops the selected alarm until the signal or `Enabled` is removed. The alarm is mixed at
-  the listener, so looking toward or away from the speaker does not change its loudness; only
-  distance inside the configured range fades it. The sound, range, volume and enabled state are
-  saved with the block. A normal right-click with the Redstone Relay
-  Key starts/finishes a wireless binding session, and starting the alarm pulses every linked
-  Redstone Gate.
-* Motion Sensor (`ntmdoors:motion_sensor`): a compact 8x8x1.375 surface-mounted PIR housing with an
-  off-white body, charcoal bezel, ringed concentric Fresnel lens and four status-light colours.
-  It can be placed on floors, walls and ceilings; the clicked face becomes the lens direction.
-  It passively scans the cells selected inside a 5x5 footprint that projects five blocks away from
-  the mounting surface along the sensor's facing, and checks every card in a player's inventory
-  against the private keys and biometric IDs assigned through its console. A normal right-click
-  with the Motion Relay Key opens the console. Page three is a 5x5 grid: left-click adds one block
-  of depth to a column, right-click removes one, and opacity shows the selected depth. The centre
-  cell keeps the green sensor dot. Sneak + right-click the sensor toggles a client-side transparent
-  blue projection of the selected cells; sneak + right-click again hides it. An unbound sensor
-  stays inactive and shows yellow. Detection goes through walls. Page two has `Detect players`,
-  `Detect hostile mobs` and `Detect neutral mobs`; all three start on, so every living entity type
-  is covered. Non-player living entities are always unauthorized intruders, while players use the
-  card rules above. `Persist within bounds` is also on page two: when on, a linked gate stays
-  powered while any entity matching an enabled entry event remains inside, and releases as soon as
-  the area is empty. `Persist out of bounds` is the inverse and mutually exclusive with it: the
-  gate is powered while the area is empty and the hold drops as soon as anything steps in. When
-  several out-of-bounds sensors share one gate, every one of them must be empty. Green
-  means idle, blue means authorised players are inside, red means any
-  unauthorized player or mob is inside, and yellow means the sensor is disabled or has no area
-  bound. Page four is the red `REDSTONE` page with
-  `Authorized entry`, `Unauthorized entry`, `Sensor disabled` and `Sensor enabled` event switches.
-  Sneak + right-click the sensor with the Redstone Relay Key to start or finish a gate-binding
-  session, then sneak + right-click gates to link them. With both persistence modes off, each
-  enabled event pulses every linked gate on the matching entry edge. `Persist within bounds` holds
-  using the enabled entry events; `Persist out of bounds` holds while the area is empty.
-* Concrete and HL Blocks: the NTM CE concrete building set and decorative HL Blocks, with metadata
-  families, flat Chisel carving groups, shift-scroll cycling, recipes, and `concrete` /
-  `blockConcrete` / `blockhl` ore dictionary entries. Chisel is required.
-* Ultra High Performance Concrete (`ntmdoors:ultra_high_performance_concrete`): six grayscale
-  variants (the original texture plus five progressively darker shades) that take three real hours
-  to mine. Only ICBM Classic nuclear, antimatter and red matter weapons can damage it; every other
-  explosion is fully resisted. A decorative `UHPC Panel` set
-  (`ntmdoors:ultra_high_performance_concrete_panel`) uses the same textures with vanilla-concrete
-  hardness.
-* 6 Monitor Setup (`ntmdoors:monitor_setup`): a decorative 3x3x1 desk with six monitors, a
-  keyboard, mouse and mousepad. It places as one item, faces the player, and reserves its full
-  3x3x1 footprint; breaking any part removes the whole desk. The bottom row is solid, while the
-  two upper rows use a half-depth collision wall over the monitors so the player can stand and jump
-  on the front half of the desk but cannot walk through the screens. Right-clicking any monitor
-  cell opens the black-and-orange terminal: the first open offers to set a per-desk password,
-  later opens require it, and the unlocked screen lists Security, Opencomputers, Factory, Display,
-  Notepad and Terminal Backup. Passwords are stored as SHA-256 hashes on a tile entity on the desk
-  core and are checked server-side. Every page carries an `EXIT` button in the footer. The
-  desk/keyboard row stays inert, and sneak-right-click still lets blocks be placed against the
-  monitors. Security-net events provide the redstone side of the terminal, including shutdown,
-  lockdown, alarms, and per-family device disables.
-  The desk is split into nine cell models so every element stays inside the 1.12 model limits;
-  the supplied 15-degree side-monitor yaw is rounded to 22.5 degrees, the closest legal JSON
-  angle. Three block types (bottom/middle/top) each carry three columns, so the part and facing
-  fit in the four metadata bits; the bottom core carries the terminal tile entity.
-* Display (`Display` in the terminal task list): a cosmetic wallpaper chooser for each physical
-  monitor panel. The built-in tab shows five packaged images plus a `Terminal` tile that
-  restores the normal terminal page. Selecting a tile applies it immediately to the screen that
-  was clicked. The custom tab accepts a direct `http://` or `https://` PNG/JPG URL; each viewing
-  client downloads it locally (8 MB / 4096 px limits) and static images only, so video and
-  animated GIFs are not supported. The choice is stored on the desk and survives restarts.
-  Built-in source images live in `source-art/display/` and are packaged under
-  `assets/ntmdoors/textures/display/` by the build.
-* Notepad (`Notepad` in the terminal task list): a shared multi-document editor stored on the
-  desk. The sliding left sidebar lists documents, creates new ones, and renames or deletes the
-  selected document. Notes open as a blank paper page with keyboard editing, wrapped lines and
-  scrolling; `Save` is at the bottom right and `EXIT` is in the title bar. Closing or switching
-  documents with unsaved changes offers `Save`, `Discard` and `Cancel`. Leaving the terminal with
-  `EXIT` keeps the current document and the document list displayed on the physical monitor
-  screen; a saved wallpaper steps aside while the notebook is shown and returns on the task
-  menu. Up to 16 documents of 8192 characters each are stored in the desk's world NBT and
-  shared by everyone using that terminal.
-* Terminal Backup: opens a task page with `Initiate backup` and `Restore backup`. `Initiate backup`
-  opens a programmer-style console: put a Terminal Backup Key in the left slot, press `Upload` to
-  write every Security net, device binding, notepad document, wallpaper, saved screen page and the
-  terminal password hash onto that key, then put a blank Terminal Backup Key in the right slot and
-  press `Backup`. The copy takes ten seconds and uses the same progress bar, loop and completion
-  chime as the keycard programmer's legacy backup. `Restore backup` opens the same console with a
-  single key slot; press `Restore` to overwrite the current terminal with the key's saved data. The
-  backup key is not consumed.
-* Smaller monitor desks use the same sliced-cell approach and behaviour: `3 Monitor Setup`
-  (`ntmdoors:triple_monitor_setup`, 3x2x1), `Dual Monitor Setup` (`ntmdoors:dual_monitor_setup`,
-  3x2x1 with the open right-middle cell left free), `Dual Monitor Setup (short table)`
-  (`ntmdoors:dual_monitor_setup_2x2`, 2x2x1), and `Monitor` (`ntmdoors:single_monitor_setup`,
-  2x2x1). They place as one item, face the player, use the same half-depth monitor hitbox and
-  break-any-cell dismantle. Every monitor cell opens the same password-gated terminal and task
-  list; each desk keeps its own password hash. The desk row stays inert, and sneak-right-click
-  remains available for placing blocks. Security-net events are shared with the larger desk.
-* Redstone Gate (`ntmdoors:redstone_gate`): a full-cube redstone component with separate off and on
-  textures. It starts off, turns on while it receives redstone power or a wireless pulse, and emits
-  a full-strength signal while on. Redstone dust sitting on top is refreshed when the gate switches,
-  so it cannot stay latched after the signal or a hold is removed. A wireless event keeps it powered
-  for its configured duration;
-  another event extends the pulse. Sneak + right-click it with an Operator Keycard, Biometric
-  Operator Keycard, or the Creative Keycard to open its settings screen. The screen has `Stay
-  active after signal` (keep the gate on after it receives a signal until switched off there),
-  `Invert operation` (powered when there is no input), and activation duration controls from
-  1 second up to 5 minutes using
-  +1/+5/+10/+20 second and matching subtract buttons. It has a red menu name and the tooltip
-  `Bound activities from Keypads, Keycard Scanners, and Safes will emit a redstone signal` plus the
-  Redstone Relay Key instructions. A gate can also be the start of a relay-key session: link other
-  gates and doors to its output, and they follow it on and off. Links are directional, work in the
-  same dimension, and a link that would close a feedback loop is refused.
-* Redstone Relay Key (`ntmdoors:redstone_relay_key`): a red-named creative key with the tooltip
-  `Links keypads, scanners, safes, speakers and sensors to a Redstone Gate`. Sneak +
-  right-click a safe, scanner or motion sensor to start/finish a wireless binding session, then sneak + right-click
-  a gate to link or unlink it. On a keypad or speaker, a normal right-click starts/finishes the
-  binding session; sneak + right-click opens the keypad configuration screen, while the speaker
-  uses shift-right-click for its own screen. Sneak + right-click a gate to start/finish a gate
-  session, then sneak + right-click other gates to relay the signal or doors to open and close them
-  with that gate. Devices and gates can be linked many-to-many in the same dimension; doors are
-  driven by gate sessions only, breached doors refuse the link, and security doors accept it only
-  after their owner enables Redstone access with the Monocle.
-* Redstone Monocle (`ntmdoors:redstone_monocle`): a red-named creative diagnostic item with a
-  16x16 red monocle sprite. While held in either hand it draws the loaded wireless links through
-  walls: red for gate-to-gate, amber for gate-to-door, and blue for device-to-gate. Sneak +
-  right-click a security door as its owner to toggle whether that door accepts redstone and gate
-  links; other players are refused. It changes nothing else on the server.
-* Weapons Relay Key (`ntmdoors:weapons_relay_key`): a red-named creative key with the tooltip
-  `Hard lock weapons so enemies can't disarm them`. Sneak + Right Click opens a screen that selects
-  `Regular Bounding` or `Dead Man's Hand`. Regular binds explosives to Redstone Gates: sneak +
-  Right Click an explosive to start, then gates to link; a powered gate triggers the explosive.
-  Dead Man's Hand hard-locks the explosive: a player without the matching key in their inventory
-  sets it off by right-clicking, left-clicking, breaking it, or placing/breaking a block next to
-  it, while the key holder can mine it safely. Works on any explosive block, not only ICBM.
-* Spatial Disrupter (`ntmdoors:spatial_disrupter`): a decorative machine block with a blue/red
-  emblem on the sides and a grey plate on the top and bottom. The tooltip reads `Weakens the
-  structural integrity of UHPC`. Right-click opens a single-action screen with the warning
-  `WARNING THIS OPERATION CANNOT BE REVERSED`; activating it scans a 16x16 chunk area and turns
-  every hard UHPC block into the soft UHPC Panel of the same shade, then consumes itself with
-  particles and a sound. The machine is bedrock-hard in survival and cannot be blown up or pushed;
-  creative players can break it, and its own completed operation also removes it.
-* Thermite Charge (`ntmdoors:thermite_charge`): a framed breaching charge that mounts flush
-  against the block or door face it is clicked on, in any of the six directions, and points away
-  from that surface. On supported doors it sits on the door's hitbox surface and breaks if the
-  door moves. Flint and steel lights a five-second fuse with the supplied beep countdown, smoke
-  and flame particles; the door ignores hand clicks, redstone, keypads, scanners, safes, security
-  nets and the screwdriver while it burns, and breaking the charge defuses it. The detonation uses
-  the supplied explosion sound and removes the door's moving panel and its collision while the
-  static frame stays; the breached door is permanently unusable. A charge on a normal block
-  destroys that block. Silo hatches, the transition seal, the roller blast door and the Vault-Tec
-  door refuse placement. The placed block uses the supplied 3D model, while the item form uses its
-  flat 16x16 sprite.
-* Motion Relay Key (`ntmdoors:motion_relay_key`) and Terminal Relay Key
-  (`ntmdoors:terminal_relay_key`): blue and orange/grey relay keys. The Motion Relay Key is
-  reserved for defining the 5x5x5 area a Motion Sensor watches. The Terminal Relay Key starts a
-  binding session with a sneak + right click on a monitor desk, adds doors, keypads, keycard
-  scanners, motion sensors, Redstone Gates and speakers with further sneak + right clicks, asks
-  for a name for each device, and confirms the whole list by sneak + right clicking the same desk
-  again. Security opens on a landing page that lists each named security net with its device count;
-  an `Add security net` row sits beneath them. Adding a net prompts for a name, uses
-  `Security net N` when the name is left blank, and opens that net's empty device list. Each net
-  page has a Terminal Relay Key slot: hold a key, click the slot, then press `Bind` to link the key
-  to that net; `Rename` changes the linked key's display name and `Unlink` clears the link.
-  `Delete net` asks for confirmation, then removes the net and its device list and unlinks its key.
-  A `Devices` / `Events` tab row switches between the device list and per-net event controls.
-  Door rows carry `Open` and `Close` buttons that control that door directly, including doors with no
-  scanner or keypad binding; the terminal bypasses those local locks. Every other device row has an
-  `ON` / `OFF` switch: off makes a keypad or scanner ignore input, stops a motion sensor detecting,
-  forces a Redstone Gate output low, and mutes a speaker. The switch state is saved on the device.
-  `System Shutdown` idles every device in the net; `System Lockdown` closes all net doors and keeps
-  them shut; `Trigger Alarms` sounds every speaker; and `Disable Keypads`, `Disable Scanners`,
-  `Disable Sensors` and `Disable Redstone Gates` switch off those device families. `Close all
-  doors` and `Open all doors` are one-shot actions. Event state is stored in the world save and
-  stays enforced while the desk chunk is unloaded; toggling never changes device bindings. Each
-  physical screen renders a passive `SECURITY` status panel with net and device counts plus the
-  active event state; clicking any screen opens the normal terminal GUI.
-  A key links to one net at a time and a net accepts one key; starting a linked key at another desk
-  reports `Key is already linked`. Clicking a linked device opens its screen remotely while the
-  player remains at the terminal; keypads and scanners still ask for their security codes. A
-  linked door opens the first loaded scanner controlling it, or reports `No scanner`. Escape in a
-  device screen returns to that net's linked-device list. The terminal uses the supplied
-  mouse-click sound for its buttons and rows. Starting at a different desk discards an unconfirmed
-  session.
-* Terminal Backup Key (`ntmdoors:terminal_backup_key`): a black and red USB key for the terminal
-  backup system. A blank key shows no data; an uploaded key lists its saved net and document counts
-  in the tooltip.
-* Both safes and the keycard scanner have a third `Redstone` page with a red panel tint and
-  scrolling. Its event toggles start off; enabling one pulses every linked gate for that gate's
-  configured activation duration.
-  - Code Safe: Code fail, Code success, Binding activities, Lockout.
-  - Biometric Safe: Scan fail, Scan success, Match holder fail, Match holder success, Lockout.
-  - Keycard Scanner: Scan fail, Scan success, Match holder fail, Match holder success, Private key
-    fail, Private key success, Biometric fail, Biometric success, Lockout.
-  - Keypad (Redstone Relay Key screen): On fail, On success.
-  The safe's Redstone page does not show the player inventory. Breaking a safe, scanner, keypad or
-  gate clears the reciprocal wireless links; door/keypad/scanner bindings are untouched.
-* RFID cards: one blank card plus red, violet, green, blue, black, orange and yellow variants.
-  Each colour is a separate item (`ntmdoors:red_rfid_card` and so on) sharing a single item class
-  and one hand-display model, so they all sit in the hand identically. The scanner recognises them
-  and opens its bound doors when one of the card's private keys is assigned to that scanner. Sneak
-  right-clicking a coloured card opens the read-only card viewer, which lists every private key
-  stored on it; the blank card has no viewer.
-* Themed keycards (`ntmdoors:keycard_blue_marking`, `ntmdoors:labyrinth_keycard`,
-  `ntmdoors:engine_room_keycard`, `ntmdoors:terminal_keycard`,
-  `ntmdoors:terragroup_labs_access_keycard`): five fixed-name cards, each with its own 16x16 sprite
-  and a line of flavour text. They behave exactly like the colour cards - the programmer copies
-  private keys onto them and the scanner reads them - and they are selectable from the programmer's
-  second-page card palette.
-* SCP access cards (`ntmdoors:scp_level_0_keycard` through `ntmdoors:scp_level_5_keycard`): six
-  fixed-clearance cards in grey, yellow, amber, orange, dark orange and red, with `Level 1` to
-  `Level 6 clearance` tooltips. Also included is `ntmdoors:googa_security_keycard`, whose tooltip
-  reads `Security is goog` and whose name is gold. They use the same private-key storage, programmer
-  binding, holder and scanner behaviour as the other cards, and are selectable from the programmer's
-  second-page card palette.
-* Operator Keycard (`ntmdoors:operator_keycard`): a dark card with an orange stripe and three orange
-  dots. It shares the RFID hand-display model and, aimed at a bound scanner, opens that scanner's
-  security code screen; anywhere else sneak right-click opens the same private-key viewer as a
-  colour card.
-* Biometric items (`ntmdoors:biometric_keycard`, `ntmdoors:biometric_operator_keycard`,
-  `ntmdoors:biometric_relay_key`): a Biometric Relay Key collects your identity on sneak right-click
-  instead of creating a private key, and the programmer binds that identity onto a card. Biometric
-  cards keep it next to any private keys, show the owner in the tooltip, turn the name yellow (aqua
-  for the Operator version) and can be restricted to their owner with the scanner's
-  `Match biometric holder` option. The Biometric Operator Keycard also lists its private keys in
-  the tooltip. The relay key's right-click check uses server-safe geometry, so collecting an
-  identity also works on a dedicated server.
-* Relay Key and Creative Keycard (`ntmdoors:relay_key`, `ntmdoors:creative_keycard`): the Relay Key
-  creates the private keys that scanners check. The Creative Keycard is the debug item for testing:
-  its name is purple, and right clicking any door opens or closes it regardless of locked/security
-  variants, keypad codes or redstone, with a purple `Door overridden` status message. It also
-  bypasses both safes and every scanner, and sneak + right-clicking a scanner opens its full
-  console without a code or bound doors. Sneak + right-clicking a Redstone Gate opens the gate
-  screen. A blank Relay Key creates one private key when the player
-  sneak right-clicks it away from any machine: a naming screen takes up to 32 characters, and
-  confirming it generates a ten digit serial on the server and stores both in the key's NBT. A key
-  can be created once and never reset. Its name is yellow, and its tooltip carries a grey
-  description above the white name and serial of its private key. Page one of the programmer copies
-  that private key onto Operator Keycards and coloured RFID cards, while page three can back the
-  whole key up onto another Relay Key. Sneak right-clicking the Creative Keycard opens the same
-  viewer with the joke entry `THE ENTIRE LIBRARY OF BABEL` under `You have access to EVERYTHING!!!!!`.
-  Tools, machines and cards each carry a short grey description tooltip; the Operator Keycard's
-  name is orange.
-* Keycard Holder (`ntmdoors:keycard_holder`): a carried 3x4 case for twelve keycards, opened with a
-  right click. The stored cards live in the holder's own NBT, so they survive inventory moves, death
-  drops and world saves. Only keycards are accepted, each slot holds one, and shift-click moves
-  cards between the player inventory and the holder.
-* Documents Folder (`ntmdoors:documents_folder`): carried folder item drawn as three stacked sheet
-  layers, 3 px deep in total, with only the middle layer's page edge protruding. Right-clicking opens
-  a twenty-page editor styled as an open manila folder in the item's own tan, grey and dark red
-  palette, with the writing sheet in white behind a thin ink border. There is no signing step:
-  Escape or the Close button both save, the pages live in the
-  stack's NBT, and Enter starts a new line (press it twice for a paragraph gap). Long lines word-wrap
-  inside the sheet, the bottom index tabs jump straight to any page, the top-right folder name can be
-  clicked and renamed, reopening returns to the page you closed on, and the tooltip counts the pages
-  written.
-* The secure access door ships nine skins: red, yellow, green, blue, grey, black (white writing),
-  HBM yellow, white (black writing) and orange (white writing). The colour variants are generated
-  by recolouring only the red warning paint; all other pixels are unchanged. Base colours: green
-  `#2b401a`, blue `#162138`, yellow `#4a3f1a` (dark muted industrial yellow)
-* The sliding blast door ships default, black and grey schemes. The sliding seal door ships
-  default, clean, nuclear trefoil, and plain white, red and grey; the plain skins have no letters,
-  numbers, trefoil or hazard stripes.
+## Features
 
-## Motion Sensor preview
+### 🚪 Multiblock Doors (22 Types / 66 Blocks)
+- **One-Click Placement & Removal**: Places the full multiblock structure in one click oriented to the player's facing, and dismantles atomically.
+- **Continuous Collision Boxes**: State-dependent collision boxes dynamically follow opening and closing animations. Walk through open doors and click through gaps without phantom barriers.
+- **Three Tiers for Every Door**:
+  - **Normal**: Opens via hand right-click or redstone signals.
+  - **Locked**: Refuses direct hand clicks; requires a Keypad, Keycard Scanner, or remote pulse.
+  - **Security**: Heavily reinforced, explosion-resistant door owned by the player who placed it. Refuses standard redstone unless explicitly enabled by the owner via the Redstone Monocle.
+- **Included Door Types**:
+  - *Vault Door, Sliding Blast Door, QE Sliding Door, QE Sliding Panel, Fire Door, Secure Access Door, Sliding Seal Door, Round Airlock Door, Silo Hatch (Standard & Large), Cargo Door, Large Vehicle Door, QE Containment Door, Roller Blast Door, Water Door, Transition Seal, Blast Shutter, Black Mesa Door (Office 1 & Double), Office Door 2 (& Double), and Test Door.*
 
-![Motion Sensor final model preview](source-art/motion-sensor/motion-sensor-model-preview-final.png)
+### 🛡️ Security Apparatus
+- **Keypads**:
+  - Wall-mounted code panel with 1–6 digit security codes.
+  - Set or reset codes using the Screwdriver.
+  - Supports distance binding and multi-door clustering.
+  - Wireless RF linking to Redstone Gates via the Redstone Relay Key.
+- **Keycard Scanners**:
+  - Configurable access clearance (clearance levels, assigned serials, and biometric IDs).
+  - 10-second auto-close dispatch for bound doors upon granted access.
+  - Lockout protection on repeated failed attempts.
+- **Keycard Programmer**:
+  - Interactive terminal GUI for naming cards, viewing cryptographic keys, configuring clearance levels, and backing up keys.
+- **Safes & Biometric Safes**:
+  - Blast-proof 1x1x1 steel storage blocks with keypad/biometric authentication and wireless gate linking.
+- **Wireless Redstone Gates**:
+  - Configurable wireless activation window (from 1 second up to 5 minutes).
+  - Normal, inverted, and `stayActive` latching modes.
+  - Built-in wire settling guards to eliminate redstone feedback loops.
+- **Speakers & Motion Sensors**:
+  - Speakers with 32-block spatial listener attenuation and 4 facility alert tones.
+  - Motion Sensors with configurable bounding box detection (Presence / Vacancy modes).
 
-The 1.0.36 model is 8x8x1.375 with a centred GUI model and four status lights. The full source
-materials and texture generator live in `source-art/motion-sensor/`.
+### 💳 Keycards & Tools
+- **RFID Keycards**: Blank cards, 7 dyed color variants, and numbered Access Keycards (Levels 1–12).
+- **Biometric Keycards**: Keycards bound to a player's UUID and biometrics.
+- **Relay Keys**: Special RF tools for wireless linking (Redstone, Terminal, Safe, Motion, Weapons, and Biometric).
+- **Keycard Holder & Documents Folder**: Handheld storage items for organizing cards and writing multi-page security documentation.
+- **Screwdriver**: Used to configure keypads, cycle door skins, and initiate reset sequences.
+- **Redstone Monocle**: Visualizes loaded wireless links through walls and allows owners to toggle security door redstone access.
 
-## Included door assets
-Models live under `src/main/resources/assets/ntmdoors/models/doors/`, textures under
-`textures/models/doors/`, and sounds under `sounds/doors/`. Door items do **not** need flat
-`textures/items/<door>.png` icons: the inventory/hand item is rendered from the same OBJ model
-and texture as the placed door. Only the screwdriver, the keypad, the cards, the Keycard Holder and
-the Documents Folder use flat icons (`textures/items/screwdriver.png`,
-`textures/items/sliding_blast_door_keypad.png`, `textures/items/blank_rfid_card.png`,
-`textures/items/operator_keycard.png`, `textures/items/rfid_card_<colour>.png` plus the themed,
-biometric and folder sprites beside them). The keycard programmer has a flat 16x16 icon derived
-from its model; the scanner uses a 3D model in the inventory and hand too, like the doors.
+### 🖥️ Terminal OS & Monitor Desks
+- Modular desk setups ranging from **Single Monitor** up to **6-Monitor Desks**.
+- Terminal features:
+  - First-time master password setup with cryptographic hashing.
+  - **Security Net**: Group devices into named networks, view live device power states, and toggle systems remotely.
+  - **Notepad**: Shared desk documentation with real-time text editing mirrored onto physical monitor screens.
+  - **Wallpaper Customizer**: Customize physical monitor desktop wallpapers from built-in presets or custom resource paths.
 
-| door | animated OBJ groups | notes |
-|---|---|---|
-| `vault_door` | `Door`, `Label` | rolls sideways along its extended track |
-| `sliding_blast_door` | `LeftDoor`, `RightDoor`, `LeftLock`, `RightLock` | 7x4 two-panel blast door; skins: default, black, grey |
-| `qe_sliding_door` | `Left`, `Right` | 2x2 QE sliding door; skins: default, white |
-| `qe_sliding_panel` | `Right` | 1x2 single-column QE sliding door (frame clipped to one cell); skins: default, white |
-| `fire_door` | `Door` | roller/fire door |
-| `secure_access_door` | `Door` | vertical security door; skins: red, yellow, green, blue, grey, black (white writing), HBM yellow, white (black writing), orange (white writing) |
-| `sliding_seal_door` | `Door` | retracts into a wall pocket; skins: default, clean, nuclear trefoil, plain white, plain red, plain grey |
-| `round_airlock_door` | `Left`, `Right` | split iris airlock; skins: worn, clean, green, space (black/white) |
-| `silo_hatch` | `Hatch` | tilting horizontal hatch |
-| `silo_hatch_large` | `Hatch` | 7x7 large tilting horizontal hatch |
-| `cargo_door` | `DoorBot`, `DoorTop` | 3x3 lifting cargo door |
-| `large_vehicle_door` | `Left`, `Right` | 7x6 vehicle door |
-| `qe_containment` | `Door` | 3x3 containment shield |
-| `blast_door` | `Tooth`, `Slider1`-`Slider4` | 1x7 roller shutter (Roller Blast Door) |
-| `water_door` | `Door_Cube.003`, `Bolts`, `Top`, `Bottom` | 3x3 swinging water-tight door |
-| `transition_seal` | 20 rigid keyframed groups | converted from HBM `seal.dae`; full Collada action replayed as per-group matrices |
-| `black_mesa_door` | `Door` | 1x2 office door with straight front/back levers, dark frame and static hinges |
-| `office_door_1_double` | `DoorLeft`, `DoorRight` | 2x2 double office door with mirrored leaves and front/back handles |
+### 💥 Breaching & Countermeasures
+- **Thermite Charge**: Mounts flush to any door surface to burn through locks and breach secured areas.
+- **Spatial Disrupter**: Defense countermeasure that deflects and neutralizes breaches.
 
-`sounds.json` and `lang/en_us.lang` are included.
+### 🛠️ Vanilla Crafting Recipes
+- 104 standard vanilla crafting recipes added in `data/ntmdoors/recipes/`, allowing full progression in survival mode using iron, copper, redstone, quartz, glass, and pistons without external mod dependencies.
+- Tiered door progression:
+  - `Base Door + Keypad` $\to$ `Locked Door`
+  - `Locked Door + Obsidian` $\to$ `Security Door`
 
-## Tuning to match the real models
-Everything per door lives in one entry of `door/DoorDecls.java`: footprint, collision boxes,
-open/close time, hardness, animated group names and motion. Use `.modelOffset(x,y,z)` if a model's origin is
-not at the core cell's bottom centre, `.modelYaw(...)` for models authored in another direction, and
-`.modelPath(...)` to point at different file names. Clipping is configured with `.clipX(...)`, `.clipY(...)`
-and `.clipZ(...)` where the original HBM renderer used a clip plane. Moving parts use
-`.movingGroup("Group")` (the box is read from the OBJ group bounds) or `.movingBox("Group", box(...))`
-for explicit model-space bounds; `.collisionSplits(n)` tightens rotating parts by slicing their AABB.
+---
 
-## Not included
-Crafting recipes for the doors (the originals need NTM materials), for the keypad, programmer,
-scanner, cards, Keycard Holder and Documents Folder; configs, NEI/JEI, and other NTM items. Only the
-screwdriver has a recipe. The concrete and HL Block sets added in 1.0.46 do have recipes, listed
-below.
+## Building from Source
 
-## Concrete and HL Blocks
+Ensure you have **JDK 17** installed:
 
-The 1.0.46 concrete and HL Blocks update adds the NTM concrete building set and the included HL
-Blocks to the door port:
+```bash
+# Clone the repository
+git clone https://github.com/Kyron04/susy-ntmdoors.git
+cd susy-ntmdoors
 
-- The full NTM CE concrete set: plain, smooth, dyed, Builder's Choice, bricks, pillar, rebar,
-  asbestos, Über Concrete and its falling Moldy Debris.
-- The HL Blocks set: three simple blocks and seven metadata groups.
-- A metadata layout that replaces the old one-id-per-variant blocks: cubes and slabs are grouped
-  by Chisel family, so one block id holds a whole texture family.
-- Shift-scroll cycling, flat Chisel carving groups, `concrete` / `blockConcrete` / `blockhl` ore
-  dictionary entries, and the concrete recipes.
-- A fix for the single-slab model lookup: the blockstate variant keys are written in the order
-  Forge actually uses (`half=...,variant=...`).
+# Switch to the Fabric 1.20.1 branch
+git checkout fabric-1.20.1
 
-The concrete set has its own recipes, listed below; the doors, cards and machines still have no
-recipes.
+# Run tests
+./gradlew test
 
-#### Block layout
+# Build the mod JAR
+./gradlew build
+```
 
-Cubes are one block id per family; metadata selects the texture. Stairs stay one block id per
-texture because `BlockStairs` already uses its metadata bits for facing and half. Slabs use one
-block id per family with the `variant` and `half` properties, plus a technical `_double_slab`
-block for the double form.
+The compiled mod JAR will be placed in `build/libs/ntmdoors-1.0.0.jar`.
 
-| Family | Block id | Variants |
-|---|---|---|
-| Plain concrete | `ntmdoors:concrete` | 0 tile, 1 smooth |
-| Dyed concrete | `ntmdoors:concrete_colored` | 16 dyes |
-| Builder's Choice | `ntmdoors:concrete_colored_ext` | 13 variants: machine, machine stripe, indigo, purple, pink, sand, bronze, and six hazard colours (plain, red, green, blue, white, purple) |
-| Concrete bricks | `ntmdoors:concrete_bricks` | brick, mossy, cracked, broken |
-| Special cubes | `ntmdoors:concrete_pillar`, `ntmdoors:concrete_rebar`, `ntmdoors:concrete_asbestos` | 1 each |
-| Über Concrete | `ntmdoors:concrete_super` | 16 decay stages |
-| Moldy Debris | `ntmdoors:concrete_super_broken` | 1 |
-| Stairs | 36 ids such as `concrete_stairs`, `concrete_smooth_stairs`, `concrete_colored_stairs_white`, `concrete_colored_ext_stairs_hazard`, `brick_concrete_stairs` | one id per texture |
-| Slabs | `concrete_slabs` (2), `concrete_colored_slabs` (8), `concrete_colored_slabs_2` (8), `concrete_colored_ext_slabs` (6 hazard), `concrete_bricks_slabs` (4), `concrete_asbestos_slab` (1) | `variant` + `half`; each has a `_double_slab` technical block |
-| HL simple blocks | `ntmdoors:hlblocks_ca1x_con2`, `hlblocks_drkmtlt_flr01`, `hlblocks_crate09` | 1 each |
-| HL metadata groups | `hlblocks_freezer` (2), `hlblocks_fifties` (3), `hlblocks_crete` (3), `hlblocks_duct` (1), `hlblocks_lab` (3), `hlblocks_tunnel` (4), `hlblocks_generic` (3) | metadata |
+---
 
-That is 61 placeable block ids, plus the 6 technical double slabs, covering 142 texture/metadata
-variants. Creative and HEI list 127 of them; Über Concrete stages 1-15 are deliberately hidden and
-remain reachable by metadata.
+## License & Credits
 
-#### In-game behaviour
-
-- **Creative tabs.** All concrete and HL Blocks are listed in the `NTM Doors` creative tab.
-- **Shift-scroll cycling.** Hold a concrete or HL stack and scroll with the cycle modifier
-  (left shift by default, rebindable under Controls → HL Blocks). It cycles every texture in the
-  family in both hands, and the server applies the change.
-- **Chisel.** Chisel is a required dependency. The families are registered as flat carving groups:
-  `concrete`, `concrete_stairs`, `concrete_slabs`, `concrete_colored`,
-  `concrete_colored_stairs`, `concrete_colored_slabs`, `concrete_bricks`,
-  `concrete_bricks_stairs` and `concrete_bricks_slabs`. Pillar, rebar, asbestos and Über Concrete
-  are not registered. Chisel groups are flat, so the shared `concrete_` prefix is the only
-  hierarchy the mod can expose.
-- **Ore dictionary.** Every concrete cube, stair and single slab is registered under `concrete`;
-  full cubes are also under `blockConcrete`. Every included HL block is under `blockhl`. Über
-  Concrete, Moldy Debris and the technical double slabs are excluded. No Groovy script is
-  involved.
-- **Recipes.** Blocks make slabs and stairs, never the reverse. Smooth, asbestos and rebar concrete
-  use half-scale crafting-table recipes: clay stands in for cement powder, string for asbestos and
-  iron bars for rebar. Über Concrete and Moldy Debris have no CE recipe and stay creative-only.
-  The recipes follow NTM CE's tile, pillar, bricks, dyed and Builder's Choice layouts.
-- **Über Concrete.** It decays through sixteen stages on random ticks; the last stage crumbles into
-  Moldy Debris that falls like sand or gravel.
-- **Hazard variants.** The hazard cubes, stairs and the six hazard slabs are part of the same
-  families and stay in the Chisel groups.
-- **World migration.** The grouped metadata ids are new in 1.0.46. If you used a pre-release fork
-  build with per-variant concrete ids, those old ids are not migrated; new worlds get the grouped
-  ids.
-
-#### Ultra High Performance Concrete
-
-The UHPC family shares six 16x16 textures: the original plus five black overlays at 10-50%
-opacity. Both blocks are creative-only (no recipes) and are not registered in a Chisel group.
-
-| Block id | Variants | Behaviour |
-|---|---|---|
-| `ntmdoors:ultra_high_performance_concrete` | 6 (original, light gray, gray, dark gray, charcoal, black) | Three-hour mining time; only ICBM nuclear, antimatter and red matter blasts damage it |
-| `ntmdoors:ultra_high_performance_concrete_panel` | 6 (same textures) | Vanilla-concrete hardness (1.8); breaks and blasts apart normally |
-
-Both sets carry the `GBU-57 not included` tooltip and register under the `concrete` and
-`blockConcrete` ore dictionary entries. The hard set reports iron as its material so ICBM's
-exothermic/endothermic terrain beams skip it; add it to ICBM's flying-block ban list to stop the
-beam's flying-block phase as well.
-
-#### Slab model note
-
-Forge builds the blockstate lookup key from a sorted property map, so a slab key must be written
-`half=bottom,variant=1`. The generated blockstates originally used `variant=1,half=bottom`, which
-made every single slab fall back to the missing model even though the model files were present. The
-committed blockstates use the sorted order.
-
-#### Attribution
-
-The concrete assets come from HBM's Nuclear Tech Mod Community Edition. The HL Blocks assets and
-the original block definitions come from NeoRussia's HL Blocks project. Both are used under
-LGPL-3.0; see `NOTICE` for the exact file lists and links.
-
-### AI assistance
-
-The concrete and HL Blocks contribution was prepared with AI assistance. See
-[`AI_DISCLOSURE.md`](AI_DISCLOSURE.md) for the tool, the extent of use and the human review.
+- **Original Door System & Assets**: Based on [HBM's Nuclear Tech Mod](https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT) by **Hbm** and NTM Contributors.
+- **1.12.2 Port**: Developed by **Kyron04** (`susy-ntmdoors`).
+- **Fabric 1.20.1 Port & Rewrite**: Developed by **Jakub Lukeš** (`KubLuk24`).
+- **License**: Licensed under the **GNU Lesser General Public License v3.0 (LGPL-3.0)**. See [`LICENSE.LESSER`](LICENSE.LESSER) and [`NOTICE`](NOTICE) for details.
