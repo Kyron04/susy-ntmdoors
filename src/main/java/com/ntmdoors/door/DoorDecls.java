@@ -515,7 +515,16 @@ public final class DoorDecls {
             // animation, so the collision keeps the row-by-row removal instead of following the
             // model matrices; every row is still cleared continuously while the mechanism lifts.
             .liftRows(-12.5, 13.5, 0, 23, -0.5, 0.5, 18)
-            .open()
+            .open(
+                    box(-12.5, 0, -0.5, -4.3, 2, 0.5), box(5.3, 0, -0.5, 13.5, 2, 0.5),
+                    box(-12.5, 2, -0.5, -7.4, 4, 0.5), box(8.4, 2, -0.5, 13.5, 4, 0.5),
+                    box(-12.5, 4, -0.5, -9.6, 7, 0.5), box(10.6, 4, -0.5, 13.5, 7, 0.5),
+                    box(-12.5, 7, -0.5, -11.5, 17, 0.5), box(12.5, 7, -0.5, 13.5, 17, 0.5),
+                    box(-12.5, 17, -0.5, -9.6, 20, 0.5), box(10.6, 17, -0.5, 13.5, 20, 0.5),
+                    box(-12.5, 20, -0.5, -7.4, 22, 0.5), box(8.4, 20, -0.5, 13.5, 22, 0.5),
+                    box(-12.5, 22, -0.5, -4.3, 24, 0.5), box(5.3, 22, -0.5, 13.5, 24, 0.5)
+            )
+            .openSelectionOnly(box(-12.5, 0, -0.5, 13.5, 0.125, 0.5))
             .modelPath("models/doors/transition_seal.obj", "textures/models/doors/transition_seal.png")
             .modelYaw(90F)
             .modelOffset(0, 0, 0.5)

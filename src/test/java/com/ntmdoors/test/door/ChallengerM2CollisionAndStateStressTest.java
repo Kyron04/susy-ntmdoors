@@ -139,7 +139,7 @@ public class ChallengerM2CollisionAndStateStressTest {
                 if (frac == 0.0f) {
                     assertTrue(activeBoxes >= 20, "At 0.0f, all rows must be blocked");
                 } else if (frac == 1.0f) {
-                    assertEquals(0, activeBoxes, "At 1.0f, transition seal must be completely passable (0 boxes)");
+                    assertEquals(14, activeBoxes, "At 1.0f, transition seal frame remains solid (14 frame boxes)");
                 }
                 assertTrue(activeBoxes <= prevBlockedRows, "Active collision boxes must decrease monotonically with lift");
                 prevBlockedRows = activeBoxes;
