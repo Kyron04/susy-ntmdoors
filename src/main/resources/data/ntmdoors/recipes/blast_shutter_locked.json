@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "ntmdoors:blast_shutter"
+    },
+    {
+      "item": "ntmdoors:sliding_blast_door_keypad"
+    }
+  ],
+  "result": {
+    "item": "ntmdoors:blast_shutter_locked",
+    "count": 1
+  }
+}

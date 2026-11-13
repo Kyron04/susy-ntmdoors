@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "ntmdoors:transition_seal"
+    },
+    {
+      "item": "ntmdoors:sliding_blast_door_keypad"
+    }
+  ],
+  "result": {
+    "item": "ntmdoors:transition_seal_locked",
+    "count": 1
+  }
+}

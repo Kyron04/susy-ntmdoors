@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "YBY",
+    "IPI",
+    "RBR"
+  ],
+  "key": {
+    "Y": {
+      "item": "minecraft:yellow_concrete"
+    },
+    "B": {
+      "item": "minecraft:black_concrete"
+    },
+    "I": {
+      "item": "minecraft:iron_block"
+    },
+    "P": {
+      "item": "minecraft:piston"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "result": {
+    "item": "ntmdoors:cargo_door",
+    "count": 1
+  }
+}

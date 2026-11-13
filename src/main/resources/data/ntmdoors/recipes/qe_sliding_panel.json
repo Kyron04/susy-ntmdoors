@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " Q ",
+    " P ",
+    " I "
+  ],
+  "key": {
+    "Q": {
+      "item": "minecraft:quartz_block"
+    },
+    "P": {
+      "item": "minecraft:piston"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "item": "ntmdoors:qe_sliding_panel",
+    "count": 1
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "ntmdoors:qe_sliding_panel"
+    },
+    {
+      "item": "ntmdoors:sliding_blast_door_keypad"
+    }
+  ],
+  "result": {
+    "item": "ntmdoors:qe_sliding_panel_locked",
+    "count": 1
+  }
+}

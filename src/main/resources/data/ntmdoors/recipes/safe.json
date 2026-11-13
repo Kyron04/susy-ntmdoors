@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "III",
+    "ICI",
+    "IKI"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_block"
+    },
+    "C": {
+      "item": "minecraft:chest"
+    },
+    "K": {
+      "item": "ntmdoors:sliding_blast_door_keypad"
+    }
+  },
+  "result": {
+    "item": "ntmdoors:safe",
+    "count": 1
+  }
+}

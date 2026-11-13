@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " T ",
+    " T ",
+    " I "
+  ],
+  "key": {
+    "T": {
+      "item": "ntmdoors:triple_monitor_setup"
+    },
+    "I": {
+      "item": "minecraft:iron_block"
+    }
+  },
+  "result": {
+    "item": "ntmdoors:monitor_setup",
+    "count": 1
+  }
+}

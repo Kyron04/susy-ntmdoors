@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CCC",
+    "BBB",
+    "IPI"
+  ],
+  "key": {
+    "C": {
+      "item": "minecraft:chain"
+    },
+    "B": {
+      "item": "minecraft:iron_bars"
+    },
+    "I": {
+      "item": "minecraft:iron_block"
+    },
+    "P": {
+      "item": "minecraft:piston"
+    }
+  },
+  "result": {
+    "item": "ntmdoors:blast_door",
+    "count": 1
+  }
+}

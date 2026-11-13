@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "HH",
+    "HH"
+  ],
+  "key": {
+    "H": {
+      "item": "ntmdoors:silo_hatch"
+    }
+  },
+  "result": {
+    "item": "ntmdoors:silo_hatch_large",
+    "count": 1
+  }
+}

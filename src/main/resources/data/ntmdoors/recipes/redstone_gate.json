@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "RTR",
+    "SPS",
+    "SSS"
+  ],
+  "key": {
+    "R": {
+      "item": "minecraft:repeater"
+    },
+    "T": {
+      "item": "minecraft:redstone_torch"
+    },
+    "S": {
+      "item": "minecraft:smooth_stone"
+    },
+    "P": {
+      "item": "minecraft:quartz"
+    }
+  },
+  "result": {
+    "item": "ntmdoors:redstone_gate",
+    "count": 1
+  }
+}

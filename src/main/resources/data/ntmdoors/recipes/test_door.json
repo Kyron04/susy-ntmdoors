@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "RWR",
+    "RDR",
+    "RWR"
+  ],
+  "key": {
+    "R": {
+      "item": "minecraft:red_concrete"
+    },
+    "W": {
+      "item": "minecraft:white_concrete"
+    },
+    "D": {
+      "item": "minecraft:iron_door"
+    }
+  },
+  "result": {
+    "item": "ntmdoors:test_door",
+    "count": 1
+  }
+}
