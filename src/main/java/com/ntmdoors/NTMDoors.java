@@ -1,6 +1,8 @@
 package com.ntmdoors;
 
 import com.ntmdoors.block.BlockDoorGeneric;
+import com.ntmdoors.block.BlockDesk;
+import com.ntmdoors.block.BlockMonitorOnly;
 import com.ntmdoors.concrete.ConcreteSet;
 import com.ntmdoors.hlblocks.HLBlocksContent;
 import com.ntmdoors.item.ItemRfidCard;
@@ -23,7 +25,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.ArrayList;
 import java.util.List;
 
-@Mod(modid = NTMDoors.MODID, name = "NTM Doors", version = "1.0.51",
+@Mod(modid = NTMDoors.MODID, name = "NTM Doors", version = "1.0.58",
         acceptedMinecraftVersions = "[1.12.2]", dependencies = "required-after:chisel")
 public class NTMDoors {
 
@@ -77,6 +79,7 @@ public class NTMDoors {
             items.add(new ItemStack(ModContent.TERMINAL_RELAY_KEY));
             items.add(new ItemStack(ModContent.TERMINAL_BACKUP_KEY));
             items.add(new ItemStack(ModContent.WEAPONS_RELAY_KEY));
+            items.add(new ItemStack(ModContent.UNDEFINED_RELAY_KEY));
             items.add(new ItemStack(ModContent.REDSTONE_GATE));
             items.add(new ItemStack(ModContent.SPEAKER));
             items.add(new ItemStack(ModContent.MOTION_SENSOR));
@@ -90,6 +93,15 @@ public class NTMDoors {
             items.add(new ItemStack(ModContent.REDSTONE_MONOCLE));
             ConcreteSet.addCreativeStacks(items);
             HLBlocksContent.addCreativeStacks(items);
+            // New crafting components and desk-only blocks go at the end of the tab.
+            items.add(new ItemStack(ModContent.ID_CHIP));
+            items.add(new ItemStack(ModContent.MONITOR_SCREEN));
+            items.add(new ItemStack(ModContent.UNCASED_USB));
+            items.add(new ItemStack(ModContent.CIRCUIT_BOARD));
+            items.add(new ItemStack(ModContent.CARD_READER));
+            items.add(new ItemStack(ModContent.RFID_CHIP));
+            for (BlockDesk desk : ModContent.DESKS) items.add(new ItemStack(desk));
+            for (BlockMonitorOnly monitor : ModContent.MONITORS) items.add(new ItemStack(monitor));
         }
 
         @Override

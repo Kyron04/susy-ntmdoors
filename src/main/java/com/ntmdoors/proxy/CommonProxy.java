@@ -83,6 +83,10 @@ public class CommonProxy {
     public void openRelayKeyNameGui(EnumHand hand) {
     }
 
+    /** Client only: open the key-type picker for a held Undefined Relay Key. */
+    public void openUndefinedRelayKeyGui(EnumHand hand) {
+    }
+
     /** Client only: open the read-only private-key viewer for a held card. */
     public void openKeycardViewerGui(ItemStack stack) {
     }

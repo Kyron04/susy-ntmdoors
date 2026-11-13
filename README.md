@@ -253,6 +253,24 @@ for editing.
   break-any-cell dismantle. Every monitor cell opens the same password-gated terminal and task
   list; each desk keeps its own password hash. The desk row stays inert, and sneak-right-click
   remains available for placing blocks. Security-net events are shared with the larger desk.
+* Single Desk (`ntmdoors:single_desk`, 1x1), 1x2 Desk (`ntmdoors:desk_1x2`, 1x2) and 1x3 Desk
+  (`ntmdoors:desk_1x3`, 1x3): decorative desk-only blocks made from the monitor desk's bottom row.
+  They have no monitors, terminal, password or tile entity. The 1x2 and 1x3 versions place as one
+  item and break as one desk.
+* Single Monitor (`ntmdoors:single_monitor`, 1x1), 1x2 Monitor (`ntmdoors:monitor_1x2`, 1x2) and
+  1x3 Monitor (`ntmdoors:monitor_1x3`, 1x3): decorative monitor-only blocks made from the monitor
+  desk's monitor layer. They have no desk, terminal or tile entity, and the multi-block versions
+  place and break as one structure.
+* ID Chip (`ntmdoors:id_chip`), Monitor Screen (`ntmdoors:monitor_screen`), Uncased USB
+  (`ntmdoors:uncased_usb`), Circuit Board (`ntmdoors:circuit_board`), Card Reader
+  (`ntmdoors:card_reader`) and RFID Chip (`ntmdoors:rfid_chip`): plain crafting components.
+
+## Crafting
+
+Most non-door content has a crafting recipe, registered in `ModRecipes`: the six components,
+keycards, keys, Keycard Holder, Documents Folder, security machines, monitor desks and decorative
+desks. Doors intentionally have no recipes. Relay keys, programmer-made RFID card colours, the
+Creative Keycard, Developer Keycard and Spatial Disrupter are recipe-free.
 * Redstone Gate (`ntmdoors:redstone_gate`): a full-cube redstone component with separate off and on
   textures. It starts off, turns on while it receives redstone power or a wireless pulse, and emits
   a full-strength signal while on. Redstone dust sitting on top is refreshed when the gate switches,
@@ -308,6 +326,11 @@ for editing.
   destroys that block. Silo hatches, the transition seal, the roller blast door and the Vault-Tec
   door refuse placement. The placed block uses the supplied 3D model, while the item form uses its
   flat 16x16 sprite.
+* Undefined Relay Key (`ntmdoors:undefined_relay_key`): a grey programming key. Sneak + right-click
+  opens an eight-entry picker for the Relay, Biometric, Redstone, Motion, Terminal and Weapons Relay
+  Keys plus the Safe Binding and Terminal Backup Keys. Choosing a row replaces the held key with a
+  fresh blank key of that type. It is crafted shapeless from a Circuit Board, an Uncased USB and an
+  ID Chip.
 * Motion Relay Key (`ntmdoors:motion_relay_key`) and Terminal Relay Key
   (`ntmdoors:terminal_relay_key`): blue and orange/grey relay keys. The Motion Relay Key is
   reserved for defining the 5x5x5 area a Motion Sensor watches. The Terminal Relay Key starts a
@@ -476,10 +499,9 @@ and `.clipZ(...)` where the original HBM renderer used a clip plane. Moving part
 for explicit model-space bounds; `.collisionSplits(n)` tightens rotating parts by slicing their AABB.
 
 ## Not included
-Crafting recipes for the doors (the originals need NTM materials), for the keypad, programmer,
-scanner, cards, Keycard Holder and Documents Folder; configs, NEI/JEI, and other NTM items. The
-screwdriver and the concrete set added in 1.0.46 have recipes, listed below; the included HL Blocks
-are creative-only.
+Doors have no crafting recipes (the originals need NTM materials); configs, NEI/JEI, and other NTM
+items are also not included. The screwdriver, the non-door items and machines added in 1.0.57, and
+the concrete set added in 1.0.46 have recipes. The included HL Blocks are creative-only.
 
 ## Concrete and HL Blocks
 
@@ -496,8 +518,7 @@ Blocks to the door port:
 - A fix for the single-slab model lookup: the blockstate variant keys are written in the order
   Forge actually uses (`half=...,variant=...`).
 
-The concrete set has its own recipes, listed below; the doors, cards and machines still have no
-recipes.
+The concrete set has its own recipes; the non-door mod items also have recipes in `ModRecipes`.
 
 #### Block layout
 

@@ -2,12 +2,14 @@ package com.ntmdoors.registry;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.block.BlockBiometricSafe;
+import com.ntmdoors.block.BlockDesk;
 import com.ntmdoors.block.BlockDoorGeneric;
 import com.ntmdoors.block.BlockDoorKeypad;
 import com.ntmdoors.block.BlockKeycardProgrammer;
 import com.ntmdoors.block.BlockKeycardScanner;
 import com.ntmdoors.block.BlockMonitorDesk;
 import com.ntmdoors.block.BlockMonitorDesk2;
+import com.ntmdoors.block.BlockMonitorOnly;
 import com.ntmdoors.block.BlockMonitorSetup;
 import com.ntmdoors.block.BlockMotionSensor;
 import com.ntmdoors.block.MonitorDesk;
@@ -31,6 +33,8 @@ import com.ntmdoors.item.ItemBlockRedstoneGate;
 import com.ntmdoors.item.ItemBlockSafe;
 import com.ntmdoors.item.ItemBlockSpatialDisrupter;
 import com.ntmdoors.item.ItemCreativeKeycard;
+import com.ntmdoors.item.ItemCraftingPart;
+import com.ntmdoors.item.ItemDesk;
 import com.ntmdoors.item.ItemDeveloperKeycard;
 import com.ntmdoors.item.ItemDocumentsFolder;
 import com.ntmdoors.item.ItemDoorBlock;
@@ -49,6 +53,7 @@ import com.ntmdoors.item.ItemScrewdriver;
 import com.ntmdoors.item.ItemTerminalBackupKey;
 import com.ntmdoors.item.ItemThermiteCharge;
 import com.ntmdoors.item.ItemTerminalRelayKey;
+import com.ntmdoors.item.ItemUndefinedRelayKey;
 import com.ntmdoors.item.ItemWeaponsRelayKey;
 import com.ntmdoors.util.ModSounds;
 import net.minecraft.block.Block;
@@ -149,6 +154,20 @@ public class ModContent {
     public static final List<BlockMonitorDesk> SINGLE_MONITOR_BLOCKS = Collections.unmodifiableList(
             Arrays.<BlockMonitorDesk>asList(SINGLE_MONITOR_SETUP, SINGLE_MONITOR_SETUP_MIDDLE));
 
+    /** Decorative desk-only blocks: the monitor desks without monitors, terminals or tile entities. */
+    public static final BlockDesk SINGLE_DESK = new BlockDesk("single_desk", 1);
+    public static final BlockDesk DESK_1X2 = new BlockDesk("desk_1x2", 2);
+    public static final BlockDesk DESK_1X3 = new BlockDesk("desk_1x3", 3);
+    public static final List<BlockDesk> DESKS = Collections.unmodifiableList(Arrays.asList(
+            SINGLE_DESK, DESK_1X2, DESK_1X3));
+
+    /** Decorative monitor-only blocks: the monitor banks without desks, terminals or tile entities. */
+    public static final BlockMonitorOnly SINGLE_MONITOR = new BlockMonitorOnly("single_monitor", 1);
+    public static final BlockMonitorOnly MONITOR_1X2 = new BlockMonitorOnly("monitor_1x2", 2);
+    public static final BlockMonitorOnly MONITOR_1X3 = new BlockMonitorOnly("monitor_1x3", 3);
+    public static final List<BlockMonitorOnly> MONITORS = Collections.unmodifiableList(Arrays.asList(
+            SINGLE_MONITOR, MONITOR_1X2, MONITOR_1X3));
+
     public static final ItemScrewdriver SCREWDRIVER = new ItemScrewdriver();
     public static final ItemRfidCard BLANK_RFID_CARD = new ItemRfidCard("blank_rfid_card", false);
     public static final ItemRfidCard RED_RFID_CARD = new ItemRfidCard("red_rfid_card");
@@ -238,6 +257,19 @@ public class ModContent {
     public static final ItemTerminalBackupKey TERMINAL_BACKUP_KEY = new ItemTerminalBackupKey();
     /** Red weapons key that hard-locks explosives or links them to Redstone Gates. */
     public static final ItemWeaponsRelayKey WEAPONS_RELAY_KEY = new ItemWeaponsRelayKey();
+    /** Keys the Undefined Relay Key can become, in the order the programming screen lists them. */
+    public static final List<Item> UNDEFINED_KEY_TYPES = Collections.unmodifiableList(Arrays.asList(
+            RELAY_KEY, BIOMETRIC_RELAY_KEY, REDSTONE_RELAY_KEY, MOTION_RELAY_KEY,
+            TERMINAL_RELAY_KEY, WEAPONS_RELAY_KEY, SAFE_BINDING_KEY, TERMINAL_BACKUP_KEY));
+    /** Creative-only programming key; no recipe is registered yet. */
+    public static final ItemUndefinedRelayKey UNDEFINED_RELAY_KEY = new ItemUndefinedRelayKey();
+    /** Plain crafting components for the new desk recipes. */
+    public static final ItemCraftingPart ID_CHIP = new ItemCraftingPart("id_chip");
+    public static final ItemCraftingPart MONITOR_SCREEN = new ItemCraftingPart("monitor_screen");
+    public static final ItemCraftingPart UNCASED_USB = new ItemCraftingPart("uncased_usb");
+    public static final ItemCraftingPart CIRCUIT_BOARD = new ItemCraftingPart("circuit_board");
+    public static final ItemCraftingPart CARD_READER = new ItemCraftingPart("card_reader");
+    public static final ItemCraftingPart RFID_CHIP = new ItemCraftingPart("rfid_chip");
     /** Pack-developer keycard: works like a normal card but shows Unknown for keys and biometric IDs. */
     public static final ItemDeveloperKeycard DEVELOPER_KEYCARD = new ItemDeveloperKeycard();
 
@@ -322,6 +354,10 @@ public class ModContent {
         e.getRegistry().register(THERMITE_CHARGE);
         // The 3x3 office doors are newer still, so they take the next free numeric block IDs.
         for (BlockDoorGeneric b : LATE_DOORS) e.getRegistry().register(b);
+        // Decorative desk-only blocks take the next free numeric block IDs.
+        for (BlockDesk desk : DESKS) e.getRegistry().register(desk);
+        // Decorative monitor-only blocks follow them.
+        for (BlockMonitorOnly monitor : MONITORS) e.getRegistry().register(monitor);
     }
 
     @SubscribeEvent
@@ -409,6 +445,21 @@ public class ModContent {
         for (BlockDoorGeneric b : LATE_DOORS) {
             e.getRegistry().register(new ItemDoorBlock(b).setRegistryName(b.getRegistryName()));
         }
+        // New programming item: register after every existing item so saved numeric IDs stay put.
+        e.getRegistry().register(UNDEFINED_RELAY_KEY);
+        // Crafting components and decorative desk items go last for the same reason.
+        e.getRegistry().register(ID_CHIP);
+        e.getRegistry().register(MONITOR_SCREEN);
+        e.getRegistry().register(UNCASED_USB);
+        e.getRegistry().register(CIRCUIT_BOARD);
+        e.getRegistry().register(CARD_READER);
+        e.getRegistry().register(RFID_CHIP);
+        for (BlockDesk desk : DESKS) {
+            e.getRegistry().register(new ItemDesk(desk).setRegistryName(desk.getRegistryName()));
+        }
+        for (BlockMonitorOnly monitor : MONITORS) {
+            e.getRegistry().register(new ItemDesk(monitor).setRegistryName(monitor.getRegistryName()));
+        }
     }
 
     /** Keeps existing worlds working after the SCP card registry names moved from 1-6 to 0-5. */
@@ -461,6 +512,9 @@ public class ModContent {
 
         // Door crafting recipes are intentionally not included: the originals depend on NTM-only materials.
         // Add your own here (or via JSON in data/recipes), e.g. new ShapedRecipes(...) per door.
+
+        // Non-door item and machine recipes.
+        ModRecipes.register(e);
 
         // Concrete building recipes; the base blocks use half-scale crafting-table stand-ins for
         // CE's chemical-plant and crystallizer steps. See ConcreteRecipes for the substitution list.

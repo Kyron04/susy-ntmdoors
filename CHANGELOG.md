@@ -1,5 +1,51 @@
-HBM DOORS: 1.0.51
+HBM DOORS: 1.0.58
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.58
+FEATURE
+- Added decorative monitor-only blocks: Single Monitor (1x1), 1x2 Monitor and 1x3 Monitor.
+  They reuse the monitor desk's monitor geometry without the desk, terminal or tile entity.
+  The 1x2 and 1x3 versions place as one multi-block structure and break as one.
+
+1.0.57
+FEATURE
+- Added crafting recipes for the new components, keycards, keys, tools, security machines, monitor
+  desks and decorative desks.
+- Doors, relay keys, programmer-made RFID card colours, the Creative Keycard, Developer Keycard and
+  Spatial Disrupter remain recipe-free.
+
+1.0.56
+FEATURE
+- Added the RFID Chip crafting component, in the same end-of-tab crafting section.
+ART
+- Replaced the ID Chip, Monitor Screen, Uncased USB, Circuit Board and Card Reader textures with
+  the supplied 16x16 sprites, copied byte-for-byte.
+
+1.0.55
+FEATURE
+- Added the Uncased USB, Circuit Board and Card Reader crafting components. They are plain items
+  with no logic and sit in the same end-of-tab crafting section as ID Chip and Monitor Screen.
+
+1.0.54
+FEATURE
+- Added the ID Chip and Monitor Screen crafting components. They are plain items with no logic.
+- Added decorative desk-only blocks: Single Desk (1x1), 1x2 Desk and 1x3 Desk. They reuse the
+  monitor desk's desk geometry without monitors, terminals or tile entities. The 1x2 and 1x3
+  versions place as multi-block bottom rows.
+- All five new items are appended to the existing NTM Doors creative tab.
+
+1.0.53
+FIX
+- Added the Undefined Relay Key to the mod's fixed creative-tab list. It was registered and
+  usable, but the custom NTM Doors tab does not use registry order, so it was not visible there.
+
+1.0.52
+FEATURE
+- Added the Undefined Relay Key. Sneak + Right Click opens a key-type picker; choosing a type
+  replaces the held programming key with a fresh blank key of that type.
+- The picker covers the six relay keys plus the Safe Binding Key and Terminal Backup Key.
+- The Undefined Relay Key is creative-only for now; a recipe can be added later. No recipes were
+  added for the target keys.
 
 1.0.51
 SECURITY

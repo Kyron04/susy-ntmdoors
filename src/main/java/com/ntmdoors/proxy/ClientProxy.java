@@ -20,6 +20,7 @@ import com.ntmdoors.client.GuiSafeCode;
 import com.ntmdoors.client.GuiScannerCode;
 import com.ntmdoors.client.GuiScannerKeys;
 import com.ntmdoors.client.GuiSpeaker;
+import com.ntmdoors.client.GuiUndefinedRelayKey;
 import com.ntmdoors.client.KeyframeAnimation;
 import com.ntmdoors.client.ObjModel;
 import com.ntmdoors.client.RenderDoor;
@@ -32,6 +33,7 @@ import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.DoorDecls;
 import com.ntmdoors.door.ObjBounds;
 import com.ntmdoors.item.ItemDocumentsFolder;
+import com.ntmdoors.item.ItemUndefinedRelayKey;
 import com.ntmdoors.monitor.MonitorDevice;
 import com.ntmdoors.monitor.NotepadDocument;
 import com.ntmdoors.monitor.SecurityNetSummary;
@@ -72,6 +74,16 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void openRelayKeyNameGui(EnumHand hand) {
         Minecraft.getMinecraft().displayGuiScreen(new GuiRelayKeyName(hand));
+    }
+
+    @Override
+    public void openUndefinedRelayKeyGui(EnumHand hand) {
+        Minecraft mc = Minecraft.getMinecraft();
+        if (mc.player == null) return;
+        ItemStack stack = mc.player.getHeldItem(hand);
+        if (stack.getItem() instanceof ItemUndefinedRelayKey) {
+            mc.displayGuiScreen(new GuiUndefinedRelayKey(hand));
+        }
     }
 
     @Override

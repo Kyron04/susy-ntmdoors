@@ -82,6 +82,8 @@ public final class ModNetwork {
                 MessageWeaponsKeyMode.class, 35, Side.SERVER);
         INSTANCE.registerMessage(MessageSpatialDisrupterActivate.Handler.class,
                 MessageSpatialDisrupterActivate.class, 36, Side.SERVER);
+        INSTANCE.registerMessage(MessageRelayKeyType.Handler.class,
+                MessageRelayKeyType.class, 37, Side.SERVER);
     }
 
     private ModNetwork() {

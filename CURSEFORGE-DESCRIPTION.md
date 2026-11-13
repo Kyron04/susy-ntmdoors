@@ -4,7 +4,7 @@
 
 NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system, security equipment and concrete building set from HBM's Nuclear Tech Mod. No NTM installation is required. Chisel 1.12.2-1.0.2.45 is required. Every model, texture and sound is bundled.
 
-**Current version: 1.0.51**
+**Current version: 1.0.58**
 
 ## 27 multiblock doors
 
@@ -87,6 +87,7 @@ Screwdriver + sneak + right-click cycles door skins:
 - **Operator Keycard** - aimed at a bound scanner, opens its security code screen; aimed at a Redstone Gate, opens its settings screen. The Biometric Operator Keycard does the same. Elsewhere it shows its private keys.
 - **Creative Keycard** - bypasses card checks on bound doors, opens every scanner, opens both safes, and sneak + right-clicking a scanner opens its full console without a code or bound doors. It also opens the Redstone Gate screen.
 - **Relay Key and Biometric Relay Key** — create named private keys; the biometric version captures the holder's identity instead.
+- **Undefined Relay Key** — a grey programming key. Sneak + right-click opens a picker for the six relay keys plus the Safe Binding and Terminal Backup Keys; choosing one replaces the held key with a fresh blank key of that type. Crafted from a Circuit Board, an Uncased USB and an ID Chip.
 - **Biometric Keycard and Biometric Operator Keycard** — carry an identity, show the owner in the tooltip, and work with the scanner's Match biometric holder option. The Operator version also lists its stored private keys in the tooltip.
 - **Keycard Holder** — carried 3x4 case for twelve keycards, with its own NBT storage, empty-slot ghosts and shift-click transfer.
 - **Keycard Viewer** — sneak-right-click a card to read every private key stored on it.
@@ -117,6 +118,9 @@ Screwdriver + sneak + right-click cycles door skins:
 ## Monitor desks and security terminal
 
 - **Monitor desks** — five placeable desk variants: **6 Monitor Setup** (3x3x1), **3 Monitor Setup** (3x2x1), **Dual Monitor Setup** (3x2x1), **Dual Monitor Setup (short table)** (2x2x1) and **Monitor** (2x2x1). Each places as one item, faces the player, reserves its full footprint and breaks as one structure. The upper monitor cells use a half-depth collision wall so you can stand on the front of the desk but cannot walk through the screens.
+- **Desk-only blocks** — **Single Desk** (1x1), **1x2 Desk** and **1x3 Desk**. Decorative versions of the monitor desk bottom row with no monitors, terminal, password or tile entity. The 1x2 and 1x3 versions place and break as one structure.
+- **Monitor-only blocks** — **Single Monitor** (1x1), **1x2 Monitor** and **1x3 Monitor**. Decorative monitor banks without desks, terminal or tile entity. The 1x2 and 1x3 versions place and break as one structure.
+- **Crafting components** — **ID Chip**, **Monitor Screen**, **Uncased USB**, **Circuit Board**, **Card Reader** and **RFID Chip**. Plain items used in the mod's crafting recipes.
 - Every monitor cell opens the same **password-gated terminal**. The first open offers to set a per-desk password; later opens require it. Passwords are stored as SHA-256 hashes on the desk core and checked server-side; a successful check creates a short-lived session, and terminal actions sent without that session are ignored.
 - The terminal task menu lists **Security**, **Opencomputers**, **Factory**, **Display**, **Notepad** and **Terminal Backup**. Opencomputers and Factory are reserved entries; the other four are fully implemented.
 - Physical monitor screens mirror the live terminal page. Each screen keeps its own page, selected Security net, tab and scroll position, so using one monitor never changes another.
