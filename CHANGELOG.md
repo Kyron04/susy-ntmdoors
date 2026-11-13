@@ -640,9 +640,8 @@ FEATURES
   maintenance and red for motion. Detection logic is not wired yet.
 - Added the Motion Sensor to the NTM Doors creative tab.
 
-The public 1.0.31 release is the cumulative build of the internal 1.0.31-1.0.47
-changes. The public-facing CurseForge changelog is
-`CURSEFORGE-CHANGELOG-1.0.31.md`; the internal history follows.
+The public 1.0.31 release was the cumulative build of the internal 1.0.31-1.0.47
+changes. The internal history follows.
 
 1.0.47
 FIXES

@@ -1,6 +1,0 @@
-{
-  "parent": "ntmdoors:block/motion_sensor",
-  "textures": {
-    "led": "ntmdoors:blocks/sensor_led_green"
-  }
-}

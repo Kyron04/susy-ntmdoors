@@ -1,6 +1,6 @@
 Add-Type -AssemblyName System.Drawing
 
-$out = Join-Path $PSScriptRoot '..\assets\ntmdoors\textures\blocks'
+$out = Join-Path $PSScriptRoot '..\..\..\src\main\resources\assets\ntmdoors\textures\blocks'
 New-Item -ItemType Directory -Force -Path $out | Out-Null
 
 function Clamp([int]$v) {

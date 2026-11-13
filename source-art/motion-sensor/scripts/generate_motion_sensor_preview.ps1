@@ -1,6 +1,6 @@
 Add-Type -AssemblyName System.Drawing
 
-$tex = Join-Path $PSScriptRoot '..\assets\ntmdoors\textures\blocks'
+$tex = Join-Path $PSScriptRoot '..\..\..\src\main\resources\assets\ntmdoors\textures\blocks'
 $out1 = Join-Path $PSScriptRoot '..\motion-sensor-model-preview-final.png'
 
 $W = 1440

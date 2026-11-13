@@ -1,31 +1,69 @@
-NTM Doors includes assets copied from HBM's Nuclear Tech Mod.
+NTM Doors
+=========
 
-Source: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
-Assets copied: multiblock door OBJ models, door textures, the vault label, and door sound effects.
-License: GNU Lesser General Public License v3.0 (see LICENSE.LESSER in this JAR).
+This project is a standalone Minecraft 1.12.2 port of the door system from
+HBM's Nuclear Tech Mod (NTM).
 
-The concrete building set is derived from HBM's Nuclear Tech Mod Community Edition (NTM CE):
+Original project and source:
+  https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
+
+The following material is derived from HBM's Nuclear Tech Mod and is used
+under the GNU Lesser General Public License, version 3 (LGPL-3.0), except for
+the original office-door assets described below:
+
+  * Door OBJ models under assets/ntmdoors/models/doors/
+  * Door model textures under assets/ntmdoors/textures/models/doors/
+  * Door sounds under assets/ntmdoors/sounds/doors/
+  * Door geometry, animation dimensions and behaviour used by
+    src/main/java/com/ntmdoors/door/DoorDecls.java
+
+Office-door assets
+(`black_mesa_door*`, `office_door_1*`, `office_door_2*`, `office_door_3*` under
+`assets/ntmdoors/models/doors/` and `assets/ntmdoors/textures/models/doors/`,
+plus the matching files under `source-art/office-doors/`) are original
+recreations inspired by the Black Mesa/Half-Life office-door style. They are not
+extracted from Black Mesa or Half-Life game files and are released under this
+project's LGPL-3.0 license. Black Mesa and Half-Life are properties of their
+respective owners; no endorsement is implied. The door latch sound
+(`assets/ntmdoors/sounds/doors/door_latch.ogg`) was supplied by the project
+owner.
+
+The concrete building set is derived from HBM's Nuclear Tech Mod Community
+Edition (NTM CE):
   https://github.com/Warfactory-Official/Hbm-s-Nuclear-Tech-CE
-Assets copied: concrete textures under assets/ntmdoors/textures/blocks/
-(concrete*, brick_concrete*, concrete_pillar_*, concrete_rebar.png).
-Block names, metadata order, material values, recipe layout and the Über Concrete decay behaviour in
-com.ntmdoors.concrete follow the same source.
-License: GNU Lesser General Public License v3.0.
+
+  * Concrete textures under assets/ntmdoors/textures/blocks/
+    (concrete*, brick_concrete*, concrete_pillar_*, concrete_rebar.png)
+  * Block names, metadata order, material values, recipe layout and the Über Concrete
+    decay behaviour used by src/main/java/com/ntmdoors/concrete/
 
 The HL Blocks set is derived from NeoRussia's HL Blocks project:
   https://github.com/NeoRussia/HL-Blocks
-Assets copied: HL textures and models under assets/ntmdoors/{textures/blocks,models}/hlblocks_*.
-Block definitions, crate stacking and shift-scroll cycling in com.ntmdoors.hlblocks follow the
-same source.
-License: GNU Lesser General Public License v3.0.
+
+  * HL textures and models under assets/ntmdoors/textures/blocks/hlblocks_* and
+    assets/ntmdoors/models/{block,item}/hlblocks_*
+  * Block definitions, crate stacking and shift-scroll cycling used by
+    src/main/java/com/ntmdoors/hlblocks/
+
+HL Blocks is used under the GNU Lesser General Public License, version 3 (LGPL-3.0).
+
+The transition seal model was converted from HBM's Collada source
+(seal.dae) into a grouped OBJ so the 1.12.2 renderer can display it without
+a runtime DAE loader. Its per-group rigid keyframes in
+assets/ntmdoors/models/doors/transition_seal.anim were generated from the
+same Collada action.
 
 Speaker alarm sounds:
 
-  * assets/ntmdoors/sounds/speaker/facility.ogg is derived from "Sirens and Alarm Noise"
-    by aquinn (OpenGameArt, CC0 1.0).
-  * assets/ntmdoors/sounds/speaker/air_raid.ogg, industrial.ogg and eas.ogg are derived
-    from audio supplied by the project owner. The supplied filenames credit jeremayjimenez
-    and 8footdino_on_scratch.
+  * assets/ntmdoors/sounds/speaker/facility.ogg is derived from
+    "Sirens and Alarm Noise" by aquinn (OpenGameArt, CC0 1.0).
+  * assets/ntmdoors/sounds/speaker/air_raid.ogg, industrial.ogg and eas.ogg
+    are derived from audio supplied by the project owner. The supplied
+    filenames credit jeremayjimenez and 8footdino_on_scratch.
 
-The Java implementation in com.ntmdoors is a standalone 1.12.2 port and keeps the original
-door behaviour and asset layout where practical.
+The Java implementation in this repository is a fresh 1.12.2 implementation
+and is also released under the LGPL-3.0. See LICENSE.LESSER for the full
+license text.
+
+HBM's Nuclear Tech Mod is Copyright its respective authors and contributors.
+No endorsement by the original authors is implied.
