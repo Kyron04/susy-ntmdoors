@@ -616,6 +616,17 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
         return Collections.unmodifiableList(nets);
     }
 
+    /** True when any net on this desk already lists {@code device}. */
+    public boolean isDeviceLinked(MonitorDevice device) {
+        if (device == null) return false;
+        for (SecurityNet net : nets) {
+            for (MonitorDevice linked : net.getDevices()) {
+                if (linked.matches(device)) return true;
+            }
+        }
+        return false;
+    }
+
     /** The cosmetic wallpaper shown by one physical screen; empty means the terminal page. */
     public String getScreenWallpaper(int index) {
         if (index < 0 || index >= MAX_SCREENS) return "";

@@ -1,5 +1,13 @@
-HBM DOORS: 1.0.58
+HBM DOORS: 1.0.59
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.59
+FIX
+- The Redstone Monocle overlay now only draws links whose two endpoints are within four
+  chunks of the player. This is a rendering limit only; link behaviour and range are unchanged.
+- Non-door devices newly confirmed into a Security net now start with their enabled toggle off.
+  Existing links and doors keep their current state; use the monitor's ON/OFF switch to enable a
+  device.
 
 1.0.58
 FEATURE

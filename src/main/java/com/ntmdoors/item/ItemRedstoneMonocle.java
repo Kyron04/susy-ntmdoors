@@ -68,6 +68,7 @@ public class ItemRedstoneMonocle extends Item {
                 "Red: gate to gate",
                 "Amber: gate to door",
                 "Blue: device to gate",
+                "Only links within 4 chunks are shown.",
                 "Sneak + Right Click a security door",
                 "to toggle Redstone access (owner only).");
     }

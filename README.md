@@ -298,7 +298,9 @@ Creative Keycard, Developer Keycard and Spatial Disrupter are recipe-free.
   after their owner enables Redstone access with the Monocle.
 * Redstone Monocle (`ntmdoors:redstone_monocle`): a red-named creative diagnostic item with a
   16x16 red monocle sprite. While held in either hand it draws the loaded wireless links through
-  walls: red for gate-to-gate, amber for gate-to-door, and blue for device-to-gate. Sneak +
+  walls: red for gate-to-gate, amber for gate-to-door, and blue for device-to-gate. Only links
+  whose two endpoints are within four chunks of the player are drawn; this is a visual limit and
+  does not change link behaviour or range. Sneak +
   right-click a security door as its owner to toggle whether that door accepts redstone and gate
   links; other players are refused. It changes nothing else on the server.
 * Weapons Relay Key (`ntmdoors:weapons_relay_key`): a red-named creative key with the tooltip
@@ -348,6 +350,8 @@ Creative Keycard, Developer Keycard and Spatial Disrupter are recipe-free.
   scanner or keypad binding; the terminal bypasses those local locks. Every other device row has an
   `ON` / `OFF` switch: off makes a keypad or scanner ignore input, stops a motion sensor detecting,
   forces a Redstone Gate output low, and mutes a speaker. The switch state is saved on the device.
+  Non-door devices newly confirmed into a net start OFF; turn the switch ON when you are ready to
+  enable them.
   `System Shutdown` idles every device in the net; `System Lockdown` closes all net doors and keeps
   them shut; `Trigger Alarms` sounds every speaker; and `Disable Keypads`, `Disable Scanners`,
   `Disable Sensors` and `Disable Redstone Gates` switch off those device families. `Close all

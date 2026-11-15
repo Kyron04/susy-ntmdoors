@@ -37,6 +37,11 @@ public final class RedstoneMonocleOverlay {
     private static final float[] GATE_DOOR = {1.00F, 0.72F, 0.18F, 0.85F};
     private static final float[] DEVICE_GATE = {0.25F, 0.62F, 1.00F, 0.80F};
 
+    /** How far away a link may be drawn. This only limits the overlay, not the link itself. */
+    private static final int LINK_RANGE_CHUNKS = 4;
+    private static final double LINK_RANGE_SQ =
+            (LINK_RANGE_CHUNKS * 16.0D) * (LINK_RANGE_CHUNKS * 16.0D);
+
     private static final class Link {
         final BlockPos from;
         final BlockPos to;
@@ -60,15 +65,22 @@ public final class RedstoneMonocleOverlay {
 
         for (TileEntity te : mc.world.loadedTileEntityList) {
             if (!(te instanceof RedstoneBindingHost)) continue;
+            BlockPos hostPos = te.getPos();
+            if (!inRange(player, hostPos)) continue;
+
             if (te instanceof TileEntityRedstoneGate) {
                 RedstoneBinding binding = ((TileEntityRedstoneGate) te).getRedstoneBinding();
-                BlockPos gate = te.getPos();
-                for (BlockPos target : binding.getGates()) gateGate.add(new Link(gate, target));
-                for (BlockPos target : binding.getDoors()) gateDoor.add(new Link(gate, target));
+                for (BlockPos target : binding.getGates()) {
+                    if (inRange(player, target)) gateGate.add(new Link(hostPos, target));
+                }
+                for (BlockPos target : binding.getDoors()) {
+                    if (inRange(player, target)) gateDoor.add(new Link(hostPos, target));
+                }
             } else {
                 RedstoneBinding binding = ((RedstoneBindingHost) te).getRedstoneBinding();
-                BlockPos device = te.getPos();
-                for (BlockPos target : binding.getGates()) deviceGate.add(new Link(device, target));
+                for (BlockPos target : binding.getGates()) {
+                    if (inRange(player, target)) deviceGate.add(new Link(hostPos, target));
+                }
             }
         }
 
@@ -107,6 +119,14 @@ public final class RedstoneMonocleOverlay {
             GlStateManager.color(1F, 1F, 1F, 1F);
             GlStateManager.popMatrix();
         }
+    }
+
+    /**
+     * True when a link endpoint is close enough to draw. Both ends of a link are checked so the
+     * overlay never reveals a line stretching beyond the four-chunk limit.
+     */
+    private static boolean inRange(EntityPlayer player, BlockPos pos) {
+        return player.getDistanceSq(pos) <= LINK_RANGE_SQ;
     }
 
     private static void draw(List<Link> links, float[] colour) {

@@ -176,6 +176,7 @@ public class ItemTerminalRelayKey extends Item {
 
         List<MonitorDevice> pending = new ArrayList<>(session.devices);
         pending.removeIf(device -> !MonitorDevice.stillValid(world, device));
+        disableNewDevices(world, desk, pending);
         desk.setNetDevices(session.netId, pending);
         TerminalKeyData.clearSession(stack);
         HeldItems.sync(player);
@@ -183,6 +184,20 @@ public class ItemTerminalRelayKey extends Item {
                 "ntmdoors.msg.terminal_binding_confirmed_net",
                 net.displayName(), pending.size()), true);
         playClick(world, deskPos);
+    }
+
+    /**
+     * Newly confirmed device toggles start off so the player can enable them deliberately from the
+     * monitor. Devices already listed by any net on this desk keep their current state; doors have
+     * no enabled toggle and are left alone.
+     */
+    private static void disableNewDevices(World world, TileEntityMonitorDesk desk,
+                                          List<MonitorDevice> pending) {
+        for (MonitorDevice device : pending) {
+            if (device.type == MonitorDevice.Type.DOOR) continue;
+            if (desk.isDeviceLinked(device)) continue;
+            MonitorDevice.setEnabled(world, device, false);
+        }
     }
 
     private static void playClick(World world, BlockPos pos) {
