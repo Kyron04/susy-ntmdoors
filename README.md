@@ -621,7 +621,7 @@ The concrete assets come from HBM's Nuclear Tech Mod Community Edition. The HL B
 the original block definitions come from NeoRussia's HL Blocks project. Both are used under
 LGPL-3.0; see `NOTICE` for the exact file lists and links.
 
-### AI assistance
+## AI assistance
 
 This project was developed with AI assistance, including the concrete and HL Blocks integration,
 security equipment behaviour and release housekeeping. See [`AI_DISCLOSURE.md`](AI_DISCLOSURE.md)
