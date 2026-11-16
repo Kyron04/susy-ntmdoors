@@ -29,7 +29,7 @@ public class GuiUndefinedRelayKey extends GuiScreen {
     private static final int PANEL_WIDTH = 300;
     private static final int PANEL_HEIGHT = 220;
     private static final int ROW_TOP = 30;
-    private static final int ROW_HEIGHT = 21;
+    private static final int ROW_HEIGHT = 18;
 
     private static final int COLOUR = 0xFFE8E8E8;
     private static final int MUTED = 0xFFAFAFAF;

@@ -25,7 +25,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.ArrayList;
 import java.util.List;
 
-@Mod(modid = NTMDoors.MODID, name = "NTM Doors", version = "1.0.63",
+@Mod(modid = NTMDoors.MODID, name = "NTM Doors", version = "1.0.64",
         acceptedMinecraftVersions = "[1.12.2]", dependencies = "required-after:chisel")
 public class NTMDoors {
 
@@ -81,6 +81,7 @@ public class NTMDoors {
             items.add(new ItemStack(ModContent.TERMINAL_BACKUP_KEY));
             items.add(new ItemStack(ModContent.WEAPONS_RELAY_KEY));
             items.add(new ItemStack(ModContent.UNDEFINED_RELAY_KEY));
+            items.add(new ItemStack(ModContent.BREAKER_RELAY_KEY));
             items.add(new ItemStack(ModContent.REDSTONE_GATE));
             items.add(new ItemStack(ModContent.SPEAKER));
             items.add(new ItemStack(ModContent.MOTION_SENSOR));

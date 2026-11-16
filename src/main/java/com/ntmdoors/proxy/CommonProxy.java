@@ -91,6 +91,10 @@ public class CommonProxy {
     public void openKeycardViewerGui(ItemStack stack) {
     }
 
+    /** Client only: open the Breaker Relay Key confirmation screen. */
+    public void openBreakerConfirm(BlockPos pos, String label) {
+    }
+
     /** Client only: open the security code screen for a scanner bound to doors. */
     public void openScannerCodeGui(BlockPos pos) {
     }

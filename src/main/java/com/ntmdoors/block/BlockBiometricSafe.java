@@ -42,14 +42,11 @@ public class BlockBiometricSafe extends BlockSafe {
         super.onBlockPlacedBy(world, pos, state, placer, stack);
         if (world.isRemote || !(placer instanceof EntityPlayer)) return;
 
-        ensureTileEntity(world, pos, state);
         TileEntity te = world.getTileEntity(pos);
-        if (te instanceof TileEntityBiometricSafe) {
+        if (te instanceof TileEntityBiometricSafe && ((TileEntityBiometricSafe) te).hasOwner()) {
             EntityPlayer player = (EntityPlayer) placer;
-            if (((TileEntityBiometricSafe) te).bindOwner(player)) {
-                player.sendStatusMessage(new TextComponentTranslation(
-                        "ntmdoors.msg.safe_biometric_bound", player.getName()), true);
-            }
+            player.sendStatusMessage(new TextComponentTranslation(
+                    "ntmdoors.msg.safe_biometric_bound", player.getName()), true);
         }
     }
 

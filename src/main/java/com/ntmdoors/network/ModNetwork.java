@@ -84,6 +84,10 @@ public final class ModNetwork {
                 MessageSpatialDisrupterActivate.class, 36, Side.SERVER);
         INSTANCE.registerMessage(MessageRelayKeyType.Handler.class,
                 MessageRelayKeyType.class, 37, Side.SERVER);
+        INSTANCE.registerMessage(MessageBreakerPrompt.Handler.class,
+                MessageBreakerPrompt.class, 38, Side.CLIENT);
+        INSTANCE.registerMessage(MessageBreakerBreak.Handler.class,
+                MessageBreakerBreak.class, 39, Side.SERVER);
     }
 
     private ModNetwork() {

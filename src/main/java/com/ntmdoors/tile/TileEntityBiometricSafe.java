@@ -64,6 +64,23 @@ public class TileEntityBiometricSafe extends TileEntitySafe {
         return true;
     }
 
+    @Nullable
+    @Override
+    public UUID getOwnerId() {
+        if (ownerUuid == null || ownerUuid.isEmpty()) return null;
+        try {
+            return UUID.fromString(ownerUuid);
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
+    }
+
+    @Override
+    public boolean isOwnedBy(EntityPlayer player) {
+        return player != null && !ownerUuid.isEmpty()
+                && ownerUuid.equals(player.getUniqueID().toString());
+    }
+
     /** True when the card carries the safe owner's biometric ID, or the safe has no owner. */
     public boolean matchesOwner(ItemStack card) {
         return !hasOwner() || ownerUuid.equals(Biometrics.ownerUuid(card));

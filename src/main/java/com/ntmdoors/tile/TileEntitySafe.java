@@ -85,6 +85,10 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ISid
 
     private boolean matchHolder = true;
     private boolean lockoutMode;
+    /** Player who placed this safe; used by the Breaker Relay Key. Legacy safes have no owner. */
+    @Nullable
+    private UUID ownerId;
+    private String ownerName = "";
     /** When on, breaking the safe voids the safe item and its contents instead of dropping them. */
     private boolean voidOnDestroy = true;
     /** When on, the safe can link doors and close them on lockout. Synced to clients. */
@@ -229,6 +233,34 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ISid
     /** True when breaking this safe should void the safe item and everything stored in it. */
     public boolean isVoidOnDestroy() {
         return voidOnDestroy;
+    }
+
+    /** Player who placed this safe, or null for legacy safes and non-player placements. */
+    @Nullable
+    public UUID getOwnerId() {
+        return ownerId;
+    }
+
+    public String getOwnerName() {
+        return ownerName;
+    }
+
+    public boolean hasOwner() {
+        return ownerId != null;
+    }
+
+    /** True when {@code player} placed this safe. Legacy ownerless safes refuse the Breaker. */
+    public boolean isOwnedBy(EntityPlayer player) {
+        return player != null && ownerId != null && ownerId.equals(player.getUniqueID());
+    }
+
+    /** Server side: records the placing player. The first owner wins. */
+    public boolean bindOwner(EntityPlayer player) {
+        if (world == null || world.isRemote || player == null || ownerId != null) return false;
+        ownerId = player.getUniqueID();
+        ownerName = player.getName();
+        sync();
+        return true;
     }
 
     /** Server side: arms or disarms void-on-destroy. */
@@ -740,6 +772,16 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ISid
         }
     }
 
+    @Nullable
+    private static UUID parseOwnerId(String raw) {
+        if (raw == null || raw.isEmpty()) return null;
+        try {
+            return UUID.fromString(raw);
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
+    }
+
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
@@ -757,6 +799,8 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ISid
         tag.setString("boundDoors", BlockPositions.encodeList(boundDoors));
         redstoneBinding.writeToNBT(tag);
         writeOptions(tag);
+        tag.setString("owner", ownerId == null ? "" : ownerId.toString());
+        tag.setString("ownerName", ownerName);
         tag.setInteger("failedAttempts", failedAttempts);
         tag.setInteger("lockoutTicks", lockoutTicks);
         return tag;
@@ -795,6 +839,8 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ISid
         }
         redstoneBinding.readFromNBT(tag);
         readOptions(tag);
+        ownerId = parseOwnerId(tag.getString("owner"));
+        ownerName = tag.getString("ownerName");
         if (tag.hasKey("failedAttempts")) failedAttempts = tag.getInteger("failedAttempts");
         if (tag.hasKey("lockoutTicks")) {
             lockoutTicks = tag.getInteger("lockoutTicks");

@@ -132,8 +132,9 @@ for editing.
   16x16 icon derived from the model.
 * Safe (`ntmdoors:safe`): a 1x1x1 steel safe with a keypad front and two small USB ports under
   the pad. Right clicking opens the same keypad screen as the scanner. The first accepted code
-  becomes the safe's code; later entries must match. The code safe has no owner restriction, so
-  anyone who knows the code can open it. A correct code shows the `SUCCESS!!!` card and then opens
+  becomes the safe's code; later entries must match. The code safe has no owner restriction on
+  opening, so anyone who knows the code can open it; the placer is recorded only for the Breaker
+  Relay Key. A correct code shows the `SUCCESS!!!` card and then opens
   a 27-slot container. Page two of the container has `Binding Activities`, `Lockout mode`,
   `Reset code` and `Void on destroy`; `Binding Activities` enables door linking and the
   lockout-door response, `Lockout mode` locks the keypad for five minutes after three bad codes,
@@ -303,6 +304,11 @@ Creative Keycard, Developer Keycard and Spatial Disrupter are recipe-free.
   does not change link behaviour or range. Sneak +
   right-click a security door as its owner to toggle whether that door accepts redstone and gate
   links; other players are refused. It changes nothing else on the server.
+* Breaker Relay Key (`ntmdoors:breaker_relay_key`): an orange relay key. Sneak + right-click a
+  security door or safe you placed opens a confirmation screen; confirming breaks it instantly.
+  The server rechecks ownership and reach. Security doors drop their door item; safes drop their
+  safe item and every stored stack even when Void on Destroy is enabled. Code and biometric safes
+  record their placer as owner, and legacy ownerless safes refuse the key.
 * Weapons Relay Key (`ntmdoors:weapons_relay_key`): a red-named creative key with the tooltip
   `Hard lock weapons so enemies can't disarm them`. Sneak + Right Click opens a screen that selects
   `Regular Bounding` or `Dead Man's Hand`. Regular binds explosives to Redstone Gates: sneak +
@@ -329,10 +335,10 @@ Creative Keycard, Developer Keycard and Spatial Disrupter are recipe-free.
   door refuse placement. The placed block uses the supplied 3D model, while the item form uses its
   flat 16x16 sprite.
 * Undefined Relay Key (`ntmdoors:undefined_relay_key`): a grey programming key. Sneak + right-click
-  opens an eight-entry picker for the Relay, Biometric, Redstone, Motion, Terminal and Weapons Relay
-  Keys plus the Safe Binding and Terminal Backup Keys. Choosing a row replaces the held key with a
-  fresh blank key of that type. It is crafted shapeless from a Circuit Board, an Uncased USB and an
-  ID Chip.
+  opens a nine-entry picker for the Relay, Biometric, Redstone, Motion, Terminal and Weapons Relay
+  Keys plus the Safe Binding, Terminal Backup and Breaker Relay Keys. Choosing a row replaces the
+  held key with a fresh blank key of that type. It is crafted shapeless from a Circuit Board, an
+  Uncased USB and an ID Chip.
 * Motion Relay Key (`ntmdoors:motion_relay_key`) and Terminal Relay Key
   (`ntmdoors:terminal_relay_key`): blue and orange/grey relay keys. The Motion Relay Key is
   reserved for defining the 5x5x5 area a Motion Sensor watches. The Terminal Relay Key starts a

@@ -1,5 +1,15 @@
-HBM DOORS: 1.0.63
+HBM DOORS: 1.0.64
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.64
+FEATURE
+- Added the Breaker Relay Key. Sneak + right-click a security door or safe you placed to open a
+  confirmation screen. The server revalidates ownership and reach before breaking it; other owners
+  are refused.
+- Security doors drop their door item. Safes drop the safe item and all stored contents regardless
+  of the Void on Destroy setting.
+- Code and biometric safes now record their placer as owner. Legacy ownerless safes refuse the
+  Breaker.
 
 1.0.63
 FIX

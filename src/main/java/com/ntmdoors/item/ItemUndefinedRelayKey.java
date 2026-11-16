@@ -68,6 +68,7 @@ public class ItemUndefinedRelayKey extends Item {
         if (item == ModContent.WEAPONS_RELAY_KEY) return "Binds explosives and Redstone Gates.";
         if (item == ModContent.SAFE_BINDING_KEY) return "Links a safe to doors.";
         if (item == ModContent.TERMINAL_BACKUP_KEY) return "Uploads and restores terminal backup data.";
+        if (item == ModContent.BREAKER_RELAY_KEY) return "Breaks security doors and safes you own.";
         return "";
     }
 }

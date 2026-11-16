@@ -2,6 +2,7 @@ package com.ntmdoors.proxy;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.client.GuiDeviceName;
+import com.ntmdoors.client.GuiBreakerConfirm;
 import com.ntmdoors.client.GuiDocumentsFolder;
 import com.ntmdoors.client.GuiKeycardViewer;
 import com.ntmdoors.client.GuiKeypadSecurityCode;
@@ -89,6 +90,12 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void openKeycardViewerGui(ItemStack stack) {
         Minecraft.getMinecraft().displayGuiScreen(new GuiKeycardViewer(stack));
+    }
+
+    @Override
+    public void openBreakerConfirm(BlockPos pos, String label) {
+        Minecraft mc = Minecraft.getMinecraft();
+        mc.addScheduledTask(() -> mc.displayGuiScreen(new GuiBreakerConfirm(pos, label)));
     }
 
     @Override

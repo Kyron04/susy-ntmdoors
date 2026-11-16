@@ -26,6 +26,7 @@ import com.ntmdoors.door.DoorDecls;
 import com.ntmdoors.item.ItemBiometricKeycard;
 import com.ntmdoors.item.ItemBiometricOperatorKeycard;
 import com.ntmdoors.item.ItemBiometricRelayKey;
+import com.ntmdoors.item.ItemBreakerRelayKey;
 import com.ntmdoors.item.ItemBlockKeycardProgrammer;
 import com.ntmdoors.item.ItemBlockKeycardScanner;
 import com.ntmdoors.item.ItemBlockKeypad;
@@ -253,6 +254,8 @@ public class ModContent {
     public static final ItemRedstoneRelayKey REDSTONE_RELAY_KEY = new ItemRedstoneRelayKey();
     /** Red diagnostic monocle that reveals wireless Redstone links while held. */
     public static final ItemRedstoneMonocle REDSTONE_MONOCLE = new ItemRedstoneMonocle();
+    /** Breaks owned security doors and safes after a server-validated confirmation. */
+    public static final ItemBreakerRelayKey BREAKER_RELAY_KEY = new ItemBreakerRelayKey();
     /** Blue creative key that opens the Motion Sensor console and defines its 5x5x5 area. */
     public static final ItemMotionRelayKey MOTION_RELAY_KEY = new ItemMotionRelayKey();
     /** Orange and grey key that binds devices to a Security Terminal net. */
@@ -264,7 +267,8 @@ public class ModContent {
     /** Keys the Undefined Relay Key can become, in the order the programming screen lists them. */
     public static final List<Item> UNDEFINED_KEY_TYPES = Collections.unmodifiableList(Arrays.asList(
             RELAY_KEY, BIOMETRIC_RELAY_KEY, REDSTONE_RELAY_KEY, MOTION_RELAY_KEY,
-            TERMINAL_RELAY_KEY, WEAPONS_RELAY_KEY, SAFE_BINDING_KEY, TERMINAL_BACKUP_KEY));
+            TERMINAL_RELAY_KEY, WEAPONS_RELAY_KEY, SAFE_BINDING_KEY, TERMINAL_BACKUP_KEY,
+            BREAKER_RELAY_KEY));
     /** Creative-only programming key; no recipe is registered yet. */
     public static final ItemUndefinedRelayKey UNDEFINED_RELAY_KEY = new ItemUndefinedRelayKey();
     /** Plain crafting components for the new desk recipes. */
@@ -471,6 +475,8 @@ public class ModContent {
         }
         // UAC cards go last so every previously saved numeric item ID stays untouched.
         for (ItemRfidCard card : UAC_CARDS) e.getRegistry().register(card);
+        // Newest key goes last for the same reason.
+        e.getRegistry().register(BREAKER_RELAY_KEY);
     }
 
     /** Keeps existing worlds working after the SCP card registry names moved from 1-6 to 0-5. */

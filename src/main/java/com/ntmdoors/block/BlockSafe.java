@@ -150,6 +150,20 @@ public class BlockSafe extends Block {
         return true;
     }
 
+    /** Binds a freshly placed safe to the player who placed it; dispensers leave it unowned. */
+    @Override
+    public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state,
+                                EntityLivingBase placer, ItemStack stack) {
+        super.onBlockPlacedBy(world, pos, state, placer, stack);
+        if (world.isRemote || !(placer instanceof EntityPlayer)) return;
+
+        ensureTileEntity(world, pos, state);
+        TileEntity te = world.getTileEntity(pos);
+        if (te instanceof TileEntitySafe) {
+            ((TileEntitySafe) te).bindOwner((EntityPlayer) placer);
+        }
+    }
+
     /** Adds the tile entity to a legacy placed safe that predates the inventory. */
     protected void ensureTileEntity(World world, BlockPos pos, IBlockState state) {
         if (world.isRemote || world.getTileEntity(pos) instanceof TileEntitySafe) return;
