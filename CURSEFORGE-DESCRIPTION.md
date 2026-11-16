@@ -4,7 +4,7 @@
 
 NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system, security equipment and concrete building set from HBM's Nuclear Tech Mod. No NTM installation is required. Chisel 1.12.2-1.0.2.45 is required. Every model, texture and sound is bundled.
 
-**Current version: 1.0.59**
+**Current version: 1.0.60**
 
 ## 27 multiblock doors
 
@@ -81,8 +81,8 @@ Screwdriver + sneak + right-click cycles door skins:
 ## Keycard access control
 
 - **Keycard Scanner** — wall-mounted reader with an LCD, security stripe and green/yellow/red lenses. Bind up to nine closed doors within 32 blocks using the screwdriver; bound doors close again after ten seconds. Cards only open a scanner when they carry one of its assigned private keys, and the Creative Keycard opens everything.
-- **Keycard Programmer** — desk console with a card slot, live screen and three GUI pages. Bind Relay Keys to Operator Keycards and RFID cards, restyle a card from the 31-entry palette (seven colours, five themed cards, six SCP clearance cards, the Googa card and the Level 1–12 access cards), and run the Legacy Backup Programmer with its five-stage progress bar.
-- **RFID cards** — blank plus red, violet, green, blue, black, orange and yellow variants.
+- **Keycard Programmer** - desk console with a card slot, live screen and three GUI pages. Bind Relay Keys to Operator Keycards and RFID cards, restyle a card from the 34-entry palette (seven colours, three UAC cards, five themed cards, six SCP clearance cards, the Googa card and the Level 1-12 access cards), and run the Legacy Backup Programmer with its five-stage progress bar.
+- **RFID cards** - blank plus red, violet, green, blue, black, orange and yellow variants, plus Yellow, Blue and Red UAC cards.
 - **Themed keycards** — Keycard with Blue Marking, Labyrinth, Engine Room, Terminal and Terragroup Labs Access.
 - **Operator Keycard** - aimed at a bound scanner, opens its security code screen; aimed at a Redstone Gate, opens its settings screen. The Biometric Operator Keycard does the same. Elsewhere it shows its private keys.
 - **Creative Keycard** - bypasses card checks on bound doors, opens every scanner, opens both safes, and sneak + right-clicking a scanner opens its full console without a code or bound doors. It also opens the Redstone Gate screen.

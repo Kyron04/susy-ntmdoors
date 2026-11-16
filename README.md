@@ -385,6 +385,10 @@ Creative Keycard, Developer Keycard and Spatial Disrupter are recipe-free.
   and opens its bound doors when one of the card's private keys is assigned to that scanner. Sneak
   right-clicking a coloured card opens the read-only card viewer, which lists every private key
   stored on it; the blank card has no viewer.
+* UAC cards (`ntmdoors:yellow_uac_keycard`, `ntmdoors:blue_uac_keycard`,
+  `ntmdoors:red_uac_keycard`): three ordinary RFID cards using the supplied yellow, blue and red
+  sprites. They have the same private-key storage, viewer, scanner, holder and programmer-palette
+  behaviour as the colour cards, with no special logic.
 * Themed keycards (`ntmdoors:keycard_blue_marking`, `ntmdoors:labyrinth_keycard`,
   `ntmdoors:engine_room_keycard`, `ntmdoors:terminal_keycard`,
   `ntmdoors:terragroup_labs_access_keycard`): five fixed-name cards, each with its own 16x16 sprite

@@ -177,6 +177,10 @@ public class ModContent {
     public static final ItemRfidCard BLACK_RFID_CARD = new ItemRfidCard("black_rfid_card");
     public static final ItemRfidCard ORANGE_RFID_CARD = new ItemRfidCard("orange_rfid_card");
     public static final ItemRfidCard YELLOW_RFID_CARD = new ItemRfidCard("yellow_rfid_card");
+    /** UAC cards: ordinary RFID cards with the supplied yellow, blue and red sprites. */
+    public static final ItemRfidCard YELLOW_UAC_KEYCARD = new ItemRfidCard("yellow_uac_keycard");
+    public static final ItemRfidCard BLUE_UAC_KEYCARD = new ItemRfidCard("blue_uac_keycard");
+    public static final ItemRfidCard RED_UAC_KEYCARD = new ItemRfidCard("red_uac_keycard");
     /** Themed cards with a fixed name, sprite and description; otherwise ordinary RFID cards. */
     public static final ItemRfidCard BLUE_MARKING_CARD =
             new ItemNamedRfidCard("keycard_blue_marking", "Sanitar's office.");
@@ -275,13 +279,14 @@ public class ModContent {
 
     /**
      * Every non-privileged, non-biometric RFID card the programmer's second page can produce:
-     * the seven colours, the five Tarkov cards, the six SCP clearance cards, Googa and the
-     * Level 1-12 access keycards. Operator, Creative, Biometric and the Developer Keycard are
-     * deliberately excluded.
+     * the seven colours, the three UAC cards, the five Tarkov cards, the six SCP clearance cards,
+     * Googa and the Level 1-12 access keycards. Operator, Creative, Biometric and the Developer
+     * Keycard are deliberately excluded.
      */
     public static final List<ItemRfidCard> PROGRAMMER_CARDS = Collections.unmodifiableList(Arrays.asList(
             RED_RFID_CARD, VIOLET_RFID_CARD, GREEN_RFID_CARD, BLUE_RFID_CARD,
             BLACK_RFID_CARD, ORANGE_RFID_CARD, YELLOW_RFID_CARD,
+            YELLOW_UAC_KEYCARD, BLUE_UAC_KEYCARD, RED_UAC_KEYCARD,
             BLUE_MARKING_CARD, LABYRINTH_KEYCARD, ENGINE_ROOM_KEYCARD, TERMINAL_KEYCARD,
             TERRAGROUP_LABS_KEYCARD,
             SCP_LEVEL_0_KEYCARD, SCP_LEVEL_1_KEYCARD, SCP_LEVEL_2_KEYCARD,
@@ -298,6 +303,10 @@ public class ModContent {
             BLUE_RFID_CARD, BLACK_RFID_CARD, ORANGE_RFID_CARD, YELLOW_RFID_CARD,
             BLUE_MARKING_CARD, LABYRINTH_KEYCARD, ENGINE_ROOM_KEYCARD, TERMINAL_KEYCARD,
             TERRAGROUP_LABS_KEYCARD));
+
+    /** UAC cards registered after every existing item, so saved numeric item IDs are untouched. */
+    public static final List<ItemRfidCard> UAC_CARDS = Collections.unmodifiableList(Arrays.asList(
+            YELLOW_UAC_KEYCARD, BLUE_UAC_KEYCARD, RED_UAC_KEYCARD));
 
     /** New cards registered after every existing item, so saved numeric item IDs are untouched. */
     public static final List<ItemRfidCard> SCP_CARDS = Collections.unmodifiableList(Arrays.asList(
@@ -460,6 +469,8 @@ public class ModContent {
         for (BlockMonitorOnly monitor : MONITORS) {
             e.getRegistry().register(new ItemDesk(monitor).setRegistryName(monitor.getRegistryName()));
         }
+        // UAC cards go last so every previously saved numeric item ID stays untouched.
+        for (ItemRfidCard card : UAC_CARDS) e.getRegistry().register(card);
     }
 
     /** Keeps existing worlds working after the SCP card registry names moved from 1-6 to 0-5. */

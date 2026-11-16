@@ -1,5 +1,11 @@
-HBM DOORS: 1.0.59
+HBM DOORS: 1.0.60
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.60
+FEATURE
+- Added Yellow, Blue and Red UAC Keycards. They are ordinary RFID cards with the supplied
+  16x16 sprites, normal private-key storage, the standard card viewer, scanner support and
+  Keycard Programmer palette entries.
 
 1.0.59
 FIX
