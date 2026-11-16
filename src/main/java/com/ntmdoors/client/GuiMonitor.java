@@ -4,7 +4,6 @@ import com.ntmdoors.NTMDoors;
 import com.ntmdoors.item.ItemTerminalRelayKey;
 import com.ntmdoors.monitor.MonitorDevice;
 import com.ntmdoors.monitor.MonitorDisplay;
-import com.ntmdoors.monitor.MonitorWallpaper;
 import com.ntmdoors.monitor.SecurityNet;
 import com.ntmdoors.monitor.SecurityNetSummary;
 import com.ntmdoors.network.MessageMonitorAction;

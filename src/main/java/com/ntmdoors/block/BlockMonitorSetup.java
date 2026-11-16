@@ -71,12 +71,6 @@ public class BlockMonitorSetup extends Block {
     }
 
     private static final ThreadLocal<Boolean> DISMANTLING = ThreadLocal.withInitial(() -> false);
-    /** Authored monitor wall: the south half of a block, centred so it can be rotated. */
-    private static final AxisAlignedBB MONITOR_LOCAL = new AxisAlignedBB(-0.5, 0, 0, 0.5, 1, 0.5);
-    private static final AxisAlignedBB MONITOR_NORTH = rotatedMonitorBox(EnumFacing.NORTH);
-    private static final AxisAlignedBB MONITOR_SOUTH = rotatedMonitorBox(EnumFacing.SOUTH);
-    private static final AxisAlignedBB MONITOR_EAST = rotatedMonitorBox(EnumFacing.EAST);
-    private static final AxisAlignedBB MONITOR_WEST = rotatedMonitorBox(EnumFacing.WEST);
 
     private final Layer layer;
 
@@ -222,31 +216,12 @@ public class BlockMonitorSetup extends Block {
      */
     @Override
     public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess world, BlockPos pos) {
-        return layer == Layer.BOTTOM ? FULL_BLOCK_AABB : monitorBox(state.getValue(FACING));
+        return layer == Layer.BOTTOM ? FULL_BLOCK_AABB : MonitorBoxes.forFacing(state.getValue(FACING));
     }
 
     @Override
     public AxisAlignedBB getCollisionBoundingBox(IBlockState state, IBlockAccess world, BlockPos pos) {
-        return layer == Layer.BOTTOM ? FULL_BLOCK_AABB : monitorBox(state.getValue(FACING));
-    }
-
-    /** Rotates the authored south-half monitor wall into the block's facing. */
-    private static AxisAlignedBB monitorBox(EnumFacing facing) {
-        switch (facing) {
-            case SOUTH:
-                return MONITOR_SOUTH;
-            case EAST:
-                return MONITOR_EAST;
-            case WEST:
-                return MONITOR_WEST;
-            case NORTH:
-            default:
-                return MONITOR_NORTH;
-        }
-    }
-
-    private static AxisAlignedBB rotatedMonitorBox(EnumFacing facing) {
-        return Facings.rotate(MONITOR_LOCAL, facing).offset(0.5D, 0D, 0.5D);
+        return layer == Layer.BOTTOM ? FULL_BLOCK_AABB : MonitorBoxes.forFacing(state.getValue(FACING));
     }
 
     @Override

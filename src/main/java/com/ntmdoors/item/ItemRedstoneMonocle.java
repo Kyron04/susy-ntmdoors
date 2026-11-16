@@ -21,7 +21,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 /**
- * Redstone Monocle. A creative diagnostic item: while held in either hand it asks the client
+ * Redstone Monocle. A diagnostic item: while held in either hand it asks the client
  * overlay to draw the wireless Redstone links around the player. It has no server-side behaviour.
  */
 public class ItemRedstoneMonocle extends Item {

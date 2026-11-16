@@ -23,7 +23,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 /**
- * Safe Binding Key. A creative-only USB key that links a safe to doors. Sneak right-click a safe to
+ * Safe Binding Key. A green USB key that links a safe to doors. Sneak right-click a safe to
  * start or finish the session, then sneak right-click closed doors to link or unlink them. A linked
  * door closes once when the safe enters a lockout, provided Binding Activities is on.
  */

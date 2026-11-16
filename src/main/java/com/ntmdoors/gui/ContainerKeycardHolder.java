@@ -89,15 +89,6 @@ public class ContainerKeycardHolder extends Container {
                 && player.getHeldItem(hand) == holder;
     }
 
-    /** Number of occupied holder slots, shown in the GUI header. */
-    public int getStoredCount() {
-        int count = 0;
-        for (int i = 0; i < HOLDER_SLOT_COUNT; i++) {
-            if (!holderInventory.getStackInSlot(i).isEmpty()) count++;
-        }
-        return count;
-    }
-
     public int getKeycardCount() {
         return countSection(0, KEYCARD_SLOT_COUNT);
     }
@@ -125,14 +116,19 @@ public class ContainerKeycardHolder extends Container {
             }
         }
 
-        // Number-key swaps bypass Slot.isItemValid in vanilla. Without this guard a hotbar item
-        // (including the holder itself) could be forced into a card slot, and the holder could be
-        // replaced and lost in the process.
+        // Number-key and offhand swaps bypass the slot's normal validity path in some vanilla
+        // branches. Without this guard a hotbar or offhand item (including the holder itself)
+        // could be forced into a card slot, and the holder could be replaced and lost.
         if (clickTypeIn == ClickType.SWAP && slotId >= 0 && slotId < HOLDER_SLOT_COUNT) {
-            ItemStack hotbar = dragType >= 0 && dragType < 9
-                    ? player.inventory.getStackInSlot(dragType)
-                    : ItemStack.EMPTY;
-            if (!hotbar.isEmpty() && !ItemKeycardHolder.isStorable(slotId, hotbar)) {
+            ItemStack swapped;
+            if (dragType >= 0 && dragType < 9) {
+                swapped = player.inventory.getStackInSlot(dragType);
+            } else if (dragType == 40) {
+                swapped = player.getHeldItemOffhand();
+            } else {
+                swapped = ItemStack.EMPTY;
+            }
+            if (!swapped.isEmpty() && !ItemKeycardHolder.isStorable(slotId, swapped)) {
                 return player.inventory.getItemStack();
             }
         }

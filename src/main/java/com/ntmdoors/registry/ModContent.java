@@ -244,7 +244,7 @@ public class ModContent {
     public static final ItemBiometricOperatorKeycard BIOMETRIC_OPERATOR_KEYCARD = new ItemBiometricOperatorKeycard();
     /** Relay Key that also records the owner, shown with a blue name. */
     public static final ItemBiometricRelayKey BIOMETRIC_RELAY_KEY = new ItemBiometricRelayKey();
-    /** Carried case for up to twelve keycards, opened with a right-click. */
+    /** Carried case with 16 keycard slots and 16 relay/utility key slots. */
     public static final ItemKeycardHolder KEYCARD_HOLDER = new ItemKeycardHolder();
     /** Carried folder for written notes, with twenty editable pages. */
     public static final ItemDocumentsFolder DOCUMENTS_FOLDER = new ItemDocumentsFolder();
@@ -269,7 +269,7 @@ public class ModContent {
             RELAY_KEY, BIOMETRIC_RELAY_KEY, REDSTONE_RELAY_KEY, MOTION_RELAY_KEY,
             TERMINAL_RELAY_KEY, WEAPONS_RELAY_KEY, SAFE_BINDING_KEY, TERMINAL_BACKUP_KEY,
             BREAKER_RELAY_KEY));
-    /** Creative-only programming key; no recipe is registered yet. */
+    /** Programming key that converts into one of the nine relay/utility key types. */
     public static final ItemUndefinedRelayKey UNDEFINED_RELAY_KEY = new ItemUndefinedRelayKey();
     /** Plain crafting components for the new desk recipes. */
     public static final ItemCraftingPart ID_CHIP = new ItemCraftingPart("id_chip");

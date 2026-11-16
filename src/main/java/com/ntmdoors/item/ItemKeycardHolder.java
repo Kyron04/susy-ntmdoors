@@ -146,15 +146,6 @@ public class ItemKeycardHolder extends Item {
         }
     }
 
-    /** Number of non-empty storage slots, used by the GUI total. */
-    public static int count(ItemStack holder) {
-        int count = 0;
-        for (ItemStack stored : readContents(holder)) {
-            if (!stored.isEmpty()) count++;
-        }
-        return count;
-    }
-
     public static int countKeycards(ItemStack holder) {
         return countSection(holder, 0, RELAY_KEY_SLOT_START);
     }

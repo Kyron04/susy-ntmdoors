@@ -1,5 +1,23 @@
-HBM DOORS: 1.0.67
+HBM DOORS: 1.0.68
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.68
+FEATURE
+- Added crafting recipes for the decorative monitor-only blocks: a Single Monitor uses a Monitor
+  Screen, a Circuit Board and an iron ingot, and the 1x2 and 1x3 versions combine two or three
+  Single Monitors.
+FIX
+- Monitor-only blocks now use the same half-depth monitor collision as the monitor desks, leaving
+  the front half of the cell walkable.
+- The 1x2 and 1x3 Desk item icons now show the desk-only model instead of a keyboard and mouse,
+  and the oversized item models are gone.
+- The Keycard Holder now rejects invalid offhand swaps as well as invalid hotbar swaps.
+CLEANUP
+- Removed UTF-8 BOMs from 13 model JSON files.
+- Removed unused Keycard Holder count helpers and two unused imports.
+- Corrected the SCP card level labels, the Keycard Programmer recipe note, the scanner and flat-icon
+  documentation, and stale item and Keycard Holder comments. Updated the AI disclosure for the
+  current feature set.
 
 1.0.67
 FEATURE

@@ -115,6 +115,15 @@ public final class ModRecipes {
         shaped(e, "single_desk", new ItemStack(ModContent.SINGLE_DESK),
                 "WWW", "W W", "I I",
                 'W', "plankWood", 'I', Items.IRON_INGOT);
+        shaped(e, "single_monitor", new ItemStack(ModContent.SINGLE_MONITOR),
+                " S ", " C ", " I ",
+                'S', ModContent.MONITOR_SCREEN, 'C', ModContent.CIRCUIT_BOARD,
+                'I', Items.IRON_INGOT);
+        shapeless(e, "monitor_1x2", new ItemStack(ModContent.MONITOR_1X2),
+                new ItemStack(ModContent.SINGLE_MONITOR), new ItemStack(ModContent.SINGLE_MONITOR));
+        shapeless(e, "monitor_1x3", new ItemStack(ModContent.MONITOR_1X3),
+                new ItemStack(ModContent.SINGLE_MONITOR), new ItemStack(ModContent.SINGLE_MONITOR),
+                new ItemStack(ModContent.SINGLE_MONITOR));
         shapeless(e, "desk_1x2", new ItemStack(ModContent.DESK_1X2),
                 ModContent.SINGLE_DESK, ModContent.SINGLE_DESK);
         shaped(e, "dual_monitor_setup_2x2", new ItemStack(ModContent.DUAL_MONITOR_SETUP_2X2),

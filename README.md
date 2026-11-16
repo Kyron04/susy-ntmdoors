@@ -97,8 +97,8 @@ for editing.
   the left, `NON-ASSIGNED KEYS` from the held Operator Keycard on the right, with click-to-move rows
   and wheel scrolling. Assigned keys are stored on the scanner and copied from the card, so any
   keycard that carries one can open the scanner's doors; the screen stays usable for two minutes
-  after the code. Placement and facing match the keypad; the item uses a matching 3D model in
-  the inventory and hand.
+  after the code. Placement and facing match the keypad; the item uses a flat 16x16 icon while the
+  placed block uses its matching 3D model.
 * Scanner options: the assignment screen also carries the switches `Match biometric holder`,
   `Lockdown mode`, `Lockout mode`, `Ignore private keys`, `Ignore biometric IDs`, `Override door
   locks`, `Force close` and `Reset security code`. Lockdown is an emergency lock: raising it closes
@@ -116,8 +116,8 @@ for editing.
   like the scanner's. Right clicking opens a three-page GUI: page one has the `Relay Key` /
   `Operator Keycard` and `Relay Key` / `RFID Card` binding rows, where Bind instantly copies the
   Relay Key's private key onto the card and keeps any keys the card already holds, page two has the
-  RFID card slot plus a scrollable card-style palette of every non-privileged, non-biometric card
-  style, and page three is the
+  RFID card slot plus a six-column, four-row card-style palette of every non-privileged,
+  non-biometric card style (the remaining styles scroll as before), and page three is the
   `Legacy Backup Programmer` with a used source slot on the left, a fresh target slot on the right,
   a `Backup` button and a five-frame ten-second progress bar. A backup copies the source item's NBT
   to the target: Relay → Relay, Relay → Operator and Operator → Operator are allowed, Operator →
@@ -128,7 +128,7 @@ for editing.
   the item they expect, and every machine slot only accepts its allowed item type or types. Shift
   clicking moves items between the player inventory and the slots of the page on screen, so nothing
   is dropped into a hidden page. The GUI darkens the world like a normal container GUI and draws
-  item tooltips above JEI/HEI. There is no recipe; it is in the NTM Doors creative tab with a flat
+  item tooltips above JEI/HEI. It is craftable and sits in the NTM Doors creative tab with a flat
   16x16 icon derived from the model.
 * Safe (`ntmdoors:safe`): a 1x1x1 steel safe with a keypad front and two small USB ports under
   the pad. Right clicking opens the same keypad screen as the scanner. The first accepted code
@@ -260,8 +260,10 @@ for editing.
   item and break as one desk.
 * Single Monitor (`ntmdoors:single_monitor`, 1x1), 1x2 Monitor (`ntmdoors:monitor_1x2`, 1x2) and
   1x3 Monitor (`ntmdoors:monitor_1x3`, 1x3): decorative monitor-only blocks made from the monitor
-  desk's monitor layer. They have no desk, terminal or tile entity, and the multi-block versions
-  place and break as one structure.
+  desk's monitor layer. They have no desk, terminal or tile entity, use the same half-depth monitor
+  collision as the desks, and the multi-block versions place and break as one structure. A Single
+  Monitor is crafted from a Monitor Screen, a Circuit Board and an iron ingot; the 1x2 and 1x3
+  versions combine two or three Single Monitors.
 * ID Chip (`ntmdoors:id_chip`), Monitor Screen (`ntmdoors:monitor_screen`), Uncased USB
   (`ntmdoors:uncased_usb`), Circuit Board (`ntmdoors:circuit_board`), Card Reader
   (`ntmdoors:card_reader`) and RFID Chip (`ntmdoors:rfid_chip`): plain crafting components.
@@ -269,9 +271,10 @@ for editing.
 ## Crafting
 
 Most non-door content has a crafting recipe, registered in `ModRecipes`: the six components,
-keycards, keys, Keycard Holder, Documents Folder, security machines, monitor desks and decorative
-desks. Doors intentionally have no recipes. Relay keys, programmer-made RFID card colours, the
-Creative Keycard, Developer Keycard and Spatial Disrupter are recipe-free.
+keycards, craftable utility keys, Keycard Holder, Documents Folder, security machines, monitor
+desks, decorative desks and monitor-only blocks. Doors intentionally have no recipes. The Relay,
+Biometric Relay, Redstone, Motion, Terminal, Weapons and Breaker Relay Keys, programmer-made RFID
+card colours, the Creative Keycard, Developer Keycard and Spatial Disrupter are recipe-free.
 * Redstone Gate (`ntmdoors:redstone_gate`): a full-cube redstone component with separate off and on
   textures. It starts off, turns on while it receives redstone power or a wireless pulse, and emits
   a full-strength signal while on. Redstone dust sitting on top is refreshed when the gate switches,
@@ -297,7 +300,7 @@ Creative Keycard, Developer Keycard and Spatial Disrupter are recipe-free.
   with that gate. Devices and gates can be linked many-to-many in the same dimension; doors are
   driven by gate sessions only, breached doors refuse the link, and security doors accept it only
   after their owner enables Redstone access with the Monocle.
-* Redstone Monocle (`ntmdoors:redstone_monocle`): a red-named creative diagnostic item with a
+* Redstone Monocle (`ntmdoors:redstone_monocle`): a red-named diagnostic item with a
   16x16 red monocle sprite. While held in either hand it draws the loaded wireless links through
   walls: red for gate-to-gate, amber for gate-to-door, and blue for device-to-gate. Only links
   whose two endpoints are within four chunks of the player are drawn; this is a visual limit and
@@ -404,8 +407,8 @@ Creative Keycard, Developer Keycard and Spatial Disrupter are recipe-free.
   private keys onto them and the scanner reads them - and they are selectable from the programmer's
   second-page card palette.
 * SCP access cards (`ntmdoors:scp_level_0_keycard` through `ntmdoors:scp_level_5_keycard`): six
-  fixed-clearance cards in grey, yellow, amber, orange, dark orange and red, with `Level 1` to
-  `Level 6 clearance` tooltips. Also included is `ntmdoors:googa_security_keycard`, whose tooltip
+  fixed-clearance cards in grey, yellow, amber, orange, dark orange and red, with `Level 0` to
+  `Level 5 clearance` tooltips. Also included is `ntmdoors:googa_security_keycard`, whose tooltip
   reads `Security is goog` and whose name is gold. They use the same private-key storage, programmer
   binding, holder and scanner behaviour as the other cards, and are selectable from the programmer's
   second-page card palette.
@@ -469,12 +472,13 @@ materials and texture generator live in `source-art/motion-sensor/`.
 Models live under `src/main/resources/assets/ntmdoors/models/doors/`, textures under
 `textures/models/doors/`, and sounds under `sounds/doors/`. Door items do **not** need flat
 `textures/items/<door>.png` icons: the inventory/hand item is rendered from the same OBJ model
-and texture as the placed door. Only the screwdriver, the keypad, the cards, the Keycard Holder and
-the Documents Folder use flat icons (`textures/items/screwdriver.png`,
-`textures/items/sliding_blast_door_keypad.png`, `textures/items/blank_rfid_card.png`,
-`textures/items/operator_keycard.png`, `textures/items/rfid_card_<colour>.png` plus the themed,
-biometric and folder sprites beside them). The keycard programmer has a flat 16x16 icon derived
-from its model; the scanner uses a 3D model in the inventory and hand too, like the doors.
+and texture as the placed door. The screwdriver, keypad, cards, Keycard Holder, relay/utility keys
+and crafting components use flat 16x16 icons under `textures/items/` (`screwdriver.png`,
+`sliding_blast_door_keypad.png`, `blank_rfid_card.png`, `operator_keycard.png`,
+`rfid_card_<colour>.png`, plus the themed, biometric, UAC, key and component sprites beside them).
+The Documents Folder uses a compact 3D item model, the keycard programmer has a flat 16x16 icon
+derived from its model, and the keycard scanner uses a flat 16x16 icon while its placed block is a
+3D model.
 
 | door | animated OBJ groups | notes |
 |---|---|---|
@@ -516,8 +520,8 @@ for explicit model-space bounds; `.collisionSplits(n)` tightens rotating parts b
 
 ## Not included
 Doors have no crafting recipes (the originals need NTM materials); configs, NEI/JEI, and other NTM
-items are also not included. The screwdriver, the non-door items and machines added in 1.0.57, and
-the concrete set added in 1.0.46 have recipes. The included HL Blocks are creative-only.
+items are also not included. The screwdriver, most non-door items and machines, the decorative
+desks and monitors, and the concrete set have recipes. The included HL Blocks are creative-only.
 
 ## Concrete and HL Blocks
 
@@ -619,5 +623,6 @@ LGPL-3.0; see `NOTICE` for the exact file lists and links.
 
 ### AI assistance
 
-The concrete and HL Blocks contribution was prepared with AI assistance. See
-[`AI_DISCLOSURE.md`](AI_DISCLOSURE.md) for the tool, the extent of use and the human review.
+This project was developed with AI assistance, including the concrete and HL Blocks integration,
+security equipment behaviour and release housekeeping. See [`AI_DISCLOSURE.md`](AI_DISCLOSURE.md)
+for the tool, the extent of use and the human review.

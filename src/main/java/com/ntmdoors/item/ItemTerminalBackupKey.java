@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 /**
- * Terminal Backup Key. A creative-only USB key used by the monitor terminal's backup screen.
+ * Terminal Backup Key. A black and red USB key used by the monitor terminal's backup screen.
  *
  * <p>One key receives the terminal snapshot with Upload; the Backup button copies that key onto a
  * blank key in the second slot, exactly like the keycard programmer's legacy backup.</p>
