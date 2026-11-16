@@ -192,6 +192,7 @@ ntmdoors.msg.safe_biometric_owner=This safe is bound to %s
 ntmdoors.msg.safe_biometric_bound=Biometric safe bound to %s
 ntmdoors.msg.safe_busy=The safe is already reading a card
 ntmdoors.msg.safe_binding_disabled=Binding activities are disabled
+ntmdoors.msg.safe_binding_owner_only=Only the safe owner or an unlocked user can bind doors
 ntmdoors.msg.safe_binding_busy=Another player is binding this safe
 ntmdoors.msg.safe_binding_on=Binding mode: sneak + right click doors
 ntmdoors.msg.safe_binding_off=Binding mode off

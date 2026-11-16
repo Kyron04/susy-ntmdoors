@@ -4,7 +4,7 @@
 
 NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system, security equipment and concrete building set from HBM's Nuclear Tech Mod. No NTM installation is required. Chisel 1.12.2-1.0.2.45 is required. Every model, texture and sound is bundled.
 
-**Current version: 1.0.68**
+**Current version: 1.0.69**
 
 ## 27 multiblock doors
 
@@ -172,7 +172,7 @@ Screwdriver + sneak + right-click cycles door skins:
 
 ## Safe-to-door binding
 
-- **Safe Binding Key** — a small green USB key with a green name and a tooltip explaining its controls.
+- **Safe Binding Key** — a small green USB key with a green name and a tooltip explaining its controls. An owned safe only accepts its owner or a player who has already unlocked it; legacy ownerless safes stay public.
 - Sneak + right-click a safe to start or finish a binding session, then sneak + right-click closed doors within 32 blocks to link or unlink them.
 - A safe can link several doors. A door belongs to at most one safe, but a door already controlled by a keypad or scanner keeps that binding; the safe link is additive and both systems remain respected.
 - Both safes have a **Binding Activities** toggle, on by default. When on, the safe's lockout closes every linked door once. Turning it off prevents new binding sessions and pauses the lockout-door response without deleting existing links.

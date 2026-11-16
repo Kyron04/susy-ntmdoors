@@ -1,5 +1,11 @@
-HBM DOORS: 1.0.68
+HBM DOORS: 1.0.69
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.69
+FIX
+- The Safe Binding Key now requires the safe's owner or a player who has already unlocked it
+  before starting a binding session. Legacy ownerless safes remain public. This closes an
+  access-control gap on owned safes.
 
 1.0.68
 FEATURE

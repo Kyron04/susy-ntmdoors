@@ -157,9 +157,11 @@ for editing.
   Keycard opens it directly.
 * Safe Binding Key (`ntmdoors:safe_binding_key`): a small green USB key with a green name. Sneak
   right-click a safe to start or finish a binding session, then sneak right-click closed doors to
-  link or unlink them. A door can belong to one safe, but a door already controlled by a keypad or
-  scanner keeps that binding and can still be linked to a safe. With `Binding Activities` on, the
-  safe's lockout closes every linked door once. Breaking the safe clears the links.
+  link or unlink them. An owned safe only accepts its owner or a player who has already unlocked
+  it; legacy ownerless safes stay public. A door can belong to one safe, but a door already
+  controlled by a keypad or scanner keeps that binding and can still be linked to a safe. With
+  `Binding Activities` on, the safe's lockout closes every linked door once. Breaking the safe
+  clears the links.
 * Speaker (`ntmdoors:speaker`): a 1x1x1 black-ash cabinet with a woofer, tweeter and bass reflex
   port. Shift-right-click (with any item or an empty hand) opens a safe-style toggle screen with
   `Enabled`, four selectable sounds (`Air Raid`, `Facility`, `Industrial`, `EAS`), a 1-64 block

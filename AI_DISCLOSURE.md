@@ -37,6 +37,8 @@ AI assistance was used for:
   routing, relay-key ghosts and the `Also holds Relay Keys` tooltip;
 - the Breaker Relay Key confirmation flow, server-side ownership and reach validation, security
   door drops, safe ownership and safe contents dropping;
+- the Safe Binding Key owner/access check, so a craftable key cannot start a binding session on
+  another player's owned safe;
 - the scoped GUI tooltip GL-state save and restore used by the programmer, safes, holder, Terminal
   Backup and Documents Folder;
 - monitor-only decorative blocks, including their half-depth collision and recipes;

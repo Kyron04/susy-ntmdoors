@@ -24,8 +24,10 @@ import java.util.List;
 
 /**
  * Safe Binding Key. A green USB key that links a safe to doors. Sneak right-click a safe to
- * start or finish the session, then sneak right-click closed doors to link or unlink them. A linked
- * door closes once when the safe enters a lockout, provided Binding Activities is on.
+ * start or finish the session, then sneak right-click closed doors to link or unlink them. An owned
+ * safe only accepts its owner or a player who has already unlocked it; legacy ownerless safes stay
+ * public. A linked door closes once when the safe enters a lockout, provided Binding Activities is
+ * on.
  */
 public class ItemSafeBindingKey extends Item {
 
@@ -47,7 +49,18 @@ public class ItemSafeBindingKey extends Item {
 
         TileEntity te = world.getTileEntity(pos);
         if (te instanceof TileEntitySafe) {
-            if (!world.isRemote) ((TileEntitySafe) te).toggleBinding(player);
+            if (!world.isRemote) {
+                TileEntitySafe safe = (TileEntitySafe) te;
+                // Ownerless legacy safes stay usable by anyone. An owned safe requires its owner,
+                // or a player who has already unlocked it, so the craftable key cannot be used to
+                // disrupt another player's door links.
+                if (safe.hasOwner() && !safe.isOwnedBy(player) && !safe.hasAccessSessionFor(player)) {
+                    player.sendStatusMessage(new TextComponentTranslation(
+                            "ntmdoors.msg.safe_binding_owner_only"), true);
+                    return EnumActionResult.SUCCESS;
+                }
+                safe.toggleBinding(player);
+            }
             return EnumActionResult.SUCCESS;
         }
 
