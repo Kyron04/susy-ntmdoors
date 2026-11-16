@@ -99,7 +99,8 @@ public class ItemBreakerRelayKey extends Item {
             TileEntity te = world.getTileEntity(target.breakPos);
             if (!(te instanceof TileEntityDoorGeneric)) return false;
             TileEntityDoorGeneric core = (TileEntityDoorGeneric) te;
-            if (!core.isSecurityDoor() || !core.isOwnedBy(player)) return false;
+            if (!core.isSecurityDoor()) return false;
+            if (core.getOwnerId() != null && !core.isOwnedBy(player)) return false;
             return world.destroyBlock(core.getPos(), true);
         }
 
@@ -161,8 +162,12 @@ public class ItemBreakerRelayKey extends Item {
             if (world == null) return false;
             TileEntity te = world.getTileEntity(breakPos);
             if (type == TARGET_DOOR) {
-                return te instanceof TileEntityDoorGeneric
-                        && ((TileEntityDoorGeneric) te).isOwnedBy(player);
+                if (!(te instanceof TileEntityDoorGeneric)) return false;
+                TileEntityDoorGeneric core = (TileEntityDoorGeneric) te;
+                // An ownerless security door is public property for the Breaker; an owned one
+                // remains restricted to its recorded owner.
+                return core.isSecurityDoor()
+                        && (core.getOwnerId() == null || core.isOwnedBy(player));
             }
             return te instanceof TileEntitySafe && ((TileEntitySafe) te).isOwnedBy(player);
         }
@@ -172,7 +177,8 @@ public class ItemBreakerRelayKey extends Item {
     public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip,
                                ITooltipFlag flag) {
         Names.addDescription(tooltip,
-                "Breaks security doors and safes you own.",
+                "Breaks ownerless security doors,",
+                "and security doors or safes you own.",
                 "Sneak + Right Click a door or safe,",
                 "then confirm the break.");
     }

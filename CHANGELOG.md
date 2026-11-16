@@ -1,5 +1,10 @@
-HBM DOORS: 1.0.64
+HBM DOORS: 1.0.65
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.65
+FIX
+- The Breaker Relay Key can now break ownerless security doors. Security doors with an owner
+  remain restricted to that owner; doors owned by another player ignore the key entirely.
 
 1.0.64
 FEATURE

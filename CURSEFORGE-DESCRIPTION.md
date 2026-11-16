@@ -4,7 +4,7 @@
 
 NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system, security equipment and concrete building set from HBM's Nuclear Tech Mod. No NTM installation is required. Chisel 1.12.2-1.0.2.45 is required. Every model, texture and sound is bundled.
 
-**Current version: 1.0.64**
+**Current version: 1.0.65**
 
 ## 27 multiblock doors
 
@@ -88,7 +88,7 @@ Screwdriver + sneak + right-click cycles door skins:
 - **Creative Keycard** - bypasses card checks on bound doors, opens every scanner, opens both safes, and sneak + right-clicking a scanner opens its full console without a code or bound doors. It also opens the Redstone Gate screen.
 - **Relay Key and Biometric Relay Key** — create named private keys; the biometric version captures the holder's identity instead.
 - **Undefined Relay Key** - a grey programming key. Sneak + right-click opens a picker for the six relay keys plus the Safe Binding, Terminal Backup and Breaker Relay Keys; choosing one replaces the held key with a fresh blank key of that type. Crafted from a Circuit Board, an Uncased USB and an ID Chip.
-- **Breaker Relay Key** - an orange relay key. Sneak + right-click a security door or safe you placed to open a confirmation screen; confirming breaks it instantly. Only the recorded owner can use it. Security doors drop their door item, and safes drop their safe item plus every stored stack even when Void on Destroy is enabled. Code and biometric safes record their placer as owner; legacy ownerless safes refuse the key.
+- **Breaker Relay Key** - an orange relay key. Sneak + right-click a security door or safe to open a confirmation screen; confirming breaks it instantly. Ownerless security doors can be broken by anyone with the key; an owned security door or a safe is restricted to its recorded owner. Security doors drop their door item, and safes drop their safe item plus every stored stack even when Void on Destroy is enabled. Code and biometric safes record their placer as owner; legacy ownerless safes refuse the key.
 - **Biometric Keycard and Biometric Operator Keycard** — carry an identity, show the owner in the tooltip, and work with the scanner's Match biometric holder option. The Operator version also lists its stored private keys in the tooltip.
 - **Keycard Holder** — carried 3x4 case for twelve keycards, with its own NBT storage, empty-slot ghosts and shift-click transfer.
 - **Keycard Viewer** — sneak-right-click a card to read every private key stored on it.

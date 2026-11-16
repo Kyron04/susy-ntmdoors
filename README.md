@@ -305,10 +305,12 @@ Creative Keycard, Developer Keycard and Spatial Disrupter are recipe-free.
   right-click a security door as its owner to toggle whether that door accepts redstone and gate
   links; other players are refused. It changes nothing else on the server.
 * Breaker Relay Key (`ntmdoors:breaker_relay_key`): an orange relay key. Sneak + right-click a
-  security door or safe you placed opens a confirmation screen; confirming breaks it instantly.
-  The server rechecks ownership and reach. Security doors drop their door item; safes drop their
-  safe item and every stored stack even when Void on Destroy is enabled. Code and biometric safes
-  record their placer as owner, and legacy ownerless safes refuse the key.
+  security door or safe opens a confirmation screen; confirming breaks it instantly. Ownerless
+  security doors can be broken by anyone with the key; an owned security door or a safe is
+  restricted to its recorded owner, and the server rechecks reach and ownership. Security doors
+  drop their door item; safes drop their safe item and every stored stack even when Void on
+  Destroy is enabled. Code and biometric safes record their placer as owner, and legacy ownerless
+  safes refuse the key.
 * Weapons Relay Key (`ntmdoors:weapons_relay_key`): a red-named creative key with the tooltip
   `Hard lock weapons so enemies can't disarm them`. Sneak + Right Click opens a screen that selects
   `Regular Bounding` or `Dead Man's Hand`. Regular binds explosives to Redstone Gates: sneak +
