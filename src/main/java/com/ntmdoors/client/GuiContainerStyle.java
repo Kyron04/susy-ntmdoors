@@ -47,7 +47,27 @@ final class GuiContainerStyle {
         GlStateManager.disableDepth();
         GlStateManager.enableTexture2D();
         GlStateManager.enableBlend();
+        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA,
+                GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+                GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+        GlStateManager.enableAlpha();
         GlStateManager.color(1F, 1F, 1F, 1F);
+    }
+
+    /**
+     * Runs a tooltip draw inside a scoped GL attribute push/pop, then reapplies the GUI baseline.
+     * This is the only reliable way to contain every state bit a tooltip or a JEI/HEI tooltip hook
+     * may change; a hand-written reset cannot know what was enabled on entry.
+     */
+    static void withTooltipState(Runnable draw) {
+        if (draw == null) return;
+        GlStateManager.pushAttrib();
+        try {
+            draw.run();
+        } finally {
+            GlStateManager.popAttrib();
+            resetGuiState();
+        }
     }
 
     static void drawRightAligned(FontRenderer font, String text, int right, int y, int colour) {
@@ -59,6 +79,18 @@ final class GuiContainerStyle {
                                   int screenWidth, int screenHeight) {
         if (lines.isEmpty()) return;
 
+        GlStateManager.pushAttrib();
+        try {
+            drawSimpleTooltipContents(font, lines, mouseX, mouseY, screenWidth, screenHeight);
+        } finally {
+            GlStateManager.popAttrib();
+            resetGuiState();
+        }
+    }
+
+    private static void drawSimpleTooltipContents(FontRenderer font, List<String> lines,
+                                                  int mouseX, int mouseY, int screenWidth,
+                                                  int screenHeight) {
         int textWidth = 0;
         for (String line : lines) {
             textWidth = Math.max(textWidth, font.getStringWidth(line));

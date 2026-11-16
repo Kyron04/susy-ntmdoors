@@ -521,8 +521,7 @@ public class GuiSafe extends GuiContainer {
         ItemStack stack = slot.getStack();
         if (stack.isEmpty()) return;
 
-        this.renderToolTip(stack, mouseX, mouseY);
-        GuiContainerStyle.resetGuiState();
+        GuiContainerStyle.withTooltipState(() -> this.renderToolTip(stack, mouseX, mouseY));
     }
 
     private Slot findSlot(int mouseX, int mouseY) {

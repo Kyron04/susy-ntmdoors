@@ -221,7 +221,8 @@ public class GuiDocumentsFolder extends GuiScreen {
         GlStateManager.popMatrix();
 
         if (!renaming && inName(localX, localY)) {
-            drawHoveringText(Collections.singletonList("Click to rename"), mouseX, mouseY);
+            GuiContainerStyle.withTooltipState(() ->
+                    drawHoveringText(Collections.singletonList("Click to rename"), mouseX, mouseY));
         }
     }
 

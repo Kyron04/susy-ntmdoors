@@ -307,8 +307,7 @@ public class GuiTerminalBackup extends GuiContainer {
 
         ItemStack stack = slot.getStack();
         if (!stack.isEmpty()) {
-            this.renderToolTip(stack, mouseX, mouseY);
-            GuiContainerStyle.resetGuiState();
+            GuiContainerStyle.withTooltipState(() -> this.renderToolTip(stack, mouseX, mouseY));
             return;
         }
 

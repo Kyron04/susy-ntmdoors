@@ -338,12 +338,7 @@ public class GuiKeycardProgrammer extends GuiContainer {
 
         ItemStack stack = slot.getStack();
         if (!stack.isEmpty()) {
-            this.renderToolTip(stack, mouseX, mouseY);
-            // renderToolTip ends in GuiUtils.drawHoveringText, which always leaves lighting,
-            // depth, rescale-normal and the world light rig switched on. Vanilla can ignore that
-            // because a tooltip is the last thing it draws in a frame; we cannot, or the next
-            // frame's casing, buttons and item counts are drawn lit and go flat and grey.
-            GuiContainerStyle.resetGuiState();
+            GuiContainerStyle.withTooltipState(() -> this.renderToolTip(stack, mouseX, mouseY));
             return;
         }
 

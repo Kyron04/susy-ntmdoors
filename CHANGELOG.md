@@ -1,5 +1,13 @@
-HBM DOORS: 1.0.62
+HBM DOORS: 1.0.63
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.63
+FIX
+- Tooltips in the Keycard Programmer, Safe, Keycard Holder, Terminal Backup and Documents Folder
+  now draw inside a scoped GL state save/restore. Hovering a slot no longer leaks lighting, depth,
+  blend, alpha or rescale state into the next frame.
+- The shared GUI baseline reset now also restores alpha testing and the standard GUI blend
+  function.
 
 1.0.62
 FIX
