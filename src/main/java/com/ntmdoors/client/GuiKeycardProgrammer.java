@@ -306,7 +306,7 @@ public class GuiKeycardProgrammer extends GuiContainer {
             drawButtonLabel("Bind", 122, 78, 46, 16);
         } else if (page == 1) {
             fontRenderer.drawString("RFID Card", 12, 24, COLOUR);
-            fontRenderer.drawString("CARD STYLE", ContainerKeycardProgrammer.COLOUR_FIRST_X, 24, MUTED);
+            GuiContainerStyle.drawRightAligned(fontRenderer, "CARD STYLE", 168, 24, MUTED);
         } else {
             drawCenteredString(fontRenderer, "Legacy Backup Programmer", xSize / 2, 27, COLOUR);
             drawButtonLabel("Backup", ContainerKeycardProgrammer.BACKUP_BUTTON_X,

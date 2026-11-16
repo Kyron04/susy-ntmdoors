@@ -1,5 +1,10 @@
-HBM DOORS: 1.0.61
+HBM DOORS: 1.0.62
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.62
+FIX
+- Right-aligned the Keycard Programmer page-two `CARD STYLE` label so it no longer overlaps the
+  `RFID Card` heading.
 
 1.0.61
 FIX
