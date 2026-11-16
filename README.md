@@ -116,7 +116,7 @@ for editing.
   like the scanner's. Right clicking opens a three-page GUI: page one has the `Relay Key` /
   `Operator Keycard` and `Relay Key` / `RFID Card` binding rows, where Bind instantly copies the
   Relay Key's private key onto the card and keeps any keys the card already holds, page two has the
-  RFID card slot plus a scrollable two-row palette of every non-privileged, non-biometric card
+  RFID card slot plus a scrollable card-style palette of every non-privileged, non-biometric card
   style, and page three is the
   `Legacy Backup Programmer` with a used source slot on the left, a fresh target slot on the right,
   a `Backup` button and a five-frame ten-second progress bar. A backup copies the source item's NBT

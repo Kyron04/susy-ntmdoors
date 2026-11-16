@@ -1,5 +1,11 @@
-HBM DOORS: 1.0.60
+HBM DOORS: 1.0.61
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.61
+FIX
+- Reworked Keycard Programmer page two: the RFID card slot is now at the top-left, the card-style
+  palette occupies the right side, and the palette shows six columns by four rows instead of two
+  rows. The remaining styles scroll as before.
 
 1.0.60
 FEATURE

@@ -140,10 +140,12 @@ public class GuiKeycardProgrammer extends GuiContainer {
 
         int mouseX = Mouse.getEventX() * width / mc.displayWidth;
         int mouseY = height - Mouse.getEventY() * height / mc.displayHeight - 1;
-        int left = guiLeft + 8;
+        int left = guiLeft + ContainerKeycardProgrammer.COLOUR_FIRST_X - 2;
         int right = guiLeft + 168;
-        int top = guiTop + 64;
-        int bottom = guiTop + 102;
+        int top = guiTop + ContainerKeycardProgrammer.COLOUR_Y - 2;
+        int bottom = guiTop + ContainerKeycardProgrammer.COLOUR_Y
+                + (ContainerKeycardProgrammer.COLOUR_VISIBLE_ROWS - 1)
+                * ContainerKeycardProgrammer.COLOUR_ROW_STEP + 18;
         if (mouseX < left || mouseX >= right || mouseY < top || mouseY >= bottom) return;
         changeColourScroll(wheel > 0 ? -1 : 1);
     }
@@ -222,10 +224,9 @@ public class GuiKeycardProgrammer extends GuiContainer {
     }
 
     private void drawPageTwo(int mouseX, int mouseY) {
-        drawRect(8, 62, 168, 63, 0xFF6A6A6E);
-        drawRect(8, 63, 168, 64, 0xFF08080A);
-        drawRect(8, 101, 168, 102, 0xFF6A6A6E);
-        drawRect(8, 102, 168, 103, 0xFF08080A);
+        // The card slot owns the top-left; the style palette gets the wider right-hand area.
+        drawRect(35, 34, 36, 106, 0xFF6A6A6E);
+        drawRect(36, 34, 37, 106, 0xFF08080A);
         drawColourScrollbar();
         drawPageButtons(mouseX, mouseY);
     }
@@ -304,7 +305,8 @@ public class GuiKeycardProgrammer extends GuiContainer {
             drawButtonLabel("Bind", 122, 38, 46, 16);
             drawButtonLabel("Bind", 122, 78, 46, 16);
         } else if (page == 1) {
-            drawCenteredString(fontRenderer, "RFID Card", xSize / 2, 27, COLOUR);
+            fontRenderer.drawString("RFID Card", 12, 24, COLOUR);
+            fontRenderer.drawString("CARD STYLE", ContainerKeycardProgrammer.COLOUR_FIRST_X, 24, MUTED);
         } else {
             drawCenteredString(fontRenderer, "Legacy Backup Programmer", xSize / 2, 27, COLOUR);
             drawButtonLabel("Backup", ContainerKeycardProgrammer.BACKUP_BUTTON_X,
