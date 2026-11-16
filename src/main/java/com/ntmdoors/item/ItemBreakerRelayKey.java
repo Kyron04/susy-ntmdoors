@@ -63,7 +63,7 @@ public class ItemBreakerRelayKey extends Item {
         return useBreaker(player, world, pos);
     }
 
-    private static EnumActionResult useBreaker(EntityPlayer player, World world, BlockPos pos) {
+    public static EnumActionResult useBreaker(EntityPlayer player, World world, BlockPos pos) {
         if (world.isRemote) {
             return isBreakerTarget(world, pos) ? EnumActionResult.SUCCESS : EnumActionResult.PASS;
         }

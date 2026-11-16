@@ -1,5 +1,10 @@
-HBM DOORS: 1.0.65
+HBM DOORS: 1.0.66
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.66
+FIX
+- Breaker Relay Key sneak-clicks now claim the high-priority block interaction event, so clicking
+  a door cell opens the confirmation screen instead of being consumed by the door.
 
 1.0.65
 FIX
