@@ -4,7 +4,7 @@
 
 NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system, security equipment and concrete building set from HBM's Nuclear Tech Mod. No NTM installation is required. Chisel 1.12.2-1.0.2.45 is required. Every model, texture and sound is bundled.
 
-**Current version: 1.0.69**
+**Current version: 1.0.70**
 
 ## 27 multiblock doors
 
@@ -81,8 +81,8 @@ Screwdriver + sneak + right-click cycles door skins:
 ## Keycard access control
 
 - **Keycard Scanner** — wall-mounted reader with an LCD, security stripe and green/yellow/red lenses. Bind up to nine closed doors within 32 blocks using the screwdriver; bound doors close again after ten seconds. Cards only open a scanner when they carry one of its assigned private keys, and the Creative Keycard opens everything.
-- **Keycard Programmer** - desk console with a card slot, live screen and three GUI pages. Bind Relay Keys to Operator Keycards and RFID cards, restyle a card from the 34-entry palette (seven colours, three UAC cards, five themed cards, six SCP clearance cards, the Googa card and the Level 1-12 access cards) displayed as a six-column grid on page two, and run the Legacy Backup Programmer with its five-stage progress bar.
-- **RFID cards** - blank plus red, violet, green, blue, black, orange and yellow variants, plus Yellow, Blue and Red UAC cards.
+- **Keycard Programmer** - desk console with a card slot, live screen and three GUI pages. Bind Relay Keys to Operator Keycards and RFID cards, restyle a card from the 35-entry palette (seven colours, three UAC cards, five themed cards, six SCP clearance cards, the Googa card, the O5 card and the Level 1-12 access cards) displayed as a six-column grid on page two, and run the Legacy Backup Programmer with its five-stage progress bar.
+- **RFID cards** - blank plus red, violet, green, blue, black, orange and yellow variants, plus Yellow, Blue and Red UAC cards and the O5 Keycard.
 - **Themed keycards** — Keycard with Blue Marking, Labyrinth, Engine Room, Terminal and Terragroup Labs Access.
 - **Operator Keycard** - aimed at a bound scanner, opens its security code screen; aimed at a Redstone Gate, opens its settings screen. The Biometric Operator Keycard does the same. Elsewhere it shows its private keys.
 - **Creative Keycard** - bypasses card checks on bound doors, opens every scanner, opens both safes, and sneak + right-clicking a scanner opens its full console without a code or bound doors. It also opens the Redstone Gate screen.
@@ -92,7 +92,8 @@ Screwdriver + sneak + right-click cycles door skins:
 - **Biometric Keycard and Biometric Operator Keycard** — carry an identity, show the owner in the tooltip, and work with the scanner's Match biometric holder option. The Operator version also lists its stored private keys in the tooltip.
 - **Keycard Holder** - carried case with two 4x4 grids: 16 keycards and 16 relay/utility keys. It has its own NBT storage, separate keycard and relay-key ghost icons, and shift-click transfer. The tooltip also notes `Also holds Relay Keys`.
 - **Keycard Viewer** — sneak-right-click a card to read every private key stored on it.
-- **SCP access cards** — SCP Level 0–5 clearance cards, plus the Googa security keycard with its gold name and `Security is goog` tooltip.
+- **SCP access cards** - SCP Level 0–5 clearance cards, plus the Googa security keycard with its gold name and `Security is goog` tooltip.
+- **O5 Keycard** - a black card using the supplied sprite, with the tooltip `For the 13 most powerful beings in the Foundation`. It uses the same private-key storage, viewer, holder, scanner and programmer-palette behaviour as the other RFID cards.
 - **Level 1–12 Access Keycards** — numbered cards that can be programmed and used like normal RFID cards, available from the programmer's card palette.
 - **Developer Keycard** — a gold-named pack-development card that behaves like a normal RFID card but displays stored private keys and biometric IDs as Unknown. Excluded from the programmer's card palette.
 

@@ -1,5 +1,11 @@
-HBM DOORS: 1.0.69
+HBM DOORS: 1.0.70
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.70
+FEATURE
+- Added the O5 Keycard. It uses the supplied 16x16 black card sprite byte-for-byte, carries the
+  tooltip "For the 13 most powerful beings in the Foundation", and behaves as an ordinary RFID
+  card in the creative tab and Keycard Programmer palette.
 
 1.0.69
 FIX

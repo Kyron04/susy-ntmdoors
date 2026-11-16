@@ -33,6 +33,8 @@ AI assistance was used for:
 - a Creative Relay Key prototype that was removed before release at the owner's request;
 - the Keycard Programmer page-two layout, including the six-column, four-row card palette;
 - UAC Keycards and their creative-tab and programmer-palette entries;
+- the O5 Keycard, using the supplied 16x16 sprite and fixed tooltip, with its creative-tab and
+  programmer-palette entries;
 - the Keycard Holder two-section storage: 16 keycards, 16 relay/utility keys, separate slot
   routing, relay-key ghosts and the `Also holds Relay Keys` tooltip;
 - the Breaker Relay Key confirmation flow, server-side ownership and reach validation, security

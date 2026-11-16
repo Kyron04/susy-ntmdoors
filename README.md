@@ -414,6 +414,9 @@ card colours, the Creative Keycard, Developer Keycard and Spatial Disrupter are 
   reads `Security is goog` and whose name is gold. They use the same private-key storage, programmer
   binding, holder and scanner behaviour as the other cards, and are selectable from the programmer's
   second-page card palette.
+* O5 Keycard (`ntmdoors:o5_keycard`): a black card using the supplied sprite, with the tooltip
+  `For the 13 most powerful beings in the Foundation`. It has the same private-key storage, card
+  viewer, holder, scanner and programmer-palette behaviour as the other RFID cards.
 * Operator Keycard (`ntmdoors:operator_keycard`): a dark card with an orange stripe and three orange
   dots. It shares the RFID hand-display model and, aimed at a bound scanner, opens that scanner's
   security code screen; anywhere else sneak right-click opens the same private-key viewer as a

@@ -82,6 +82,7 @@ item.ntmdoors.yellow_rfid_card.name=Yellow Card
 item.ntmdoors.yellow_uac_keycard.name=Yellow UAC Keycard
 item.ntmdoors.blue_uac_keycard.name=Blue UAC Keycard
 item.ntmdoors.red_uac_keycard.name=Red UAC Keycard
+item.ntmdoors.o5_keycard.name=O5 Keycard
 item.ntmdoors.keycard_blue_marking.name=Keycard with Blue Marking
 item.ntmdoors.labyrinth_keycard.name=Labyrinth Keycard
 item.ntmdoors.engine_room_keycard.name=Engine Room Keycard

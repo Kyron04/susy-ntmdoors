@@ -208,6 +208,9 @@ public class ModContent {
             new ItemNamedRfidCard("scp_level_5_keycard", "Level 5 clearance");
     public static final ItemRfidCard GOOGA_SECURITY_KEYCARD =
             new ItemNamedRfidCard(TextFormatting.GOLD, "googa_security_keycard", "Security is goog");
+    /** O5 card with the supplied black sprite and fixed flavour text. */
+    public static final ItemRfidCard O5_KEYCARD = new ItemNamedRfidCard("o5_keycard",
+            "For the 13 most powerful beings in the Foundation");
     /** Numbered access keycards (Level 1-12). */
     public static final ItemRfidCard LEVEL_1_ACCESS_KEYCARD =
             new ItemNamedRfidCard("level_1_access_keycard", "Level 1 access");
@@ -284,8 +287,8 @@ public class ModContent {
     /**
      * Every non-privileged, non-biometric RFID card the programmer's second page can produce:
      * the seven colours, the three UAC cards, the five Tarkov cards, the six SCP clearance cards,
-     * Googa and the Level 1-12 access keycards. Operator, Creative, Biometric and the Developer
-     * Keycard are deliberately excluded.
+     * Googa, the O5 card and the Level 1-12 access keycards. Operator, Creative, Biometric and the
+     * Developer Keycard are deliberately excluded.
      */
     public static final List<ItemRfidCard> PROGRAMMER_CARDS = Collections.unmodifiableList(Arrays.asList(
             RED_RFID_CARD, VIOLET_RFID_CARD, GREEN_RFID_CARD, BLUE_RFID_CARD,
@@ -295,7 +298,7 @@ public class ModContent {
             TERRAGROUP_LABS_KEYCARD,
             SCP_LEVEL_0_KEYCARD, SCP_LEVEL_1_KEYCARD, SCP_LEVEL_2_KEYCARD,
             SCP_LEVEL_3_KEYCARD, SCP_LEVEL_4_KEYCARD, SCP_LEVEL_5_KEYCARD,
-            GOOGA_SECURITY_KEYCARD,
+            GOOGA_SECURITY_KEYCARD, O5_KEYCARD,
             LEVEL_1_ACCESS_KEYCARD, LEVEL_2_ACCESS_KEYCARD, LEVEL_3_ACCESS_KEYCARD,
             LEVEL_4_ACCESS_KEYCARD, LEVEL_5_ACCESS_KEYCARD, LEVEL_6_ACCESS_KEYCARD,
             LEVEL_7_ACCESS_KEYCARD, LEVEL_8_ACCESS_KEYCARD, LEVEL_9_ACCESS_KEYCARD,
@@ -324,6 +327,10 @@ public class ModContent {
             LEVEL_4_ACCESS_KEYCARD, LEVEL_5_ACCESS_KEYCARD, LEVEL_6_ACCESS_KEYCARD,
             LEVEL_7_ACCESS_KEYCARD, LEVEL_8_ACCESS_KEYCARD, LEVEL_9_ACCESS_KEYCARD,
             LEVEL_10_ACCESS_KEYCARD, LEVEL_11_ACCESS_KEYCARD, LEVEL_12_ACCESS_KEYCARD));
+
+    /** Newest card; registered after everything else so saved numeric item IDs do not shift. */
+    public static final List<ItemRfidCard> O5_CARDS = Collections.unmodifiableList(Arrays.asList(
+            O5_KEYCARD));
 
     static {
         for (DoorDecl d : DoorDecls.ALL) NORMAL_DOORS.add(new BlockDoorGeneric(d, BlockDoorGeneric.Variant.NORMAL));
@@ -477,6 +484,8 @@ public class ModContent {
         for (ItemRfidCard card : UAC_CARDS) e.getRegistry().register(card);
         // Newest key goes last for the same reason.
         e.getRegistry().register(BREAKER_RELAY_KEY);
+        // The O5 card is newer still, so it takes the next free numeric item ID.
+        for (ItemRfidCard card : O5_CARDS) e.getRegistry().register(card);
     }
 
     /** Keeps existing worlds working after the SCP card registry names moved from 1-6 to 0-5. */

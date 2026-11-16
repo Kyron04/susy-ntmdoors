@@ -25,7 +25,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.ArrayList;
 import java.util.List;
 
-@Mod(modid = NTMDoors.MODID, name = "NTM Doors", version = "1.0.69",
+@Mod(modid = NTMDoors.MODID, name = "NTM Doors", version = "1.0.70",
         acceptedMinecraftVersions = "[1.12.2]", dependencies = "required-after:chisel")
 public class NTMDoors {
 
@@ -64,6 +64,7 @@ public class NTMDoors {
             for (ItemRfidCard card : ModContent.RFID_CARDS) items.add(new ItemStack(card));
             for (ItemRfidCard card : ModContent.UAC_CARDS) items.add(new ItemStack(card));
             for (ItemRfidCard card : ModContent.SCP_CARDS) items.add(new ItemStack(card));
+            for (ItemRfidCard card : ModContent.O5_CARDS) items.add(new ItemStack(card));
             items.add(new ItemStack(ModContent.DEVELOPER_KEYCARD));
             for (ItemRfidCard card : ModContent.LEVEL_ACCESS_CARDS) items.add(new ItemStack(card));
             items.add(new ItemStack(ModContent.BIOMETRIC_KEYCARD));
