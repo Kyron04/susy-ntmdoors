@@ -13,8 +13,9 @@ import net.minecraft.network.play.server.SPacketSetSlot;
 import net.minecraft.util.EnumHand;
 
 /**
- * Container for the carried Keycard Holder. The top is a 3x4 grid restricted to keycards; the
- * bottom is the player inventory. Both directions of shift-click are supported.
+ * Container for the carried Keycard Holder. The top is two 4x4 grids, one for keycards and one for
+ * relay/utility keys; the bottom is the player inventory. Both directions of shift-click are
+ * supported.
  *
  * <p>The holder stack is the actual stack in the player's hand. Moving or dropping that stack while
  * the GUI is open would leave the container pointing at a detached copy, so the slot holding it is
@@ -25,15 +26,18 @@ public class ContainerKeycardHolder extends Container {
     public static final int GUI_WIDTH = 176;
     public static final int GUI_HEIGHT = 212;
 
-    public static final int GRID_COLUMNS = 3;
+    public static final int GRID_COLUMNS = 4;
     public static final int GRID_ROWS = 4;
-    public static final int GRID_X = 61;
-    public static final int GRID_Y = 36;
+    public static final int KEYCARD_GRID_X = 12;
+    public static final int RELAY_GRID_X = 92;
+    public static final int GRID_Y = 44;
 
     public static final int PLAYER_X = 8;
     public static final int PLAYER_Y = 128;
     public static final int HOTBAR_Y = 186;
 
+    public static final int KEYCARD_SLOT_COUNT = ItemKeycardHolder.KEYCARD_SLOT_COUNT;
+    public static final int RELAY_KEY_SLOT_START = ItemKeycardHolder.RELAY_KEY_SLOT_START;
     public static final int HOLDER_SLOT_COUNT = ItemKeycardHolder.SLOT_COUNT;
     public static final int PLAYER_SLOT_START = HOLDER_SLOT_COUNT;
     public static final int PLAYER_SLOT_COUNT = 36;
@@ -54,7 +58,14 @@ public class ContainerKeycardHolder extends Container {
         for (int row = 0; row < GRID_ROWS; row++) {
             for (int col = 0; col < GRID_COLUMNS; col++) {
                 addSlotToContainer(new SlotKeycard(holderInventory, col + row * GRID_COLUMNS,
-                        GRID_X + col * 18, GRID_Y + row * 18));
+                        KEYCARD_GRID_X + col * 18, GRID_Y + row * 18));
+            }
+        }
+        for (int row = 0; row < GRID_ROWS; row++) {
+            for (int col = 0; col < GRID_COLUMNS; col++) {
+                addSlotToContainer(new SlotKeycard(holderInventory,
+                        RELAY_KEY_SLOT_START + col + row * GRID_COLUMNS,
+                        RELAY_GRID_X + col * 18, GRID_Y + row * 18));
             }
         }
 
@@ -87,6 +98,22 @@ public class ContainerKeycardHolder extends Container {
         return count;
     }
 
+    public int getKeycardCount() {
+        return countSection(0, KEYCARD_SLOT_COUNT);
+    }
+
+    public int getRelayKeyCount() {
+        return countSection(RELAY_KEY_SLOT_START, HOLDER_SLOT_COUNT);
+    }
+
+    private int countSection(int start, int end) {
+        int count = 0;
+        for (int i = start; i < end; i++) {
+            if (!holderInventory.getStackInSlot(i).isEmpty()) count++;
+        }
+        return count;
+    }
+
     @Override
     public ItemStack slotClick(int slotId, int dragType, ClickType clickTypeIn, EntityPlayer player) {
         // Never let the open holder be picked up, dropped or swapped; doing so would detach the
@@ -105,7 +132,7 @@ public class ContainerKeycardHolder extends Container {
             ItemStack hotbar = dragType >= 0 && dragType < 9
                     ? player.inventory.getStackInSlot(dragType)
                     : ItemStack.EMPTY;
-            if (!hotbar.isEmpty() && !ItemKeycardHolder.isKeycard(hotbar)) {
+            if (!hotbar.isEmpty() && !ItemKeycardHolder.isStorable(slotId, hotbar)) {
                 return player.inventory.getItemStack();
             }
         }
@@ -170,7 +197,7 @@ public class ContainerKeycardHolder extends Container {
 
         @Override
         public boolean isItemValid(ItemStack stack) {
-            return ItemKeycardHolder.isKeycard(stack);
+            return ItemKeycardHolder.isStorable(getSlotIndex(), stack);
         }
 
         @Override

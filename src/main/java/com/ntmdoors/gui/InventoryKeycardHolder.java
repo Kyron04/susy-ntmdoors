@@ -7,11 +7,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 
 /**
- * The twelve storage slots of a Keycard Holder, backed by the holder stack's NBT.
+ * The 32 storage slots of a Keycard Holder, backed by the holder stack's NBT: 16 keycards then
+ * 16 relay/utility keys.
  *
  * <p>Vanilla's {@link InventoryBasic} already provides the slot bookkeeping and change listener;
- * this class only adds loading, saving and the keycard whitelist. Every mutation writes the stack
- * immediately so a crash between clicks cannot lose a card.</p>
+ * this class only adds loading, saving and the section-specific whitelist. Every mutation writes
+ * the stack immediately so a crash between clicks cannot lose an item.</p>
  */
 public class InventoryKeycardHolder extends InventoryBasic {
 
@@ -42,7 +43,7 @@ public class InventoryKeycardHolder extends InventoryBasic {
 
     @Override
     public boolean isItemValidForSlot(int index, ItemStack stack) {
-        return ItemKeycardHolder.isKeycard(stack);
+        return ItemKeycardHolder.isStorable(index, stack);
     }
 
     @Override

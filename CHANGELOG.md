@@ -1,5 +1,11 @@
-HBM DOORS: 1.0.66
+HBM DOORS: 1.0.67
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.67
+FEATURE
+- Reworked the Keycard Holder into two 4x4 sections: 16 keycards and 16 relay/utility keys.
+  Relay keys use their own empty-slot ghost, both sections have separate counts, and the tooltip
+  now includes "Also holds Relay Keys".
 
 1.0.66
 FIX

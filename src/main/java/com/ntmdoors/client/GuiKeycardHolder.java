@@ -16,7 +16,7 @@ import java.util.Collections;
 
 /**
  * Carried Keycard Holder screen: the same light casing, dark machine face and outlined slots as the
- * Keycard Programmer, with a 3x4 grid in the top half and the player inventory below it.
+ * Keycard Programmer, with two 4x4 grids in the top half and the player inventory below it.
  *
  * <p>Slot tooltips are drawn after {@code super.drawScreen()} so JEI/HEI overlays are already in
  * place; the GUI itself stays the standard 176px width, so their item list never sits on top of
@@ -100,10 +100,17 @@ public class GuiKeycardHolder extends GuiContainer {
         GlStateManager.enableTexture2D();
         GlStateManager.colorMask(true, true, true, true);
 
-        for (int i = 0; i < ContainerKeycardHolder.HOLDER_SLOT_COUNT; i++) {
+        for (int i = 0; i < ContainerKeycardHolder.KEYCARD_SLOT_COUNT; i++) {
             Slot slot = inventorySlots.inventorySlots.get(i);
             if (slot.getStack().isEmpty()) {
                 GuiContainerStyle.drawGhostPixels(GhostIcons.RFID, slot.xPos, slot.yPos);
+            }
+        }
+        for (int i = ContainerKeycardHolder.RELAY_KEY_SLOT_START;
+             i < ContainerKeycardHolder.HOLDER_SLOT_COUNT; i++) {
+            Slot slot = inventorySlots.inventorySlots.get(i);
+            if (slot.getStack().isEmpty()) {
+                GuiContainerStyle.drawGhostPixels(GhostIcons.RELAY, slot.xPos, slot.yPos);
             }
         }
 
@@ -130,10 +137,16 @@ public class GuiKeycardHolder extends GuiContainer {
         GlStateManager.disableDepth();
 
         fontRenderer.drawString("Keycard Holder", 8, 7, DARK_TEXT);
-        drawCenteredString(fontRenderer, "Keycards", xSize / 2, 24, COLOUR);
-
-        String count = holderContainer.getStoredCount() + "/" + ContainerKeycardHolder.HOLDER_SLOT_COUNT;
-        GuiContainerStyle.drawRightAligned(fontRenderer, count, xSize - 8, 24, MUTED);
+        fontRenderer.drawString("KEYCARDS", ContainerKeycardHolder.KEYCARD_GRID_X, 24, COLOUR);
+        GuiContainerStyle.drawRightAligned(fontRenderer,
+                holderContainer.getKeycardCount() + "/" + ContainerKeycardHolder.KEYCARD_SLOT_COUNT,
+                ContainerKeycardHolder.KEYCARD_GRID_X + 72, 34, MUTED);
+        fontRenderer.drawString("RELAY KEYS", ContainerKeycardHolder.RELAY_GRID_X, 24, COLOUR);
+        GuiContainerStyle.drawRightAligned(fontRenderer,
+                holderContainer.getRelayKeyCount() + "/"
+                        + (ContainerKeycardHolder.HOLDER_SLOT_COUNT
+                        - ContainerKeycardHolder.RELAY_KEY_SLOT_START),
+                ContainerKeycardHolder.RELAY_GRID_X + 72, 34, MUTED);
 
         GlStateManager.popAttrib();
     }
@@ -155,7 +168,9 @@ public class GuiKeycardHolder extends GuiContainer {
         }
 
         if (slot.slotNumber < ContainerKeycardHolder.HOLDER_SLOT_COUNT) {
-            GuiContainerStyle.drawSimpleTooltip(fontRenderer, Collections.singletonList("Keycard"),
+            String ghost = slot.slotNumber < ContainerKeycardHolder.KEYCARD_SLOT_COUNT
+                    ? "Keycard" : "Relay Key";
+            GuiContainerStyle.drawSimpleTooltip(fontRenderer, Collections.singletonList(ghost),
                     mouseX, mouseY, width, height);
         }
     }

@@ -21,14 +21,17 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 /**
- * Carried case for up to twelve keycards. Its contents live in the stack's own NBT, so a holder
- * keeps its cards through inventory moves, death drops and world saves. Right-clicking opens the
- * 3x4 storage grid; the holder itself is never a valid card, and cards are max stack size one, so
- * each slot holds exactly one card.
+ * Carried case with two 4x4 storage sections: one for keycards and one for every relay/utility key.
+ * Its contents live in the stack's own NBT, so a holder keeps its items through inventory moves,
+ * death drops and world saves. Right-clicking opens the 8x4 combined grid; each slot holds exactly
+ * one item.
  */
 public class ItemKeycardHolder extends Item {
 
-    public static final int SLOT_COUNT = 12;
+    public static final int KEYCARD_SLOT_COUNT = 16;
+    public static final int RELAY_KEY_SLOT_START = KEYCARD_SLOT_COUNT;
+    public static final int RELAY_KEY_SLOT_COUNT = 16;
+    public static final int SLOT_COUNT = KEYCARD_SLOT_COUNT + RELAY_KEY_SLOT_COUNT;
 
     private static final String TAG_ITEMS = "Items";
     private static final String TAG_SLOT = "Slot";
@@ -57,11 +60,14 @@ public class ItemKeycardHolder extends Item {
     @Override
     public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
         Names.addDescription(tooltip,
-                "Stores up to 12 keycards.",
+                "Stores up to 16 keycards and 16 relay keys.",
+                "Also holds Relay Keys",
                 "Right-click to open.");
-        int stored = count(stack);
-        if (stored > 0) {
-            tooltip.add(TextFormatting.GRAY + "Cards stored: " + stored + " / " + SLOT_COUNT);
+        int cards = countKeycards(stack);
+        int keys = countRelayKeys(stack);
+        if (cards > 0 || keys > 0) {
+            tooltip.add(TextFormatting.GRAY + "Stored: " + cards + "/" + KEYCARD_SLOT_COUNT
+                    + " cards, " + keys + "/" + RELAY_KEY_SLOT_COUNT + " keys");
         }
     }
 
@@ -70,7 +76,28 @@ public class ItemKeycardHolder extends Item {
         return !stack.isEmpty() && stack.getItem() instanceof ItemRfidCard;
     }
 
-    /** Reads the stored cards into a slot list. Missing or malformed entries become empty slots. */
+    /** True for every relay and utility key the holder accepts. */
+    public static boolean isRelayKey(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        Item item = stack.getItem();
+        return item instanceof ItemRelayKey
+                || item instanceof ItemRedstoneRelayKey
+                || item instanceof ItemMotionRelayKey
+                || item instanceof ItemTerminalRelayKey
+                || item instanceof ItemWeaponsRelayKey
+                || item instanceof ItemSafeBindingKey
+                || item instanceof ItemTerminalBackupKey
+                || item instanceof ItemUndefinedRelayKey
+                || item instanceof ItemBreakerRelayKey;
+    }
+
+    /** Checks the slot's section: keycards first, relay/utility keys second. */
+    public static boolean isStorable(int slot, ItemStack stack) {
+        if (slot < 0 || slot >= SLOT_COUNT) return false;
+        return slot < RELAY_KEY_SLOT_START ? isKeycard(stack) : isRelayKey(stack);
+    }
+
+    /** Reads the stored items into a slot list. Missing or malformed entries become empty slots. */
     public static NonNullList<ItemStack> readContents(ItemStack holder) {
         NonNullList<ItemStack> items = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
         if (holder.isEmpty() || !holder.hasTagCompound()) return items;
@@ -83,11 +110,11 @@ public class ItemKeycardHolder extends Item {
             int slot = entry.getByte(TAG_SLOT) & 0xFF;
             if (slot >= SLOT_COUNT) continue;
 
-            ItemStack card = new ItemStack(entry.getCompoundTag(TAG_ITEM));
-            if (!isKeycard(card)) continue;
-            // Keycards no longer stack, so a malformed or edited entry can never load as a pile.
-            if (card.getCount() > 1) card.setCount(1);
-            items.set(slot, card);
+            ItemStack stored = new ItemStack(entry.getCompoundTag(TAG_ITEM));
+            if (!isStorable(slot, stored)) continue;
+            // Stored item families are max stack size one; sanitise edited NBT piles.
+            if (stored.getCount() > 1) stored.setCount(1);
+            items.set(slot, stored);
         }
         return items;
     }
@@ -101,12 +128,12 @@ public class ItemKeycardHolder extends Item {
 
         NBTTagList list = new NBTTagList();
         for (int i = 0; i < SLOT_COUNT && i < items.size(); i++) {
-            ItemStack card = items.get(i);
-            if (card.isEmpty()) continue;
+            ItemStack stored = items.get(i);
+            if (stored.isEmpty()) continue;
 
             NBTTagCompound entry = new NBTTagCompound();
             entry.setByte(TAG_SLOT, (byte) i);
-            entry.setTag(TAG_ITEM, card.writeToNBT(new NBTTagCompound()));
+            entry.setTag(TAG_ITEM, stored.writeToNBT(new NBTTagCompound()));
             list.appendTag(entry);
         }
 
@@ -119,11 +146,28 @@ public class ItemKeycardHolder extends Item {
         }
     }
 
-    /** Number of non-empty storage slots, used by the tooltip and the GUI header. */
+    /** Number of non-empty storage slots, used by the GUI total. */
     public static int count(ItemStack holder) {
         int count = 0;
-        for (ItemStack card : readContents(holder)) {
-            if (!card.isEmpty()) count++;
+        for (ItemStack stored : readContents(holder)) {
+            if (!stored.isEmpty()) count++;
+        }
+        return count;
+    }
+
+    public static int countKeycards(ItemStack holder) {
+        return countSection(holder, 0, RELAY_KEY_SLOT_START);
+    }
+
+    public static int countRelayKeys(ItemStack holder) {
+        return countSection(holder, RELAY_KEY_SLOT_START, SLOT_COUNT);
+    }
+
+    private static int countSection(ItemStack holder, int start, int end) {
+        int count = 0;
+        NonNullList<ItemStack> items = readContents(holder);
+        for (int i = start; i < end && i < items.size(); i++) {
+            if (!items.get(i).isEmpty()) count++;
         }
         return count;
     }

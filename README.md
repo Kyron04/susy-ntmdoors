@@ -437,10 +437,10 @@ Creative Keycard, Developer Keycard and Spatial Disrupter are recipe-free.
   viewer with the joke entry `THE ENTIRE LIBRARY OF BABEL` under `You have access to EVERYTHING!!!!!`.
   Tools, machines and cards each carry a short grey description tooltip; the Operator Keycard's
   name is orange.
-* Keycard Holder (`ntmdoors:keycard_holder`): a carried 3x4 case for twelve keycards, opened with a
-  right click. The stored cards live in the holder's own NBT, so they survive inventory moves, death
-  drops and world saves. Only keycards are accepted, each slot holds one, and shift-click moves
-  cards between the player inventory and the holder.
+* Keycard Holder (`ntmdoors:keycard_holder`): a carried case with two 4x4 grids — 16 keycards and
+  16 relay/utility keys — opened with a right click. Stored items live in the holder's own NBT, so
+  they survive inventory moves, death drops and world saves. Each section only accepts its own item
+  type, each slot holds one, and shift-click moves items between the holder and the player inventory.
 * Documents Folder (`ntmdoors:documents_folder`): carried folder item drawn as three stacked sheet
   layers, 3 px deep in total, with only the middle layer's page edge protruding. Right-clicking opens
   a twenty-page editor styled as an open manila folder in the item's own tan, grey and dark red
