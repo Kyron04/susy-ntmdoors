@@ -31,9 +31,6 @@ NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system, secur
 - **Office Door 3** — 1x2 brown wood office door with straight levers
 - **Office Door 1/2/3 (Double)** — 2x2 mirrored-leaf versions of each office door
 - **Office Door 1/2/3 (3x3)** - 3x3 scaled double versions with a two-cell-deep front footprint
-- **Office door recipes** - every single, 2x2 double and 3x3 office door, including its locked and security variants, is built around a vanilla door. Locked variants add redstone; security variants add ID Chips.
-- **Industrial door recipes** - the Blast Shutter, Water Door, Sliding Seal, Cargo Door and both QE sliding doors are built around vanilla iron doors with iron bars, ingots, glass, iron blocks and pistons. Locked and security versions are upgrades from the normal door.
-- **Large door recipes** - the Vault Door, Sliding Blast Door, Fire Door, Secure Access Door, Round Airlock Door, both Silo Hatches, Large Vehicle Door, QE Containment, Blast Door, Transition Seal and Test Door use iron doors, iron blocks, bars, glass and pistons. All 27 doors now have locked and security upgrades.
 
 Every door:
 
@@ -45,6 +42,26 @@ Every door:
 - has a `<door>_security` variant (all twenty-seven doors, including both silo hatches, the Test Door and the office-door family) that by default only a keycard scanner or the Creative Keycard can open
 - security doors record the player who placed them as their owner; the owner can sneak + right-click with the Redstone Monocle to allow redstone and Redstone Gate links. Older security doors without an owner cannot be enabled until replaced
 - security doors take three real hours of continuous mining with any tool and resist explosions; normal and locked doors keep their original break times
+
+## Crafting
+
+All 27 doors have normal, locked and security recipes. Locked variants add two redstone; security
+variants add two ID Chips. Office-door variants use full shaped recipes; industrial and large-door
+upgrades are shapeless.
+
+- **Office doors** — every single, 2x2 double and 3x3 form. Office Doors 1 and 3 use a wood-plank
+  frame around a vanilla iron or wooden door; Office Door 2 uses a red concrete frame around a
+  vanilla iron door.
+- **Industrial doors** — the Blast Shutter, Water Door, Sliding Seal, Cargo Door and both QE
+  sliding doors use vanilla iron-door cores with iron bars, ingots, glass, iron blocks and pistons.
+- **Large doors** — the Vault Door, Sliding Blast Door, Fire Door, Secure Access Door, Round
+  Airlock Door, both Silo Hatches, Large Vehicle Door, QE Containment, Blast Door, Transition Seal
+  and Test Door. Most use vanilla iron-door cores; both Silo Hatches use iron blocks with an empty
+  center (the smaller hatch also uses iron bars), and the Fire Door uses iron ingots instead of
+  glass.
+- The six crafting components, craftable keycards, craftable utility keys, Keycard Holder,
+  Documents Folder, security machines, monitor desks, decorative desks and monitor-only blocks
+  also have recipes.
 
 ## Keypad
 
@@ -184,7 +201,8 @@ Screwdriver + sneak + right-click cycles door skins:
 
 ## Documents Folder
 
-- New carried folder item with a three-layer paper model and a full-height right page edge.
+- New carried folder item with a three-layer paper model, a full-height right page edge and a
+  fully opaque 3D front face.
 - Right-click opens a twenty-page editor styled as an open manila folder in the item's tan, grey and dark-red palette.
 - Typed caret with click-to-place, arrows, Home/End, Delete/Backspace, Ctrl+V paste and word wrap.
 - Enter starts a new line; press it twice for a blank paragraph gap.

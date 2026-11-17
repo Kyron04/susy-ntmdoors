@@ -6,6 +6,9 @@ CHANGES
 - Both Silo Hatch recipes now use iron blocks instead of vanilla iron doors, with the center slot
   left empty.
 - The Fire Door recipe now uses iron ingots in place of glass.
+DOCS
+- Prepared the 1.0.77 CurseForge release changelog and updated the public recipe and Documents
+  Folder notes.
 
 1.0.76
 FEATURE

@@ -33,7 +33,8 @@ for editing.
   security door records the player who placed it as its owner; that owner can sneak + right-click
   it with the Redstone Monocle to opt it in to redstone and Redstone Gate links. Security doors
   placed before this owner tracking was added have no recorded owner and cannot be enabled until
-  they are replaced. All 27 doors, including both silo hatches, the office-door family and the Test Door, now have a security variant.
+  they are replaced. All 27 doors, including both silo hatches, the office-door family and the
+  Test Door, now have a security variant.
   Security doors take three real hours to mine with any tool, and keypads may bind and drive locked
   doors exactly like normal ones; security doors are off limits to keypads.
 * State dependent collision and selection boxes that follow the door animation continuously
@@ -45,7 +46,7 @@ for editing.
   `round_airlock_door`, `silo_hatch`, `silo_hatch_large`, `large_vehicle_door`, `qe_containment`,
   `blast_shutter`, `blast_door`, `cargo_door`, `water_door`, `transition_seal`), the public
   `test_door` 3x3 containment door, plus Office Doors 1-3 in single, 2x2 double and 3x3 double
-  forms, and a `_locked` copy of each
+  forms, and a `_locked` and `_security` copy of each
 * Screwdriver: sneak + right click on a door with alternate skins cycles through them; right click
   a keypad to start its code-reset sequence; sneak + right click an unused keypad cycles its
   binding mode. Every interaction the tool handles plays `button9`, so nearby players hear the
@@ -273,11 +274,15 @@ for editing.
 
 ## Crafting
 
-Most content has a crafting recipe, registered in `ModRecipes`: the six components, keycards,
-craftable utility keys, Keycard Holder, Documents Folder, security machines, monitor desks,
-decorative desks, monitor-only blocks and all 27 doors. Office doors use framed vanilla doors;
-the other doors use iron doors, iron bars, ingots, glass, iron blocks and pistons.
-Locked and security door variants are upgrades from the normal door using redstone or ID Chips.
+Most content has a crafting recipe, registered in `ModRecipes`: the six components, craftable
+keycards, craftable utility keys, Keycard Holder, Documents Folder, security machines, monitor
+desks, decorative desks, monitor-only blocks and all 27 doors. Office doors use framed vanilla
+doors; the other doors use iron doors, iron bars, ingots, glass, iron blocks and pistons. Both
+Silo Hatches replace the iron-door core with iron blocks and an empty center (the smaller hatch
+also uses iron bars), and the Fire Door uses iron ingots instead of glass.
+Locked and security door variants are upgrades from the normal door using two redstone or two
+ID Chips; office-door variants use full shaped recipes, while industrial and large-door upgrades
+are shapeless.
 The Relay, Biometric Relay, Redstone, Motion, Terminal, Weapons and Breaker Relay Keys,
 programmer-made RFID card colours, the Creative Keycard, Developer Keycard and Spatial Disrupter
 are recipe-free.
@@ -457,7 +462,7 @@ are recipe-free.
   layers, 3 px deep in total, with only the middle layer's page edge protruding. Right-clicking opens
   a twenty-page editor styled as an open manila folder in the item's own tan, grey and dark red
   palette, with the writing sheet in white behind a thin ink border. The right page edge runs the
-  full height of the folder. There is no signing step:
+  full height of the folder, and the 3D front face is fully opaque. There is no signing step:
   Escape or the Close button both save, the pages live in the
   stack's NBT, and Enter starts a new line (press it twice for a paragraph gap). Long lines word-wrap
   inside the sheet, the bottom index tabs jump straight to any page, the top-right folder name can be
@@ -529,9 +534,9 @@ and `.clipZ(...)` where the original HBM renderer used a clip plane. Moving part
 for explicit model-space bounds; `.collisionSplits(n)` tightens rotating parts by slicing their AABB.
 
 ## Not included
-All 27 doors have crafting recipes. Configs, NEI/JEI and other NTM items are also not included.
-The screwdriver, most non-door items and machines, the decorative desks and monitors, and the
-concrete set have recipes. The included HL Blocks are creative-only.
+Configs, NEI/JEI and other NTM items are not included. All 27 doors have crafting recipes; the
+screwdriver, most non-door items and machines, the decorative desks and monitors, and the concrete
+set also have recipes. The included HL Blocks are creative-only.
 
 ## Concrete and HL Blocks
 
