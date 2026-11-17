@@ -256,8 +256,8 @@ public final class ModRecipes {
                 "BGB", "GDG", "BGB",
                 'B', Blocks.IRON_BARS, 'G', Blocks.GLASS, 'D', Items.IRON_DOOR);
         shaped(e, "fire_door", doorStack(DoorDecls.FIRE_DOOR, BlockDoorGeneric.Variant.NORMAL),
-                "GBG", "KDK", "GBG",
-                'G', Blocks.GLASS, 'B', Blocks.IRON_BARS,
+                "IBI", "KDK", "IBI",
+                'I', Items.IRON_INGOT, 'B', Blocks.IRON_BARS,
                 'K', Blocks.IRON_BLOCK, 'D', Items.IRON_DOOR);
         shaped(e, "qe_containment",
                 doorStack(DoorDecls.QE_CONTAINMENT, BlockDoorGeneric.Variant.NORMAL),
@@ -279,8 +279,8 @@ public final class ModRecipes {
                 'K', Blocks.IRON_BLOCK, 'D', Items.IRON_DOOR,
                 'I', Items.IRON_INGOT, 'P', Blocks.PISTON);
         shaped(e, "silo_hatch", doorStack(DoorDecls.SILO_HATCH, BlockDoorGeneric.Variant.NORMAL),
-                "BKB", "KDK", "BKB",
-                'B', Blocks.IRON_BARS, 'K', Blocks.IRON_BLOCK, 'D', Items.IRON_DOOR);
+                "BKB", "K K", "BKB",
+                'B', Blocks.IRON_BARS, 'K', Blocks.IRON_BLOCK);
         shaped(e, "secure_access_door",
                 doorStack(DoorDecls.SECURE_ACCESS_DOOR, BlockDoorGeneric.Variant.NORMAL),
                 "KDK", "BDB", "KDK",
@@ -291,8 +291,8 @@ public final class ModRecipes {
                 'K', Blocks.IRON_BLOCK, 'D', Items.IRON_DOOR, 'P', Blocks.PISTON);
         shaped(e, "silo_hatch_large",
                 doorStack(DoorDecls.SILO_HATCH_LARGE, BlockDoorGeneric.Variant.NORMAL),
-                "KDK", "DBD", "KDK",
-                'K', Blocks.IRON_BLOCK, 'D', Items.IRON_DOOR, 'B', Blocks.IRON_BARS);
+                "KKK", "K K", "KKK",
+                'K', Blocks.IRON_BLOCK);
         shaped(e, "vault_door", doorStack(DoorDecls.VAULT_DOOR, BlockDoorGeneric.Variant.NORMAL),
                 "KDK", "DPD", "KDK",
                 'K', Blocks.IRON_BLOCK, 'D', Items.IRON_DOOR, 'P', Blocks.PISTON);

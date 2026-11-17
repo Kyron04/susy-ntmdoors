@@ -276,7 +276,7 @@ for editing.
 Most content has a crafting recipe, registered in `ModRecipes`: the six components, keycards,
 craftable utility keys, Keycard Holder, Documents Folder, security machines, monitor desks,
 decorative desks, monitor-only blocks and all 27 doors. Office doors use framed vanilla doors;
-the other doors use vanilla iron doors with iron bars, ingots, glass, iron blocks and pistons.
+the other doors use iron doors, iron bars, ingots, glass, iron blocks and pistons.
 Locked and security door variants are upgrades from the normal door using redstone or ID Chips.
 The Relay, Biometric Relay, Redstone, Motion, Terminal, Weapons and Breaker Relay Keys,
 programmer-made RFID card colours, the Creative Keycard, Developer Keycard and Spatial Disrupter

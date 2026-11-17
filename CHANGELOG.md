@@ -1,5 +1,11 @@
-HBM DOORS: 1.0.76
+HBM DOORS: 1.0.77
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.77
+CHANGES
+- Both Silo Hatch recipes now use iron blocks instead of vanilla iron doors, with the center slot
+  left empty.
+- The Fire Door recipe now uses iron ingots in place of glass.
 
 1.0.76
 FEATURE

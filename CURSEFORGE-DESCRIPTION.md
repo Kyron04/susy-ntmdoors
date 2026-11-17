@@ -4,7 +4,7 @@
 
 NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system, security equipment and concrete building set from HBM's Nuclear Tech Mod. No NTM installation is required. Chisel 1.12.2-1.0.2.45 is required. Every model, texture and sound is bundled.
 
-**Current version: 1.0.76**
+**Current version: 1.0.77**
 
 ## 27 multiblock doors
 
@@ -33,7 +33,7 @@ NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system, secur
 - **Office Door 1/2/3 (3x3)** - 3x3 scaled double versions with a two-cell-deep front footprint
 - **Office door recipes** - every single, 2x2 double and 3x3 office door, including its locked and security variants, is built around a vanilla door. Locked variants add redstone; security variants add ID Chips.
 - **Industrial door recipes** - the Blast Shutter, Water Door, Sliding Seal, Cargo Door and both QE sliding doors are built around vanilla iron doors with iron bars, ingots, glass, iron blocks and pistons. Locked and security versions are upgrades from the normal door.
-- **Large door recipes** - the Vault Door, Sliding Blast Door, Fire Door, Secure Access Door, Round Airlock Door, both Silo Hatches, Large Vehicle Door, QE Containment, Blast Door, Transition Seal and Test Door use vanilla iron doors with iron blocks, bars, glass and pistons. All 27 doors now have locked and security upgrades.
+- **Large door recipes** - the Vault Door, Sliding Blast Door, Fire Door, Secure Access Door, Round Airlock Door, both Silo Hatches, Large Vehicle Door, QE Containment, Blast Door, Transition Seal and Test Door use iron doors, iron blocks, bars, glass and pistons. All 27 doors now have locked and security upgrades.
 
 Every door:
 
