@@ -233,8 +233,8 @@ public class GuiDocumentsFolder extends GuiScreen {
         drawRect(left + 8, top, left + 98, top + 17, FOLDER_DARK);
         drawRect(left + 9, top + 1, left + 97, top + 15, RED);
         drawRect(left + 10, top + 2, left + 96, top + 3, RED_LIGHT);
-        drawCenteredString(fontRenderer, "DOCUMENTS", left + 53, top + 5, 0xFF5C1E1E);
-        drawCenteredString(fontRenderer, "DOCUMENTS", left + 53, top + 4, 0xFFF0E8CC);
+        GuiContainerStyle.drawFlatCenteredString(fontRenderer, "DOCUMENTS", left + 53, top + 4,
+                0xFFF0E8CC);
 
         drawRect(left, top + 14, left + PANEL_WIDTH, top + PANEL_HEIGHT, FOLDER_DARK);
         drawRect(left + 1, top + 15, left + PANEL_WIDTH - 1, top + PANEL_HEIGHT - 1, FOLDER);
@@ -273,13 +273,13 @@ public class GuiDocumentsFolder extends GuiScreen {
             drawRect(x, nameY - 1, x + width, nameY + 10, PAPER_LIGHT);
             drawRect(x, nameY + 10, x + width, nameY + 11, RED);
             if (renameText.isEmpty()) {
-                drawString(fontRenderer, defaultName(), x + 2, nameY + 2, 0xFF8F8D6B);
+                GuiContainerStyle.drawFlatString(fontRenderer, defaultName(), x + 2, nameY + 2, 0xFF8F8D6B);
             } else {
                 if (renameSelectAll) {
                     drawRect(x + 2, nameY + 1, x + 2 + fontRenderer.getStringWidth(renameText),
                             nameY + 9, 0xFFB8B598);
                 }
-                drawString(fontRenderer, renameText, x + 2, nameY + 2, INK);
+                GuiContainerStyle.drawFlatString(fontRenderer, renameText, x + 2, nameY + 2, INK);
             }
             if (!renameSelectAll) {
                 int caret = x + 2 + fontRenderer.getStringWidth(
@@ -299,14 +299,15 @@ public class GuiDocumentsFolder extends GuiScreen {
                 drawRect(x, nameY - 1, x + width, nameY + 9, PAPER_LIGHT);
                 drawRect(x, nameY + 9, x + width, nameY + 10, RED);
             }
-            drawString(fontRenderer, shown, textX, nameY, colour);
+            GuiContainerStyle.drawFlatString(fontRenderer, shown, textX, nameY, colour);
         }
 
         int pageY = top + PAGE_Y;
         String count = "PAGE " + (page + 1) + " / " + ItemDocumentsFolder.PAGE_COUNT;
-        drawString(fontRenderer, count, x, pageY, RED);
+        GuiContainerStyle.drawFlatString(fontRenderer, count, x, pageY, RED);
         if (wrap(pages[page]).size() >= MAX_LINES) {
-            drawString(fontRenderer, "PAGE FULL", x + fontRenderer.getStringWidth(count) + 10, pageY, RED);
+            GuiContainerStyle.drawFlatString(fontRenderer, "PAGE FULL",
+                    x + fontRenderer.getStringWidth(count) + 10, pageY, RED);
         }
 
         drawRect(x, top + RULE_Y, x + width, top + RULE_Y + 1, RED);
@@ -315,16 +316,16 @@ public class GuiDocumentsFolder extends GuiScreen {
     private void drawText() {
         String text = pages[page];
         if (text.isEmpty()) {
-            drawString(fontRenderer, "Click here and write", left + TEXT_X, top + TEXT_Y,
-                    0xFF8A8A8A);
+            GuiContainerStyle.drawFlatString(fontRenderer, "Click here and write",
+                    left + TEXT_X, top + TEXT_Y, 0xFF8A8A8A);
             return;
         }
 
         List<Line> lines = wrap(text);
         for (int i = 0; i < lines.size() && i < MAX_LINES; i++) {
             Line line = lines.get(i);
-            drawString(fontRenderer, text.substring(line.start, line.end), left + TEXT_X,
-                    top + TEXT_Y + i * LINE_HEIGHT, INK);
+            GuiContainerStyle.drawFlatString(fontRenderer, text.substring(line.start, line.end),
+                    left + TEXT_X, top + TEXT_Y + i * LINE_HEIGHT, INK);
         }
     }
 
@@ -370,7 +371,7 @@ public class GuiDocumentsFolder extends GuiScreen {
             GlStateManager.translate(x + TAB_W / 2F, y + 3F, 0F);
             GlStateManager.scale(0.7F, 0.7F, 1F);
             int width = fontRenderer.getStringWidth(label);
-            fontRenderer.drawString(label, -width / 2, 0,
+            GuiContainerStyle.drawFlatString(fontRenderer, label, -width / 2, 0,
                     current ? INK : written ? 0xFFF0E8CC : MUTED);
             GlStateManager.popMatrix();
         }
@@ -387,7 +388,7 @@ public class GuiDocumentsFolder extends GuiScreen {
         drawButton(left + PANEL_WIDTH - 52, top + BUTTON_Y, 44, 12, "Close", mouseX, mouseY);
 
         String hint = renaming ? "Enter saves - Esc cancels" : "Esc also saves";
-        drawString(fontRenderer, hint, left + 44, top + BUTTON_Y + 2, MUTED);
+        GuiContainerStyle.drawFlatString(fontRenderer, hint, left + 44, top + BUTTON_Y + 2, MUTED);
     }
 
     private void drawButton(int x, int y, int w, int h, String label, int mouseX, int mouseY) {
@@ -395,7 +396,7 @@ public class GuiDocumentsFolder extends GuiScreen {
         drawRect(x, y, x + w, y + h, 0xFF6F6D54);
         drawRect(x + 1, y + 1, x + w - 1, y + h - 1, hovered ? PAPER : FOLDER);
         drawRect(x + 1, y + 1, x + w - 1, y + 2, hovered ? PAPER_LIGHT : FOLDER_LIGHT);
-        drawCenteredString(fontRenderer, label, x + w / 2, y + (h - 8) / 2, INK);
+        GuiContainerStyle.drawFlatCenteredString(fontRenderer, label, x + w / 2, y + (h - 8) / 2, INK);
     }
 
     // ------------------------------------------------------------ input

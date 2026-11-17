@@ -4,7 +4,7 @@
 
 NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system, security equipment and concrete building set from HBM's Nuclear Tech Mod. No NTM installation is required. Chisel 1.12.2-1.0.2.45 is required. Every model, texture and sound is bundled.
 
-**Current version: 1.0.70**
+**Current version: 1.0.71**
 
 ## 27 multiblock doors
 
@@ -132,7 +132,7 @@ Screwdriver + sneak + right-click cycles door skins:
 - Remote access: click a linked device in the terminal to open its screen while you remain at the desk. The session requires you to stay within reach of the desk and the device to remain in the confirmed net, and expires after ten minutes of inactivity. Keypads and scanners still ask for their security codes.
 - Each physical screen renders a passive `SECURITY` status panel with net and device counts and the active event state; clicking any screen opens the terminal.
 - **Display** — a per-screen wallpaper chooser with five built-in images and a `Terminal` tile. Only packaged images are offered; custom URLs are not supported, so a monitor never makes an outbound network request. The choice is saved on the desk.
-- **Notepad** — a shared editor storing up to 16 documents of 8,192 characters each. The sidebar creates, renames and deletes documents; the paper page supports wrapped-line editing, scrolling, Save and an unsaved-changes prompt. The current document and list can stay visible on the physical monitor, and a saved wallpaper returns on the task menu.
+- **Notepad** — a shared editor storing up to 16 documents of 8,192 characters each. The sidebar creates, renames and deletes documents; the paper page supports wrapped-line editing, scrolling, Save and an unsaved-changes prompt. The current document and list can stay visible on the physical monitor, and a saved wallpaper returns on the task menu. All Notepad text is drawn without the vanilla font drop shadow.
 - **Terminal Backup** — the **Terminal Backup Key** stores a complete snapshot: Security nets, device bindings, event state, Notepad documents, wallpapers, saved screen pages, next IDs and the terminal password hash. `Initiate backup` copies the snapshot to a blank key with a ten-second progress bar; `Restore backup` overwrites the terminal from a key. The key is not consumed.
 
 ## Concrete and HL Blocks
@@ -190,6 +190,7 @@ Screwdriver + sneak + right-click cycles door skins:
 - Reopens on the page you closed on.
 - Top-right title is editable: click to rename, Enter saves, Esc cancels, clearing restores the default name.
 - The editor screen is scaled up 1.5x, with a fit guard for smaller windows.
+- All editor text is drawn without the vanilla font drop shadow.
 - Tooltip shows the number of pages written.
 
 ## Technical

@@ -74,6 +74,17 @@ final class GuiContainerStyle {
         font.drawString(text, right - font.getStringWidth(text), y, colour);
     }
 
+    /** Draws text without vanilla's drop shadow; used by the document editors. */
+    static void drawFlatString(FontRenderer font, String text, int x, int y, int colour) {
+        font.drawString(text, x, y, colour, false);
+    }
+
+    /** Centred variant of {@link #drawFlatString(FontRenderer, String, int, int, int)}. */
+    static void drawFlatCenteredString(FontRenderer font, String text, int centreX, int y,
+                                       int colour) {
+        font.drawString(text, centreX - font.getStringWidth(text) / 2, y, colour, false);
+    }
+
     /** Flat tooltip for empty "ghost" slots, which have no ItemStack to hand to vanilla. */
     static void drawSimpleTooltip(FontRenderer font, List<String> lines, int mouseX, int mouseY,
                                   int screenWidth, int screenHeight) {

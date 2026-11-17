@@ -239,7 +239,8 @@ for editing.
   `EXIT` keeps the current document and the document list displayed on the physical monitor
   screen; a saved wallpaper steps aside while the notebook is shown and returns on the task
   menu. Up to 16 documents of 8192 characters each are stored in the desk's world NBT and
-  shared by everyone using that terminal.
+  shared by everyone using that terminal. All Notepad text is drawn without the vanilla font drop
+  shadow.
 * Terminal Backup: opens a task page with `Initiate backup` and `Restore backup`. `Initiate backup`
   opens a programmer-style console: put a Terminal Backup Key in the left slot, press `Upload` to
   write every Security net, device binding, notepad document, wallpaper, saved screen page and the
@@ -457,7 +458,7 @@ card colours, the Creative Keycard, Developer Keycard and Spatial Disrupter are 
   stack's NBT, and Enter starts a new line (press it twice for a paragraph gap). Long lines word-wrap
   inside the sheet, the bottom index tabs jump straight to any page, the top-right folder name can be
   clicked and renamed, reopening returns to the page you closed on, and the tooltip counts the pages
-  written.
+  written. All editor text is drawn without the vanilla font drop shadow.
 * The secure access door ships nine skins: red, yellow, green, blue, grey, black (white writing),
   HBM yellow, white (black writing) and orange (white writing). The colour variants are generated
   by recolouring only the red warning paint; all other pixels are unchanged. Base colours: green

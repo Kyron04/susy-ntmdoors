@@ -224,12 +224,12 @@ public class GuiNotepad extends GuiScreen {
                 guiTop + TITLE_HEIGHT, TITLE_BG);
         drawRect(guiLeft + 4, guiTop + TITLE_HEIGHT - 1,
                 guiLeft + guiWidth - 4, guiTop + TITLE_HEIGHT, ORANGE);
-        drawString(fontRenderer, "NOTEPAD", guiLeft + 12, guiTop + 8, ORANGE_LIGHT);
+        GuiContainerStyle.drawFlatString(fontRenderer, "NOTEPAD", guiLeft + 12, guiTop + 8, ORANGE_LIGHT);
         NotepadDocument selected = selectedDocument();
         String status = saving ? "SAVING" : dirty ? "UNSAVED" : "READY";
         int statusRight = passive ? guiLeft + guiWidth - 12
                 : guiLeft + guiWidth - 66;
-        drawString(fontRenderer, status, statusRight
+        GuiContainerStyle.drawFlatString(fontRenderer, status, statusRight
                 - fontRenderer.getStringWidth(status), guiTop + 8, MUTED);
 
         drawSidebar(mouseX, mouseY);
@@ -253,19 +253,20 @@ public class GuiNotepad extends GuiScreen {
             drawRect(cx, cy, cx + 1, cy + CLOSE_SIZE, closeHover ? ORANGE : ORANGE_DIM);
             drawRect(cx + CLOSE_SIZE - 1, cy, cx + CLOSE_SIZE, cy + CLOSE_SIZE,
                     closeHover ? ORANGE : ORANGE_DIM);
-            drawCenteredString(fontRenderer, close, cx + CLOSE_SIZE / 2, cy + 2,
+            GuiContainerStyle.drawFlatCenteredString(fontRenderer, close, cx + CLOSE_SIZE / 2, cy + 2,
                     closeHover ? ORANGE_LIGHT : ORANGE);
 
             int toggleX = sidebarOpen ? guiLeft + sidebarWidth - (int) (sidebarWidth
                     * (1F - sidebarProgress)) - 14 : guiLeft + 6;
             int toggleY = guiTop + TITLE_HEIGHT + 5;
             drawRect(toggleX, toggleY, toggleX + 10, toggleY + 16, ROW_BG);
-            drawCenteredString(fontRenderer, sidebarOpen ? "<" : ">",
+            GuiContainerStyle.drawFlatCenteredString(fontRenderer, sidebarOpen ? "<" : ">",
                     toggleX + 5, toggleY + 4, ORANGE);
         }
 
         if (!notice.isEmpty()) {
-            drawString(fontRenderer, fontRenderer.trimStringToWidth(notice, pageRight - pageLeft - 20),
+            GuiContainerStyle.drawFlatString(fontRenderer,
+                    fontRenderer.trimStringToWidth(notice, pageRight - pageLeft - 20),
                     pageLeft, guiTop + guiHeight - 40, ORANGE);
         }
     }
@@ -279,7 +280,8 @@ public class GuiNotepad extends GuiScreen {
                 guiTop + guiHeight - 6, 0xFF060606);
         drawRect(left, guiTop + TITLE_HEIGHT + 4, right,
                 guiTop + TITLE_HEIGHT + 5, ORANGE_DIM);
-        drawString(fontRenderer, "DOCUMENTS", left + 8, guiTop + TITLE_HEIGHT + 10, ORANGE);
+        GuiContainerStyle.drawFlatString(fontRenderer, "DOCUMENTS", left + 8,
+                guiTop + TITLE_HEIGHT + 10, ORANGE);
 
         int listTop;
         if (passive) {
@@ -294,7 +296,7 @@ public class GuiNotepad extends GuiScreen {
             drawRect(left + 6, createY, createRight, createY + 1,
                     createHover ? ORANGE : ORANGE_DIM);
             drawRect(left + 6, createY + 17, createRight, createY + 18, ORANGE_DIM);
-            drawCenteredString(fontRenderer, "Create document",
+            GuiContainerStyle.drawFlatCenteredString(fontRenderer, "Create document",
                     (left + 6 + createRight) / 2, createY + 5,
                     createHover ? ORANGE_LIGHT : TEXT);
             listTop = createY + 26;
@@ -305,7 +307,7 @@ public class GuiNotepad extends GuiScreen {
         int maxScroll = Math.max(0, documents.size() - visible);
         if (docScroll > maxScroll) docScroll = maxScroll;
         if (documents.isEmpty()) {
-            drawString(fontRenderer, "No documents", left + 12, listTop + 6, MUTED);
+            GuiContainerStyle.drawFlatString(fontRenderer, "No documents", left + 12, listTop + 6, MUTED);
         }
         for (int i = 0; i < visible; i++) {
             int index = docScroll + i;
@@ -320,7 +322,7 @@ public class GuiNotepad extends GuiScreen {
             if (selected) drawRect(left + 6, y, left + 8, y + ROW_HEIGHT, ORANGE);
             String name = fontRenderer.trimStringToWidth(document.getName(),
                     right - left - 26);
-            drawString(fontRenderer, name, left + 12, y + 6,
+            GuiContainerStyle.drawFlatString(fontRenderer, name, left + 12, y + 6,
                     selected || hover ? ORANGE_LIGHT : TEXT);
         }
         if (maxScroll > 0) {
@@ -352,15 +354,16 @@ public class GuiNotepad extends GuiScreen {
 
         NotepadDocument selected = selectedDocument();
         String title = selected == null ? "No document selected" : selected.getName();
-        drawString(fontRenderer, fontRenderer.trimStringToWidth(title, pageRight - pageLeft - 24),
+        GuiContainerStyle.drawFlatString(fontRenderer,
+                fontRenderer.trimStringToWidth(title, pageRight - pageLeft - 24),
                 pageLeft + 10, pageTop + 7, selected == null ? INK_MUTED : INK);
         drawRect(pageLeft + 10, pageTop + 18, pageRight - 10, pageTop + 19, 0xFFB7AD93);
 
         if (loading) {
-            drawCenteredString(fontRenderer, "Loading notes...",
+            GuiContainerStyle.drawFlatCenteredString(fontRenderer, "Loading notes...",
                     (pageLeft + pageRight) / 2, (pageTop + pageBottom) / 2, INK_MUTED);
         } else if (selected == null) {
-            drawCenteredString(fontRenderer, passive
+            GuiContainerStyle.drawFlatCenteredString(fontRenderer, passive
                             ? "No documents on this terminal."
                             : "Create a document to start writing.",
                     (pageLeft + pageRight) / 2, (pageTop + pageBottom) / 2 - 4, INK_MUTED);
@@ -403,7 +406,7 @@ public class GuiNotepad extends GuiScreen {
             Line line = lines.get(index);
             String shown = text.substring(line.start, line.end);
             int y = textY + i * LINE_HEIGHT;
-            drawString(fontRenderer, shown, textX, y, INK);
+            GuiContainerStyle.drawFlatString(fontRenderer, shown, textX, y, INK);
             if (!passive && index == cursorLine && (ticks / 10) % 2 == 0) {
                 int prefixEnd = Math.max(line.start, Math.min(cursor, line.end));
                 int cursorX = textX + fontRenderer.getStringWidth(
@@ -433,9 +436,9 @@ public class GuiNotepad extends GuiScreen {
         drawRect(left, top, left + boxWidth, top + boxHeight, 0xFF111111);
 
         if (modal == Modal.DISCARD) {
-            drawCenteredString(fontRenderer, "Unsaved changes",
+            GuiContainerStyle.drawFlatCenteredString(fontRenderer, "Unsaved changes",
                     width / 2, top + 12, ORANGE_LIGHT);
-            drawCenteredString(fontRenderer, "Save before closing this document?",
+            GuiContainerStyle.drawFlatCenteredString(fontRenderer, "Save before closing this document?",
                     width / 2, top + 28, MUTED);
             int y = top + 62;
             drawButton("Save", left + 18, y, 76, 20,
@@ -445,14 +448,14 @@ public class GuiNotepad extends GuiScreen {
             drawButton("Cancel", left + 186, y, 76, 20,
                     isHovering(mouseX, mouseY, left + 186, y, 76, 20));
         } else if (modal == Modal.RENAME) {
-            drawCenteredString(fontRenderer, "Rename document",
+            GuiContainerStyle.drawFlatCenteredString(fontRenderer, "Rename document",
                     width / 2, top + 12, ORANGE_LIGHT);
             int fieldY = top + 36;
             drawRect(left + 14, fieldY, left + boxWidth - 14, fieldY + 18, FIELD_BG);
             drawRect(left + 14, fieldY, left + boxWidth - 14, fieldY + 19, ORANGE_DIM);
             String shown = fontRenderer.trimStringToWidth(modalInput.toString(),
                     boxWidth - 40);
-            drawString(fontRenderer, shown, left + 20, fieldY + 5, TEXT);
+            GuiContainerStyle.drawFlatString(fontRenderer, shown, left + 20, fieldY + 5, TEXT);
             int cursorX = left + 20 + fontRenderer.getStringWidth(shown);
             if ((ticks / 10) % 2 == 0) drawRect(cursorX, fieldY + 4, cursorX + 1,
                     fieldY + 15, ORANGE_LIGHT);
@@ -462,9 +465,9 @@ public class GuiNotepad extends GuiScreen {
             drawButton("Cancel", left + 152, y, 80, 20,
                     isHovering(mouseX, mouseY, left + 152, y, 80, 20));
         } else if (modal == Modal.DELETE) {
-            drawCenteredString(fontRenderer, "Delete document?",
+            GuiContainerStyle.drawFlatCenteredString(fontRenderer, "Delete document?",
                     width / 2, top + 14, ORANGE_LIGHT);
-            drawCenteredString(fontRenderer, "This cannot be undone.",
+            GuiContainerStyle.drawFlatCenteredString(fontRenderer, "This cannot be undone.",
                     width / 2, top + 30, MUTED);
             int y = top + 58;
             drawButton("Cancel", left + 48, y, 80, 20,
@@ -1111,7 +1114,7 @@ public class GuiNotepad extends GuiScreen {
         drawRect(x, y + height - 1, x + width, y + height, border);
         drawRect(x, y, x + 1, y + height, border);
         drawRect(x + width - 1, y, x + width, y + height, border);
-        drawCenteredString(fontRenderer, label, x + width / 2, y + (height - 8) / 2,
+        GuiContainerStyle.drawFlatCenteredString(fontRenderer, label, x + width / 2, y + (height - 8) / 2,
                 hover ? ORANGE_LIGHT : TEXT);
     }
 
@@ -1123,7 +1126,7 @@ public class GuiNotepad extends GuiScreen {
         drawRect(x, y + height - 1, x + width, y + height, border);
         drawRect(x, y, x + 1, y + height, border);
         drawRect(x + width - 1, y, x + width, y + height, border);
-        drawCenteredString(fontRenderer, label, x + width / 2,
+        GuiContainerStyle.drawFlatCenteredString(fontRenderer, label, x + width / 2,
                 y + (height - 8) / 2, hover ? 0xFFFF7A5E : TEXT);
     }
 

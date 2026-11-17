@@ -44,6 +44,7 @@ AI assistance was used for:
 - the scoped GUI tooltip GL-state save and restore used by the programmer, safes, holder, Terminal
   Backup and Documents Folder;
 - monitor-only decorative blocks, including their half-depth collision and recipes;
+- flat, shadow-free text rendering in the Documents Folder and Notepad editors;
 - final housekeeping: asset reference validation, stale comment and documentation cleanup,
   BOM removal, item-icon correction and release docs;
 - this disclosure and the concrete/HL Blocks section of `README.md`.

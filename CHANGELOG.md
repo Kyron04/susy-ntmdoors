@@ -1,5 +1,10 @@
-HBM DOORS: 1.0.70
+HBM DOORS: 1.0.71
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.71
+FIX
+- The Documents Folder and Notepad editors now draw all interface text without the vanilla font
+  drop shadow. The Documents heading is a single flat label instead of a dark offset layer.
 
 1.0.70
 FEATURE
