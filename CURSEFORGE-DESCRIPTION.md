@@ -4,7 +4,7 @@
 
 NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system, security equipment and concrete building set from HBM's Nuclear Tech Mod. No NTM installation is required. Chisel 1.12.2-1.0.2.45 is required. Every model, texture and sound is bundled.
 
-**Current version: 1.0.71**
+**Current version: 1.0.72**
 
 ## 27 multiblock doors
 
@@ -181,7 +181,7 @@ Screwdriver + sneak + right-click cycles door skins:
 
 ## Documents Folder
 
-- New carried folder item with a three-layer paper model.
+- New carried folder item with a three-layer paper model and a full-height right page edge.
 - Right-click opens a twenty-page editor styled as an open manila folder in the item's tan, grey and dark-red palette.
 - Typed caret with click-to-place, arrows, Home/End, Delete/Backspace, Ctrl+V paste and word wrap.
 - Enter starts a new line; press it twice for a blank paragraph gap.

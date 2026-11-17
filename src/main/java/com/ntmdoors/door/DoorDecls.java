@@ -146,10 +146,10 @@ public final class DoorDecls {
                     PartAnim.translate(-1.0, 0, 0, 0F, 1F / 3F),
                     PartAnim.translate(0, 0, 5.0, 1F / 3F, 1F),
                     PartAnim.rotate(134.8, 1, 0, 0, 0, 2.5, 0, 1F / 3F, 1F))
-            // HBM plays a scrape at the start of each movement and a thud every ten ticks
-            // while the panel is rolling (open and close alike). There is no loop or end sound.
-            .soundCue(0, SND_VAULT_SCRAPE, true, false)
-            .soundCue(30, SND_VAULT_SCRAPE, false, true)
+            // A scrape starts each movement and a thud plays every ten ticks while the panel is
+            // rolling (opening and closing alike). There is no loop or end sound. The closing
+            // scrape belongs on the first tick, not 30 ticks in, or the start of the close is silent.
+            .soundCue(0, SND_VAULT_SCRAPE, true, true)
             .soundCue(45, SND_VAULT_THUD, true, true)
             .soundCue(55, SND_VAULT_THUD, true, true)
             .soundCue(65, SND_VAULT_THUD, true, true)

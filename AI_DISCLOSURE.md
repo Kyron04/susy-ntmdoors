@@ -45,6 +45,7 @@ AI assistance was used for:
   Backup and Documents Folder;
 - monitor-only decorative blocks, including their half-depth collision and recipes;
 - flat, shadow-free text rendering in the Documents Folder and Notepad editors;
+- the Vault-Tec closing-scrape cue timing and the Documents Folder full-height page-edge strip;
 - final housekeeping: asset reference validation, stale comment and documentation cleanup,
   BOM removal, item-icon correction and release docs;
 - this disclosure and the concrete/HL Blocks section of `README.md`.

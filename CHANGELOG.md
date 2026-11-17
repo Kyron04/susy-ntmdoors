@@ -1,5 +1,12 @@
-HBM DOORS: 1.0.71
+HBM DOORS: 1.0.72
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.72
+FIX
+- The Vault-Tec door's closing scrape now starts on the first tick of the close instead of 30
+  ticks in, so the beginning of the closing movement is no longer silent.
+- The Documents Folder's right-side page-edge strip now spans the full height of the folder,
+  filling the small notch at the top and bottom corners when the item is held.
 
 1.0.71
 FIX
