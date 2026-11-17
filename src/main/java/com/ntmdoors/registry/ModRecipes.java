@@ -30,6 +30,7 @@ public final class ModRecipes {
         utilities(e);
         officeDoors(e);
         industrialDoors(e);
+        remainingDoors(e);
     }
 
     private static void components(RegistryEvent.Register<IRecipe> e) {
@@ -244,6 +245,74 @@ public final class ModRecipes {
                 doorStack(decl, BlockDoorGeneric.Variant.NORMAL), Items.REDSTONE, Items.REDSTONE);
         shapeless(e, decl.name + "_security", doorStack(decl, BlockDoorGeneric.Variant.SECURITY),
                 doorStack(decl, BlockDoorGeneric.Variant.NORMAL), ModContent.ID_CHIP, ModContent.ID_CHIP);
+    }
+
+    /**
+     * The remaining door families, including the large blast, vehicle, silo and transition doors.
+     * They follow the same iron-door core as the smaller doors and use iron blocks for mass.
+     */
+    private static void remainingDoors(RegistryEvent.Register<IRecipe> e) {
+        shaped(e, "test_door", doorStack(DoorDecls.TEST_DOOR, BlockDoorGeneric.Variant.NORMAL),
+                "BGB", "GDG", "BGB",
+                'B', Blocks.IRON_BARS, 'G', Blocks.GLASS, 'D', Items.IRON_DOOR);
+        shaped(e, "fire_door", doorStack(DoorDecls.FIRE_DOOR, BlockDoorGeneric.Variant.NORMAL),
+                "GBG", "KDK", "GBG",
+                'G', Blocks.GLASS, 'B', Blocks.IRON_BARS,
+                'K', Blocks.IRON_BLOCK, 'D', Items.IRON_DOOR);
+        shaped(e, "qe_containment",
+                doorStack(DoorDecls.QE_CONTAINMENT, BlockDoorGeneric.Variant.NORMAL),
+                "GDG", "KDK", "GPG",
+                'G', Blocks.GLASS, 'D', Items.IRON_DOOR,
+                'K', Blocks.IRON_BLOCK, 'P', Blocks.PISTON);
+        shaped(e, "round_airlock_door",
+                doorStack(DoorDecls.ROUND_AIRLOCK_DOOR, BlockDoorGeneric.Variant.NORMAL),
+                "BDB", "KPK", "BDB",
+                'B', Blocks.IRON_BARS, 'D', Items.IRON_DOOR,
+                'K', Blocks.IRON_BLOCK, 'P', Blocks.PISTON);
+        shaped(e, "blast_door", doorStack(DoorDecls.BLAST_DOOR, BlockDoorGeneric.Variant.NORMAL),
+                "KDK", "BDB", "PDP",
+                'K', Blocks.IRON_BLOCK, 'D', Items.IRON_DOOR,
+                'B', Blocks.IRON_BARS, 'P', Blocks.PISTON);
+        shaped(e, "sliding_blast_door",
+                doorStack(DoorDecls.SLIDING_BLAST_DOOR, BlockDoorGeneric.Variant.NORMAL),
+                "KDK", "IPI", "KDK",
+                'K', Blocks.IRON_BLOCK, 'D', Items.IRON_DOOR,
+                'I', Items.IRON_INGOT, 'P', Blocks.PISTON);
+        shaped(e, "silo_hatch", doorStack(DoorDecls.SILO_HATCH, BlockDoorGeneric.Variant.NORMAL),
+                "BKB", "KDK", "BKB",
+                'B', Blocks.IRON_BARS, 'K', Blocks.IRON_BLOCK, 'D', Items.IRON_DOOR);
+        shaped(e, "secure_access_door",
+                doorStack(DoorDecls.SECURE_ACCESS_DOOR, BlockDoorGeneric.Variant.NORMAL),
+                "KDK", "BDB", "KDK",
+                'K', Blocks.IRON_BLOCK, 'D', Items.IRON_DOOR, 'B', Blocks.IRON_BARS);
+        shaped(e, "large_vehicle_door",
+                doorStack(DoorDecls.LARGE_VEHICLE_DOOR, BlockDoorGeneric.Variant.NORMAL),
+                "KDK", "PDP", "KDK",
+                'K', Blocks.IRON_BLOCK, 'D', Items.IRON_DOOR, 'P', Blocks.PISTON);
+        shaped(e, "silo_hatch_large",
+                doorStack(DoorDecls.SILO_HATCH_LARGE, BlockDoorGeneric.Variant.NORMAL),
+                "KDK", "DBD", "KDK",
+                'K', Blocks.IRON_BLOCK, 'D', Items.IRON_DOOR, 'B', Blocks.IRON_BARS);
+        shaped(e, "vault_door", doorStack(DoorDecls.VAULT_DOOR, BlockDoorGeneric.Variant.NORMAL),
+                "KDK", "DPD", "KDK",
+                'K', Blocks.IRON_BLOCK, 'D', Items.IRON_DOOR, 'P', Blocks.PISTON);
+        shaped(e, "transition_seal",
+                doorStack(DoorDecls.TRANSITION_SEAL, BlockDoorGeneric.Variant.NORMAL),
+                "KKK", "DDD", "KKK",
+                'K', Blocks.IRON_BLOCK, 'D', Items.IRON_DOOR);
+
+        doorUpgrades(e, DoorDecls.TEST_DOOR);
+        doorUpgrades(e, DoorDecls.FIRE_DOOR);
+        doorUpgrades(e, DoorDecls.QE_CONTAINMENT);
+        doorUpgrades(e, DoorDecls.ROUND_AIRLOCK_DOOR);
+        doorUpgrades(e, DoorDecls.BLAST_DOOR);
+        doorUpgrades(e, DoorDecls.SLIDING_BLAST_DOOR);
+        doorUpgrades(e, DoorDecls.SILO_HATCH);
+        doorUpgrades(e, DoorDecls.SECURE_ACCESS_DOOR);
+        doorUpgrades(e, DoorDecls.LARGE_VEHICLE_DOOR);
+        doorUpgrades(e, DoorDecls.SILO_HATCH_LARGE);
+        doorUpgrades(e, DoorDecls.VAULT_DOOR);
+        doorUpgrades(e, DoorDecls.TRANSITION_SEAL);
     }
 
     private static void shaped(RegistryEvent.Register<IRecipe> e, String name, ItemStack output,

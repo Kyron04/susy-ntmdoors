@@ -32,6 +32,8 @@ AI assistance was used for:
 - the Office Door 1/2/3 crafting recipes, including their locked and security variants;
 - the Blast Shutter, Water Door, Sliding Seal, Cargo Door and QE sliding door recipes, including
   their locked and security upgrades;
+- the remaining vault, blast, fire, secure access, airlock, silo hatch, vehicle, containment,
+  transition seal and test door recipes, including their locked and security upgrades;
 - the Spatial Disrupter creative-break exception;
 - a Creative Relay Key prototype that was removed before release at the owner's request;
 - the Keycard Programmer page-two layout, including the six-column, four-row card palette;

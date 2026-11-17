@@ -275,13 +275,12 @@ for editing.
 
 Most content has a crafting recipe, registered in `ModRecipes`: the six components, keycards,
 craftable utility keys, Keycard Holder, Documents Folder, security machines, monitor desks,
-decorative desks, monitor-only blocks, the Office Door 1/2/3 family and the Blast Shutter, Water
-Door, Sliding Seal, Cargo Door and QE sliding doors. Office doors use framed vanilla doors; the
-industrial doors use vanilla iron doors with iron bars, ingots, glass, iron blocks and pistons.
+decorative desks, monitor-only blocks and all 27 doors. Office doors use framed vanilla doors;
+the other doors use vanilla iron doors with iron bars, ingots, glass, iron blocks and pistons.
 Locked and security door variants are upgrades from the normal door using redstone or ID Chips.
-The remaining doors, the Relay, Biometric Relay, Redstone, Motion, Terminal, Weapons and Breaker
-Relay Keys, programmer-made RFID card colours, the Creative Keycard, Developer Keycard and Spatial
-Disrupter are recipe-free.
+The Relay, Biometric Relay, Redstone, Motion, Terminal, Weapons and Breaker Relay Keys,
+programmer-made RFID card colours, the Creative Keycard, Developer Keycard and Spatial Disrupter
+are recipe-free.
 * Redstone Gate (`ntmdoors:redstone_gate`): a full-cube redstone component with separate off and on
   textures. It starts off, turns on while it receives redstone power or a wireless pulse, and emits
   a full-strength signal while on. Redstone dust sitting on top is refreshed when the gate switches,
@@ -530,8 +529,7 @@ and `.clipZ(...)` where the original HBM renderer used a clip plane. Moving part
 for explicit model-space bounds; `.collisionSplits(n)` tightens rotating parts by slicing their AABB.
 
 ## Not included
-The office-door and industrial door families have crafting recipes; the remaining doors have none
-(the originals need NTM materials). Configs, NEI/JEI and other NTM items are also not included.
+All 27 doors have crafting recipes. Configs, NEI/JEI and other NTM items are also not included.
 The screwdriver, most non-door items and machines, the decorative desks and monitors, and the
 concrete set have recipes. The included HL Blocks are creative-only.
 

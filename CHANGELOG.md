@@ -1,5 +1,13 @@
-HBM DOORS: 1.0.75
+HBM DOORS: 1.0.76
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.76
+FEATURE
+- Added crafting recipes for the remaining twelve doors: Vault Door, Sliding Blast Door, Fire
+  Door, Secure Access Door, Round Airlock Door, both Silo Hatches, Large Vehicle Door,
+  QE Containment, Blast Door, Transition Seal and Test Door.
+- All 27 doors now have normal, locked and security recipes. The large doors use iron blocks,
+  iron bars, glass and pistons around vanilla iron-door cores.
 
 1.0.75
 FEATURE
