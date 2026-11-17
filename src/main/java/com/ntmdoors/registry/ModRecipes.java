@@ -29,6 +29,7 @@ public final class ModRecipes {
         monitorsAndDesks(e);
         utilities(e);
         officeDoors(e);
+        industrialDoors(e);
     }
 
     private static void components(RegistryEvent.Register<IRecipe> e) {
@@ -195,6 +196,54 @@ public final class ModRecipes {
             if (door.decl == decl && door.variant == variant) return new ItemStack(door);
         }
         throw new IllegalStateException("No door block for " + decl.name + " " + variant);
+    }
+
+    /**
+     * The smaller industrial doors use the same iron-door core as the office doors, with iron
+     * bars, ingots, glass, iron blocks and a piston for the moving parts. Locked and security
+     * variants are upgrades from the finished normal door.
+     */
+    private static void industrialDoors(RegistryEvent.Register<IRecipe> e) {
+        shaped(e, "blast_shutter", doorStack(DoorDecls.BLAST_SHUTTER, BlockDoorGeneric.Variant.NORMAL),
+                "BBB", "KDK", "BBB",
+                'B', Blocks.IRON_BARS, 'K', Blocks.IRON_BLOCK, 'D', Items.IRON_DOOR);
+        shaped(e, "water_door", doorStack(DoorDecls.WATER_DOOR, BlockDoorGeneric.Variant.NORMAL),
+                "BGB", "KDK", "BGB",
+                'B', Blocks.IRON_BARS, 'G', Blocks.GLASS, 'K', Blocks.IRON_BLOCK,
+                'D', Items.IRON_DOOR);
+        shaped(e, "sliding_seal_door",
+                doorStack(DoorDecls.SLIDING_SEAL_DOOR, BlockDoorGeneric.Variant.NORMAL),
+                "BDB", "IPI", "BBB",
+                'B', Blocks.IRON_BARS, 'D', Items.IRON_DOOR,
+                'I', Items.IRON_INGOT, 'P', Blocks.PISTON);
+        shaped(e, "cargo_door", doorStack(DoorDecls.CARGO_DOOR, BlockDoorGeneric.Variant.NORMAL),
+                "BDB", "IPI", "BDB",
+                'B', Blocks.IRON_BARS, 'D', Items.IRON_DOOR,
+                'I', Items.IRON_INGOT, 'P', Blocks.PISTON);
+        shaped(e, "qe_sliding_door",
+                doorStack(DoorDecls.QE_SLIDING_DOOR, BlockDoorGeneric.Variant.NORMAL),
+                "GDG", "KPK", "GDG",
+                'G', Blocks.GLASS, 'D', Items.IRON_DOOR,
+                'K', Blocks.IRON_BLOCK, 'P', Blocks.PISTON);
+        shaped(e, "qe_sliding_panel",
+                doorStack(DoorDecls.QE_SLIDING_PANEL, BlockDoorGeneric.Variant.NORMAL),
+                "GDG", "IPI", "GGG",
+                'G', Blocks.GLASS, 'D', Items.IRON_DOOR,
+                'I', Items.IRON_INGOT, 'P', Blocks.PISTON);
+
+        doorUpgrades(e, DoorDecls.BLAST_SHUTTER);
+        doorUpgrades(e, DoorDecls.WATER_DOOR);
+        doorUpgrades(e, DoorDecls.SLIDING_SEAL_DOOR);
+        doorUpgrades(e, DoorDecls.CARGO_DOOR);
+        doorUpgrades(e, DoorDecls.QE_SLIDING_DOOR);
+        doorUpgrades(e, DoorDecls.QE_SLIDING_PANEL);
+    }
+
+    private static void doorUpgrades(RegistryEvent.Register<IRecipe> e, DoorDecl decl) {
+        shapeless(e, decl.name + "_locked", doorStack(decl, BlockDoorGeneric.Variant.LOCKED),
+                doorStack(decl, BlockDoorGeneric.Variant.NORMAL), Items.REDSTONE, Items.REDSTONE);
+        shapeless(e, decl.name + "_security", doorStack(decl, BlockDoorGeneric.Variant.SECURITY),
+                doorStack(decl, BlockDoorGeneric.Variant.NORMAL), ModContent.ID_CHIP, ModContent.ID_CHIP);
     }
 
     private static void shaped(RegistryEvent.Register<IRecipe> e, String name, ItemStack output,

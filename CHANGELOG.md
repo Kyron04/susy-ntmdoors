@@ -1,5 +1,13 @@
-HBM DOORS: 1.0.74
+HBM DOORS: 1.0.75
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.75
+FEATURE
+- Added crafting recipes for the Blast Shutter, Water Door, Sliding Seal, Cargo Door and both
+  QE sliding doors. Each is built around vanilla iron doors with iron bars, ingots, glass, iron
+  blocks and pistons.
+- Locked and security variants of those doors are shapeless upgrades from the normal door using
+  two redstone or two ID Chips.
 
 1.0.74
 FEATURE
