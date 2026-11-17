@@ -1,6 +1,9 @@
 package com.ntmdoors.registry;
 
 import com.ntmdoors.NTMDoors;
+import com.ntmdoors.block.BlockDoorGeneric;
+import com.ntmdoors.door.DoorDecl;
+import com.ntmdoors.door.DoorDecls;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
@@ -11,7 +14,7 @@ import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
 
 /**
- * Crafting recipes for the non-door content. Relay keys, RFID card colours, the Creative and
+ * Crafting recipes for the mod content. Relay keys, RFID card colours, the Creative and
  * Developer Keycards and the Spatial Disrupter deliberately have no recipes.
  */
 public final class ModRecipes {
@@ -25,6 +28,7 @@ public final class ModRecipes {
         toolsAndSecurity(e);
         monitorsAndDesks(e);
         utilities(e);
+        officeDoors(e);
     }
 
     private static void components(RegistryEvent.Register<IRecipe> e) {
@@ -141,6 +145,56 @@ public final class ModRecipes {
         shaped(e, "redstone_monocle", new ItemStack(ModContent.REDSTONE_MONOCLE),
                 " G ", "RIR", " G ",
                 'G', Blocks.GLASS_PANE, 'R', Items.REDSTONE, 'I', Items.GOLD_INGOT);
+    }
+
+    /**
+     * Office doors are built around a vanilla door core. The outer rows are the style frame and
+     * the two module slots; the middle row carries one door for a single, two for a 2x2 double
+     * and three for the 3x3 double. Locked doors replace both module slots with redstone and
+     * security doors replace them with ID Chips.
+     */
+    private static void officeDoors(RegistryEvent.Register<IRecipe> e) {
+        officeDoorSet(e, DoorDecls.BLACK_MESA_DOOR, "WDW",
+                "plankWood", Items.IRON_DOOR);
+        officeDoorSet(e, DoorDecls.OFFICE_DOOR_1_DOUBLE, "DWD",
+                "plankWood", Items.IRON_DOOR);
+        officeDoorSet(e, DoorDecls.OFFICE_DOOR_1_DOUBLE_3X3, "DDD",
+                "plankWood", Items.IRON_DOOR);
+
+        ItemStack redConcrete = new ItemStack(Blocks.CONCRETE, 1, 14);
+        officeDoorSet(e, DoorDecls.OFFICE_DOOR_2, "WDW",
+                redConcrete, Items.IRON_DOOR);
+        officeDoorSet(e, DoorDecls.OFFICE_DOOR_2_DOUBLE, "DWD",
+                redConcrete, Items.IRON_DOOR);
+        officeDoorSet(e, DoorDecls.OFFICE_DOOR_2_DOUBLE_3X3, "DDD",
+                redConcrete, Items.IRON_DOOR);
+
+        officeDoorSet(e, DoorDecls.OFFICE_DOOR_3, "WDW",
+                "plankWood", "doorWood");
+        officeDoorSet(e, DoorDecls.OFFICE_DOOR_3_DOUBLE, "DWD",
+                "plankWood", "doorWood");
+        officeDoorSet(e, DoorDecls.OFFICE_DOOR_3_DOUBLE_3X3, "DDD",
+                "plankWood", "doorWood");
+    }
+
+    private static void officeDoorSet(RegistryEvent.Register<IRecipe> e, DoorDecl decl, String middle,
+                                      Object frame, Object door) {
+        shaped(e, decl.name, doorStack(decl, BlockDoorGeneric.Variant.NORMAL),
+                "W W", middle, "W W",
+                'W', frame, 'D', door);
+        shaped(e, decl.name + "_locked", doorStack(decl, BlockDoorGeneric.Variant.LOCKED),
+                "WRW", middle, "WRW",
+                'W', frame, 'D', door, 'R', Items.REDSTONE);
+        shaped(e, decl.name + "_security", doorStack(decl, BlockDoorGeneric.Variant.SECURITY),
+                "WCW", middle, "WCW",
+                'W', frame, 'D', door, 'C', ModContent.ID_CHIP);
+    }
+
+    private static ItemStack doorStack(DoorDecl decl, BlockDoorGeneric.Variant variant) {
+        for (BlockDoorGeneric door : ModContent.DOORS) {
+            if (door.decl == decl && door.variant == variant) return new ItemStack(door);
+        }
+        throw new IllegalStateException("No door block for " + decl.name + " " + variant);
     }
 
     private static void shaped(RegistryEvent.Register<IRecipe> e, String name, ItemStack output,

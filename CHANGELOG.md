@@ -1,5 +1,14 @@
-HBM DOORS: 1.0.73
+HBM DOORS: 1.0.74
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.74
+FEATURE
+- Added crafting recipes for all Office Door 1/2/3 single, 2x2 double and 3x3 forms, including
+  their locked and security variants.
+- Each office door is built around a vanilla door. Office Doors 1 and 3 use a wood-plank frame
+  with an iron or wooden door core; Office Door 2 uses a red concrete frame around an iron door
+  core. Locked recipes replace the two module slots with redstone, and security recipes replace
+  them with ID Chips.
 
 1.0.73
 FIX

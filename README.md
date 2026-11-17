@@ -273,9 +273,12 @@ for editing.
 
 ## Crafting
 
-Most non-door content has a crafting recipe, registered in `ModRecipes`: the six components,
-keycards, craftable utility keys, Keycard Holder, Documents Folder, security machines, monitor
-desks, decorative desks and monitor-only blocks. Doors intentionally have no recipes. The Relay,
+Most content has a crafting recipe, registered in `ModRecipes`: the six components, keycards,
+craftable utility keys, Keycard Holder, Documents Folder, security machines, monitor desks,
+decorative desks, monitor-only blocks and the Office Door 1/2/3 family. Each office door is built
+around a vanilla door: Office Doors 1 and 3 use a wood-plank frame with an iron or wooden door
+core, and Office Door 2 uses a red concrete frame around an iron door core. Locked recipes use
+redstone in the two module slots; security recipes use ID Chips. The other doors, the Relay,
 Biometric Relay, Redstone, Motion, Terminal, Weapons and Breaker Relay Keys, programmer-made RFID
 card colours, the Creative Keycard, Developer Keycard and Spatial Disrupter are recipe-free.
 * Redstone Gate (`ntmdoors:redstone_gate`): a full-cube redstone component with separate off and on
@@ -526,9 +529,10 @@ and `.clipZ(...)` where the original HBM renderer used a clip plane. Moving part
 for explicit model-space bounds; `.collisionSplits(n)` tightens rotating parts by slicing their AABB.
 
 ## Not included
-Doors have no crafting recipes (the originals need NTM materials); configs, NEI/JEI, and other NTM
-items are also not included. The screwdriver, most non-door items and machines, the decorative
-desks and monitors, and the concrete set have recipes. The included HL Blocks are creative-only.
+The office-door family has crafting recipes; the remaining doors have none (the originals need NTM
+materials). Configs, NEI/JEI and other NTM items are also not included. The screwdriver, most
+non-door items and machines, the decorative desks and monitors, and the concrete set have recipes.
+The included HL Blocks are creative-only.
 
 ## Concrete and HL Blocks
 

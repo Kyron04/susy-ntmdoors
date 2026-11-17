@@ -29,6 +29,7 @@ AI assistance was used for:
   GL-state restoration fix;
 - the office-door colour skin sets and their 32x64 texture downscales;
 - the 3x3 office-door models and item models, scaled from the 2x2 double-door assets;
+- the Office Door 1/2/3 crafting recipes, including their locked and security variants;
 - the Spatial Disrupter creative-break exception;
 - a Creative Relay Key prototype that was removed before release at the owner's request;
 - the Keycard Programmer page-two layout, including the six-column, four-row card palette;

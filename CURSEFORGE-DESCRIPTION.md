@@ -4,7 +4,7 @@
 
 NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system, security equipment and concrete building set from HBM's Nuclear Tech Mod. No NTM installation is required. Chisel 1.12.2-1.0.2.45 is required. Every model, texture and sound is bundled.
 
-**Current version: 1.0.73**
+**Current version: 1.0.74**
 
 ## 27 multiblock doors
 
@@ -30,7 +30,8 @@ NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system, secur
 - **Office Door 2** — 1x2 red painted office door with a wire-glass window
 - **Office Door 3** — 1x2 brown wood office door with straight levers
 - **Office Door 1/2/3 (Double)** — 2x2 mirrored-leaf versions of each office door
-- **Office Door 1/2/3 (3x3)** — 3x3 scaled double versions with a two-cell-deep front footprint
+- **Office Door 1/2/3 (3x3)** - 3x3 scaled double versions with a two-cell-deep front footprint
+- **Office door recipes** - every single, 2x2 double and 3x3 office door, including its locked and security variants, is built around a vanilla door. Locked variants add redstone; security variants add ID Chips.
 
 Every door:
 
