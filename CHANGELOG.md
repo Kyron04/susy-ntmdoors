@@ -1,5 +1,10 @@
-HBM DOORS: 1.0.72
+HBM DOORS: 1.0.73
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.73
+FIX
+- Filled the two transparent corner pixels used by the Documents Folder's 3D front face and
+  limited the page-edge UVs to opaque pixels, removing the missing corner on the held model.
 
 1.0.72
 FIX
