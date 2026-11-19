@@ -1,0 +1,1397 @@
+{
+    "meta":  {
+                 "format_version":  "5.0",
+                 "model_format":  "free",
+                 "box_uv":  false
+             },
+    "name":  "emancipation_grill",
+    "model_identifier":  "",
+    "visible_box":  [
+                        1,
+                        1,
+                        0
+                    ],
+    "variable_placeholders":  "",
+    "variable_placeholder_buttons":  [
+
+                                     ],
+    "resolution":  {
+                       "width":  16,
+                       "height":  16
+                   },
+    "elements":  [
+                     {
+                         "name":  "wall_plate",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      1,
+                                      0.5,
+                                      14.4
+                                  ],
+                         "to":  [
+                                    15,
+                                    47.5,
+                                    16
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        8,
+                                        24,
+                                        15.2
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                4.76595744680851,
+                                                                16
+                                                            ],
+                                                     "texture":  1
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               0.54468085106382969,
+                                                               16
+                                                           ],
+                                                    "texture":  1
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                4.76595744680851,
+                                                                16
+                                                            ],
+                                                     "texture":  1
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               0.54468085106382969,
+                                                               16
+                                                           ],
+                                                    "texture":  1
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             1.8285714285714281
+                                                         ],
+                                                  "texture":  1
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               1.8285714285714281
+                                                           ],
+                                                    "texture":  1
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "110858a2-4aaf-4188-a9af-508751462783"
+                     },
+                     {
+                         "name":  "housing",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      2,
+                                      1.5,
+                                      10
+                                  ],
+                         "to":  [
+                                    14,
+                                    45.5,
+                                    15
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        8,
+                                        23.5,
+                                        12.5
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                4.3636363636363633,
+                                                                16
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               1.8181818181818183,
+                                                               16
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                4.3636363636363633,
+                                                                16
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               1.8181818181818183,
+                                                               16
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             6.6666666666666661
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               6.6666666666666661
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "783c5bad-950b-4f39-82de-9a297ff64652"
+                     },
+                     {
+                         "name":  "emitter_bezel",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      9.6,
+                                      2,
+                                      8.75
+                                  ],
+                         "to":  [
+                                    14,
+                                    46,
+                                    9.95
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        11.8,
+                                        24,
+                                        9.35
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                1.6,
+                                                                16
+                                                            ],
+                                                     "texture":  2
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               0.43636363636363612,
+                                                               16
+                                                           ],
+                                                    "texture":  2
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                1.6,
+                                                                16
+                                                            ],
+                                                     "texture":  2
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               0.43636363636363612,
+                                                               16
+                                                           ],
+                                                    "texture":  2
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             4.3636363636363606
+                                                         ],
+                                                  "texture":  2
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               4.3636363636363606
+                                                           ],
+                                                    "texture":  2
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "446b8436-395e-49d5-b09e-e88fb9cfb888"
+                     },
+                     {
+                         "name":  "emitter_panel",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      10.6,
+                                      2.5,
+                                      8.48
+                                  ],
+                         "to":  [
+                                    13.4,
+                                    45.5,
+                                    8.78
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        12,
+                                        24,
+                                        8.629999999999999
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                1.0418604651162793,
+                                                                16
+                                                            ],
+                                                     "texture":  4
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               0.11162790697674378,
+                                                               16
+                                                           ],
+                                                    "texture":  4
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                1.0418604651162793,
+                                                                16
+                                                            ],
+                                                     "texture":  4
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               0.11162790697674378,
+                                                               16
+                                                           ],
+                                                    "texture":  4
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             1.7142857142857078
+                                                         ],
+                                                  "texture":  4
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               1.7142857142857078
+                                                           ],
+                                                    "texture":  4
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "0587f08f-824e-4e3b-abed-b7254c80d0c5"
+                     },
+                     {
+                         "name":  "emitter_strip",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      11.5,
+                                      3,
+                                      8.25
+                                  ],
+                         "to":  [
+                                    12.5,
+                                    45,
+                                    8.55
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        12,
+                                        24,
+                                        8.4
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ],
+                                                     "texture":  3
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               0.11428571428571455,
+                                                               16
+                                                           ],
+                                                    "texture":  4
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ],
+                                                     "texture":  3
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               0.11428571428571455,
+                                                               16
+                                                           ],
+                                                    "texture":  4
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             4.8000000000000114
+                                                         ],
+                                                  "texture":  4
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               4.8000000000000114
+                                                           ],
+                                                    "texture":  4
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "35f2e443-9962-4ebd-bc5a-ba90924120ed"
+                     },
+                     {
+                         "name":  "emitter_top_cap",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      9.4,
+                                      45.43,
+                                      8.6
+                                  ],
+                         "to":  [
+                                    14.2,
+                                    46.6,
+                                    10.02
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        11.8,
+                                        46.015,
+                                        9.3099999999999987
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                3.9000000000000066
+                                                            ],
+                                                     "texture":  2
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               13.183098591549316
+                                                           ],
+                                                    "texture":  2
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                3.9000000000000066
+                                                            ],
+                                                     "texture":  2
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               13.183098591549316
+                                                           ],
+                                                    "texture":  2
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             4.7333333333333343
+                                                         ],
+                                                  "texture":  2
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               4.7333333333333343
+                                                           ],
+                                                    "texture":  2
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "9761ff6f-48c7-401d-b741-034175912ebd"
+                     },
+                     {
+                         "name":  "emitter_bottom_cap",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      9.4,
+                                      1.4,
+                                      8.6
+                                  ],
+                         "to":  [
+                                    14.2,
+                                    2.57,
+                                    10.02
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        11.8,
+                                        1.9849999999999999,
+                                        9.3099999999999987
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                3.9000000000000004
+                                                            ],
+                                                     "texture":  2
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               13.183098591549296
+                                                           ],
+                                                    "texture":  2
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                3.9000000000000004
+                                                            ],
+                                                     "texture":  2
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               13.183098591549296
+                                                           ],
+                                                    "texture":  2
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             4.7333333333333343
+                                                         ],
+                                                  "texture":  2
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               4.7333333333333343
+                                                           ],
+                                                    "texture":  2
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "a73e48ee-7a96-4052-80d0-9ebf055c58ec"
+                     },
+                     {
+                         "name":  "top_cap_lower",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      1.5,
+                                      45.45,
+                                      8.5
+                                  ],
+                         "to":  [
+                                    14.5,
+                                    46.8,
+                                    14.98
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        8,
+                                        46.125,
+                                        11.74
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                1.6615384615384545
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               3.3333333333333193
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                1.6615384615384545
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               3.3333333333333193
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             7.9753846153846162
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               7.9753846153846162
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "2b261d06-c8da-4450-8fba-599905ca0ad3"
+                     },
+                     {
+                         "name":  "top_cap_upper",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      2.5,
+                                      46.75,
+                                      9.2
+                                  ],
+                         "to":  [
+                                    13.5,
+                                    47.8,
+                                    14.96
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        8,
+                                        47.275,
+                                        12.08
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                1.5272727272727231
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               2.9166666666666581
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                1.5272727272727231
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               2.9166666666666581
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             8.37818181818182
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               8.37818181818182
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "2e0d72dc-6627-401b-b6f3-5cd6c9de1004"
+                     },
+                     {
+                         "name":  "top_cap_edge",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      1.52,
+                                      46.78,
+                                      8.48
+                                  ],
+                         "to":  [
+                                    14.48,
+                                    47.18,
+                                    8.98
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        8,
+                                        46.980000000000004,
+                                        8.73
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                0.49382716049382536
+                                                            ],
+                                                     "texture":  2
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               12.799999999999955
+                                                           ],
+                                                    "texture":  2
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                0.49382716049382536
+                                                            ],
+                                                     "texture":  2
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               12.799999999999955
+                                                           ],
+                                                    "texture":  2
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             0.61728395061728392
+                                                         ],
+                                                  "texture":  2
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               0.61728395061728392
+                                                           ],
+                                                    "texture":  2
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "4397336f-d53e-425c-a295-5de384fd41f4"
+                     },
+                     {
+                         "name":  "bottom_cap_lower",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      1.5,
+                                      0.2,
+                                      8.5
+                                  ],
+                         "to":  [
+                                    14.5,
+                                    1.55,
+                                    14.98
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        8,
+                                        0.875,
+                                        11.74
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                1.6615384615384616
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               3.3333333333333335
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                1.6615384615384616
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               3.3333333333333335
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             7.9753846153846162
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               7.9753846153846162
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "7b83cd58-a2ea-40c3-b8d1-dd36a9deeabc"
+                     },
+                     {
+                         "name":  "bottom_cap_upper",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      2.5,
+                                      1.45,
+                                      9.2
+                                  ],
+                         "to":  [
+                                    13.5,
+                                    2.2,
+                                    14.96
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        8,
+                                        1.8250000000000002,
+                                        12.08
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                1.0909090909090913
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               2.0833333333333335
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                1.0909090909090913
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               2.0833333333333335
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             8.37818181818182
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               8.37818181818182
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "b58d2d82-4db5-4b19-8903-7b8ad02edb58"
+                     },
+                     {
+                         "name":  "warning_label",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      4.3,
+                                      39,
+                                      9.9
+                                  ],
+                         "to":  [
+                                    7.3,
+                                    42,
+                                    10.05
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        5.8,
+                                        40.5,
+                                        9.9750000000000014
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ],
+                                                     "texture":  6
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               0.80000000000000182,
+                                                               16
+                                                           ],
+                                                    "texture":  4
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                16,
+                                                                16
+                                                            ],
+                                                     "texture":  4
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               0.80000000000000182,
+                                                               16
+                                                           ],
+                                                    "texture":  4
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             0,
+                                                             0,
+                                                             16,
+                                                             0.80000000000000182
+                                                         ],
+                                                  "texture":  4
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               16,
+                                                               0.80000000000000182
+                                                           ],
+                                                    "texture":  4
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "c71059fb-3d22-4a22-a486-5a2c41fce8d6"
+                     }
+                 ],
+    "groups":  [
+
+               ],
+    "outliner":  [
+                     "110858a2-4aaf-4188-a9af-508751462783",
+                     "783c5bad-950b-4f39-82de-9a297ff64652",
+                     "446b8436-395e-49d5-b09e-e88fb9cfb888",
+                     "0587f08f-824e-4e3b-abed-b7254c80d0c5",
+                     "35f2e443-9962-4ebd-bc5a-ba90924120ed",
+                     "9761ff6f-48c7-401d-b741-034175912ebd",
+                     "a73e48ee-7a96-4052-80d0-9ebf055c58ec",
+                     "2b261d06-c8da-4450-8fba-599905ca0ad3",
+                     "2e0d72dc-6627-401b-b6f3-5cd6c9de1004",
+                     "4397336f-d53e-425c-a295-5de384fd41f4",
+                     "7b83cd58-a2ea-40c3-b8d1-dd36a9deeabc",
+                     "b58d2d82-4db5-4b19-8903-7b8ad02edb58",
+                     "c71059fb-3d22-4a22-a486-5a2c41fce8d6"
+                 ],
+    "textures":  [
+                     {
+                         "path":  "",
+                         "name":  "grill_housing.png",
+                         "folder":  "block",
+                         "namespace":  "",
+                         "id":  "0",
+                         "group":  "",
+                         "width":  16,
+                         "height":  16,
+                         "uv_width":  16,
+                         "uv_height":  16,
+                         "particle":  true,
+                         "use_as_default":  true,
+                         "layers_enabled":  false,
+                         "sync_to_project":  "",
+                         "render_mode":  "default",
+                         "render_sides":  "auto",
+                         "frame_time":  1,
+                         "frame_order_type":  "loop",
+                         "frame_order":  "",
+                         "frame_interpolate":  false,
+                         "visible":  true,
+                         "internal":  true,
+                         "saved":  false,
+                         "uuid":  "c262604c-6d60-4c67-8d05-420ba9bb0988",
+                         "relative_path":  "",
+                         "source":  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAD/SURBVDhPbZJXDsMwDEN9iwL96Eja7NFx/7O5oIoXMG4/BNkaFCk7jcsrd+Oah/kZpru8x7i3wxL5pp/jfqnbnAjIY2rop0ecAaKJmPLXW5cT6DQCQqO8mxp/AGAA3Wl9RwEGfSQAHhJU7Hp15+xyYMBAxQIAmmr0PUCTvKY7gHxIULGSPtX3AZCamKz6jYEmg0gzMlyv72AH4AwU9B24diQAKqvu/ZcBAD69/Ac0IWd7Rl7BaQMAg/IVOG9LJOE7gAEN7IAlKh4SVORf2ZdXSvgLQJLFuQQAaGIQC90x8I8EGEBoZhAA8YxCOVdNrpshELUYYvIq0hnjLn84nvIHaVmBjnu4KrQAAAAASUVORK5CYII="
+                     },
+                     {
+                         "path":  "",
+                         "name":  "grill_plate.png",
+                         "folder":  "block",
+                         "namespace":  "",
+                         "id":  "1",
+                         "group":  "",
+                         "width":  16,
+                         "height":  16,
+                         "uv_width":  16,
+                         "uv_height":  16,
+                         "particle":  false,
+                         "use_as_default":  false,
+                         "layers_enabled":  false,
+                         "sync_to_project":  "",
+                         "render_mode":  "default",
+                         "render_sides":  "auto",
+                         "frame_time":  1,
+                         "frame_order_type":  "loop",
+                         "frame_order":  "",
+                         "frame_interpolate":  false,
+                         "visible":  true,
+                         "internal":  true,
+                         "saved":  false,
+                         "uuid":  "3c69d5b8-3a28-488c-9d3e-bfcc4775e0fe",
+                         "relative_path":  "",
+                         "source":  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAEQSURBVDhPXZJXcsMwDER1m8S2JLfIVnG7/6XoedA8BcOPHaIulwCb+/Qow30u4/ws2LdxCXtaXuFz4pvXp2ffHktDAw4JmyUyjp8vIkc8CGS1KDd7kwr0xaE7lcYbl+dnk4ef455gfrwDxILg7zYFmydAgST6tRrs3333r0DZuYhYjgOfSX4jyMjybah9FQVBZq5PZlKvMcfb/lwaB0MBQYdpsTmQa7G742Vdo7IAwwQqcQbG81/ZtpAb3QYF5rCvwxiQkNjPrl0VIMufqG2c0+dpq7g/XVcCHAmyDYEKtP1IEMVXrqdM0t/nUAH5PGzsmIFNFtgggU/KG7A2trA79CGFT8FesTmBMWqs41brwRdD/adWyYIrvgAAAABJRU5ErkJggg=="
+                     },
+                     {
+                         "path":  "",
+                         "name":  "grill_trim.png",
+                         "folder":  "block",
+                         "namespace":  "",
+                         "id":  "2",
+                         "group":  "",
+                         "width":  16,
+                         "height":  16,
+                         "uv_width":  16,
+                         "uv_height":  16,
+                         "particle":  false,
+                         "use_as_default":  false,
+                         "layers_enabled":  false,
+                         "sync_to_project":  "",
+                         "render_mode":  "default",
+                         "render_sides":  "auto",
+                         "frame_time":  1,
+                         "frame_order_type":  "loop",
+                         "frame_order":  "",
+                         "frame_interpolate":  false,
+                         "visible":  true,
+                         "internal":  true,
+                         "saved":  false,
+                         "uuid":  "b5d6746b-21b2-47ba-b3a9-bcf0adb008e6",
+                         "relative_path":  "",
+                         "source":  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAGASURBVDhPVZPZUsJgDIX7ks544Y0KCLK3gIKUfS87Lo8b58vM+a0XZ9pmOUlO0mh3uNhwPLfpYmPz1e7f82M0cyzWmWO52dtkvvZ4UCzXLMqOVw8eTZceNJ6tAgE2ka+2BwcE2Hk+l14togNVJRnnJjv5e3848UAqk8yTWHygVKlbdL79eBKYLbfuoBO1mk4W/k0BFcFOvBPQAcH5AIioRDI+EcgubVyD/ekWGAkkiXZJ4B1CkvCtd0cnFPFjoWzR8fIVBJMWVGJeAgHv2ESq8XwEOpAwIlIH6gy7xoQIO99PxcrfCGIWAYHMOUinYQPqQBoUXqoWna7fXp1kiaRKJAN8ACKtkDgnQAMdC0l0oEPiDqiIHUCglQcN6EDVScx3orF0QPilCSP4JUJAYH4LgLVh02HJDqEIfITD+TNUFfRP6OYFEQAIfAQ0yK9IGmgjEOlH0qFJdD8kxGjGPWslb5b0BgHtzrvVWx1rtLsWd/vW66eOWjNxX7UR2939g/0CPtqEOSySGR0AAAAASUVORK5CYII="
+                     },
+                     {
+                         "path":  "",
+                         "name":  "grill_emitter.png",
+                         "folder":  "block",
+                         "namespace":  "",
+                         "id":  "3",
+                         "group":  "",
+                         "width":  16,
+                         "height":  16,
+                         "uv_width":  16,
+                         "uv_height":  16,
+                         "particle":  false,
+                         "use_as_default":  false,
+                         "layers_enabled":  false,
+                         "sync_to_project":  "",
+                         "render_mode":  "default",
+                         "render_sides":  "auto",
+                         "frame_time":  1,
+                         "frame_order_type":  "loop",
+                         "frame_order":  "",
+                         "frame_interpolate":  false,
+                         "visible":  true,
+                         "internal":  true,
+                         "saved":  false,
+                         "uuid":  "aed53323-ac75-4281-92f5-97326c39d1ac",
+                         "relative_path":  "",
+                         "source":  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAEBSURBVDhPdZK5DUJBDES3Au6AO+NugUqIqZg2iElIFj1LTzIWBP77d8cej482WZ86Nlzs+3h1jHO0PPTt9daf797vj1fgYLPt5evE2mC+iyAep5tz/HNWAgxfTnCSBIFZIciZMoHZICBQAvxDAaCMgABVAX65BP1CQZaFI1YJJMlKgkBWGTm51xLETahvKFC+k6hN9F2F3rFmRkBl/SMgGAzVNr3xIdCHXyWAuR+5FN5blo8pMRMQlGevHxY9EDRTJbDRkquU/5iCwTlDJrA/BLmN+kcJ1petjtFtNdDexSZao06/Fsmm1aZ/TUGZdQriTsCY6IEztjlYVZB3JU+L+wesqJ+tJsq0OAAAAABJRU5ErkJggg=="
+                     },
+                     {
+                         "path":  "",
+                         "name":  "grill_dark.png",
+                         "folder":  "block",
+                         "namespace":  "",
+                         "id":  "4",
+                         "group":  "",
+                         "width":  16,
+                         "height":  16,
+                         "uv_width":  16,
+                         "uv_height":  16,
+                         "particle":  false,
+                         "use_as_default":  false,
+                         "layers_enabled":  false,
+                         "sync_to_project":  "",
+                         "render_mode":  "default",
+                         "render_sides":  "auto",
+                         "frame_time":  1,
+                         "frame_order_type":  "loop",
+                         "frame_order":  "",
+                         "frame_interpolate":  false,
+                         "visible":  true,
+                         "internal":  true,
+                         "saved":  false,
+                         "uuid":  "cc78e25b-1b97-4e74-b4b2-2f0cf5f87989",
+                         "relative_path":  "",
+                         "source":  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAD1SURBVDhPXdFJboRBCIPR/wSZF5l3nfH+5+voQ3oR6kWJKhcYbI77t5/zzfPn+fbla+LV42nu4ddPH4MVwx/ef+cuhh13r99TILl7WAQl9i6xN+L++xsCBQF96qwQeXe42Dkw1t29ZFOEO2Gaif8T7Em2Bx2TyeNBpDMBo7ZmxYr4U46JRgItJEhAKNEWtsHlDIECRXwwJgnIyBoPuF+0GgTe/Nl+aDoebOOcvYldeCn50KEI1L23KWjeHtVgCDDTLLm73ZO1tzEe7PUhKlHXMPqLl4YPge7MEk2AuDdv4McGyWGaCDe+BuOB0S93bER+OJuw+Af1wVNPR/KxMgAAAABJRU5ErkJggg=="
+                     },
+                     {
+                         "path":  "",
+                         "name":  "grill_screw.png",
+                         "folder":  "block",
+                         "namespace":  "",
+                         "id":  "5",
+                         "group":  "",
+                         "width":  16,
+                         "height":  16,
+                         "uv_width":  16,
+                         "uv_height":  16,
+                         "particle":  false,
+                         "use_as_default":  false,
+                         "layers_enabled":  false,
+                         "sync_to_project":  "",
+                         "render_mode":  "default",
+                         "render_sides":  "auto",
+                         "frame_time":  1,
+                         "frame_order_type":  "loop",
+                         "frame_order":  "",
+                         "frame_interpolate":  false,
+                         "visible":  true,
+                         "internal":  true,
+                         "saved":  false,
+                         "uuid":  "a7dd48dd-17bd-4265-bdbf-238c6eeb7dfb",
+                         "relative_path":  "",
+                         "source":  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAGlSURBVDhPVZNJTgNRDET7GpB5ZjgEEJKQAcESEsg8TwQCASSuglhwUaNnqVpkYbX9v8su13cH8WTWsEQqZ7FExqLxtMf4nEViqT2fe/yDSMLzAi4JOOTgMJoMfYEwzslVjHkBgXVwXqy4la8adtds+7dav7Gzi7J3V2cwxAGVRQ1grXFr962O9QYT6w+n1u2PrdMbWfOha6VKPRwPcwaiXCxVvVvrsecAwMl03objeVis3R16nrqDDXAwwHQeTRb2/fNrq6etJy5Wz7Zcv9hgNPMijAVTjR6IEpUfOwObzFYOokA6e2Sbl53Nlxs3xnlo972ZXstFxKhMArRTmYJlcseWzZ94jOFLD2nhIwBGRMTjEqrrzatt3z4tVzi13ceXPW/fbTpfewHErFSvHQw20JvzVCSgAXQZgzuBEZMGGkE7sSciY6A4hhYUQECKCgx9gNrccAQCqPFUGGwopLkBX5ZrXkDL5Az+L4WWCSYAtEDsBiNSQPkUCRloReWTyEjqyFfPJkNEX2X9GNKC2TCpLLrafy2Qzn0E/Wn6KllrLrrqSiz/D/C7qNcOPz6CAAAAAElFTkSuQmCC"
+                     },
+                     {
+                         "path":  "",
+                         "name":  "grill_label.png",
+                         "folder":  "block",
+                         "namespace":  "",
+                         "id":  "6",
+                         "group":  "",
+                         "width":  16,
+                         "height":  16,
+                         "uv_width":  16,
+                         "uv_height":  16,
+                         "particle":  false,
+                         "use_as_default":  false,
+                         "layers_enabled":  false,
+                         "sync_to_project":  "",
+                         "render_mode":  "default",
+                         "render_sides":  "auto",
+                         "frame_time":  1,
+                         "frame_order_type":  "loop",
+                         "frame_order":  "",
+                         "frame_interpolate":  false,
+                         "visible":  true,
+                         "internal":  true,
+                         "saved":  false,
+                         "uuid":  "4d5e805d-45d1-4a34-b109-481e4059254d",
+                         "relative_path":  "",
+                         "source":  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAp0lEQVR4AaSOyw0DIQxEra1m2+CcenOmje0m4SGNxc8k2SANNsbz7CPn/Mp/6LByUkp2R8VqFUBStiAYUXqepyG921iby+WAklczm5C3WtX03wEoMoX4rSYAxtXEVY3eDqCmX7boAK1RMKbs1AFolLGFUY80ASJjVJ8A2iCaONYdIGM0aTTq7YCdcffnABGJ2ob8kxyAScJE/rguQ+Sj6EEVwIp3BOANAAD//4im1JQAAAAGSURBVAMA4Xyc4Y+zy/8AAAAASUVORK5CYII="
+                     }
+                 ]
+}

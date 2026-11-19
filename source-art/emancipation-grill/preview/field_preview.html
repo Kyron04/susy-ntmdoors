@@ -1,0 +1,1063 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Emancipation Grill — Field Study</title>
+<style>
+  :root{
+    --ink:#d9f4f8;
+    --muted:#7f9aa1;
+    --cyan:#a9f2ff;
+    --line:rgba(150,235,255,.20);
+    --panel:rgba(7,12,15,.86);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#020304;color:var(--ink);
+    font-family:"Segoe UI",system-ui,-apple-system,sans-serif}
+  #stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:
+    radial-gradient(circle at 50% 45%,#0a1115 0%,#020304 70%)}
+  #frame{position:relative;aspect-ratio:16/9;width:min(100vw,177.78vh);max-height:100vh;
+    box-shadow:0 0 90px rgba(0,0,0,.8);overflow:hidden;background:#050708}
+  canvas{display:block;width:100%;height:100%}
+
+  #hud{position:absolute;inset:0;pointer-events:none;transition:opacity .25s ease}
+  #frame.ui-hidden #hud{opacity:0}
+  #title{position:absolute;top:3.2%;left:3.4%;text-shadow:0 2px 16px rgba(0,0,0,.9)}
+  #title .eyebrow{font-size:clamp(8px,1.05vw,13px);letter-spacing:.24em;color:#7ed9e8;
+    text-transform:uppercase;font-weight:600}
+  #title h1{margin:.22em 0 .08em;font-size:clamp(19px,2.7vw,38px);font-weight:600;letter-spacing:.02em}
+  #title p{margin:0;color:var(--muted);font-size:clamp(9px,1.1vw,14px);letter-spacing:.06em}
+
+  #readout{position:absolute;top:3.4%;right:3.4%;text-align:right;font-size:clamp(8px,.95vw,12px);
+    color:#71939b;line-height:1.7;letter-spacing:.12em;text-transform:uppercase}
+  #readout b{color:#b9eef6;font-weight:600}
+
+  #panel{position:absolute;left:50%;bottom:1.2%;transform:translateX(-50%);
+    width:min(96%,1180px);pointer-events:auto;
+    background:linear-gradient(180deg,rgba(10,17,21,.92),rgba(5,9,11,.94));
+    border:1px solid var(--line);border-radius:10px;
+    box-shadow:0 18px 50px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.04);
+    backdrop-filter:blur(12px);
+    padding:8px 14px}
+  #panel .row{display:flex;gap:10px;align-items:flex-end;flex-wrap:nowrap}
+  #panel .group{flex:1 1 0;min-width:96px}
+  #panel .group.wide{flex:0 0 auto;min-width:0}
+  #panel .label{display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+    font-size:clamp(7px,.86vw,10px);letter-spacing:.12em;text-transform:uppercase;color:#7f9aa1;
+    margin-bottom:4px;white-space:nowrap}
+  #panel .label b{color:#bceff7;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:.04em}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:3px;border-radius:99px;
+    background:linear-gradient(90deg,rgba(130,225,245,.55),rgba(130,225,245,.12));outline:none;
+    cursor:pointer;margin:0}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:13px;height:13px;
+    border-radius:50%;background:#c9f7ff;border:2px solid #2a5561;
+    box-shadow:0 0 0 1px rgba(150,240,255,.35),0 0 12px rgba(140,235,255,.55);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:#c9f7ff;
+    border:2px solid #2a5561;box-shadow:0 0 12px rgba(140,235,255,.55);cursor:pointer}
+  #panel .bar{display:flex;gap:5px;align-items:center;flex-wrap:wrap;justify-content:flex-end;margin-left:auto}
+  button{appearance:none;border:1px solid rgba(140,225,245,.20);background:rgba(18,35,42,.55);
+    color:#a8dce6;padding:6px 9px;border-radius:6px;font:inherit;
+    font-size:clamp(7px,.84vw,10px);letter-spacing:.09em;text-transform:uppercase;cursor:pointer;
+    transition:background .15s,border-color .15s,color .15s;white-space:nowrap}
+  button:hover{background:rgba(38,75,86,.65);border-color:rgba(160,240,255,.42);color:#dffbff}
+  button.on{background:rgba(110,225,245,.16);border-color:rgba(160,240,255,.55);color:#e6fdff}
+  #presets{display:flex;gap:4px;flex-wrap:nowrap}
+  #note{flex:1 1 auto;margin-top:0;color:#58757d;font-size:clamp(7px,.78vw,9.5px);
+    letter-spacing:.05em;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #note b{color:#79b3bd;font-weight:500}
+  @media (max-width:760px){
+    #title p,#readout{display:none}
+    #panel{bottom:1.5%}
+    #note{display:none}
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="frame">
+    <canvas id="view" width="1280" height="720"></canvas>
+    <div id="hud">
+      <div id="title">
+        <div class="eyebrow">Aperture Science // Field Study 01</div>
+        <h1>Emancipation Grill</h1>
+        <p>Material emancipation field — visual target</p>
+      </div>
+      <div id="readout">
+        <div>Medium <b>Incandescent particle field</b></div>
+        <div>Coupling <b>10 blocks max</b></div>
+        <div>Field <b>1 × 3 × 1 cell</b></div>
+      </div>
+      <div id="panel">
+        <div class="row">
+          <div class="group">
+            <div class="label"><span>Transparency</span><b id="v-opacity">0.110</b></div>
+            <input id="opacity" type="range" min="0.02" max="0.24" step="0.005" value="0.11">
+          </div>
+          <div class="group">
+            <div class="label"><span>Wisp density</span><b id="v-wisps">1.00</b></div>
+            <input id="wisps" type="range" min="0" max="1.6" step="0.01" value="1.0">
+          </div>
+          <div class="group">
+            <div class="label"><span>Flow speed</span><b id="v-speed">0.80</b></div>
+            <input id="speed" type="range" min="0" max="2" step="0.01" value="0.8">
+          </div>
+          <div class="group">
+            <div class="label"><span>Glass bend</span><b id="v-refraction">0.65</b></div>
+            <input id="refraction" type="range" min="0" max="1" step="0.01" value="0.65">
+          </div>
+          <div class="group">
+            <div class="label"><span>Edge glow</span><b id="v-edge">1.00</b></div>
+            <input id="edge" type="range" min="0" max="1.6" step="0.01" value="1.0">
+          </div>
+          <div class="group wide" style="flex:0 0 auto">
+            <div class="label"><span>Preset</span></div>
+            <div id="presets">
+              <button class="on" data-preset="reference">Portal 2</button>
+              <button data-preset="subtle">Subtle</button>
+              <button data-preset="electric">Electric</button>
+              <button data-preset="smoky">Smoky</button>
+            </div>
+          </div>
+        </div>
+        <div class="row" style="margin-top:6px;align-items:center;flex-wrap:nowrap">
+          <div id="note">Preview only — <b>glass bend</b> is a preview effect. In-game: <b>3 layered quads</b>, one UV-scrolled texture, edge strips, no shaders.</div>
+          <div class="bar">
+            <button id="pause">Pause</button>
+            <button id="clean">Clean view</button>
+            <button id="copy">Copy settings</button>
+            <button id="reset">Reset</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+(() => {
+  "use strict";
+
+  const W = 1280, H = 720;
+  const canvas = document.getElementById("view");
+  const ctx = canvas.getContext("2d");
+
+  // Field plane in screen space. The emitter columns sit just outside it.
+  const SCENE_Y = -26;
+  const field = { x: 360, y: 200, w: 560, h: 430 };
+  const frame = document.getElementById("frame");
+
+  const state = {
+    opacity: 0.11,
+    wisps: 1.0,
+    speed: 0.8,
+    refraction: 0.65,
+    edge: 1.0,
+    time: 0,
+    paused: false,
+    uiHidden: false
+  };
+
+  const PRESETS = {
+    reference: { opacity: 0.11, wisps: 1.00, speed: 0.80, refraction: 0.65, edge: 1.00 },
+    subtle:    { opacity: 0.07, wisps: 0.62, speed: 0.50, refraction: 0.34, edge: 0.72 },
+    electric:  { opacity: 0.13, wisps: 1.30, speed: 1.65, refraction: 0.24, edge: 1.40 },
+    smoky:     { opacity: 0.15, wisps: 1.15, speed: 0.42, refraction: 0.90, edge: 0.82 }
+  };
+
+  // ---------------------------------------------------------------- noise
+  function makeRng(seed) {
+    let a = seed >>> 0;
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function makeGrid(px, py, seed) {
+    const rng = makeRng(seed);
+    const grid = new Float32Array(px * py);
+    for (let i = 0; i < grid.length; i++) grid[i] = rng();
+    return grid;
+  }
+
+  function sampleGrid(x, y, grid, px, py) {
+    const xi = Math.floor(x), yi = Math.floor(y);
+    let fx = x - xi, fy = y - yi;
+    fx = fx * fx * (3 - 2 * fx);
+    fy = fy * fy * (3 - 2 * fy);
+    const x0 = ((xi % px) + px) % px;
+    const x1 = (x0 + 1) % px;
+    const y0 = ((yi % py) + py) % py;
+    const y1 = (y0 + 1) % py;
+    const v00 = grid[y0 * px + x0];
+    const v10 = grid[y0 * px + x1];
+    const v01 = grid[y1 * px + x0];
+    const v11 = grid[y1 * px + x1];
+    const a = v00 + (v10 - v00) * fx;
+    const b = v01 + (v11 - v01) * fx;
+    return a + (b - a) * fy;
+  }
+
+  function makeFbm(seed, octaves, stretch) {
+    const layers = [];
+    let px = 4;
+    let py = Math.max(2, Math.round(px * stretch));
+    let norm = 0;
+    for (let i = 0; i < octaves; i++) {
+      const amp = Math.pow(0.5, i);
+      layers.push({ grid: makeGrid(px, py, seed + i * 1013), px, py, amp });
+      norm += amp;
+      px *= 2;
+      py = Math.max(2, Math.round(px * stretch));
+    }
+    return function (u, v) {
+      let sum = 0;
+      for (let i = 0; i < layers.length; i++) {
+        const l = layers[i];
+        sum += l.amp * sampleGrid(u * l.px, v * l.py, l.grid, l.px, l.py);
+      }
+      return sum / norm;
+    };
+  }
+
+  function makeFieldTexture(size, seed, opts) {
+    const c = document.createElement("canvas");
+    c.width = c.height = size;
+    const g = c.getContext("2d");
+    const img = g.createImageData(size, size);
+    const data = img.data;
+    const cloud = makeFbm(seed, 4, opts.stretch);
+    const warpX = makeFbm(seed + 101, 2, 0.85);
+    const warpY = makeFbm(seed + 202, 2, 0.85);
+    const ridgeN = makeFbm(seed + 303, 3, opts.stretch * 0.72);
+    const lutSize = 1024;
+    const gammaLut = new Float32Array(lutSize + 1);
+    for (let i = 0; i <= lutSize; i++) gammaLut[i] = Math.pow(i / lutSize, opts.gamma);
+
+    for (let y = 0; y < size; y++) {
+      const v = y / size;
+      for (let x = 0; x < size; x++) {
+        const u = x / size;
+        const wx = warpX(u, v) - 0.5;
+        const wy = warpY(u, v) - 0.5;
+        const n = cloud(u + opts.warp * wx, v + opts.warp * wy);
+        const rn = ridgeN(u + opts.warp * 0.55 * wx, v + opts.warp * 0.55 * wy);
+        const ridge = 1 - Math.abs(rn * 2 - 1);
+        const ridgeShape = ridge * ridge * (0.55 + 0.45 * ridge);
+        const mix = n * (1 - opts.ridge) + ridgeShape * opts.ridge;
+        let a = (mix - opts.threshold) / (1 - opts.threshold);
+        a = Math.max(0, Math.min(1, a));
+        a = gammaLut[(a * lutSize) | 0];
+
+        const i = (y * size + x) * 4;
+        const l = 0.35 + 0.65 * n;
+        data[i]     = Math.round(126 + 120 * l);
+        data[i + 1] = Math.round(204 + 48 * l);
+        data[i + 2] = 255;
+        data[i + 3] = Math.round(a * 255);
+      }
+    }
+    g.putImageData(img, 0, 0);
+    return c;
+  }
+
+  // ---------------------------------------------------------------- background
+  const bg = document.createElement("canvas");
+  bg.width = W; bg.height = H;
+  const b = bg.getContext("2d");
+
+  function bevel(g, x, y, w, h, base, light, dark) {
+    g.fillStyle = base; g.fillRect(x, y, w, h);
+    g.fillStyle = light; g.fillRect(x, y, w, 2); g.fillRect(x, y, 2, h);
+    g.fillStyle = dark; g.fillRect(x, y + h - 2, w, 2); g.fillRect(x + w - 2, y, 2, h);
+  }
+
+  function screw(g, x, y, r) {
+    g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2);
+    g.fillStyle = "#0a0e10"; g.fill();
+    g.beginPath(); g.arc(x - r * 0.25, y - r * 0.25, r * 0.45, 0, Math.PI * 2);
+    g.fillStyle = "rgba(155,185,192,.45)"; g.fill();
+  }
+
+  function hazard(g, x, y, w, h, alpha) {
+    g.save();
+    g.beginPath(); g.rect(x, y, w, h); g.clip();
+    g.fillStyle = `rgba(180,145,32,${alpha})`;
+    g.fillRect(x, y, w, h);
+    g.fillStyle = `rgba(12,14,14,${Math.min(0.85, alpha * 2.2)})`;
+    for (let i = -h; i < w + h; i += 16) {
+      g.beginPath();
+      g.moveTo(x + i, y + h);
+      g.lineTo(x + i + 8, y + h);
+      g.lineTo(x + i + 8 + h, y);
+      g.lineTo(x + i + h, y);
+      g.closePath();
+      g.fill();
+    }
+    g.restore();
+  }
+
+  function drawBackRoom(g) {
+    // back wall
+    const bx = 430, by = 240, bw = 420, bh = 310;
+    const wall = g.createLinearGradient(0, by, 0, by + bh);
+    wall.addColorStop(0, "#1a2227");
+    wall.addColorStop(0.55, "#141b1f");
+    wall.addColorStop(1, "#0d1215");
+    g.fillStyle = wall;
+    g.fillRect(bx, by, bw, bh);
+
+    // wall panel seams
+    g.strokeStyle = "rgba(0,0,0,.38)";
+    g.lineWidth = 2;
+    for (let i = 1; i < 4; i++) {
+      g.beginPath(); g.moveTo(bx + i * bw / 4, by); g.lineTo(bx + i * bw / 4, by + bh); g.stroke();
+    }
+    for (let i = 1; i < 3; i++) {
+      g.beginPath(); g.moveTo(bx, by + i * bh / 3); g.lineTo(bx + bw, by + i * bh / 3); g.stroke();
+    }
+    // panel highlights
+    g.strokeStyle = "rgba(120,150,158,.08)";
+    g.lineWidth = 1;
+    for (let i = 1; i < 4; i++) {
+      g.beginPath(); g.moveTo(bx + i * bw / 4 + 2, by + 2); g.lineTo(bx + i * bw / 4 + 2, by + bh - 2); g.stroke();
+    }
+
+    // elevator door
+    const dx = 578, dy = 350, dw = 124, dh = 200;
+    const door = g.createLinearGradient(dx, 0, dx + dw, 0);
+    door.addColorStop(0, "#0d1316");
+    door.addColorStop(0.48, "#1d272b");
+    door.addColorStop(0.52, "#0a0f11");
+    door.addColorStop(1, "#0d1316");
+    g.fillStyle = door;
+    g.fillRect(dx, dy, dw, dh);
+    g.strokeStyle = "rgba(120,160,170,.22)";
+    g.lineWidth = 2;
+    g.strokeRect(dx + 1, dy + 1, dw - 2, dh - 2);
+    g.beginPath(); g.moveTo(dx + dw / 2, dy + 4); g.lineTo(dx + dw / 2, dy + dh - 4); g.stroke();
+    // door light
+    g.fillStyle = "rgba(160,235,250,.55)";
+    g.fillRect(dx + dw - 18, dy + 20, 6, 3);
+    g.fillStyle = "rgba(255,80,60,.65)";
+    g.fillRect(dx + dw - 18, dy + 28, 6, 3);
+
+    // wall hazard strip
+    hazard(g, bx + 18, by + bh - 38, 100, 14, 0.22);
+    hazard(g, bx + bw - 132, by + bh - 38, 100, 14, 0.22);
+
+    // floor
+    const floor = g.createLinearGradient(0, by + bh, 0, H);
+    floor.addColorStop(0, "#0b1012");
+    floor.addColorStop(1, "#161d20");
+    g.fillStyle = floor;
+    g.fillRect(0, by + bh, W, H - by - bh);
+    // floor tile lines converging to the room
+    g.strokeStyle = "rgba(140,170,175,.12)";
+    g.lineWidth = 1.5;
+    for (let i = -4; i <= 4; i++) {
+      g.beginPath();
+      g.moveTo(640 + i * 140, H);
+      g.lineTo(640 + i * 34, by + bh);
+      g.stroke();
+    }
+    for (let i = 1; i <= 4; i++) {
+      const t = i / 5;
+      const y = by + bh + (H - by - bh) * t;
+      g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke();
+    }
+
+    // storage cube silhouette
+    const cx = 640, cy = 542, cw = 76, ch = 76;
+    g.fillStyle = "rgba(20,27,30,.92)";
+    g.fillRect(cx - cw / 2, cy - ch, cw, ch);
+    g.fillStyle = "rgba(30,39,43,.95)";
+    g.beginPath();
+    g.moveTo(cx - cw / 2, cy - ch);
+    g.lineTo(cx - cw / 2 + 16, cy - ch - 14);
+    g.lineTo(cx + cw / 2 + 16, cy - ch - 14);
+    g.lineTo(cx + cw / 2, cy - ch);
+    g.closePath(); g.fill();
+    g.strokeStyle = "rgba(140,175,182,.28)";
+    g.lineWidth = 1.5;
+    g.strokeRect(cx - cw / 2, cy - ch, cw, ch);
+    g.beginPath();
+    g.moveTo(cx - cw / 2, cy - ch);
+    g.lineTo(cx - cw / 2 + 16, cy - ch - 14);
+    g.lineTo(cx + cw / 2 + 16, cy - ch - 14);
+    g.lineTo(cx + cw / 2, cy - ch);
+    g.stroke();
+    // cube corner brackets
+    g.strokeStyle = "rgba(150,185,192,.18)";
+    const bracket = 16;
+    for (const [x, y, sx, sy] of [
+      [cx - cw / 2, cy - ch, 1, 1], [cx + cw / 2, cy - ch, -1, 1],
+      [cx - cw / 2, cy, 1, -1], [cx + cw / 2, cy, -1, -1]
+    ]) {
+      g.beginPath();
+      g.moveTo(x + sx * bracket, y);
+      g.lineTo(x, y);
+      g.lineTo(x, y + sy * bracket);
+      g.stroke();
+    }
+    // faint cube circle
+    g.beginPath(); g.arc(cx, cy - ch / 2, 18, 0, Math.PI * 2);
+    g.strokeStyle = "rgba(140,175,182,.16)"; g.lineWidth = 2; g.stroke();
+  }
+
+  function drawCorridor(g) {
+    // side walls: doorway opening to the back wall
+    const left = g.createLinearGradient(0, 0, 430, 0);
+    left.addColorStop(0, "#090d0f");
+    left.addColorStop(1, "#1a2227");
+    g.fillStyle = left;
+    g.beginPath();
+    g.moveTo(260, 130); g.lineTo(430, 240); g.lineTo(430, 550); g.lineTo(260, 630);
+    g.closePath(); g.fill();
+
+    const right = g.createLinearGradient(1280, 0, 850, 0);
+    right.addColorStop(0, "#090d0f");
+    right.addColorStop(1, "#1a2227");
+    g.fillStyle = right;
+    g.beginPath();
+    g.moveTo(1020, 130); g.lineTo(850, 240); g.lineTo(850, 550); g.lineTo(1020, 630);
+    g.closePath(); g.fill();
+
+    // side wall panels
+    g.strokeStyle = "rgba(0,0,0,.40)";
+    g.lineWidth = 2;
+    for (let i = 1; i <= 3; i++) {
+      const t = i / 4;
+      const xl = 260 + (430 - 260) * t;
+      const ylTop = 130 + (240 - 130) * t;
+      const ylBot = 630 + (550 - 630) * t;
+      g.beginPath(); g.moveTo(xl, ylTop); g.lineTo(xl, ylBot); g.stroke();
+      const xr = 1020 + (850 - 1020) * t;
+      g.beginPath(); g.moveTo(xr, ylTop); g.lineTo(xr, ylBot); g.stroke();
+    }
+    g.strokeStyle = "rgba(0,0,0,.28)";
+    for (const y of [290, 420]) {
+      g.beginPath(); g.moveTo(260, y); g.lineTo(430, 240 + (y - 130) * 0.62); g.stroke();
+      g.beginPath(); g.moveTo(1020, y); g.lineTo(850, 240 + (y - 130) * 0.62); g.stroke();
+    }
+
+    // ceiling
+    const ceil = g.createLinearGradient(0, 0, 0, 240);
+    ceil.addColorStop(0, "#05080a");
+    ceil.addColorStop(1, "#10171a");
+    g.fillStyle = ceil;
+    g.beginPath();
+    g.moveTo(260, 130); g.lineTo(430, 240); g.lineTo(850, 240); g.lineTo(1020, 130);
+    g.closePath(); g.fill();
+
+    // ceiling light panels
+    for (const [x1, x2] of [[520, 610], [670, 760]]) {
+      const lg = g.createLinearGradient(0, 130, 0, 240);
+      lg.addColorStop(0, "rgba(180,240,250,.10)");
+      lg.addColorStop(0.5, "rgba(170,235,250,.20)");
+      lg.addColorStop(1, "rgba(170,235,250,.04)");
+      g.fillStyle = lg;
+      g.beginPath();
+      g.moveTo(x1, 158); g.lineTo(x1 + 24, 196); g.lineTo(x2 + 24, 196); g.lineTo(x2, 158);
+      g.closePath(); g.fill();
+      g.strokeStyle = "rgba(160,235,250,.24)";
+      g.lineWidth = 1;
+      g.stroke();
+    }
+
+    // floor
+    const fl = g.createLinearGradient(0, 550, 0, 720);
+    fl.addColorStop(0, "#0c1113");
+    fl.addColorStop(1, "#1a2226");
+    g.fillStyle = fl;
+    g.beginPath();
+    g.moveTo(260, 630); g.lineTo(430, 550); g.lineTo(850, 550); g.lineTo(1020, 630);
+    g.closePath(); g.fill();
+
+    // floor seams
+    g.strokeStyle = "rgba(140,170,175,.10)";
+    g.lineWidth = 1.5;
+    for (let i = -3; i <= 3; i++) {
+      g.beginPath();
+      g.moveTo(640 + i * 120, 630);
+      g.lineTo(640 + i * 70, 550);
+      g.stroke();
+    }
+    for (const y of [570, 596]) {
+      const inset = (y - 550) * 2.125;
+      g.beginPath(); g.moveTo(260 + inset, y); g.lineTo(1020 - inset, y); g.stroke();
+    }
+  }
+
+  function drawColumn(g, x, y, w, h, side) {
+    // outer housing
+    bevel(g, x, y, w, h, "#171e22", "#3a484f", "#080b0d");
+
+    // three block segments
+    const seg = h / 3;
+    for (let i = 0; i < 3; i++) {
+      const sy = y + i * seg;
+      // recessed face
+      g.fillStyle = "#141b1f";
+      g.fillRect(x + 8, sy + 7, w - 16, seg - 14);
+      // inner bevel
+      g.strokeStyle = "rgba(95,125,134,.16)";
+      g.lineWidth = 1;
+      g.strokeRect(x + 8.5, sy + 7.5, w - 17, seg - 15);
+      // seam
+      if (i > 0) {
+        g.fillStyle = "#070a0c";
+        g.fillRect(x + 3, sy - 1, w - 6, 3);
+        g.fillStyle = "rgba(120,150,158,.12)";
+        g.fillRect(x + 3, sy + 2, w - 6, 1);
+      }
+      // screws
+      screw(g, x + 12, sy + 12, 2.2);
+      screw(g, x + w - 12, sy + 12, 2.2);
+      screw(g, x + 12, sy + seg - 12, 2.2);
+      screw(g, x + w - 12, sy + seg - 12, 2.2);
+    }
+
+    // inner emitter strip
+    const stripW = 11;
+    const sx = side === "left" ? x + w - stripW - 2 : x + 2;
+    const sy = y + 3, sh = h - 6;
+
+    // recess
+    g.fillStyle = "#05090b";
+    g.fillRect(sx - 2, sy, stripW + 4, sh);
+
+    // glow bloom
+    g.save();
+    g.shadowColor = "rgba(115,225,255,.95)";
+    g.shadowBlur = 26;
+    const eg = g.createLinearGradient(0, sy, 0, sy + sh);
+    eg.addColorStop(0, "#0a2836");
+    eg.addColorStop(0.035, "#7fe8ff");
+    eg.addColorStop(0.10, "#e8feff");
+    eg.addColorStop(0.50, "#bff7ff");
+    eg.addColorStop(0.90, "#e8feff");
+    eg.addColorStop(0.965, "#7fe8ff");
+    eg.addColorStop(1, "#0a2836");
+    g.fillStyle = eg;
+    g.fillRect(sx + 2, sy, stripW - 4, sh);
+    g.restore();
+
+    // white core
+    g.fillStyle = "rgba(240,255,255,.92)";
+    g.fillRect(sx + Math.floor(stripW / 2) - 1, sy + 2, 2, sh - 4);
+
+    // emitter segment gaps
+    g.fillStyle = "rgba(4,10,12,.85)";
+    for (let i = 1; i < 4; i++) {
+      g.fillRect(sx - 1, sy + sh * i / 4 - 1, stripW + 2, 3);
+    }
+  }
+
+  function drawHeader(g) {
+    // header bar across the doorway
+    bevel(g, 260, 118, 760, 82, "#11181b", "#3b4a51", "#070a0c");
+    g.fillStyle = "#0b1012";
+    g.fillRect(340, 152, 560, 28);
+    g.strokeStyle = "rgba(120,150,158,.14)";
+    g.strokeRect(340.5, 152.5, 559, 27);
+    // tiny label plate
+    g.fillStyle = "rgba(180,210,215,.16)";
+    g.fillRect(596, 160, 88, 10);
+    g.fillStyle = "rgba(5,10,12,.75)";
+    g.fillRect(599, 163, 82, 4);
+    // underside glow line
+    g.save();
+    g.shadowColor = "rgba(120,225,250,.7)";
+    g.shadowBlur = 16;
+    g.fillStyle = "rgba(175,242,255,.65)";
+    g.fillRect(360, 196, 560, 3);
+    g.restore();
+  }
+
+  function drawForeground(g) {
+    // near wall panels around the doorway
+    const gradL = g.createLinearGradient(0, 0, 270, 0);
+    gradL.addColorStop(0, "#05080a");
+    gradL.addColorStop(1, "#12191c");
+    g.fillStyle = gradL;
+    g.fillRect(0, 0, 260, H);
+    const gradR = g.createLinearGradient(1280, 0, 1010, 0);
+    gradR.addColorStop(0, "#05080a");
+    gradR.addColorStop(1, "#12191c");
+    g.fillStyle = gradR;
+    g.fillRect(1020, 0, 260, H);
+
+    // panel seams
+    g.strokeStyle = "rgba(0,0,0,.45)";
+    g.lineWidth = 2;
+    for (const y of [180, 360, 540]) {
+      g.beginPath(); g.moveTo(0, y); g.lineTo(260, y - 18); g.stroke();
+      g.beginPath(); g.moveTo(1020, y - 18); g.lineTo(1280, y); g.stroke();
+    }
+    for (const x of [60, 140, 220]) {
+      g.beginPath(); g.moveTo(x, 0); g.lineTo(x + 34, 720); g.stroke();
+      g.beginPath(); g.moveTo(1280 - x, 0); g.lineTo(1280 - x - 34, 720); g.stroke();
+    }
+    // highlights
+    g.strokeStyle = "rgba(130,160,168,.08)";
+    g.lineWidth = 1;
+    for (const x of [62, 142, 222]) {
+      g.beginPath(); g.moveTo(x, 0); g.lineTo(x + 34, 720); g.stroke();
+      g.beginPath(); g.moveTo(1280 - x, 0); g.lineTo(1280 - x - 34, 720); g.stroke();
+    }
+
+    // doorway inner edge bevels
+    g.fillStyle = "#2a363c";
+    g.fillRect(258, 118, 4, 512);
+    g.fillRect(1018, 118, 4, 512);
+    g.fillStyle = "#06090b";
+    g.fillRect(262, 118, 3, 512);
+    g.fillRect(1015, 118, 3, 512);
+
+    // top wall above doorway
+    const top = g.createLinearGradient(0, 0, 0, 118);
+    top.addColorStop(0, "#040607");
+    top.addColorStop(1, "#101619");
+    g.fillStyle = top;
+    g.fillRect(0, 0, W, 118);
+
+    // bottom sill
+    const sill = g.createLinearGradient(0, 630, 0, 720);
+    sill.addColorStop(0, "#0e1417");
+    sill.addColorStop(1, "#050708");
+    g.fillStyle = sill;
+    g.fillRect(0, 630, W, 90);
+    g.fillStyle = "rgba(120,160,168,.10)";
+    g.fillRect(260, 630, 760, 2);
+
+    // hazard strips on the doorway jambs
+    hazard(g, 242, 150, 18, 440, 0.18);
+    hazard(g, 1020, 150, 18, 440, 0.18);
+  }
+
+  function buildBackground() {
+    b.clearRect(0, 0, W, H);
+    const base = b.createLinearGradient(0, 0, 0, H);
+    base.addColorStop(0, "#040607");
+    base.addColorStop(0.55, "#0a1013");
+    base.addColorStop(1, "#050708");
+    b.fillStyle = base;
+    b.fillRect(0, 0, W, H);
+
+    drawBackRoom(b);
+    drawCorridor(b);
+    drawHeader(b);
+    drawColumn(b, 280, 200, 80, 430, "left");
+    drawColumn(b, 920, 200, 80, 430, "right");
+    drawForeground(b);
+  }
+
+  // ---------------------------------------------------------------- field
+  let texCloud, texStreak, texFine, texHaze;
+  const particles = [];
+
+  function buildFieldAssets() {
+    texCloud = makeFieldTexture(192, 1337, {
+      stretch: 0.34, warp: 0.18, ridge: 0.16, threshold: 0.28, gamma: 1.18
+    });
+    texStreak = makeFieldTexture(192, 4242, {
+      stretch: 0.15, warp: 0.10, ridge: 0.58, threshold: 0.38, gamma: 1.55
+    });
+    texFine = makeFieldTexture(192, 9001, {
+      stretch: 0.22, warp: 0.13, ridge: 0.36, threshold: 0.42, gamma: 1.85
+    });
+    texHaze = makeFieldTexture(192, 2025, {
+      stretch: 0.52, warp: 0.24, ridge: 0.05, threshold: 0.20, gamma: 1.05
+    });
+
+    let rng = makeRng(99);
+    for (let i = 0; i < 30; i++) {
+      particles.push({
+        x: rng(),
+        phase: rng(),
+        speed: 0.018 + rng() * 0.055,
+        size: 0.4 + rng() * 1.2,
+        alpha: 0.10 + rng() * 0.32
+      });
+    }
+  }
+
+  function drawRefraction(t) {
+    if (state.refraction <= 0.01) return;
+    const amp = 10 * state.refraction;
+    const slice = 6;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(field.x, field.y, field.w, field.h);
+    ctx.clip();
+    for (let x = field.x; x < field.x + field.w; x += slice) {
+      const nx = (x - field.x) / field.w;
+      const mask = Math.sin(Math.PI * nx);
+      const d = mask * (
+        Math.sin(nx * 8.3 + t * 0.85) * amp * 0.55 +
+        Math.sin(nx * 21.7 - t * 1.55) * amp * 0.20 +
+        Math.sin(nx * 3.1 + Math.sin(t * 0.23) * 2.1) * amp * 0.25
+      );
+      let sx = x + d;
+      sx = Math.max(0, Math.min(W - slice, sx));
+      ctx.drawImage(bg, sx, 0, slice, H, x, 0, slice, H);
+    }
+    // glassy tint
+    ctx.fillStyle = "rgba(112,205,230,.035)";
+    ctx.fillRect(field.x, field.y, field.w, field.h);
+    ctx.restore();
+  }
+
+  function drawScrollingTexture(tex, scale, speedX, speedY, alpha) {
+    if (alpha <= 0.001 || !tex) return;
+    const pattern = ctx.createPattern(tex, "repeat");
+    if (!pattern) return;
+    try {
+      const m = new DOMMatrix();
+      m.translateSelf(field.x, field.y);
+      m.scaleSelf(scale, scale);
+      m.translateSelf(-state.time * speedX, -state.time * speedY);
+      pattern.setTransform(m);
+    } catch (e) {
+      // Older canvas implementations simply render the unscrolled pattern.
+    }
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(field.x, field.y, field.w, field.h);
+    ctx.clip();
+    ctx.globalCompositeOperation = "lighter";
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = pattern;
+    ctx.fillRect(field.x, field.y, field.w, field.h);
+    ctx.restore();
+  }
+
+  function drawParticles(t) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(field.x, field.y, field.w, field.h);
+    ctx.clip();
+    ctx.globalCompositeOperation = "lighter";
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i];
+      const yNorm = 1 - ((t * p.speed + p.phase) % 1);
+      const x = field.x + p.x * field.w +
+        Math.sin(t * 0.4 + p.phase * 7.0) * 9 +
+        Math.sin(t * 0.13 + p.phase * 3.0) * 5;
+      const y = field.y + yNorm * field.h;
+      const fade = Math.sin(Math.PI * Math.min(1, Math.max(0, yNorm)));
+      ctx.globalAlpha = p.alpha * fade;
+      ctx.fillStyle = "rgba(225,252,255,1)";
+      ctx.shadowColor = "rgba(120,230,255,.9)";
+      ctx.shadowBlur = 7;
+      ctx.beginPath();
+      ctx.arc(x, y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function glowLine(x1, y1, x2, y2, coreAlpha, glowAlpha, width) {
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    ctx.strokeStyle = "rgba(130,225,255," + glowAlpha + ")";
+    ctx.lineWidth = width * 3;
+    ctx.shadowColor = "rgba(110,225,255,.95)";
+    ctx.shadowBlur = 16;
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    ctx.strokeStyle = "rgba(232,254,255," + coreAlpha + ")";
+    ctx.lineWidth = width;
+    ctx.shadowBlur = 6;
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawEdgeGlow(pulse) {
+    const e = state.edge * pulse;
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+
+    // soft inner gradients
+    let g = ctx.createLinearGradient(field.x, 0, field.x + 30, 0);
+    g.addColorStop(0, "rgba(200,248,255," + (0.13 * e) + ")");
+    g.addColorStop(0.35, "rgba(170,238,255," + (0.040 * e) + ")");
+    g.addColorStop(1, "rgba(170,238,255,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(field.x, field.y, 30, field.h);
+    g = ctx.createLinearGradient(field.x + field.w, 0, field.x + field.w - 30, 0);
+    g.addColorStop(0, "rgba(200,248,255," + (0.13 * e) + ")");
+    g.addColorStop(0.35, "rgba(170,238,255," + (0.040 * e) + ")");
+    g.addColorStop(1, "rgba(170,238,255,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(field.x + field.w - 30, field.y, 30, field.h);
+
+    g = ctx.createLinearGradient(0, field.y, 0, field.y + 24);
+    g.addColorStop(0, "rgba(205,250,255," + (0.08 * e) + ")");
+    g.addColorStop(1, "rgba(170,238,255,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(field.x, field.y, field.w, 24);
+    g = ctx.createLinearGradient(0, field.y + field.h, 0, field.y + field.h - 24);
+    g.addColorStop(0, "rgba(205,250,255," + (0.10 * e) + ")");
+    g.addColorStop(1, "rgba(170,238,255,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(field.x, field.y + field.h - 24, field.w, 24);
+    ctx.restore();
+
+    // crisp seams
+    glowLine(field.x, field.y + 4, field.x, field.y + field.h - 4, 0.90, 0.26, 1.25);
+    glowLine(field.x + field.w, field.y + 4, field.x + field.w, field.y + field.h - 4, 0.90, 0.26, 1.25);
+    glowLine(field.x + 4, field.y, field.x + field.w - 4, field.y, 0.82, 0.20, 1.10);
+    glowLine(field.x + 4, field.y + field.h, field.x + field.w - 4, field.y + field.h, 0.86, 0.22, 1.20);
+
+    // corner caps
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    for (const [cx, cy] of [
+      [field.x, field.y], [field.x + field.w, field.y],
+      [field.x, field.y + field.h], [field.x + field.w, field.y + field.h]
+    ]) {
+      const cg = ctx.createRadialGradient(cx, cy, 0, cx, cy, 28);
+      cg.addColorStop(0, "rgba(235,254,255," + (0.22 * e) + ")");
+      cg.addColorStop(0.35, "rgba(130,230,255," + (0.09 * e) + ")");
+      cg.addColorStop(1, "rgba(130,230,255,0)");
+      ctx.fillStyle = cg;
+      ctx.beginPath(); ctx.arc(cx, cy, 28, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawAmbient(pulse) {
+    // light spill on the floor and header near the field
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    const fg = ctx.createRadialGradient(640, field.y + field.h, 8, 640, field.y + field.h, 320);
+    fg.addColorStop(0, "rgba(130,225,250," + (0.18 * pulse) + ")");
+    fg.addColorStop(0.5, "rgba(110,205,235," + (0.06 * pulse) + ")");
+    fg.addColorStop(1, "rgba(110,205,235,0)");
+    ctx.fillStyle = fg;
+    ctx.beginPath();
+    ctx.ellipse(640, field.y + field.h, 320, 74, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    const hg = ctx.createRadialGradient(640, field.y, 4, 640, field.y, 280);
+    hg.addColorStop(0, "rgba(140,230,250," + (0.10 * pulse) + ")");
+    hg.addColorStop(1, "rgba(140,230,250,0)");
+    ctx.fillStyle = hg;
+    ctx.beginPath();
+    ctx.ellipse(640, field.y, 280, 42, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawField(t) {
+    const pulse = 0.88 + 0.12 * Math.sin(t * 1.15);
+    drawRefraction(t);
+
+    // base tint
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(field.x, field.y, field.w, field.h);
+    ctx.clip();
+    const base = ctx.createLinearGradient(field.x, field.y, field.x, field.y + field.h);
+    base.addColorStop(0, "rgba(195,242,253," + (state.opacity * 0.60) + ")");
+    base.addColorStop(0.45, "rgba(160,228,248," + (state.opacity * 0.82) + ")");
+    base.addColorStop(1, "rgba(210,246,255," + (state.opacity * 0.68) + ")");
+    ctx.fillStyle = base;
+    ctx.fillRect(field.x, field.y, field.w, field.h);
+
+    // milky centre wash
+    ctx.globalCompositeOperation = "lighter";
+    const wash = ctx.createRadialGradient(
+      640, field.y + field.h * 0.46, 30,
+      640, field.y + field.h * 0.46, 360
+    );
+    wash.addColorStop(0, "rgba(230,252,255," + (0.020 + state.opacity * 0.06) + ")");
+    wash.addColorStop(0.55, "rgba(185,236,250," + (0.008 + state.opacity * 0.03) + ")");
+    wash.addColorStop(1, "rgba(185,236,250,0)");
+    ctx.fillStyle = wash;
+    ctx.fillRect(field.x, field.y, field.w, field.h);
+    ctx.restore();
+
+    drawScrollingTexture(texHaze, 1.02, 5 * state.speed, 9 * state.speed, 0.14 * state.wisps);
+    drawScrollingTexture(texCloud, 1.18, 12 * state.speed, 22 * state.speed, 0.20 * state.wisps);
+    drawScrollingTexture(texStreak, 1.80, -8 * state.speed, -38 * state.speed, 0.14 * state.wisps);
+    drawScrollingTexture(texFine, 2.40, 6 * state.speed, 52 * state.speed, 0.06 * state.wisps);
+
+    drawGlassSheen(t);
+    drawParticles(t);
+    drawEdgeGlow(pulse);
+    drawAmbient(pulse);
+  }
+
+  function drawGlassSheen(t) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(field.x, field.y, field.w, field.h);
+    ctx.clip();
+    ctx.globalCompositeOperation = "lighter";
+
+    const drift = Math.sin(t * 0.10) * 0.14;
+    const cx = field.x + field.w * (0.52 + drift);
+    const band = ctx.createLinearGradient(cx - field.w * 0.42, 0, cx + field.w * 0.42, 0);
+    band.addColorStop(0, "rgba(225,251,255,0)");
+    band.addColorStop(0.42, "rgba(225,251,255,0.022)");
+    band.addColorStop(0.50, "rgba(240,254,255,0.040)");
+    band.addColorStop(0.58, "rgba(225,251,255,0.022)");
+    band.addColorStop(1, "rgba(225,251,255,0)");
+    ctx.fillStyle = band;
+    ctx.fillRect(field.x, field.y, field.w, field.h);
+
+    const glass = ctx.createLinearGradient(0, field.y, 0, field.y + field.h);
+    glass.addColorStop(0, "rgba(240,254,255,0.045)");
+    glass.addColorStop(0.30, "rgba(220,248,255,0.012)");
+    glass.addColorStop(0.68, "rgba(220,248,255,0.010)");
+    glass.addColorStop(1, "rgba(240,254,255,0.030)");
+    ctx.fillStyle = glass;
+    ctx.fillRect(field.x, field.y, field.w, field.h);
+
+    ctx.restore();
+  }
+
+  function drawVignette() {
+    const v = ctx.createRadialGradient(W * 0.5, H * 0.46, 210, W * 0.5, H * 0.5, 760);
+    v.addColorStop(0, "rgba(0,0,0,0)");
+    v.addColorStop(0.62, "rgba(0,0,0,.16)");
+    v.addColorStop(1, "rgba(0,0,0,.68)");
+    ctx.fillStyle = v;
+    ctx.fillRect(0, 0, W, H);
+
+    // slight top/bottom grade
+    const top = ctx.createLinearGradient(0, 0, 0, 130);
+    top.addColorStop(0, "rgba(0,0,0,.42)");
+    top.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = top;
+    ctx.fillRect(0, 0, W, 130);
+    const bottom = ctx.createLinearGradient(0, H, 0, H - 150);
+    bottom.addColorStop(0, "rgba(0,0,0,.48)");
+    bottom.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = bottom;
+    ctx.fillRect(0, H - 150, W, 150);
+  }
+
+  function render() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.drawImage(bg, 0, SCENE_Y);
+    ctx.save();
+    ctx.translate(0, SCENE_Y);
+    drawField(state.time);
+    ctx.restore();
+    drawVignette();
+  }
+
+  // ---------------------------------------------------------------- UI
+  const sliders = {
+    opacity: { input: document.getElementById("opacity"), out: document.getElementById("v-opacity"), digits: 3 },
+    wisps: { input: document.getElementById("wisps"), out: document.getElementById("v-wisps"), digits: 2 },
+    speed: { input: document.getElementById("speed"), out: document.getElementById("v-speed"), digits: 2 },
+    refraction: { input: document.getElementById("refraction"), out: document.getElementById("v-refraction"), digits: 2 },
+    edge: { input: document.getElementById("edge"), out: document.getElementById("v-edge"), digits: 2 }
+  };
+
+  function syncSlider(key) {
+    const s = sliders[key];
+    s.input.value = state[key];
+    s.out.textContent = Number(state[key]).toFixed(s.digits);
+  }
+
+  function syncAll() {
+    Object.keys(sliders).forEach(syncSlider);
+  }
+
+  function setPreset(name) {
+    const p = PRESETS[name];
+    if (!p) return;
+    Object.assign(state, p);
+    syncAll();
+    document.querySelectorAll("#presets button").forEach(btn => {
+      btn.classList.toggle("on", btn.dataset.preset === name);
+    });
+  }
+
+  Object.keys(sliders).forEach(key => {
+    const s = sliders[key];
+    s.input.addEventListener("input", () => {
+      state[key] = Number(s.input.value);
+      s.out.textContent = Number(state[key]).toFixed(s.digits);
+      document.querySelectorAll("#presets button").forEach(btn => btn.classList.remove("on"));
+    });
+  });
+
+  document.querySelectorAll("#presets button").forEach(btn => {
+    btn.addEventListener("click", () => setPreset(btn.dataset.preset));
+  });
+
+  document.getElementById("pause").addEventListener("click", (e) => {
+    state.paused = !state.paused;
+    e.currentTarget.classList.toggle("on", state.paused);
+    e.currentTarget.textContent = state.paused ? "Resume" : "Pause";
+  });
+
+  document.getElementById("clean").addEventListener("click", (e) => {
+    state.uiHidden = !state.uiHidden;
+    frame.classList.toggle("ui-hidden", state.uiHidden);
+    e.currentTarget.classList.toggle("on", state.uiHidden);
+    e.currentTarget.textContent = state.uiHidden ? "Show UI" : "Clean view";
+  });
+
+  document.getElementById("copy").addEventListener("click", async (e) => {
+    const text = JSON.stringify({
+      opacity: state.opacity, wisps: state.wisps, speed: state.speed,
+      refraction: state.refraction, edge: state.edge
+    }, null, 2);
+    try {
+      await navigator.clipboard.writeText(text);
+      const old = e.currentTarget.textContent;
+      e.currentTarget.textContent = "Copied";
+      setTimeout(() => { e.currentTarget.textContent = old; }, 1200);
+    } catch (err) {
+      console.log(text);
+    }
+  });
+
+  document.getElementById("reset").addEventListener("click", () => {
+    setPreset("reference");
+    state.paused = false;
+    document.getElementById("pause").classList.remove("on");
+    document.getElementById("pause").textContent = "Pause";
+  });
+
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "h" || e.key === "H") {
+      state.uiHidden = !state.uiHidden;
+      frame.classList.toggle("ui-hidden", state.uiHidden);
+    }
+    if (e.key === " ") {
+      e.preventDefault();
+      state.paused = !state.paused;
+      const btn = document.getElementById("pause");
+      btn.classList.toggle("on", state.paused);
+      btn.textContent = state.paused ? "Resume" : "Pause";
+    }
+  });
+
+  // ---------------------------------------------------------------- loop
+  let last = performance.now();
+  function frameLoop(now) {
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    if (!state.paused) state.time += dt;
+    render();
+    requestAnimationFrame(frameLoop);
+  }
+
+  buildBackground();
+  buildFieldAssets();
+  syncAll();
+  requestAnimationFrame(frameLoop);
+})();
+</script>
+</body>
+</html>
