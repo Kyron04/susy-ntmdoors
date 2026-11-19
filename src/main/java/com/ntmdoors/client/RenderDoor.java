@@ -8,7 +8,6 @@ import com.ntmdoors.util.Facings;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
@@ -26,7 +25,7 @@ import java.util.Map;
 
 /** Draws the OBJ model of a door at its core cell and animates the groups listed in the door's DoorDecl. */
 @SideOnly(Side.CLIENT)
-public class RenderDoor extends TileEntitySpecialRenderer<TileEntityDoorGeneric> {
+public class RenderDoor extends DeviceRenderer<TileEntityDoorGeneric> {
 
     private static final DoubleBuffer CLIP_BUFFER = BufferUtils.createDoubleBuffer(4);
     private static final ClipPlane[] NO_PLANES = new ClipPlane[0];
@@ -46,7 +45,7 @@ public class RenderDoor extends TileEntitySpecialRenderer<TileEntityDoorGeneric>
     }
 
     @Override
-    public void render(TileEntityDoorGeneric te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
+    protected void renderDevice(TileEntityDoorGeneric te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
         DoorDecl d = te.getDecl();
         if (d == null || d.model == null) return;
         ObjModel model = ObjModel.get(d.model);

@@ -17,7 +17,6 @@ import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
@@ -41,7 +40,7 @@ import java.util.Map;
  * being a blurry screenshot. Interaction still opens the normal terminal GUI.</p>
  */
 @SideOnly(Side.CLIENT)
-public class RenderMonitorDesk extends TileEntitySpecialRenderer<TileEntityMonitorDesk> {
+public class RenderMonitorDesk extends DeviceRenderer<TileEntityMonitorDesk> {
 
     private static final int GUI_WIDTH = 512;
     private static final int GUI_HEIGHT = 384;
@@ -106,8 +105,8 @@ public class RenderMonitorDesk extends TileEntitySpecialRenderer<TileEntityMonit
     }
 
     @Override
-    public void render(TileEntityMonitorDesk te, double x, double y, double z,
-                       float partialTicks, int destroyStage, float alpha) {
+    protected void renderDevice(TileEntityMonitorDesk te, double x, double y, double z,
+                                float partialTicks, int destroyStage, float alpha) {
         if (te.getWorld() == null) return;
         if (te.getWorld() != displayWorld) {
             clearDisplayCache();

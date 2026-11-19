@@ -1,0 +1,266 @@
+{
+    "parent":  "block/block",
+    "gui_light":  "front",
+    "textures":  {
+                     "particle":  "ntmdoors:blocks/emancipation_grill_housing",
+                     "housing":  "ntmdoors:blocks/emancipation_grill_housing",
+                     "plate":  "ntmdoors:blocks/emancipation_grill_plate",
+                     "trim":  "ntmdoors:blocks/emancipation_grill_trim",
+                     "emitter":  "ntmdoors:blocks/emancipation_grill_emitter",
+                     "dark":  "ntmdoors:blocks/emancipation_grill_dark",
+                     "screw":  "ntmdoors:blocks/emancipation_grill_screw",
+                     "label":  "ntmdoors:blocks/emancipation_grill_label"
+                 },
+    "elements":  [
+                     {
+                         "from":  [
+                                      1,
+                                      0,
+                                      14.4
+                                  ],
+                         "to":  [
+                                    15,
+                                    16,
+                                    16
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                0,
+                                                                5.2766,
+                                                                4.766,
+                                                                10.7234
+                                                            ],
+                                                     "texture":  "#plate"
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               0,
+                                                               5.2766,
+                                                               0.5447,
+                                                               10.7234
+                                                           ],
+                                                    "texture":  "#plate"
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                0,
+                                                                5.2766,
+                                                                4.766,
+                                                                10.7234
+                                                            ],
+                                                     "texture":  "#plate"
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               0,
+                                                               5.2766,
+                                                               0.5447,
+                                                               10.7234
+                                                           ],
+                                                    "texture":  "#plate"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      2,
+                                      0,
+                                      10
+                                  ],
+                         "to":  [
+                                    14,
+                                    16,
+                                    15
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                0,
+                                                                4.9091,
+                                                                4.3636,
+                                                                10.7273
+                                                            ],
+                                                     "texture":  "#housing"
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               0,
+                                                               4.9091,
+                                                               1.8182,
+                                                               10.7273
+                                                           ],
+                                                    "texture":  "#housing"
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                0,
+                                                                4.9091,
+                                                                4.3636,
+                                                                10.7273
+                                                            ],
+                                                     "texture":  "#housing"
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               0,
+                                                               4.9091,
+                                                               1.8182,
+                                                               10.7273
+                                                           ],
+                                                    "texture":  "#housing"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      2,
+                                      0,
+                                      8.75
+                                  ],
+                         "to":  [
+                                    6.4,
+                                    16,
+                                    9.95
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                0,
+                                                                5.0909,
+                                                                1.6,
+                                                                10.9091
+                                                            ],
+                                                     "texture":  "#trim"
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               0,
+                                                               5.0909,
+                                                               0.4364,
+                                                               10.9091
+                                                           ],
+                                                    "texture":  "#trim"
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                0,
+                                                                5.0909,
+                                                                1.6,
+                                                                10.9091
+                                                            ],
+                                                     "texture":  "#trim"
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               0,
+                                                               5.0909,
+                                                               0.4364,
+                                                               10.9091
+                                                           ],
+                                                    "texture":  "#trim"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      2.6,
+                                      0,
+                                      8.48
+                                  ],
+                         "to":  [
+                                    5.4,
+                                    16,
+                                    8.78
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                0,
+                                                                5.0233,
+                                                                1.0419,
+                                                                10.9767
+                                                            ],
+                                                     "texture":  "#dark"
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               0,
+                                                               5.0233,
+                                                               0.1116,
+                                                               10.9767
+                                                           ],
+                                                    "texture":  "#dark"
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                0,
+                                                                5.0233,
+                                                                1.0419,
+                                                                10.9767
+                                                            ],
+                                                     "texture":  "#dark"
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               0,
+                                                               5.0233,
+                                                               0.1116,
+                                                               10.9767
+                                                           ],
+                                                    "texture":  "#dark"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      3.5,
+                                      0,
+                                      8.25
+                                  ],
+                         "to":  [
+                                    4.5,
+                                    16,
+                                    8.55
+                                ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                0,
+                                                                4.9524,
+                                                                16,
+                                                                11.0476
+                                                            ],
+                                                     "texture":  "#emitter"
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               0,
+                                                               4.9524,
+                                                               0.1143,
+                                                               11.0476
+                                                           ],
+                                                    "texture":  "#dark"
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                0,
+                                                                4.9524,
+                                                                16,
+                                                                11.0476
+                                                            ],
+                                                     "texture":  "#emitter"
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               0,
+                                                               4.9524,
+                                                               0.1143,
+                                                               11.0476
+                                                           ],
+                                                    "texture":  "#dark"
+                                                }
+                                   }
+                     }
+                 ]
+}

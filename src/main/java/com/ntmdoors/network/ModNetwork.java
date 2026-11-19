@@ -88,6 +88,14 @@ public final class ModNetwork {
                 MessageBreakerPrompt.class, 38, Side.CLIENT);
         INSTANCE.registerMessage(MessageBreakerBreak.Handler.class,
                 MessageBreakerBreak.class, 39, Side.SERVER);
+        INSTANCE.registerMessage(MessageGrillKey.Handler.class,
+                MessageGrillKey.class, 40, Side.SERVER);
+        INSTANCE.registerMessage(MessageGrillAccess.Handler.class,
+                MessageGrillAccess.class, 41, Side.SERVER);
+        INSTANCE.registerMessage(MessageGrillAccessResult.Handler.class,
+                MessageGrillAccessResult.class, 42, Side.CLIENT);
+        INSTANCE.registerMessage(MessageGrillOption.Handler.class,
+                MessageGrillOption.class, 43, Side.SERVER);
     }
 
     private ModNetwork() {

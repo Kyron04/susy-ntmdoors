@@ -2,7 +2,35 @@ HBM DOORS: 1.0.79
 Minecraft 1.12.2 / Forge 14.23.5.2847
 
 1.0.79
+FEATURE
+- Added Emancipation Grill field modes: Solid, Neutral and Lethal. Lethal disintegrates unauthorized
+  players and destroys their inventory and armor unless Ignore Inventory is enabled.
+- Added the grill console's toggles page: Solid/Neutral/Lethal mode, Match User, Ignore Private Key,
+  Ignore Biometric ID, Enable Field, Disable Field, Ignore Inventory, Detect Players, Detect Hostile
+  Mobs and Detect Neutral Mobs.
+- Grill consoles can now be opened by an owner holding either an Operator Keycard or the Emancipation
+  Relay Key. Creative Keycards still bypass ownership. Operator Keycard tooltips now list the
+  private keys stored on the card.
+- Creative Keycards can also open the grill console directly.
+- Added Portal 2 fizzler start, loop and shutdown sounds for active fields, plus the material
+  emancipation one-shot for lethal disintegration. The grill audio has a three-block radius, a lower
+  mix, and an Audio toggle on the console.
+- Added an Ignore Items toggle. Lethal still erases dropped items by default, but leaves them alone
+  when this is enabled. Lethal mob deaths play the disintegration one-shot once per death.
+- The field now scans all living entities, not just players. Solid stops unauthorized mobs and
+  Lethal disintegrates them; the detection toggles match the Motion Sensor's player/hostile/neutral
+  categories.
+- Lethal fields now also erase non-living entities that touch or cross the plane, including dropped
+  items, arrows and other projectiles, minecarts, boats, item frames, XP orbs and armor stands.
 FIX
+- Fixed the Emancipation field being overwritten by doors and devices when the TESR order put them
+  after the grill. The translucent plane is now collected during the TESR pass and drawn in the
+  world-last pass with depth testing, so it blends over things behind it and is hidden by things in
+  front.
+- Device special renderers now start and end on a known GL baseline. A tile entity rendered earlier
+  in the frame can no longer leave a tinted colour, disabled lighting, or a changed depth/cull
+  state that makes the keypad, scanner, programmer, monitor, motion sensor or door change shade or
+  pick up a red tint as the visible render order changes.
 - Fixed the monitor Notepad dark mode reverting to light after a moment. The client applies the
   toggle immediately and the desk sync confirms it, so the page and physical screen stay dark.
 

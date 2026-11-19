@@ -4,7 +4,6 @@ import com.ntmdoors.tile.TileEntityMotionSensor;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
@@ -18,11 +17,11 @@ import java.util.List;
  * client-side aid toggled with the Motion Relay Key; it is not part of the server state.
  */
 @SideOnly(Side.CLIENT)
-public class RenderMotionSensorArea extends TileEntitySpecialRenderer<TileEntityMotionSensor> {
+public class RenderMotionSensorArea extends DeviceRenderer<TileEntityMotionSensor> {
 
     @Override
-    public void render(TileEntityMotionSensor te, double x, double y, double z,
-                       float partialTicks, int destroyStage, float alpha) {
+    protected void renderDevice(TileEntityMotionSensor te, double x, double y, double z,
+                                float partialTicks, int destroyStage, float alpha) {
         if (!MotionSensorOverlay.isVisible(te.getPos())) return;
 
         List<BlockPos> cells = te.getSelectedCells();

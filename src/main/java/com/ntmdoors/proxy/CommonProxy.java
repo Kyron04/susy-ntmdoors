@@ -15,6 +15,7 @@ import com.ntmdoors.tile.TileEntityDoorGeneric;
 import com.ntmdoors.tile.TileEntityDoorKeypad;
 import com.ntmdoors.tile.TileEntityDoorPart;
 import com.ntmdoors.tile.TileEntityBiometricSafe;
+import com.ntmdoors.tile.TileEntityEmancipationGrill;
 import com.ntmdoors.tile.TileEntityKeycardProgrammer;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
 import com.ntmdoors.tile.TileEntityMonitorDesk;
@@ -55,6 +56,7 @@ public class CommonProxy {
         registerTileEntity(TileEntityMonitorDesk.class, "monitor_desk");
         registerTileEntity(TileEntitySpatialDisrupter.class, "spatial_disrupter");
         registerTileEntity(TileEntityThermiteCharge.class, "thermite_charge");
+        registerTileEntity(TileEntityEmancipationGrill.class, "emancipation_grill");
         // Read the OBJ group bounds used by moving collision boxes now, so the first collision
         // query on a door never has to touch the filesystem.
         for (DoorDecl d : DoorDecls.ALL) d.prepareGeometry();
@@ -129,6 +131,10 @@ public class CommonProxy {
 
     /** Client only: open the Motion Sensor console. */
     public void openMotionSensorGui(BlockPos pos) {
+    }
+
+    /** Client only: open the Emancipation Grill console. */
+    public void openEmancipationGrillGui(BlockPos pos) {
     }
 
     /** Client only: open one screen's monitor terminal with its current password state. */

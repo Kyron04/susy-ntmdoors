@@ -9,7 +9,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
@@ -22,7 +21,7 @@ import org.lwjgl.opengl.GL11;
  * the keypad) and its back plate sits on the block's wall-side face.
  */
 @SideOnly(Side.CLIENT)
-public class RenderKeycardScanner extends TileEntitySpecialRenderer<TileEntityKeycardScanner> {
+public class RenderKeycardScanner extends DeviceRenderer<TileEntityKeycardScanner> {
 
     public static final ResourceLocation TEXTURE = new ResourceLocation(NTMDoors.MODID, "textures/models/doors/keycard_scanner.png");
     public static final ResourceLocation MODEL = new ResourceLocation(NTMDoors.MODID, "models/doors/keycard_scanner.obj");
@@ -54,7 +53,7 @@ public class RenderKeycardScanner extends TileEntitySpecialRenderer<TileEntityKe
     private static final int COLOR_SYNCED = 0xFF9FFFB0;
 
     @Override
-    public void render(TileEntityKeycardScanner te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
+    protected void renderDevice(TileEntityKeycardScanner te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
         IBlockState state = te.getWorld().getBlockState(te.getPos());
         if (!(state.getBlock() instanceof BlockKeycardScanner)) return;
         EnumFacing facing = state.getValue(BlockKeycardScanner.FACING);
@@ -189,6 +188,7 @@ public class RenderKeycardScanner extends TileEntitySpecialRenderer<TileEntityKe
             drawCentred(font, first, -font.FONT_HEIGHT - 1, color);
             drawCentred(font, second, 2, color);
         }
+        GlStateManager.color(1F, 1F, 1F, 1F);
 
         GlStateManager.popMatrix();
         GlStateManager.disablePolygonOffset();

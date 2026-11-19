@@ -25,6 +25,12 @@ public final class ModSounds {
     public static final SoundEvent THERMITE_BEEP = create("thermite_beep");
     public static final SoundEvent THERMITE_EXPLOSION = create("thermite_explosion");
 
+    /** Emancipation Grill field start, loop, shutdown and contact disintegration. */
+    public static final SoundEvent EMANCIPATION_START = create("emancipation_start");
+    public static final SoundEvent EMANCIPATION_LOOP = create("emancipation_loop");
+    public static final SoundEvent EMANCIPATION_SHUTDOWN = create("emancipation_shutdown");
+    public static final SoundEvent EMANCIPATION_DISINTEGRATE = create("emancipation_disintegrate");
+
     public static final SoundEvent SPEAKER_AIR_RAID = create("speaker_air_raid");
     public static final SoundEvent SPEAKER_FACILITY = create("speaker_facility");
     public static final SoundEvent SPEAKER_INDUSTRIAL = create("speaker_industrial");
@@ -37,6 +43,7 @@ public final class ModSounds {
     public static final List<SoundEvent> ALL = Collections.unmodifiableList(Arrays.asList(
             SCANNER_BUTTON3, SCANNER_BUTTON8, SCANNER_BELL1, BUTTON9, GUI_CLICK,
             THERMITE_BEEP, THERMITE_EXPLOSION,
+            EMANCIPATION_START, EMANCIPATION_LOOP, EMANCIPATION_SHUTDOWN, EMANCIPATION_DISINTEGRATE,
             SPEAKER_AIR_RAID, SPEAKER_FACILITY, SPEAKER_INDUSTRIAL, SPEAKER_EAS));
 
     private ModSounds() {

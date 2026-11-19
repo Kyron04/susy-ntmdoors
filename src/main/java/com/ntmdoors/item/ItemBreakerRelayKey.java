@@ -2,10 +2,12 @@ package com.ntmdoors.item;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.block.BlockDoorGeneric;
+import com.ntmdoors.block.BlockEmancipationGrill;
 import com.ntmdoors.network.MessageBreakerPrompt;
 import com.ntmdoors.network.ModNetwork;
 import com.ntmdoors.tile.TileEntityBiometricSafe;
 import com.ntmdoors.tile.TileEntityDoorGeneric;
+import com.ntmdoors.tile.TileEntityEmancipationGrill;
 import com.ntmdoors.tile.TileEntitySafe;
 import com.ntmdoors.util.Names;
 import net.minecraft.block.state.IBlockState;
@@ -35,6 +37,7 @@ public class ItemBreakerRelayKey extends Item {
 
     private static final int TARGET_DOOR = 1;
     private static final int TARGET_SAFE = 2;
+    private static final int TARGET_GRILL = 3;
 
     public ItemBreakerRelayKey() {
         setRegistryName(NTMDoors.MODID, "breaker_relay_key");
@@ -104,6 +107,15 @@ public class ItemBreakerRelayKey extends Item {
             return world.destroyBlock(core.getPos(), true);
         }
 
+        if (target.type == TARGET_GRILL) {
+            TileEntity te = world.getTileEntity(target.breakPos);
+            if (!(te instanceof TileEntityEmancipationGrill)) return false;
+            TileEntityEmancipationGrill grill = (TileEntityEmancipationGrill) te;
+            TileEntityEmancipationGrill security = grill.getSecurityCore();
+            if (security.getOwnerId() != null && !security.isOwnedBy(player)) return false;
+            return world.destroyBlock(grill.getPos(), true);
+        }
+
         TileEntity te = world.getTileEntity(target.breakPos);
         if (!(te instanceof TileEntitySafe)) return false;
         TileEntitySafe safe = (TileEntitySafe) te;
@@ -119,6 +131,11 @@ public class ItemBreakerRelayKey extends Item {
         if (state.getBlock() instanceof BlockDoorGeneric) {
             return ((BlockDoorGeneric) state.getBlock()).isSecurity();
         }
+        if (state.getBlock() instanceof BlockEmancipationGrill) {
+            BlockEmancipationGrill grill = (BlockEmancipationGrill) state.getBlock();
+            return world.getTileEntity(pos.down(grill.layer().ordinal()))
+                    instanceof TileEntityEmancipationGrill;
+        }
         return world.getTileEntity(pos) instanceof TileEntitySafe;
     }
 
@@ -133,6 +150,14 @@ public class ItemBreakerRelayKey extends Item {
             TileEntityDoorGeneric core = door.getCore(world, clicked, state);
             if (core == null || !core.isSecurityDoor()) return null;
             return new Target(clicked, core.getPos(), "Security Door", TARGET_DOOR);
+        }
+
+        if (state.getBlock() instanceof BlockEmancipationGrill) {
+            BlockEmancipationGrill grill = (BlockEmancipationGrill) state.getBlock();
+            BlockPos core = clicked.down(grill.layer().ordinal());
+            TileEntity te = world.getTileEntity(core);
+            if (!(te instanceof TileEntityEmancipationGrill)) return null;
+            return new Target(clicked, core, "Emancipation Grill", TARGET_GRILL);
         }
 
         TileEntity te = world.getTileEntity(clicked);
@@ -169,6 +194,12 @@ public class ItemBreakerRelayKey extends Item {
                 return core.isSecurityDoor()
                         && (core.getOwnerId() == null || core.isOwnedBy(player));
             }
+            if (type == TARGET_GRILL) {
+                if (!(te instanceof TileEntityEmancipationGrill)) return false;
+                TileEntityEmancipationGrill security =
+                        ((TileEntityEmancipationGrill) te).getSecurityCore();
+                return security.getOwnerId() == null || security.isOwnedBy(player);
+            }
             return te instanceof TileEntitySafe && ((TileEntitySafe) te).isOwnedBy(player);
         }
     }
@@ -177,9 +208,9 @@ public class ItemBreakerRelayKey extends Item {
     public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip,
                                ITooltipFlag flag) {
         Names.addDescription(tooltip,
-                "Breaks ownerless security doors,",
-                "and security doors or safes you own.",
-                "Sneak + Right Click a door or safe,",
+                "Breaks ownerless security doors and grills,",
+                "and doors, safes or grills you own.",
+                "Sneak + Right Click a target,",
                 "then confirm the break.");
     }
 }

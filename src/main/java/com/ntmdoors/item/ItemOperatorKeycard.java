@@ -1,10 +1,15 @@
 package com.ntmdoors.item;
 
 import com.ntmdoors.NTMDoors;
+import com.ntmdoors.block.BlockEmancipationGrill;
+import com.ntmdoors.network.MessageGrillAccess;
+import com.ntmdoors.network.ModNetwork;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
 import com.ntmdoors.tile.TileEntityRedstoneGate;
 import com.ntmdoors.util.Biometrics;
 import com.ntmdoors.util.Names;
+import com.ntmdoors.util.PrivateKeys;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -26,8 +31,8 @@ import java.util.List;
  * security code screen, so the card also administers the doors it is assigned to.
  *
  * <p>It shares the RFID card item model and hand display. Its name is orange and its description
- * explains the scanner screen; stored keys are not listed, since the card is an administrator
- * tool rather than a read-only viewer.</p>
+ * explains the scanner screen. Its stored private keys are listed in the tooltip, and an owner can
+ * use it on an Emancipation Grill to open the grill console.</p>
  */
 public class ItemOperatorKeycard extends ItemRfidCard {
 
@@ -60,6 +65,17 @@ public class ItemOperatorKeycard extends ItemRfidCard {
     public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand,
                                       EnumFacing facing, float hitX, float hitY, float hitZ) {
         if (!player.isSneaking()) return EnumActionResult.PASS;
+
+        IBlockState state = world.getBlockState(pos);
+        if (state.getBlock() instanceof BlockEmancipationGrill) {
+            BlockEmancipationGrill grill = (BlockEmancipationGrill) state.getBlock();
+            BlockPos corePos = pos.down(grill.layer().ordinal());
+            if (world.isRemote) {
+                ModNetwork.INSTANCE.sendToServer(new MessageGrillAccess(corePos));
+            }
+            return EnumActionResult.SUCCESS;
+        }
+
         TileEntity te = world.getTileEntity(pos);
         if (te instanceof TileEntityRedstoneGate) {
             if (world.isRemote) NTMDoors.proxy.openRedstoneGateGui(pos);
@@ -112,8 +128,10 @@ public class ItemOperatorKeycard extends ItemRfidCard {
                 "Holds several private keys that can be assigned",
                 "to scanners bound to doors.",
                 "Sneak + Right Click a bound scanner to set",
-                "its security code, or a Redstone Gate to",
-                "open its settings.");
+                "its security code, a Redstone Gate to",
+                "open its settings, or an Emancipation Grill",
+                "you own to open its console.");
+        PrivateKeys.addTooltip(tooltip, stack);
         Biometrics.addOwnerIfBound(tooltip, stack);
     }
 }

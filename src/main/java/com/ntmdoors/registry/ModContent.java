@@ -5,6 +5,7 @@ import com.ntmdoors.block.BlockBiometricSafe;
 import com.ntmdoors.block.BlockDesk;
 import com.ntmdoors.block.BlockDoorGeneric;
 import com.ntmdoors.block.BlockDoorKeypad;
+import com.ntmdoors.block.BlockEmancipationGrill;
 import com.ntmdoors.block.BlockKeycardProgrammer;
 import com.ntmdoors.block.BlockKeycardScanner;
 import com.ntmdoors.block.BlockMonitorDesk;
@@ -39,6 +40,8 @@ import com.ntmdoors.item.ItemDesk;
 import com.ntmdoors.item.ItemDeveloperKeycard;
 import com.ntmdoors.item.ItemDocumentsFolder;
 import com.ntmdoors.item.ItemDoorBlock;
+import com.ntmdoors.item.ItemEmancipationGrill;
+import com.ntmdoors.item.ItemEmancipationRelayKey;
 import com.ntmdoors.item.ItemKeycardHolder;
 import com.ntmdoors.item.ItemMonitorDesk;
 import com.ntmdoors.item.ItemMonitorSetup;
@@ -102,6 +105,13 @@ public class ModContent {
     public static final BlockSpatialDisrupter SPATIAL_DISRUPTER = new BlockSpatialDisrupter();
     /** Framed breaching charge that mounts on block faces and breaches doors. */
     public static final BlockThermiteCharge THERMITE_CHARGE = new BlockThermiteCharge();
+    /** 1x3x1 wall-mounted emitter column; only the bottom cell owns the item and tile entity. */
+    public static final BlockEmancipationGrill EMANCIPATION_GRILL =
+            new BlockEmancipationGrill("emancipation_grill", BlockEmancipationGrill.Layer.BOTTOM);
+    public static final BlockEmancipationGrill EMANCIPATION_GRILL_MIDDLE =
+            new BlockEmancipationGrill("emancipation_grill_middle", BlockEmancipationGrill.Layer.MIDDLE);
+    public static final BlockEmancipationGrill EMANCIPATION_GRILL_TOP =
+            new BlockEmancipationGrill("emancipation_grill_top", BlockEmancipationGrill.Layer.TOP);
     /** Bottom row, including the core cell and the item form of the desk. */
     public static final BlockMonitorSetup MONITOR_SETUP =
             new BlockMonitorSetup("monitor_setup", BlockMonitorSetup.Layer.BOTTOM);
@@ -261,6 +271,9 @@ public class ModContent {
     public static final ItemBreakerRelayKey BREAKER_RELAY_KEY = new ItemBreakerRelayKey();
     /** Blue creative key that opens the Motion Sensor console and defines its 5x5x5 area. */
     public static final ItemMotionRelayKey MOTION_RELAY_KEY = new ItemMotionRelayKey();
+    /** Handheld key that opens the Emancipation Grill console. */
+    public static final ItemEmancipationRelayKey EMANCIPATION_RELAY_KEY =
+            new ItemEmancipationRelayKey();
     /** Orange and grey key that binds devices to a Security Terminal net. */
     public static final ItemTerminalRelayKey TERMINAL_RELAY_KEY = new ItemTerminalRelayKey();
     /** Black and red USB key that carries terminal backup data. */
@@ -378,6 +391,10 @@ public class ModContent {
         for (BlockDesk desk : DESKS) e.getRegistry().register(desk);
         // Decorative monitor-only blocks follow them.
         for (BlockMonitorOnly monitor : MONITORS) e.getRegistry().register(monitor);
+        // Emancipation Grill parts go last so every saved numeric block ID stays put.
+        e.getRegistry().register(EMANCIPATION_GRILL);
+        e.getRegistry().register(EMANCIPATION_GRILL_MIDDLE);
+        e.getRegistry().register(EMANCIPATION_GRILL_TOP);
     }
 
     @SubscribeEvent
@@ -482,10 +499,16 @@ public class ModContent {
         }
         // UAC cards go last so every previously saved numeric item ID stays untouched.
         for (ItemRfidCard card : UAC_CARDS) e.getRegistry().register(card);
-        // Newest key goes last for the same reason.
+        // Newest keys go last for the same reason.
         e.getRegistry().register(BREAKER_RELAY_KEY);
+        // The Emancipation key belongs with the relay-key group; later cards/block items shift by one.
+        e.getRegistry().register(EMANCIPATION_RELAY_KEY);
         // The O5 card is newer still, so it takes the next free numeric item ID.
         for (ItemRfidCard card : O5_CARDS) e.getRegistry().register(card);
+        // Emancipation Grill item goes last so every saved numeric item ID stays untouched.
+        e.getRegistry().register(new ItemEmancipationGrill(EMANCIPATION_GRILL)
+                .setRegistryName(EMANCIPATION_GRILL.getRegistryName())
+                .setCreativeTab(NTMDoors.TAB));
     }
 
     /** Keeps existing worlds working after the SCP card registry names moved from 1-6 to 0-5. */

@@ -4,6 +4,7 @@ import com.ntmdoors.NTMDoors;
 import com.ntmdoors.client.GuiDeviceName;
 import com.ntmdoors.client.GuiBreakerConfirm;
 import com.ntmdoors.client.GuiDocumentsFolder;
+import com.ntmdoors.client.GuiEmancipationGrill;
 import com.ntmdoors.client.GuiKeycardViewer;
 import com.ntmdoors.client.GuiKeypadSecurityCode;
 import com.ntmdoors.client.GuiMonitor;
@@ -27,6 +28,7 @@ import com.ntmdoors.client.ObjModel;
 import com.ntmdoors.client.RenderDoor;
 import com.ntmdoors.client.RenderDoorItem;
 import com.ntmdoors.client.RenderDoorKeypad;
+import com.ntmdoors.client.RenderEmancipationField;
 import com.ntmdoors.client.RenderKeycardProgrammer;
 import com.ntmdoors.client.RenderKeycardScanner;
 import com.ntmdoors.client.RenderMonitorDesk;
@@ -40,6 +42,7 @@ import com.ntmdoors.monitor.NotepadDocument;
 import com.ntmdoors.monitor.SecurityNetSummary;
 import com.ntmdoors.tile.TileEntityDoorGeneric;
 import com.ntmdoors.tile.TileEntityDoorKeypad;
+import com.ntmdoors.tile.TileEntityEmancipationGrill;
 import com.ntmdoors.tile.TileEntityKeycardProgrammer;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
 import com.ntmdoors.tile.TileEntityMonitorDesk;
@@ -70,6 +73,8 @@ public class ClientProxy extends CommonProxy {
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityKeycardProgrammer.class, new RenderKeycardProgrammer());
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMotionSensor.class, new RenderMotionSensorArea());
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMonitorDesk.class, new RenderMonitorDesk());
+        ClientRegistry.bindTileEntitySpecialRenderer(TileEntityEmancipationGrill.class,
+                new RenderEmancipationField());
     }
 
     @Override
@@ -146,6 +151,11 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void openMotionSensorGui(BlockPos pos) {
         Minecraft.getMinecraft().displayGuiScreen(new GuiMotionSensor(pos));
+    }
+
+    @Override
+    public void openEmancipationGrillGui(BlockPos pos) {
+        Minecraft.getMinecraft().displayGuiScreen(new GuiEmancipationGrill(pos));
     }
 
     @Override

@@ -3,8 +3,10 @@ package com.ntmdoors.event;
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.block.BlockDoorGeneric;
 import com.ntmdoors.block.BlockDoorKeypad;
+import com.ntmdoors.block.BlockEmancipationGrill;
 import com.ntmdoors.block.BlockKeycardProgrammer;
 import com.ntmdoors.block.BlockKeycardScanner;
+import com.ntmdoors.block.EmancipationFieldGuard;
 import com.ntmdoors.door.DoorPlacementGuard;
 import com.ntmdoors.item.ItemKeycardHolder;
 import com.ntmdoors.item.ItemRedstoneMonocle;
@@ -25,6 +27,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.event.entity.EntityMountEvent;
@@ -82,10 +85,17 @@ public final class GuardEvents {
     @SubscribeEvent
     public static void onBlockPlaced(BlockEvent.EntityPlaceEvent event) {
         if (event.getWorld().isRemote) return;
+        // The grills themselves are never an obstruction; only the active field opening is.
+        if (event.getPlacedBlock().getBlock() instanceof BlockEmancipationGrill) return;
         if (event instanceof BlockEvent.MultiPlaceEvent) {
             for (BlockSnapshot snapshot : ((BlockEvent.MultiPlaceEvent) event).getReplacedBlockSnapshots()) {
                 if (DoorPlacementGuard.blocksPlacement(event.getWorld(), snapshot.getPos())) {
                     event.setCanceled(true);
+                    return;
+                }
+                if (EmancipationFieldGuard.blocksPlacement(event.getWorld(), snapshot.getPos())) {
+                    event.setCanceled(true);
+                    notifyFieldBlocked(event);
                     return;
                 }
             }
@@ -93,6 +103,19 @@ public final class GuardEvents {
         }
         if (DoorPlacementGuard.blocksPlacement(event.getWorld(), event.getPos())) {
             event.setCanceled(true);
+            return;
+        }
+        if (EmancipationFieldGuard.blocksPlacement(event.getWorld(), event.getPos())) {
+            event.setCanceled(true);
+            notifyFieldBlocked(event);
+        }
+    }
+
+    private static void notifyFieldBlocked(BlockEvent.EntityPlaceEvent event) {
+        Entity entity = event.getEntity();
+        if (entity instanceof EntityPlayer) {
+            ((EntityPlayer) entity).sendStatusMessage(new TextComponentTranslation(
+                    "ntmdoors.msg.emancipation_field_blocked"), true);
         }
     }
 

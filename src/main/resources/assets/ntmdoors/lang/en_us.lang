@@ -470,3 +470,13 @@ item.ntmdoors.level_9_access_keycard.name=Level 9 Access Keycard
 item.ntmdoors.level_10_access_keycard.name=Level 10 Access Keycard
 item.ntmdoors.level_11_access_keycard.name=Level 11 Access Keycard
 item.ntmdoors.level_12_access_keycard.name=Level 12 Access Keycard
+
+tile.ntmdoors.emancipation_grill.name=Emancipation Grill
+tile.ntmdoors.emancipation_grill_middle.name=Emancipation Grill
+tile.ntmdoors.emancipation_grill_top.name=Emancipation Grill
+item.ntmdoors.emancipation_relay_key.name=Emancipation Relay Key
+ntmdoors.msg.emancipation_owner_only=Only the grill owner can access this console.
+ntmdoors.msg.emancipation_denied=Access denied. The emancipation field rejects you.
+ntmdoors.msg.emancipation_field_blocked=The emancipation field prevents block placement here.
+death.attack.emancipation_grill=%1$s was disintegrated by an Emancipation Grill
+death.attack.emancipation_grill.player=%1$s was disintegrated by %2$s

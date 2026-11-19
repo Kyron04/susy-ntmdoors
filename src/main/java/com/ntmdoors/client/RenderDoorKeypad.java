@@ -9,7 +9,6 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
@@ -21,7 +20,7 @@ import org.lwjgl.opengl.GL11;
  * plate() helper in BlockDoorKeypad: the model face points the same way as the block's FACING.
  */
 @SideOnly(Side.CLIENT)
-public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKeypad> {
+public class RenderDoorKeypad extends DeviceRenderer<TileEntityDoorKeypad> {
 
     public static final ResourceLocation TEX_KEYPAD = new ResourceLocation(NTMDoors.MODID, "textures/models/doors/keypad.png");
     public static final ResourceLocation TEX_SUCCESS = new ResourceLocation(NTMDoors.MODID, "textures/models/doors/keypad_success.png");
@@ -37,7 +36,7 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
     };
 
     @Override
-    public void render(TileEntityDoorKeypad te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
+    protected void renderDevice(TileEntityDoorKeypad te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
         IBlockState state = te.getWorld().getBlockState(te.getPos());
         if (!(state.getBlock() instanceof BlockDoorKeypad)) return;
         EnumFacing facing = state.getValue(BlockDoorKeypad.FACING);
@@ -121,6 +120,7 @@ public class RenderDoorKeypad extends TileEntitySpecialRenderer<TileEntityDoorKe
         GlStateManager.doPolygonOffset(-1.0F, -1.0F);
         drawButtonLabels(font);
         drawDisplay(font, te);
+        GlStateManager.color(1F, 1F, 1F, 1F);
         GlStateManager.disablePolygonOffset();
         if (lit) GlStateManager.enableLighting();
     }

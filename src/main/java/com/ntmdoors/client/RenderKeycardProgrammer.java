@@ -9,7 +9,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
@@ -24,7 +23,7 @@ import org.lwjgl.opengl.GL11;
  * the same tilt the model uses, rotated so the glyphs read upright for a player at the front.</p>
  */
 @SideOnly(Side.CLIENT)
-public class RenderKeycardProgrammer extends TileEntitySpecialRenderer<TileEntityKeycardProgrammer> {
+public class RenderKeycardProgrammer extends DeviceRenderer<TileEntityKeycardProgrammer> {
 
     public static final ResourceLocation TEXTURE =
             new ResourceLocation(NTMDoors.MODID, "textures/models/doors/keycard_programmer.png");
@@ -59,8 +58,8 @@ public class RenderKeycardProgrammer extends TileEntitySpecialRenderer<TileEntit
     private static final float LABEL_SCALE = 0.002F;
 
     @Override
-    public void render(TileEntityKeycardProgrammer te, double x, double y, double z, float partialTicks,
-                       int destroyStage, float alpha) {
+    protected void renderDevice(TileEntityKeycardProgrammer te, double x, double y, double z, float partialTicks,
+                                int destroyStage, float alpha) {
         IBlockState state = te.getWorld().getBlockState(te.getPos());
         if (!(state.getBlock() instanceof BlockKeycardProgrammer)) return;
         EnumFacing facing = state.getValue(BlockKeycardProgrammer.FACING);
@@ -125,6 +124,7 @@ public class RenderKeycardProgrammer extends TileEntitySpecialRenderer<TileEntit
 
         drawCentred(font, TITLE, -12, COLOR_TITLE);
         drawCentred(font, PROMPT, 1, COLOR_PROMPT);
+        GlStateManager.color(1F, 1F, 1F, 1F);
 
         GlStateManager.popMatrix();
         GlStateManager.disablePolygonOffset();
@@ -166,6 +166,7 @@ public class RenderKeycardProgrammer extends TileEntitySpecialRenderer<TileEntit
         // Drawn twice, one pixel apart, for a bold printed look without a bright sign plaque.
         font.drawString(SLIT_LABEL, x, y, COLOR_LABEL);
         font.drawString(SLIT_LABEL, x + 1, y, COLOR_LABEL);
+        GlStateManager.color(1F, 1F, 1F, 1F);
 
         GlStateManager.popMatrix();
         GlStateManager.enableCull();

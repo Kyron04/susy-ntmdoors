@@ -166,5 +166,29 @@
     "sounds": [
       "ntmdoors:doors/door_latch"
     ]
+  },
+  "emancipation_start": {
+    "category": "block",
+    "sounds": [
+      "ntmdoors:emancipation/fizzler_start"
+    ]
+  },
+  "emancipation_loop": {
+    "category": "block",
+    "sounds": [
+      "ntmdoors:emancipation/fizzler_loop"
+    ]
+  },
+  "emancipation_shutdown": {
+    "category": "block",
+    "sounds": [
+      "ntmdoors:emancipation/fizzler_shutdown"
+    ]
+  },
+  "emancipation_disintegrate": {
+    "category": "block",
+    "sounds": [
+      "ntmdoors:emancipation/disintegrate"
+    ]
   }
 }

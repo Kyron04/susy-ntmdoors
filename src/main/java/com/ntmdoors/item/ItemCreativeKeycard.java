@@ -1,10 +1,14 @@
 package com.ntmdoors.item;
 
 import com.ntmdoors.NTMDoors;
+import com.ntmdoors.block.BlockEmancipationGrill;
+import com.ntmdoors.network.MessageGrillAccess;
+import com.ntmdoors.network.ModNetwork;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
 import com.ntmdoors.tile.TileEntityRedstoneGate;
 import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.Names;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -43,6 +47,16 @@ public class ItemCreativeKeycard extends ItemRfidCard {
                                       EnumFacing facing, float hitX, float hitY, float hitZ) {
         if (!player.isSneaking()) return EnumActionResult.PASS;
 
+        IBlockState state = world.getBlockState(pos);
+        if (state.getBlock() instanceof BlockEmancipationGrill) {
+            BlockEmancipationGrill grill = (BlockEmancipationGrill) state.getBlock();
+            BlockPos corePos = pos.down(grill.layer().ordinal());
+            if (world.isRemote) {
+                ModNetwork.INSTANCE.sendToServer(new MessageGrillAccess(corePos));
+            }
+            return EnumActionResult.SUCCESS;
+        }
+
         TileEntity te = world.getTileEntity(pos);
         if (te instanceof TileEntityKeycardScanner) {
             if (world.isRemote) NTMDoors.proxy.openScannerKeysGui(pos);
@@ -61,7 +75,8 @@ public class ItemCreativeKeycard extends ItemRfidCard {
                 "Overrides every door, scanner and safe",
                 "regardless of type or binding state.",
                 "Sneak + Right Click a scanner for its console,",
-                "or a Redstone Gate for its screen.");
+                "a Redstone Gate for its screen, or an",
+                "Emancipation Grill for its field console.");
     }
 
     /** True when either hand holds a Creative Keycard. */

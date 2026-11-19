@@ -83,6 +83,7 @@ public class NTMDoors {
             items.add(new ItemStack(ModContent.WEAPONS_RELAY_KEY));
             items.add(new ItemStack(ModContent.UNDEFINED_RELAY_KEY));
             items.add(new ItemStack(ModContent.BREAKER_RELAY_KEY));
+            items.add(new ItemStack(ModContent.EMANCIPATION_RELAY_KEY));
             items.add(new ItemStack(ModContent.REDSTONE_GATE));
             items.add(new ItemStack(ModContent.SPEAKER));
             items.add(new ItemStack(ModContent.MOTION_SENSOR));
@@ -93,6 +94,7 @@ public class NTMDoors {
             items.add(new ItemStack(ModContent.SINGLE_MONITOR_SETUP));
             items.add(new ItemStack(ModContent.SPATIAL_DISRUPTER));
             items.add(new ItemStack(ModContent.THERMITE_CHARGE));
+            items.add(new ItemStack(ModContent.EMANCIPATION_GRILL));
             items.add(new ItemStack(ModContent.REDSTONE_MONOCLE));
             ConcreteSet.addCreativeStacks(items);
             HLBlocksContent.addCreativeStacks(items);
