@@ -35,6 +35,7 @@ public final class RedstoneMonocleOverlay {
 
     private static final float[] GATE_GATE = {0.95F, 0.20F, 0.20F, 0.85F};
     private static final float[] GATE_DOOR = {1.00F, 0.72F, 0.18F, 0.85F};
+    private static final float[] GATE_GRILL = {0.35F, 0.85F, 1.00F, 0.85F};
     private static final float[] DEVICE_GATE = {0.25F, 0.62F, 1.00F, 0.80F};
 
     /** How far away a link may be drawn. This only limits the overlay, not the link itself. */
@@ -61,6 +62,7 @@ public final class RedstoneMonocleOverlay {
 
         List<Link> gateGate = new ArrayList<>();
         List<Link> gateDoor = new ArrayList<>();
+        List<Link> gateGrill = new ArrayList<>();
         List<Link> deviceGate = new ArrayList<>();
 
         for (TileEntity te : mc.world.loadedTileEntityList) {
@@ -76,6 +78,9 @@ public final class RedstoneMonocleOverlay {
                 for (BlockPos target : binding.getDoors()) {
                     if (inRange(player, target)) gateDoor.add(new Link(hostPos, target));
                 }
+                for (BlockPos target : binding.getGrills()) {
+                    if (inRange(player, target)) gateGrill.add(new Link(hostPos, target));
+                }
             } else {
                 RedstoneBinding binding = ((RedstoneBindingHost) te).getRedstoneBinding();
                 for (BlockPos target : binding.getGates()) {
@@ -84,7 +89,9 @@ public final class RedstoneMonocleOverlay {
             }
         }
 
-        if (gateGate.isEmpty() && gateDoor.isEmpty() && deviceGate.isEmpty()) return;
+        if (gateGate.isEmpty() && gateDoor.isEmpty() && gateGrill.isEmpty() && deviceGate.isEmpty()) {
+            return;
+        }
 
         RenderManager renderManager = mc.getRenderManager();
         // This event runs after the world is drawn, with lighting and fog already disabled.
@@ -107,6 +114,7 @@ public final class RedstoneMonocleOverlay {
 
             draw(gateGate, GATE_GATE);
             draw(gateDoor, GATE_DOOR);
+            draw(gateGrill, GATE_GRILL);
             draw(deviceGate, DEVICE_GATE);
         } finally {
             // Always restore, even if a draw call throws. A leaked depth test or texture state

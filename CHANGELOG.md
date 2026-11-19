@@ -17,6 +17,15 @@ FEATURE
   mix, and an Audio toggle on the console.
 - Added an Ignore Items toggle. Lethal still erases dropped items by default, but leaves them alone
   when this is enabled. Lethal mob deaths play the disintegration one-shot once per death.
+- Emancipation Grills can now be bound to Security terminals and Redstone Gates. Terminal device
+  toggles raise/drop the field, and the Events page has net-wide Drop all fields / Raise all fields
+  actions. Linking a grill to an off gate drops the field once so the console can be configured.
+  Afterwards gate activation can raise the field, but gate deactivation never drops it, and the
+  grill's own signal pulses do not feed back into the field.
+- The grill console's third page controls redstone event outputs. Linked Redstone Gates emit a
+  one-tick pulse when an authorized player passes a Solid field, when an unauthorized entity is
+  blocked, when a Lethal field kills a player or mob, and when a Match User check succeeds or fails.
+  The five signals default to off and persist in NBT.
 - The field now scans all living entities, not just players. Solid stops unauthorized mobs and
   Lethal disintegrates them; the detection toggles match the Motion Sensor's player/hostile/neutral
   categories.

@@ -34,8 +34,10 @@ import net.minecraftforge.common.util.Constants;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -52,7 +54,7 @@ import java.util.UUID;
  * Detect Neutral Mobs toggles decide which living entity categories the field acts on. Ownership
  * alone does not grant passage.</p>
  */
-public class TileEntityEmancipationGrill extends TileEntitySynced implements ITickable {
+public class TileEntityEmancipationGrill extends TileEntitySynced implements ITickable, RedstoneBindingHost {
 
     /** How an enabled field treats a player without clearance. */
     public enum FieldMode {
@@ -85,6 +87,11 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
     private final List<BiometricId> assignedIds = new ArrayList<>();
     /** Players already told they are denied, so the message/sound fires once per entry. */
     private final Set<UUID> deniedInside = new HashSet<>();
+    private final RedstoneBinding redstoneBinding = new RedstoneBinding(this);
+    /** Gate outputs currently controlling the field, including explicit off sources. */
+    private final Map<BlockPos, Boolean> linkedGates = new HashMap<>();
+    /** Last tick this grill pulsed its linked gates; their own output edges are ignored briefly. */
+    private long lastSignalPulseTick = -1000L;
     private long lastDisintegrateSoundTick = -1000L;
 
     @Nullable
@@ -105,6 +112,15 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
     private boolean detectPlayers = true;
     private boolean detectHostile = true;
     private boolean detectNeutral = true;
+
+    /** Redstone event outputs, in the order shown on the grill's Redstone page. */
+    public static final int RS_SOLID_PASS = 0;
+    public static final int RS_SOLID_BLOCK = 1;
+    public static final int RS_LETHAL_KILL = 2;
+    public static final int RS_MATCH_USER_PASS = 3;
+    public static final int RS_MATCH_USER_FAIL = 4;
+    public static final int RS_EVENT_COUNT = 5;
+    private final boolean[] redstoneEvents = new boolean[RS_EVENT_COUNT];
 
     // ------------------------------------------------------------ field geometry
 
@@ -199,6 +215,110 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
             return false;
         }
         return ownerId == null || isOwnedBy(player);
+    }
+
+    // ------------------------------------------------------------ redstone binding
+
+    @Override
+    public RedstoneBinding getRedstoneBinding() {
+        return redstoneBinding;
+    }
+
+    @Override
+    public void syncRedstoneState() {
+        sync();
+    }
+
+    @Override
+    public void onRedstoneBindingChanged() {
+        markDirty();
+    }
+
+    @Override
+    public void sendRedstoneMessage(EntityPlayer player, String key) {
+        if (player != null) {
+            player.sendStatusMessage(new TextComponentTranslation(key), true);
+        }
+    }
+
+    /** Called by a gate host when it starts a link. */
+    public void onGateLinked(BlockPos source, boolean powered) {
+        applyGateLink(source, powered, true);
+    }
+
+    /** Called on load: restore the saved power state without forcing a configured field off. */
+    public void restoreGateLink(BlockPos source, boolean powered) {
+        applyGateLink(source, powered, false);
+    }
+
+    private void applyGateLink(BlockPos source, boolean powered, boolean initialLink) {
+        if (source == null || world == null || world.isRemote) return;
+        TileEntityEmancipationGrill core = getSecurityCore();
+        if (core != this) {
+            if (initialLink) core.onGateLinked(source, powered);
+            else core.restoreGateLink(source, powered);
+            return;
+        }
+        linkedGates.put(source.toImmutable(), powered);
+        // A real link seeds the field once, so the player can start configuring from the gate's
+        // current state. A reload only restores the link and leaves the configured field alone.
+        if (initialLink) applyLinkedGatePower(true);
+    }
+
+    /** Called by a gate host when the link is removed or the gate is broken. */
+    public void onGateUnlinked(BlockPos source) {
+        if (source == null || world == null || world.isRemote) return;
+        TileEntityEmancipationGrill core = getSecurityCore();
+        if (core != this) {
+            core.onGateUnlinked(source);
+            return;
+        }
+        linkedGates.remove(source);
+        // Unlinking releases control without changing a field the player has configured.
+    }
+
+    /** Called by a linked gate whenever its output changes. */
+    public void setLinkedPower(BlockPos source, boolean powered) {
+        if (source == null || world == null || world.isRemote) return;
+        TileEntityEmancipationGrill core = getSecurityCore();
+        if (core != this) {
+            core.setLinkedPower(source, powered);
+            return;
+        }
+        BlockPos key = source.toImmutable();
+        // Track the gate state, but do not let a signal pulse this grill just sent to that gate
+        // feed back into its own field.
+        long sincePulse = world.getTotalWorldTime() - lastSignalPulseTick;
+        if (sincePulse >= 0 && sincePulse <= 1 && redstoneBinding.getGates().contains(key)) {
+            linkedGates.put(key, powered);
+            return;
+        }
+        Boolean current = linkedGates.get(key);
+        if (current != null && current == powered) return;
+        linkedGates.put(key, powered);
+        applyLinkedGatePower(false);
+    }
+
+    /**
+     * A linked gate can raise the field while it is active. Only the initial link may lower it:
+     * that first off state exists so the player can configure the grill after linking. Later gate
+     * deactivation leaves the field alone, so signal pulses cannot switch it off.
+     */
+    private void applyLinkedGatePower(boolean initialLink) {
+        if (linkedGates.isEmpty()) return;
+        boolean powered = false;
+        for (Boolean value : linkedGates.values()) {
+            if (value) {
+                powered = true;
+                break;
+            }
+        }
+        if (!powered && !initialLink) return;
+        if (fieldEnabled != powered) {
+            fieldEnabled = powered;
+            deniedInside.clear();
+            sync();
+        }
     }
 
     // ------------------------------------------------------------ field settings
@@ -373,6 +493,30 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
         return true;
     }
 
+    public boolean isRedstoneEvent(int event) {
+        if (event < 0 || event >= RS_EVENT_COUNT) return false;
+        TileEntityEmancipationGrill core = getSecurityCore();
+        return core == this ? redstoneEvents[event] : core.isRedstoneEvent(event);
+    }
+
+    public boolean setRedstoneEvent(int event, boolean value) {
+        if (world == null || world.isRemote || event < 0 || event >= RS_EVENT_COUNT) return false;
+        TileEntityEmancipationGrill core = getSecurityCore();
+        if (core != this) return core.setRedstoneEvent(event, value);
+        if (redstoneEvents[event] == value) return false;
+        redstoneEvents[event] = value;
+        sync();
+        return true;
+    }
+
+    private void pulseRedstone(int event) {
+        if (event >= 0 && event < RS_EVENT_COUNT && redstoneEvents[event]) {
+            // Grill events are edge notifications, so keep the gate on for a single tick.
+            lastSignalPulseTick = world == null ? lastSignalPulseTick : world.getTotalWorldTime();
+            redstoneBinding.fireOneTick();
+        }
+    }
+
     // ------------------------------------------------------------ credential assignment
 
     public List<PrivateKeys.Key> getAssignedKeys() {
@@ -503,9 +647,31 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
         return !matchUser || Biometrics.isOwnedBy(stack, player);
     }
 
+    /** 1 = matching biometric holder, -1 = mismatched assigned holder, 0 = no match signal. */
+    private int matchUserSignal(EntityPlayer player) {
+        if (!matchUser || ignoreBiometricId || player == null) return 0;
+        boolean mismatch = false;
+        for (ItemStack stack : player.inventory.mainInventory) {
+            int signal = matchUserSignal(stack, player);
+            if (signal > 0) return 1;
+            if (signal < 0) mismatch = true;
+        }
+        int held = matchUserSignal(player.getHeldItemOffhand(), player);
+        if (held > 0) return 1;
+        if (held < 0) mismatch = true;
+        return mismatch ? -1 : 0;
+    }
+
+    private int matchUserSignal(ItemStack stack, EntityPlayer player) {
+        if (stack.isEmpty() || !(stack.getItem() instanceof ItemRfidCard)) return 0;
+        if (!Biometrics.isBound(stack) || !hasLocalId(Biometrics.ownerUuid(stack))) return 0;
+        return Biometrics.isOwnedBy(stack, player) ? 1 : -1;
+    }
+
     @Override
     public void update() {
         if (world == null || world.isRemote) return;
+        redstoneBinding.update();
 
         // A leftover second grill becomes a standalone first grill again once its partner is gone.
         if (!pairOwner && getPartner() == null) {
@@ -551,20 +717,36 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
             if (!inside && !crossing && !nearby) continue;
 
             UUID id = entity.getUniqueID();
+            int matchSignal = entity instanceof EntityPlayer
+                    ? matchUserSignal((EntityPlayer) entity) : 0;
             present.add(id);
             if (entity instanceof EntityPlayer && hasClearance((EntityPlayer) entity)) {
+                if (crossing) {
+                    if (mode == FieldMode.SOLID) pulseRedstone(RS_SOLID_PASS);
+                    if (matchSignal > 0) pulseRedstone(RS_MATCH_USER_PASS);
+                }
                 deniedInside.remove(id);
                 continue;
             }
             if (!inside && !crossing) continue;
 
             if (mode == FieldMode.LETHAL) {
+                if (entity instanceof EntityPlayer
+                        && ((EntityPlayer) entity).isCreative()) {
+                    continue;
+                }
+                if (matchSignal < 0) pulseRedstone(RS_MATCH_USER_FAIL);
                 disintegrate(entity);
                 continue;
             }
 
+            boolean firstDenial = deniedInside.add(id);
+            if (firstDenial) {
+                pulseRedstone(RS_SOLID_BLOCK);
+                if (matchSignal < 0) pulseRedstone(RS_MATCH_USER_FAIL);
+            }
             clampEntity(entity, box);
-            if (entity instanceof EntityPlayer && deniedInside.add(id)) {
+            if (entity instanceof EntityPlayer && firstDenial) {
                 EntityPlayer player = (EntityPlayer) entity;
                 player.sendStatusMessage(new TextComponentTranslation(
                         "ntmdoors.msg.emancipation_denied"), true);
@@ -635,6 +817,7 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
         entity.attackEntityFrom(DISINTEGRATION, Float.MAX_VALUE);
         if (!entity.isEntityAlive()) {
             playDisintegrateSound(entity, false);
+            pulseRedstone(RS_LETHAL_KILL);
         }
     }
 
@@ -716,6 +899,14 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
     }
 
     @Override
+    public void onLoad() {
+        super.onLoad();
+        if (world != null && !world.isRemote) {
+            RedstoneBinding.restoreGrillLinks(world, pos);
+        }
+    }
+
+    @Override
     public void invalidate() {
         deniedInside.clear();
         super.invalidate();
@@ -773,6 +964,7 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
     @Override
     public void readFromNBT(NBTTagCompound tag) {
         super.readFromNBT(tag);
+        redstoneBinding.readFromNBT(tag);
 
         ownerId = null;
         String owner = tag.getString("owner");
@@ -797,6 +989,9 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
         detectPlayers = !tag.hasKey("detectPlayers") || tag.getBoolean("detectPlayers");
         detectHostile = !tag.hasKey("detectHostile") || tag.getBoolean("detectHostile");
         detectNeutral = !tag.hasKey("detectNeutral") || tag.getBoolean("detectNeutral");
+        for (int i = 0; i < RS_EVENT_COUNT; i++) {
+            redstoneEvents[i] = tag.getBoolean("redstoneEvent" + i);
+        }
 
         assignedKeys.clear();
         if (tag.hasKey("assignedKeys", Constants.NBT.TAG_LIST)) {
@@ -810,6 +1005,7 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
+        redstoneBinding.writeToNBT(tag);
 
         tag.setString("owner", ownerId == null ? "" : ownerId.toString());
         tag.setString("ownerName", ownerName);
@@ -825,6 +1021,9 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
         tag.setBoolean("detectPlayers", detectPlayers);
         tag.setBoolean("detectHostile", detectHostile);
         tag.setBoolean("detectNeutral", detectNeutral);
+        for (int i = 0; i < RS_EVENT_COUNT; i++) {
+            tag.setBoolean("redstoneEvent" + i, redstoneEvents[i]);
+        }
         tag.setTag("assignedKeys", PrivateKeys.toList(assignedKeys));
         tag.setTag("assignedIds", encodeIds());
         return tag;

@@ -23,7 +23,7 @@ wisps and bright emitter seams, rather than a solid blue wall.
 - **Relay key console.** Sneak right-click a grill you own with the Emancipation Relay Key or an
   Operator Keycard to open the console. Page one assigns keys and IDs from an Operator Keycard in
   the player's inventory. Page two holds the field modes and access/destruction toggles. Page three
-  is the redstone placeholder.
+  controls redstone event outputs.
 - **Field modes.** Solid blocks unauthorized players and mobs; Neutral renders the field but has no
   effect; Lethal kills unauthorized players and mobs, and erases non-living entities such as dropped
   items, projectiles, vehicles and item frames that touch the field. The field can also be enabled or
@@ -39,6 +39,15 @@ wisps and bright emitter seams, rather than a solid blue wall.
   emancipation one-shot for lethal disintegration. Sounds have a three-block audible radius and can
   be muted from the console. The loop follows each active field; start/shutdown play when the field
   becomes active or stops. A mob killed by Lethal gets one disintegration one-shot, not a loop.
+- **Terminal and gate integration.** A Security terminal can list a grill as a device, toggle its
+  field, bind it with a Terminal Relay Key, and run net-level Drop all fields / Raise all fields
+  actions. A Redstone Gate can also link a grill as an output. Linking an off gate drops the field
+  once so the console can be configured; afterwards gate activation can raise the field, but gate
+  deactivation and the grill's own signal pulses leave the configured field alone.
+- **Redstone event outputs.** Bind gates to the grill with the Redstone Relay Key to receive one-tick
+  event pulses. The third console page enables five independent outputs: Solid pass (Y), Solid block
+  (N), Lethal kill, Match User match (Y) and Match User mismatch (N). Match User outputs only apply
+  while Match User is on and Ignore Biometric ID is off. All five default to off and persist.
 - **Barrier.** In Solid mode unauthorized players and mobs are stopped at the field plane; authorized
   players pass. Lethal mode kills instead of pushing back, and Neutral mode does neither. The thin
   field cell remains exposed by `TileEntityEmancipationGrill#getFieldBox()`.

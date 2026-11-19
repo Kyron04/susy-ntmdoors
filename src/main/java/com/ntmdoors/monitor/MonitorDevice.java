@@ -1,10 +1,12 @@
 package com.ntmdoors.monitor;
 
 import com.ntmdoors.block.BlockDoorGeneric;
+import com.ntmdoors.block.BlockEmancipationGrill;
 import com.ntmdoors.block.BlockMonitorDesk;
 import com.ntmdoors.block.BlockMonitorSetup;
 import com.ntmdoors.tile.TileEntityDoorGeneric;
 import com.ntmdoors.tile.TileEntityDoorKeypad;
+import com.ntmdoors.tile.TileEntityEmancipationGrill;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
 import com.ntmdoors.tile.TileEntityMotionSensor;
 import com.ntmdoors.tile.TileEntityRedstoneGate;
@@ -42,7 +44,8 @@ public final class MonitorDevice {
         SCANNER("Keycard Scanner"),
         MOTION_SENSOR("Motion Sensor"),
         REDSTONE_GATE("Redstone Gate"),
-        SPEAKER("Speaker");
+        SPEAKER("Speaker"),
+        EMANCIPATION_GRILL("Emancipation Grill");
 
         private static final Type[] VALUES = values();
 
@@ -152,6 +155,12 @@ public final class MonitorDevice {
             TileEntityDoorGeneric core = ((BlockDoorGeneric) block).getCore(world, clicked, state);
             return core == null ? null : new MonitorDevice(Type.DOOR, core.getPos(), null);
         }
+        if (block instanceof BlockEmancipationGrill) {
+            BlockEmancipationGrill grill = (BlockEmancipationGrill) block;
+            BlockPos core = clicked.down(grill.layer().ordinal());
+            return world.getTileEntity(core) instanceof TileEntityEmancipationGrill
+                    ? new MonitorDevice(Type.EMANCIPATION_GRILL, core, null) : null;
+        }
 
         TileEntity te = world.getTileEntity(clicked);
         if (te instanceof TileEntityDoorKeypad) {
@@ -218,6 +227,9 @@ public final class MonitorDevice {
         if (te instanceof TileEntitySpeaker) {
             return ((TileEntitySpeaker) te).isEnabled();
         }
+        if (te instanceof TileEntityEmancipationGrill) {
+            return ((TileEntityEmancipationGrill) te).isFieldEnabled();
+        }
         return true;
     }
 
@@ -241,6 +253,9 @@ public final class MonitorDevice {
         }
         if (te instanceof TileEntitySpeaker) {
             return ((TileEntitySpeaker) te).setEnabled(enabled);
+        }
+        if (te instanceof TileEntityEmancipationGrill) {
+            return ((TileEntityEmancipationGrill) te).setFieldEnabled(enabled);
         }
         return false;
     }

@@ -2,9 +2,11 @@ package com.ntmdoors.item;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.block.BlockDoorGeneric;
+import com.ntmdoors.block.BlockEmancipationGrill;
 import com.ntmdoors.tile.RedstoneBinding;
 import com.ntmdoors.tile.TileEntityDoorGeneric;
 import com.ntmdoors.tile.TileEntityDoorKeypad;
+import com.ntmdoors.tile.TileEntityEmancipationGrill;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
 import com.ntmdoors.tile.TileEntityMotionSensor;
 import com.ntmdoors.tile.TileEntityRedstoneGate;
@@ -63,6 +65,18 @@ public class ItemRedstoneRelayKey extends Item {
             return EnumActionResult.PASS;
         }
 
+        TileEntityEmancipationGrill grill = findGrill(world, pos);
+        if (grill != null) {
+            if (world.isRemote) return EnumActionResult.SUCCESS;
+            RedstoneBinding binding = RedstoneBinding.findSession(world, player);
+            if (binding != null && binding.isGateHost()) {
+                binding.linkGrill(player, grill);
+            } else {
+                grill.getRedstoneBinding().toggle(player);
+            }
+            return EnumActionResult.SUCCESS;
+        }
+
         // Vanilla skips Block.onBlockActivated for a sneaking player, so the item owns this action.
         if (world.isRemote) {
             // Sneak-clicking a keypad opens its security-code screen, then the configuration GUI.
@@ -115,6 +129,16 @@ public class ItemRedstoneRelayKey extends Item {
         return ((BlockDoorGeneric) state.getBlock()).getCore(world, pos, state);
     }
 
+    @Nullable
+    private static TileEntityEmancipationGrill findGrill(World world, BlockPos pos) {
+        IBlockState state = world.getBlockState(pos);
+        if (!(state.getBlock() instanceof BlockEmancipationGrill)) return null;
+        BlockEmancipationGrill grill = (BlockEmancipationGrill) state.getBlock();
+        BlockPos corePos = pos.down(grill.layer().ordinal());
+        TileEntity te = world.getTileEntity(corePos);
+        return te instanceof TileEntityEmancipationGrill ? (TileEntityEmancipationGrill) te : null;
+    }
+
     /** True when either hand holds a Redstone Relay Key. */
     public static boolean isHeldBy(EntityPlayer player) {
         return HeldItems.holds(player, ItemRedstoneRelayKey.class);
@@ -126,9 +150,10 @@ public class ItemRedstoneRelayKey extends Item {
                 "Links keypads, scanners, safes, speakers",
                 "and sensors to a Redstone Gate.",
                 "Sneak + Right Click a gate to bind",
-                "other gates and doors to its output.",
+                "other gates, doors and grills to its output.",
                 "Normal Right Click a Speaker to bind it.",
                 "Sneak + Right Click a Keypad to configure it.",
-                "Sneak + Right Click a Motion Sensor to bind it.");
+                "Sneak + Right Click a Motion Sensor to bind it.",
+                "Sneak + Right Click a Grill to bind it.");
     }
 }

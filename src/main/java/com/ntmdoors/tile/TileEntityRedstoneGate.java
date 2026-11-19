@@ -340,9 +340,18 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
 
     /** Server side: starts a wireless activation window. */
     public void pulse() {
+        pulse(activeTicks);
+    }
+
+    /** Server side: starts a one-tick activation window. */
+    public void pulseOnce() {
+        pulse(1);
+    }
+
+    private void pulse(int ticks) {
         if (getWorld() == null || getWorld().isRemote || stayActive) return;
         if (isSystemIdle()) return;
-        long end = getWorld().getTotalWorldTime() + activeTicks;
+        long end = getWorld().getTotalWorldTime() + Math.max(1, ticks);
         if (end > pulseEnd) pulseEnd = end;
         inputSettleTicks = 0;
         invertProbeTicks = 0;

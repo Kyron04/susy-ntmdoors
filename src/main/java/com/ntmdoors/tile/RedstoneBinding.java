@@ -33,6 +33,8 @@ public final class RedstoneBinding {
     private final List<BlockPos> gates = new ArrayList<>();
     /** Doors linked from a gate host. Device hosts never fill this list. */
     private final List<BlockPos> doors = new ArrayList<>();
+    /** Emancipation Grills linked from a gate host. */
+    private final List<BlockPos> grills = new ArrayList<>();
 
     @Nullable
     private UUID bindingPlayer;
@@ -65,7 +67,7 @@ public final class RedstoneBinding {
     }
 
     public boolean hasLinks() {
-        return !gates.isEmpty() || !doors.isEmpty();
+        return !gates.isEmpty() || !doors.isEmpty() || !grills.isEmpty();
     }
 
     /** Read-only view of the gates this host drives, used by the Redstone Monocle client overlay. */
@@ -76,6 +78,11 @@ public final class RedstoneBinding {
     /** Read-only view of the doors this gate host drives, used by the Redstone Monocle overlay. */
     public List<BlockPos> getDoors() {
         return Collections.unmodifiableList(doors);
+    }
+
+    /** Read-only view of the grills this gate host drives. */
+    public List<BlockPos> getGrills() {
+        return Collections.unmodifiableList(grills);
     }
 
     /**
@@ -223,9 +230,47 @@ public final class RedstoneBinding {
         return true;
     }
 
+    /** Links or unlinks one Emancipation Grill for an active gate-host session. */
+    public boolean linkGrill(EntityPlayer player, TileEntityEmancipationGrill grill) {
+        World world = host.getWorld();
+        if (world == null || world.isRemote || player == null || grill == null) return false;
+        if (!isGateHost()) {
+            callbacks.sendRedstoneMessage(player, "ntmdoors.msg.redstone_grill_gate_only");
+            return false;
+        }
+        if (!isBindingFor(player)) {
+            callbacks.sendRedstoneMessage(player, "ntmdoors.msg.redstone_binding_required");
+            return false;
+        }
+
+        TileEntityEmancipationGrill core = grill.getSecurityCore();
+        if (core.getWorld() != world) return false;
+        if (core.getOwnerId() != null && !core.isOwnedBy(player)) {
+            callbacks.sendRedstoneMessage(player, "ntmdoors.msg.redstone_grill_owner_only");
+            return false;
+        }
+
+        BlockPos grillPos = core.getPos().toImmutable();
+        if (grills.remove(grillPos)) {
+            core.setLinkedPower(host.getPos(), false);
+            core.onGateUnlinked(host.getPos());
+            callbacks.onRedstoneBindingChanged();
+            callbacks.syncRedstoneState();
+            callbacks.sendRedstoneMessage(player, "ntmdoors.msg.redstone_grill_unlinked");
+            return true;
+        }
+
+        if (!grills.contains(grillPos)) grills.add(grillPos);
+        core.onGateLinked(host.getPos(), ((TileEntityRedstoneGate) host).isPoweredOn());
+        callbacks.onRedstoneBindingChanged();
+        callbacks.syncRedstoneState();
+        callbacks.sendRedstoneMessage(player, "ntmdoors.msg.redstone_grill_linked");
+        return true;
+    }
+
     /**
-     * Server side: mirrors the host gate's output onto every linked gate and door. Called on each
-     * output edge and periodically while the source is on so a receiver loaded after the edge
+     * Server side: mirrors the host gate's output onto every linked gate, door and grill. Called on
+     * each output edge and periodically while the source is on so a receiver loaded after the edge
      * still picks the signal up.
      */
     public void applyGateOutput(boolean powered) {
@@ -263,6 +308,18 @@ public final class RedstoneBinding {
                 }
             } else {
                 doorIterator.remove();
+                changed = true;
+            }
+        }
+        Iterator<BlockPos> grillIterator = grills.iterator();
+        while (grillIterator.hasNext()) {
+            BlockPos grillPos = grillIterator.next();
+            if (!world.isBlockLoaded(grillPos)) continue;
+            TileEntity te = world.getTileEntity(grillPos);
+            if (te instanceof TileEntityEmancipationGrill) {
+                ((TileEntityEmancipationGrill) te).setLinkedPower(source, powered);
+            } else {
+                grillIterator.remove();
                 changed = true;
             }
         }
@@ -325,6 +382,15 @@ public final class RedstoneBinding {
 
     /** Server side: pulses every loaded gate in this link. */
     public void fire() {
+        pulseGates(false);
+    }
+
+    /** Server side: pulses every loaded gate for exactly one tick. */
+    public void fireOneTick() {
+        pulseGates(true);
+    }
+
+    private void pulseGates(boolean oneTick) {
         World world = host.getWorld();
         if (world == null || world.isRemote || gates.isEmpty()) return;
 
@@ -335,7 +401,9 @@ public final class RedstoneBinding {
             if (!world.isBlockLoaded(gatePos)) continue;
             TileEntity te = world.getTileEntity(gatePos);
             if (te instanceof TileEntityRedstoneGate) {
-                ((TileEntityRedstoneGate) te).pulse();
+                TileEntityRedstoneGate gate = (TileEntityRedstoneGate) te;
+                if (oneTick) gate.pulseOnce();
+                else gate.pulse();
             } else {
                 it.remove();
                 changed = true;
@@ -344,12 +412,13 @@ public final class RedstoneBinding {
         if (changed) callbacks.syncRedstoneState();
     }
 
-    /** Server side: removes every reciprocal gate and door link. Used when this device is broken. */
+    /** Server side: removes every reciprocal gate, door and grill link. Used when this device is broken. */
     public void clearGates() {
         World world = host.getWorld();
         if (world == null || world.isRemote) {
             gates.clear();
             doors.clear();
+            grills.clear();
             return;
         }
         BlockPos source = host.getPos();
@@ -372,8 +441,18 @@ public final class RedstoneBinding {
                 door.onGateUnlinked(source);
             }
         }
+        for (BlockPos grillPos : new ArrayList<>(grills)) {
+            if (!world.isBlockLoaded(grillPos)) continue;
+            TileEntity te = world.getTileEntity(grillPos);
+            if (te instanceof TileEntityEmancipationGrill) {
+                TileEntityEmancipationGrill grill = (TileEntityEmancipationGrill) te;
+                grill.setLinkedPower(source, false);
+                grill.onGateUnlinked(source);
+            }
+        }
         gates.clear();
         doors.clear();
+        grills.clear();
         holdMode = HoldMode.NONE;
         holdActive = false;
         callbacks.syncRedstoneState();
@@ -389,6 +468,35 @@ public final class RedstoneBinding {
         if (doorPos != null && doors.remove(doorPos)) callbacks.syncRedstoneState();
     }
 
+    /** Called by a broken grill: drop its link from this gate binding. */
+    public void onGrillRemoved(BlockPos grillPos) {
+        if (grillPos != null && grills.remove(grillPos)) callbacks.syncRedstoneState();
+    }
+
+    /** Removes a broken grill from every loaded gate's sink list. */
+    public static void removeGrillLinks(World world, BlockPos grillPos) {
+        if (world == null || grillPos == null || world.isRemote) return;
+        for (TileEntity te : world.loadedTileEntityList) {
+            if (!(te instanceof TileEntityRedstoneGate)) continue;
+            ((TileEntityRedstoneGate) te).getRedstoneBinding().onGrillRemoved(grillPos);
+        }
+    }
+
+    /** Restores a loaded grill's saved gate link, regardless of chunk load order. */
+    public static void restoreGrillLinks(World world, BlockPos grillPos) {
+        if (world == null || grillPos == null || world.isRemote) return;
+        for (TileEntity te : world.loadedTileEntityList) {
+            if (!(te instanceof TileEntityRedstoneGate)) continue;
+            TileEntityRedstoneGate gate = (TileEntityRedstoneGate) te;
+            if (!gate.getRedstoneBinding().grills.contains(grillPos)) continue;
+            TileEntity grillTe = world.getTileEntity(grillPos);
+            if (grillTe instanceof TileEntityEmancipationGrill) {
+                ((TileEntityEmancipationGrill) grillTe)
+                        .restoreGateLink(gate.getPos(), gate.isPoweredOn());
+            }
+        }
+    }
+
     public void update() {
         if (bindingPlayer == null) return;
         World world = host.getWorld();
@@ -399,16 +507,19 @@ public final class RedstoneBinding {
     public void writeToNBT(NBTTagCompound tag) {
         tag.setString("redstoneGates", BlockPositions.encodeList(gates));
         tag.setString("redstoneDoors", BlockPositions.encodeList(doors));
+        tag.setString("redstoneGrills", BlockPositions.encodeList(grills));
     }
 
     public void writeSyncTag(NBTTagCompound tag) {
         tag.setString("redstoneGates", BlockPositions.encodeList(gates));
         tag.setString("redstoneDoors", BlockPositions.encodeList(doors));
+        tag.setString("redstoneGrills", BlockPositions.encodeList(grills));
     }
 
     public void readFromNBT(NBTTagCompound tag) {
         gates.clear();
         doors.clear();
+        grills.clear();
         holdMode = HoldMode.NONE;
         holdActive = false;
         if (tag.hasKey("redstoneGates")) {
@@ -416,6 +527,9 @@ public final class RedstoneBinding {
         }
         if (tag.hasKey("redstoneDoors")) {
             doors.addAll(BlockPositions.decodeList(tag.getString("redstoneDoors")));
+        }
+        if (tag.hasKey("redstoneGrills")) {
+            grills.addAll(BlockPositions.decodeList(tag.getString("redstoneGrills")));
         }
     }
 

@@ -90,7 +90,8 @@ public class GuiMonitor extends GuiScreen {
             "Disable Redstone Gates"
     };
     private static final String[] SECURITY_ACTIONS = {
-            "Close all doors", "Open all doors"
+            "Close all doors", "Open all doors",
+            "Drop all fields", "Raise all fields"
     };
     private static final int SECURITY_TAB_HEIGHT = 18;
 
@@ -1330,7 +1331,7 @@ public class GuiMonitor extends GuiScreen {
                             if (index < SECURITY_EVENTS.length) {
                                 toggleSecurityEvent(index);
                             } else {
-                                runDoorAction(index - SECURITY_EVENTS.length == 1);
+                                runSecurityAction(index - SECURITY_EVENTS.length);
                             }
                             return;
                         }
@@ -2120,18 +2121,41 @@ public class GuiMonitor extends GuiScreen {
                 selectedNetId, "", 0, device.pos));
     }
 
-    private void runDoorAction(boolean open) {
+    private void runSecurityAction(int action) {
         if (selectedNetId < 0) return;
-        if (open && (securityEvents[SecurityNet.EVENT_SYSTEM_SHUTDOWN]
-                || securityEvents[SecurityNet.EVENT_SYSTEM_LOCKDOWN])) {
-            securityNotice = "Blocked by system event";
-            return;
+        switch (action) {
+            case 0:
+                securityNotice = "Closing doors";
+                ModNetwork.INSTANCE.sendToServer(new MessageMonitorNetRequest(
+                        origin, MessageMonitorNetRequest.CLOSE_ALL_DOORS,
+                        selectedNetId, "", 0));
+                break;
+            case 1:
+                if (securityEvents[SecurityNet.EVENT_SYSTEM_SHUTDOWN]
+                        || securityEvents[SecurityNet.EVENT_SYSTEM_LOCKDOWN]) {
+                    securityNotice = "Blocked by system event";
+                    return;
+                }
+                securityNotice = "Opening doors";
+                ModNetwork.INSTANCE.sendToServer(new MessageMonitorNetRequest(
+                        origin, MessageMonitorNetRequest.OPEN_ALL_DOORS,
+                        selectedNetId, "", 0));
+                break;
+            case 2:
+                securityNotice = "Dropping fields";
+                ModNetwork.INSTANCE.sendToServer(new MessageMonitorNetRequest(
+                        origin, MessageMonitorNetRequest.DROP_ALL_FIELDS,
+                        selectedNetId, "", 0));
+                break;
+            case 3:
+                securityNotice = "Raising fields";
+                ModNetwork.INSTANCE.sendToServer(new MessageMonitorNetRequest(
+                        origin, MessageMonitorNetRequest.RAISE_ALL_FIELDS,
+                        selectedNetId, "", 0));
+                break;
+            default:
+                break;
         }
-        securityNotice = open ? "Opening doors" : "Closing doors";
-        ModNetwork.INSTANCE.sendToServer(new MessageMonitorNetRequest(
-                origin, open ? MessageMonitorNetRequest.OPEN_ALL_DOORS
-                        : MessageMonitorNetRequest.CLOSE_ALL_DOORS,
-                selectedNetId, "", 0));
     }
 
     void playClick() {

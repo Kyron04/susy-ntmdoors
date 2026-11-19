@@ -2,6 +2,7 @@ package com.ntmdoors.block;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.registry.ModContent;
+import com.ntmdoors.tile.RedstoneBinding;
 import com.ntmdoors.tile.TileEntityEmancipationGrill;
 import com.ntmdoors.util.Facings;
 import net.minecraft.block.Block;
@@ -126,6 +127,11 @@ public class BlockEmancipationGrill extends Block {
     public void breakBlock(World world, BlockPos pos, IBlockState state) {
         if (!world.isRemote && !DISMANTLING.get()) {
             BlockPos core = pos.down(layer.ordinal());
+            TileEntity te = world.getTileEntity(core);
+            if (te instanceof TileEntityEmancipationGrill) {
+                ((TileEntityEmancipationGrill) te).getRedstoneBinding().clearGates();
+            }
+            RedstoneBinding.removeGrillLinks(world, core);
             DISMANTLING.set(true);
             try {
                 for (Layer l : Layer.values()) {

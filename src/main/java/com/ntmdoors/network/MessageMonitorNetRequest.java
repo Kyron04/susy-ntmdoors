@@ -46,6 +46,8 @@ public class MessageMonitorNetRequest implements IMessage {
     public static final int OPEN_DOOR = 10;
     public static final int CLOSE_DOOR = 11;
     public static final int TOGGLE_DEVICE = 12;
+    public static final int DROP_ALL_FIELDS = 13;
+    public static final int RAISE_ALL_FIELDS = 14;
 
     private BlockPos deskPos;
     private int action;
@@ -173,6 +175,12 @@ public class MessageMonitorNetRequest implements IMessage {
                 case TOGGLE_DEVICE:
                     toggleDevice(player, desk, message);
                     break;
+                case DROP_ALL_FIELDS:
+                    dropAllFields(player, desk, message.netId);
+                    break;
+                case RAISE_ALL_FIELDS:
+                    raiseAllFields(player, desk, message.netId);
+                    break;
                 default:
                     break;
             }
@@ -239,6 +247,24 @@ public class MessageMonitorNetRequest implements IMessage {
                                          int netId) {
             SecurityNet net = desk.getNet(netId);
             if (net != null) SecurityEvents.openAllDoors(player.world, net);
+        }
+
+        private static void dropAllFields(EntityPlayerMP player, TileEntityMonitorDesk desk,
+                                          int netId) {
+            SecurityNet net = desk.getNet(netId);
+            if (net != null) {
+                SecurityEvents.dropAllFields(player.world, net);
+                sendDevices(player, desk, net, false);
+            }
+        }
+
+        private static void raiseAllFields(EntityPlayerMP player, TileEntityMonitorDesk desk,
+                                           int netId) {
+            SecurityNet net = desk.getNet(netId);
+            if (net != null) {
+                SecurityEvents.raiseAllFields(player.world, net);
+                sendDevices(player, desk, net, false);
+            }
         }
 
         /** Server side: opens or closes one door that is part of the selected net. */

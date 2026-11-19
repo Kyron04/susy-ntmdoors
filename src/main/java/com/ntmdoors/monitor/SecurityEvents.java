@@ -1,6 +1,7 @@
 package com.ntmdoors.monitor;
 
 import com.ntmdoors.tile.TileEntityDoorGeneric;
+import com.ntmdoors.tile.TileEntityEmancipationGrill;
 import com.ntmdoors.tile.TileEntityMonitorDesk;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
@@ -93,6 +94,28 @@ public final class SecurityEvents {
             TileEntity te = world.getTileEntity(device.pos);
             if (te instanceof TileEntityDoorGeneric) {
                 ((TileEntityDoorGeneric) te).openForSystem();
+            }
+        }
+    }
+
+    /** Drops every loaded Emancipation Grill field in the net. */
+    public static void dropAllFields(World world, SecurityNet net) {
+        setAllFields(world, net, false);
+    }
+
+    /** Raises every loaded Emancipation Grill field in the net. */
+    public static void raiseAllFields(World world, SecurityNet net) {
+        setAllFields(world, net, true);
+    }
+
+    private static void setAllFields(World world, SecurityNet net, boolean enabled) {
+        if (world == null || world.isRemote || net == null) return;
+        for (MonitorDevice device : net.getDevices()) {
+            if (device.type != MonitorDevice.Type.EMANCIPATION_GRILL) continue;
+            if (!world.isBlockLoaded(device.pos)) continue;
+            TileEntity te = world.getTileEntity(device.pos);
+            if (te instanceof TileEntityEmancipationGrill) {
+                ((TileEntityEmancipationGrill) te).setFieldEnabled(enabled);
             }
         }
     }

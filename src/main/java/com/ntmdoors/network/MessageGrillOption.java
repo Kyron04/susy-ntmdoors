@@ -30,7 +30,12 @@ public class MessageGrillOption implements IMessage {
     public static final int DETECT_NEUTRAL = 11;
     public static final int IGNORE_ITEMS = 12;
     public static final int AUDIO = 13;
-    public static final int OPTION_COUNT = 14;
+    public static final int REDSTONE_SOLID_PASS = 14;
+    public static final int REDSTONE_SOLID_BLOCK = 15;
+    public static final int REDSTONE_LETHAL_KILL = 16;
+    public static final int REDSTONE_MATCH_USER_PASS = 17;
+    public static final int REDSTONE_MATCH_USER_FAIL = 18;
+    public static final int OPTION_COUNT = 19;
 
     private BlockPos pos;
     private int option;
@@ -120,6 +125,21 @@ public class MessageGrillOption implements IMessage {
                     break;
                 case AUDIO:
                     grill.setAudioEnabled(message.value);
+                    break;
+                case REDSTONE_SOLID_PASS:
+                    grill.setRedstoneEvent(TileEntityEmancipationGrill.RS_SOLID_PASS, message.value);
+                    break;
+                case REDSTONE_SOLID_BLOCK:
+                    grill.setRedstoneEvent(TileEntityEmancipationGrill.RS_SOLID_BLOCK, message.value);
+                    break;
+                case REDSTONE_LETHAL_KILL:
+                    grill.setRedstoneEvent(TileEntityEmancipationGrill.RS_LETHAL_KILL, message.value);
+                    break;
+                case REDSTONE_MATCH_USER_PASS:
+                    grill.setRedstoneEvent(TileEntityEmancipationGrill.RS_MATCH_USER_PASS, message.value);
+                    break;
+                case REDSTONE_MATCH_USER_FAIL:
+                    grill.setRedstoneEvent(TileEntityEmancipationGrill.RS_MATCH_USER_FAIL, message.value);
                     break;
                 default:
                     break;

@@ -69,6 +69,13 @@ public class GuiEmancipationGrill extends GuiScreen {
             MessageGrillOption.DETECT_HOSTILE,
             MessageGrillOption.DETECT_NEUTRAL
     };
+    private static final int[] REDSTONE_OPTIONS = {
+            MessageGrillOption.REDSTONE_SOLID_PASS,
+            MessageGrillOption.REDSTONE_SOLID_BLOCK,
+            MessageGrillOption.REDSTONE_LETHAL_KILL,
+            MessageGrillOption.REDSTONE_MATCH_USER_PASS,
+            MessageGrillOption.REDSTONE_MATCH_USER_FAIL
+    };
 
     private static final int RED_PANEL = 0xFF2A0F12;
     private static final int RED_RULE = 0xFF6A2A2A;
@@ -88,6 +95,7 @@ public class GuiEmancipationGrill extends GuiScreen {
     private int scrollLeft;
     private int scrollRight;
     private int scrollOptions;
+    private int scrollRedstone;
     private int lastMouseX;
     private int lastMouseY;
 
@@ -104,6 +112,7 @@ public class GuiEmancipationGrill extends GuiScreen {
         scrollLeft = 0;
         scrollRight = 0;
         scrollOptions = 0;
+        scrollRedstone = 0;
     }
 
     @Override
@@ -195,6 +204,21 @@ public class GuiEmancipationGrill extends GuiScreen {
                 return grill == null || grill.isDetectHostile();
             case MessageGrillOption.DETECT_NEUTRAL:
                 return grill == null || grill.isDetectNeutral();
+            case MessageGrillOption.REDSTONE_SOLID_PASS:
+                return grill != null
+                        && grill.isRedstoneEvent(TileEntityEmancipationGrill.RS_SOLID_PASS);
+            case MessageGrillOption.REDSTONE_SOLID_BLOCK:
+                return grill != null
+                        && grill.isRedstoneEvent(TileEntityEmancipationGrill.RS_SOLID_BLOCK);
+            case MessageGrillOption.REDSTONE_LETHAL_KILL:
+                return grill != null
+                        && grill.isRedstoneEvent(TileEntityEmancipationGrill.RS_LETHAL_KILL);
+            case MessageGrillOption.REDSTONE_MATCH_USER_PASS:
+                return grill != null
+                        && grill.isRedstoneEvent(TileEntityEmancipationGrill.RS_MATCH_USER_PASS);
+            case MessageGrillOption.REDSTONE_MATCH_USER_FAIL:
+                return grill != null
+                        && grill.isRedstoneEvent(TileEntityEmancipationGrill.RS_MATCH_USER_FAIL);
             default:
                 return false;
         }
@@ -217,7 +241,13 @@ public class GuiEmancipationGrill extends GuiScreen {
                         available().size(), LIST_HEIGHT);
             }
         } else if (page == 1 && inOptionsArea(lastMouseX, lastMouseY)) {
-            scrollOptions += wheel > 0 ? -OPTION_HEIGHT : OPTION_HEIGHT;
+            scrollOptions = clampOptionsScroll(
+                    scrollOptions + (wheel > 0 ? -OPTION_HEIGHT : OPTION_HEIGHT),
+                    TOGGLE_OPTIONS.length);
+        } else if (page == 2 && inOptionsArea(lastMouseX, lastMouseY)) {
+            scrollRedstone = clampOptionsScroll(
+                    scrollRedstone + (wheel > 0 ? -OPTION_HEIGHT : OPTION_HEIGHT),
+                    REDSTONE_OPTIONS.length);
         }
     }
 
@@ -248,7 +278,13 @@ public class GuiEmancipationGrill extends GuiScreen {
                     return;
                 }
             } else if (page == 1) {
-                int option = settingsOptionAt(mouseX, mouseY);
+                int option = optionAt(mouseX, mouseY, TOGGLE_OPTIONS, scrollOptions);
+                if (option >= 0) {
+                    sendOption(option);
+                    return;
+                }
+            } else if (page == 2) {
+                int option = optionAt(mouseX, mouseY, REDSTONE_OPTIONS, scrollRedstone);
                 if (option >= 0) {
                     sendOption(option);
                     return;
@@ -321,11 +357,11 @@ public class GuiEmancipationGrill extends GuiScreen {
                 && mouseY >= top + OPTION_TOP && mouseY < top + OPTION_TOP + OPTION_AREA;
     }
 
-    private int settingsOptionAt(int mouseX, int mouseY) {
+    private int optionAt(int mouseX, int mouseY, int[] options, int scroll) {
         if (!inOptionsArea(mouseX, mouseY)) return -1;
-        int clamped = clampOptionsScroll(scrollOptions);
+        int clamped = clampOptionsScroll(scroll, options.length);
         int row = (mouseY - (top + OPTION_TOP) + clamped) / OPTION_HEIGHT;
-        return row >= 0 && row < TOGGLE_OPTIONS.length ? TOGGLE_OPTIONS[row] : -1;
+        return row >= 0 && row < options.length ? options[row] : -1;
     }
 
     private boolean inOption(int index, int mouseX, int mouseY, int scroll) {
@@ -334,8 +370,8 @@ public class GuiEmancipationGrill extends GuiScreen {
                 && mouseY >= y && mouseY < y + OPTION_HEIGHT - 2;
     }
 
-    private int clampOptionsScroll(int scroll) {
-        int max = Math.max(0, TOGGLE_OPTIONS.length * OPTION_HEIGHT - OPTION_AREA);
+    private int clampOptionsScroll(int scroll, int count) {
+        int max = Math.max(0, count * OPTION_HEIGHT - OPTION_AREA);
         return Math.max(0, Math.min(max, scroll));
     }
 
@@ -371,8 +407,7 @@ public class GuiEmancipationGrill extends GuiScreen {
 
         if (page == 0) drawKeysPage(mouseX, mouseY);
         else if (page == 1) drawTogglesPage(mouseX, mouseY);
-        else drawEmptyPage("REDSTONE", "EVENT OUTPUTS",
-                "No redstone outputs configured yet.", RED_RULE, 0xFFF0C0C0);
+        else drawRedstonePage(mouseX, mouseY);
 
         drawFooter(mouseX, mouseY);
         super.drawScreen(mouseX, mouseY, partialTicks);
@@ -402,24 +437,44 @@ public class GuiEmancipationGrill extends GuiScreen {
         drawString(fontRenderer, "FIELD SETTINGS", left + 12, top + 29, HEADING);
         drawRect(left + 12, top + 40, left + PANEL_WIDTH - 12, top + 41, RULE);
 
-        scrollOptions = clampOptionsScroll(scrollOptions);
+        scrollOptions = clampOptionsScroll(scrollOptions, TOGGLE_OPTIONS.length);
         GuiClip.begin(left + 8, top + OPTION_TOP, PANEL_WIDTH - 16, OPTION_AREA);
         for (int i = 0; i < TOGGLE_OPTIONS.length; i++) {
             int y = top + OPTION_TOP + i * OPTION_HEIGHT - scrollOptions;
             if (y + OPTION_HEIGHT < top + OPTION_TOP || y > top + OPTION_TOP + OPTION_AREA) {
                 continue;
             }
-            drawOption(TOGGLE_OPTIONS[i], i, y, mouseX, mouseY);
+            drawOption(TOGGLE_OPTIONS[i], i, y, mouseX, mouseY, scrollOptions, false);
         }
         GuiClip.end();
         drawScrollbar(left + PANEL_WIDTH - 8, top + OPTION_TOP, OPTION_AREA,
                 TOGGLE_OPTIONS.length, OPTION_HEIGHT, scrollOptions);
     }
 
+    private void drawRedstonePage(int mouseX, int mouseY) {
+        drawTitle("REDSTONE");
+        drawString(fontRenderer, "SIGNAL OUTPUTS", left + 12, top + 29, 0xFFF0C0C0);
+        drawRect(left + 12, top + 40, left + PANEL_WIDTH - 12, top + 41, RED_RULE);
+
+        scrollRedstone = clampOptionsScroll(scrollRedstone, REDSTONE_OPTIONS.length);
+        GuiClip.begin(left + 8, top + OPTION_TOP, PANEL_WIDTH - 16, OPTION_AREA);
+        for (int i = 0; i < REDSTONE_OPTIONS.length; i++) {
+            int y = top + OPTION_TOP + i * OPTION_HEIGHT - scrollRedstone;
+            if (y + OPTION_HEIGHT < top + OPTION_TOP || y > top + OPTION_TOP + OPTION_AREA) {
+                continue;
+            }
+            drawOption(REDSTONE_OPTIONS[i], i, y, mouseX, mouseY, scrollRedstone, true);
+        }
+        GuiClip.end();
+        drawScrollbar(left + PANEL_WIDTH - 8, top + OPTION_TOP, OPTION_AREA,
+                REDSTONE_OPTIONS.length, OPTION_HEIGHT, scrollRedstone);
+    }
+
     /** One settings row: label and hint on the left, an ON/OFF pill on the right. */
-    private void drawOption(int option, int index, int y, int mouseX, int mouseY) {
+    private void drawOption(int option, int index, int y, int mouseX, int mouseY,
+                            int scroll, boolean signal) {
         boolean on = optionValue(option);
-        boolean hovered = inOption(index, mouseX, mouseY, scrollOptions);
+        boolean hovered = inOption(index, mouseX, mouseY, scroll);
         if (hovered) {
             drawRect(left + 8, y - 3, left + PANEL_WIDTH - 8, y + OPTION_HEIGHT - 5,
                     HOVER);
@@ -430,10 +485,21 @@ public class GuiEmancipationGrill extends GuiScreen {
 
         int x = left + PANEL_WIDTH - 12 - PILL_WIDTH;
         int pillY = y + 1;
-        int fill = on ? 0xFF344434 : 0xFF3A3030;
-        int edge = on ? 0xFF7FA87F : 0xFF8A6A6A;
-        int text = on ? 0xFFD6F0D6 : 0xFFE6C8C8;
-        int bottom = on ? 0xFF223022 : 0xFF241C1C;
+        int fill;
+        int edge;
+        int text;
+        int bottom;
+        if (signal) {
+            fill = on ? 0xFF432A2A : 0xFF2A2222;
+            edge = on ? 0xFFC07A7A : 0xFF6A5252;
+            text = on ? 0xFFF0D6D6 : 0xFFC8B0B0;
+            bottom = on ? 0xFF2C1C1C : 0xFF1C1717;
+        } else {
+            fill = on ? 0xFF344434 : 0xFF3A3030;
+            edge = on ? 0xFF7FA87F : 0xFF8A6A6A;
+            text = on ? 0xFFD6F0D6 : 0xFFE6C8C8;
+            bottom = on ? 0xFF223022 : 0xFF241C1C;
+        }
 
         drawRect(x, pillY, x + PILL_WIDTH, pillY + PILL_HEIGHT, fill);
         drawRect(x, pillY, x + PILL_WIDTH, pillY + 1, edge);
@@ -472,6 +538,16 @@ public class GuiEmancipationGrill extends GuiScreen {
                 return "Detect Hostile Mobs";
             case MessageGrillOption.DETECT_NEUTRAL:
                 return "Detect Neutral Mobs";
+            case MessageGrillOption.REDSTONE_SOLID_PASS:
+                return "Solid: Authorized Pass";
+            case MessageGrillOption.REDSTONE_SOLID_BLOCK:
+                return "Solid: Unauthorized Block";
+            case MessageGrillOption.REDSTONE_LETHAL_KILL:
+                return "Lethal: Kill";
+            case MessageGrillOption.REDSTONE_MATCH_USER_PASS:
+                return "Match User: Match";
+            case MessageGrillOption.REDSTONE_MATCH_USER_FAIL:
+                return "Match User: Mismatch";
             default:
                 return "";
         }
@@ -507,18 +583,19 @@ public class GuiEmancipationGrill extends GuiScreen {
                 return "Affect monsters and hostile mobs";
             case MessageGrillOption.DETECT_NEUTRAL:
                 return "Affect animals, villagers and NPCs";
+            case MessageGrillOption.REDSTONE_SOLID_PASS:
+                return "Pulse when clearance crosses";
+            case MessageGrillOption.REDSTONE_SOLID_BLOCK:
+                return "Pulse when an entry is blocked";
+            case MessageGrillOption.REDSTONE_LETHAL_KILL:
+                return "Pulse when the field kills";
+            case MessageGrillOption.REDSTONE_MATCH_USER_PASS:
+                return "Pulse when ID matches carrier";
+            case MessageGrillOption.REDSTONE_MATCH_USER_FAIL:
+                return "Pulse when ID does not match";
             default:
                 return "";
         }
-    }
-
-    private void drawEmptyPage(String title, String heading, String body, int ruleColour, int headingColour) {
-        drawTitle(title);
-        drawString(fontRenderer, heading, left + 12, top + 29, headingColour);
-        drawRect(left + 12, top + 40, left + PANEL_WIDTH - 12, top + 41, ruleColour);
-        drawCenteredString(fontRenderer, body, left + PANEL_WIDTH / 2, top + 88, MUTED);
-        drawCenteredString(fontRenderer, "This page will be added later.",
-                left + PANEL_WIDTH / 2, top + 102, DIM);
     }
 
     private void drawTitle(String rightLabel) {
@@ -599,7 +676,7 @@ public class GuiEmancipationGrill extends GuiScreen {
         } else if (page == 1) {
             hint = "Click a setting to change it - ESC to close";
         } else {
-            hint = "Redstone outputs are reserved for a later pass";
+            hint = "Click a signal to enable it - pulses linked gates";
         }
         drawCenteredString(fontRenderer, hint, left + PANEL_WIDTH / 2, top + 164, colour);
         drawCenteredString(fontRenderer, (page + 1) + "/" + PAGE_COUNT,
