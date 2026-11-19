@@ -86,7 +86,7 @@ public class GuiNotepad extends GuiScreen {
     private int ticks;
     private boolean requested;
     private boolean darkMode;
-    private int darkModeHold;
+    private boolean toggleSent;
     private final GuiKeyRepeat repeat = new GuiKeyRepeat();
     private boolean repeating;
 
@@ -155,6 +155,13 @@ public class GuiNotepad extends GuiScreen {
         }
         sidebarWidth = Math.max(110, Math.min(170, guiWidth * 34 / 100));
         updateLayout();
+        if (!passive && mc.world != null) {
+            TileEntityMonitorDesk desk = TileEntityMonitorDesk.at(mc.world, origin);
+            if (desk != null) {
+                darkMode = desk.isNotepadDarkMode();
+                applyPalette();
+            }
+        }
         if (!passive && !requested) {
             requested = true;
             send(MessageNotepadAction.LIST, -1, "");
@@ -230,9 +237,7 @@ public class GuiNotepad extends GuiScreen {
         super.updateScreen();
         ticks++;
         if (passive) return;
-        if (darkModeHold > 0) {
-            darkModeHold--;
-        } else if (mc.world != null) {
+        if (mc.world != null) {
             TileEntityMonitorDesk desk = TileEntityMonitorDesk.at(mc.world, origin);
             if (desk != null) {
                 boolean current = desk.isNotepadDarkMode();
@@ -960,6 +965,15 @@ public class GuiNotepad extends GuiScreen {
     }
 
     private void toggleDarkMode() {
+        if (passive) return;
+        boolean next = !darkMode;
+        darkMode = next;
+        toggleSent = true;
+        applyPalette();
+        if (mc.world != null) {
+            TileEntityMonitorDesk desk = TileEntityMonitorDesk.at(mc.world, origin);
+            if (desk != null) desk.setNotepadDarkModeClient(next);
+        }
         send(MessageNotepadAction.DARK_MODE, -1, "");
     }
 
@@ -967,9 +981,14 @@ public class GuiNotepad extends GuiScreen {
     public void handleData(BlockPos pos, int focusId, List<NotepadDocument> newDocuments,
                            boolean darkMode) {
         if (pos == null || !pos.equals(origin)) return;
-        this.darkMode = darkMode;
-        this.darkModeHold = 10;
-        applyPalette();
+        if (loading && !toggleSent) {
+            this.darkMode = darkMode;
+            applyPalette();
+            if (mc.world != null) {
+                TileEntityMonitorDesk desk = TileEntityMonitorDesk.at(mc.world, origin);
+                if (desk != null) desk.setNotepadDarkModeClient(darkMode);
+            }
+        }
         documents = new ArrayList<>(newDocuments == null
                 ? Collections.emptyList() : newDocuments);
         loading = false;

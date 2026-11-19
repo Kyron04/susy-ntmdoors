@@ -242,7 +242,8 @@ for editing.
   menu. Up to 16 documents of 8192 characters each are stored in the desk's world NBT and
   shared by everyone using that terminal. All Notepad text is drawn without the vanilla font drop
   shadow. The title bar has a `DARK` / `LIGHT` toggle; the theme is stored on the desk, shared by
-  everyone using that terminal, and mirrored on the physical monitor screen. Only the paper page
+  everyone using that terminal, and mirrored on the physical monitor screen. The toggle applies
+  immediately and the desk sync confirms it. Only the paper page
   changes: the dark field is `#3E434B` with white text, while the casing, sidebar and buttons keep
   their existing colours.
 * Terminal Backup: opens a task page with `Initiate backup` and `Restore backup`. `Initiate backup`

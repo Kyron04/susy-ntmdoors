@@ -984,6 +984,14 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
         return true;
     }
 
+    /** Client side: applies the toggle immediately; the server packet remains authoritative. */
+    public void setNotepadDarkModeClient(boolean darkMode) {
+        if (world == null || !world.isRemote) return;
+        if (notepadDarkMode == darkMode) return;
+        notepadDarkMode = darkMode;
+        displayRevision++;
+    }
+
     @Nullable
     public NotepadDocument getNotepadDocument(int id) {
         for (NotepadDocument document : notepadDocuments) {

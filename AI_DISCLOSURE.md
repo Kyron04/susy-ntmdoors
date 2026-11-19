@@ -53,7 +53,7 @@ AI assistance was used for:
 - the Vault-Tec closing-scrape cue timing and the Documents Folder full-height page-edge strip;
 - the Documents Folder UV corner fill that keeps the 3D front face opaque when held;
 - the Documents Folder and monitor Notepad dark-mode toggles, including the item-NBT and
-  desk-saved themes and the physical-screen mirror;
+  desk-saved themes, the immediate client-side handoff and the physical-screen mirror;
 - final housekeeping: asset reference validation, stale comment and documentation cleanup,
   BOM removal, item-icon correction and release docs;
 - this disclosure and the concrete/HL Blocks section of `README.md`.

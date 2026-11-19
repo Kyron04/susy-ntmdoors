@@ -1,5 +1,10 @@
-HBM DOORS: 1.0.78
+HBM DOORS: 1.0.79
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.79
+FIX
+- Fixed the monitor Notepad dark mode reverting to light after a moment. The client applies the
+  toggle immediately and the desk sync confirms it, so the page and physical screen stay dark.
 
 1.0.78
 FEATURE
