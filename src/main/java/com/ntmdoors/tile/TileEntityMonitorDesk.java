@@ -143,6 +143,7 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
     private final List<NotepadDocument> notepadDocuments = new ArrayList<>();
     private int nextNetId;
     private int nextNotepadId;
+    private boolean notepadDarkMode;
     private int displayRevision;
 
     // Two terminal-key slots used by the backup console. They are separate from the Security nets
@@ -398,6 +399,7 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
         }
         snapshot.setTag("Notepad", noteList);
         snapshot.setInteger("NextNotepadId", nextNotepadId);
+        snapshot.setBoolean("NotepadDarkMode", notepadDarkMode);
 
         // Screen states include the per-screen wallpapers and the last stable terminal page.
         writeScreenStates(snapshot, false);
@@ -969,6 +971,19 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
         return Collections.unmodifiableList(notepadDocuments);
     }
 
+    /** Whether the shared Notepad page uses the dark writing field. */
+    public boolean isNotepadDarkMode() {
+        return notepadDarkMode;
+    }
+
+    /** Server side: flips the shared Notepad theme and syncs it to clients. */
+    public boolean toggleNotepadDarkMode() {
+        if (world != null && world.isRemote) return false;
+        notepadDarkMode = !notepadDarkMode;
+        sync();
+        return true;
+    }
+
     @Nullable
     public NotepadDocument getNotepadDocument(int id) {
         for (NotepadDocument document : notepadDocuments) {
@@ -1204,6 +1219,7 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
         }
         tag.setTag("Notepad", notepad);
         tag.setInteger("NextNotepadId", nextNotepadId);
+        tag.setBoolean("NotepadDarkMode", notepadDarkMode);
         tag.setInteger("NextNetId", nextNetId);
         writeScreenStates(tag, false);
         writeBackupState(tag);
@@ -1272,6 +1288,9 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
             for (NotepadDocument document : notepadDocuments) {
                 if (document.id >= nextNotepadId) nextNotepadId = document.id + 1;
             }
+        }
+        if (tag.hasKey("NotepadDarkMode")) {
+            notepadDarkMode = tag.getBoolean("NotepadDarkMode");
         }
         displayNets.clear();
         if (tag.hasKey("DisplayNets", Constants.NBT.TAG_LIST)) {
@@ -1422,6 +1441,7 @@ public class TileEntityMonitorDesk extends TileEntitySynced implements ITickable
         tag.setInteger("BackupSuccessTicks", successTicks);
         tag.setString("BackupNotice", backupNotice);
         tag.setInteger("BackupNoticeTicks", backupNoticeTicks);
+        tag.setBoolean("NotepadDarkMode", notepadDarkMode);
         writeDisplaySync(tag);
         return tag;
     }

@@ -565,6 +565,7 @@ public class RenderMonitorDesk extends TileEntitySpecialRenderer<TileEntityMonit
             NOTEPAD_REVISIONS.put(te.getPos(), revisions);
         }
         int revision = te.getDisplayRevision();
+        gui.setDisplayDarkMode(te.isNotepadDarkMode());
         if (created || revisions[screenIndex] != revision) {
             gui.setDisplayData(te.getDisplayNotepadDocuments(),
                     te.getScreenNotepadDocId(screenIndex));

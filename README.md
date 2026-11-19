@@ -241,7 +241,10 @@ for editing.
   screen; a saved wallpaper steps aside while the notebook is shown and returns on the task
   menu. Up to 16 documents of 8192 characters each are stored in the desk's world NBT and
   shared by everyone using that terminal. All Notepad text is drawn without the vanilla font drop
-  shadow.
+  shadow. The title bar has a `DARK` / `LIGHT` toggle; the theme is stored on the desk, shared by
+  everyone using that terminal, and mirrored on the physical monitor screen. Only the paper page
+  changes: the dark field is `#3E434B` with white text, while the casing, sidebar and buttons keep
+  their existing colours.
 * Terminal Backup: opens a task page with `Initiate backup` and `Restore backup`. `Initiate backup`
   opens a programmer-style console: put a Terminal Backup Key in the left slot, press `Upload` to
   write every Security net, device binding, notepad document, wallpaper, saved screen page and the
@@ -462,7 +465,10 @@ are recipe-free.
   layers, 3 px deep in total, with only the middle layer's page edge protruding. Right-clicking opens
   a twenty-page editor styled as an open manila folder in the item's own tan, grey and dark red
   palette, with the writing sheet in white behind a thin ink border. The right page edge runs the
-  full height of the folder, and the 3D front face is fully opaque. There is no signing step:
+  full height of the folder, and the 3D front face is fully opaque. The top-right `DARK` / `LIGHT`
+  button switches the writing field to `#3E434B` with white text and recolours the folder body,
+  tabs and accents to a complementary dark palette; the choice is stored in the item's NBT and
+  reopens with the folder. There is no signing step:
   Escape or the Close button both save, the pages live in the
   stack's NBT, and Enter starts a new line (press it twice for a paragraph gap). Long lines word-wrap
   inside the sheet, the bottom index tabs jump straight to any page, the top-right folder name can be

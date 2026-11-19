@@ -39,6 +39,7 @@ public class ItemDocumentsFolder extends Item {
 
     private static final String TAG_PAGES = "pages";
     private static final String TAG_PAGE = "lastPage";
+    private static final String TAG_DARK_MODE = "darkMode";
 
     public ItemDocumentsFolder() {
         setRegistryName(NTMDoors.MODID, "documents_folder");
@@ -135,6 +136,34 @@ public class ItemDocumentsFolder extends Item {
             if (!page.isEmpty()) count++;
         }
         return count;
+    }
+
+    // ------------------------------------------------------------ dark mode
+
+    /** Whether this folder should open in dark mode. */
+    public static boolean isDarkMode(ItemStack stack) {
+        return !stack.isEmpty() && stack.hasTagCompound()
+                && stack.getTagCompound().getBoolean(TAG_DARK_MODE);
+    }
+
+    /** Stores the dark-mode preference; false removes the tag to keep empty folders clean. */
+    public static void setDarkMode(ItemStack stack, boolean darkMode) {
+        if (stack.isEmpty()) return;
+
+        NBTTagCompound tag = stack.getTagCompound();
+        if (!darkMode) {
+            if (tag != null) {
+                tag.removeTag(TAG_DARK_MODE);
+                if (tag.isEmpty()) stack.setTagCompound(null);
+            }
+            return;
+        }
+
+        if (tag == null) {
+            tag = new NBTTagCompound();
+            stack.setTagCompound(tag);
+        }
+        tag.setBoolean(TAG_DARK_MODE, true);
     }
 
     // ------------------------------------------------------------ page marker

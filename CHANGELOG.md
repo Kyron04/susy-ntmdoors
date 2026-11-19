@@ -1,5 +1,13 @@
-HBM DOORS: 1.0.77
+HBM DOORS: 1.0.78
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.78
+FEATURE
+- Added a dark mode toggle to the Documents Folder and the monitor Notepad.
+- The dark writing field uses #3E434B with white text. The folder also uses a complementary dark
+  palette; the Notepad casing, sidebar and buttons keep their existing colours.
+- The folder stores its theme in item NBT. The Notepad stores it on the desk, shares it with
+  everyone using that terminal, and mirrors it on the physical monitor screen.
 
 1.0.77
 CHANGES

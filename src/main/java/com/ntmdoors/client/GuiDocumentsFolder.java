@@ -68,21 +68,62 @@ public class GuiDocumentsFolder extends GuiScreen {
     private static final int BAR_Y = 192;
     private static final int BUTTON_Y = 196;
 
-    // Palette sampled from documents_folder.png: tan board, pale sheet, near-black ink, red tab.
-    private static final int FOLDER = 0xFFA8A680;
-    private static final int FOLDER_DARK = 0xFF8F8D6B;
-    private static final int FOLDER_LIGHT = 0xFFBDBB9B;
-    private static final int PAPER = 0xFFC9C6AA;
-    private static final int PAPER_LIGHT = 0xFFE0DDC0;
-    private static final int INK = 0xFF1C1C1C;
-    private static final int MUTED = 0xFF6F6D54;
-    private static final int RED = 0xFF852E2E;
-    private static final int RED_LIGHT = 0xFF914040;
-    private static final int GREY = 0xFFABABAB;
-    private static final int GREY_DARK = 0xFF969696;
+    // Light palette sampled from documents_folder.png: tan board, pale sheet, near-black ink, red tab.
+    private int FOLDER = 0xFFA8A680;
+    private int FOLDER_DARK = 0xFF8F8D6B;
+    private int FOLDER_LIGHT = 0xFFBDBB9B;
+    private int FOLDER_EDGE = 0xFF7E7C5E;
+    private int PAPER = 0xFFC9C6AA;
+    private int PAPER_LIGHT = 0xFFE0DDC0;
+    private int PAPER_EDGE_LIGHT = 0xFFD4D1B5;
+    private int PAPER_EDGE_DARK = 0xFFB8B598;
+    private int INK = 0xFF1C1C1C;
+    private int MUTED = 0xFF6F6D54;
+    private int RED = 0xFF852E2E;
+    private int RED_LIGHT = 0xFF914040;
+    private int GREY = 0xFFABABAB;
+    private int GREY_DARK = 0xFF969696;
+    private int PLACEHOLDER = 0xFF8A8A8A;
+    private int NAME_PLACEHOLDER = 0xFF8F8D6B;
+    private int SELECTION = 0xFFB8B598;
+    private int TAB_BORDER = 0xFF6F6D54;
+    private int TAB_TEXT = 0xFFF0E8CC;
+    private int BUTTON_BORDER = 0xFF6F6D54;
+    private int BOX_BG = 0xFFFFFFFF;
+    private int BOX_BORDER = 0xFF1C1C1C;
+
+    // Dark palette: warm near-black folder, muted red accents and a blue-grey writing field.
+    private static final int DARK_FOLDER = 0xFF2B2A26;
+    private static final int DARK_FOLDER_DARK = 0xFF1E1D1A;
+    private static final int DARK_FOLDER_LIGHT = 0xFF45433D;
+    private static final int DARK_FOLDER_EDGE = 0xFF1E1D1A;
+    private static final int DARK_PAPER = 0xFF3A3832;
+    private static final int DARK_PAPER_LIGHT = 0xFF45433D;
+    private static final int DARK_PAPER_EDGE_LIGHT = 0xFF4A4840;
+    private static final int DARK_PAPER_EDGE_DARK = 0xFF2E2D2A;
+    private static final int DARK_INK = 0xFFF2F2F2;
+    private static final int DARK_MUTED = 0xFFB8B3A7;
+    private static final int DARK_RED = 0xFFB05A5A;
+    private static final int DARK_RED_LIGHT = 0xFFC46D6D;
+    private static final int DARK_GREY = 0xFF55524A;
+    private static final int DARK_GREY_DARK = 0xFF3E3B35;
+    private static final int DARK_PLACEHOLDER = 0xFFB8B3A7;
+    private static final int DARK_NAME_PLACEHOLDER = 0xFFB8B3A7;
+    private static final int DARK_SELECTION = 0xFF5A5850;
+    private static final int DARK_TAB_BORDER = 0xFF55524A;
+    private static final int DARK_TAB_TEXT = 0xFFF2F2F2;
+    private static final int DARK_BUTTON_BORDER = 0xFF55524A;
+    private static final int DARK_BOX_BG = 0xFF3E434B;
+    private static final int DARK_BOX_BORDER = 0xFF6E737B;
+
+    private static final int TOGGLE_W = 48;
+    private static final int TOGGLE_H = 12;
+    private static final int TOGGLE_X = PANEL_WIDTH - TOGGLE_W - 4;
+    private static final int TOGGLE_Y = 2;
 
     private final EnumHand hand;
     private final String[] pages = new String[ItemDocumentsFolder.PAGE_COUNT];
+    private boolean darkMode;
 
     private String folderName = "";
     private boolean renaming;
@@ -112,6 +153,8 @@ public class GuiDocumentsFolder extends GuiScreen {
         this.folderName = ItemDocumentsFolder.getCustomName(stack);
         this.page = ItemDocumentsFolder.getLastPage(stack);
         this.caret = pages[page].length();
+        this.darkMode = ItemDocumentsFolder.isDarkMode(stack);
+        applyPalette();
     }
 
     @Override
@@ -173,6 +216,65 @@ public class GuiDocumentsFolder extends GuiScreen {
         return (int) Math.floor((screenY - screenTop) / guiScale);
     }
 
+    // ------------------------------------------------------------ palette
+
+    private void applyPalette() {
+        if (darkMode) {
+            FOLDER = DARK_FOLDER;
+            FOLDER_DARK = DARK_FOLDER_DARK;
+            FOLDER_LIGHT = DARK_FOLDER_LIGHT;
+            FOLDER_EDGE = DARK_FOLDER_EDGE;
+            PAPER = DARK_PAPER;
+            PAPER_LIGHT = DARK_PAPER_LIGHT;
+            PAPER_EDGE_LIGHT = DARK_PAPER_EDGE_LIGHT;
+            PAPER_EDGE_DARK = DARK_PAPER_EDGE_DARK;
+            INK = DARK_INK;
+            MUTED = DARK_MUTED;
+            RED = DARK_RED;
+            RED_LIGHT = DARK_RED_LIGHT;
+            GREY = DARK_GREY;
+            GREY_DARK = DARK_GREY_DARK;
+            PLACEHOLDER = DARK_PLACEHOLDER;
+            NAME_PLACEHOLDER = DARK_NAME_PLACEHOLDER;
+            SELECTION = DARK_SELECTION;
+            TAB_BORDER = DARK_TAB_BORDER;
+            TAB_TEXT = DARK_TAB_TEXT;
+            BUTTON_BORDER = DARK_BUTTON_BORDER;
+            BOX_BG = DARK_BOX_BG;
+            BOX_BORDER = DARK_BOX_BORDER;
+        } else {
+            FOLDER = 0xFFA8A680;
+            FOLDER_DARK = 0xFF8F8D6B;
+            FOLDER_LIGHT = 0xFFBDBB9B;
+            FOLDER_EDGE = 0xFF7E7C5E;
+            PAPER = 0xFFC9C6AA;
+            PAPER_LIGHT = 0xFFE0DDC0;
+            PAPER_EDGE_LIGHT = 0xFFD4D1B5;
+            PAPER_EDGE_DARK = 0xFFB8B598;
+            INK = 0xFF1C1C1C;
+            MUTED = 0xFF6F6D54;
+            RED = 0xFF852E2E;
+            RED_LIGHT = 0xFF914040;
+            GREY = 0xFFABABAB;
+            GREY_DARK = 0xFF969696;
+            PLACEHOLDER = 0xFF8A8A8A;
+            NAME_PLACEHOLDER = 0xFF8F8D6B;
+            SELECTION = 0xFFB8B598;
+            TAB_BORDER = 0xFF6F6D54;
+            TAB_TEXT = 0xFFF0E8CC;
+            BUTTON_BORDER = 0xFF6F6D54;
+            BOX_BG = 0xFFFFFFFF;
+            BOX_BORDER = 0xFF1C1C1C;
+        }
+    }
+
+    private void toggleDarkMode() {
+        darkMode = !darkMode;
+        applyPalette();
+        if (renaming) commitRename();
+        save();
+    }
+
     // ------------------------------------------------------------ saving
 
     /** Writes the pages, name and page marker locally, then sends the same data to the server. */
@@ -189,9 +291,10 @@ public class GuiDocumentsFolder extends GuiScreen {
         ItemDocumentsFolder.setCustomName(stack, folderName);
         ItemDocumentsFolder.setPages(stack, clean);
         ItemDocumentsFolder.setLastPage(stack, storedPage);
+        ItemDocumentsFolder.setDarkMode(stack, darkMode);
         if (mc.getConnection() != null) {
             ModNetwork.INSTANCE.sendToServer(
-                    new MessageDocumentsFolderPages(hand, storedPage, folderName, clean));
+                    new MessageDocumentsFolderPages(hand, storedPage, folderName, clean, darkMode));
         }
     }
 
@@ -209,6 +312,7 @@ public class GuiDocumentsFolder extends GuiScreen {
         GlStateManager.color(1F, 1F, 1F, 1F);
 
         drawFolder();
+        drawDarkModeToggle(localX, localY);
         drawPaper();
         drawPageTabs(localX, localY);
         drawBottomBar(localX, localY);
@@ -234,13 +338,18 @@ public class GuiDocumentsFolder extends GuiScreen {
         drawRect(left + 9, top + 1, left + 97, top + 15, RED);
         drawRect(left + 10, top + 2, left + 96, top + 3, RED_LIGHT);
         GuiContainerStyle.drawFlatCenteredString(fontRenderer, "DOCUMENTS", left + 53, top + 4,
-                0xFFF0E8CC);
+                TAB_TEXT);
 
         drawRect(left, top + 14, left + PANEL_WIDTH, top + PANEL_HEIGHT, FOLDER_DARK);
         drawRect(left + 1, top + 15, left + PANEL_WIDTH - 1, top + PANEL_HEIGHT - 1, FOLDER);
         drawRect(left + 1, top + 15, left + PANEL_WIDTH - 1, top + 16, FOLDER_LIGHT);
         drawRect(left + 1, top + PANEL_HEIGHT - 2, left + PANEL_WIDTH - 1, top + PANEL_HEIGHT - 1,
-                0xFF7E7C5E);
+                FOLDER_EDGE);
+    }
+
+    private void drawDarkModeToggle(int mouseX, int mouseY) {
+        drawButton(left + TOGGLE_X, top + TOGGLE_Y, TOGGLE_W, TOGGLE_H,
+                darkMode ? "LIGHT" : "DARK", mouseX, mouseY);
     }
 
     private void drawPaper() {
@@ -259,9 +368,9 @@ public class GuiDocumentsFolder extends GuiScreen {
 
         drawRect(paperLeft, paperTop, paperRight, paperBottom, PAPER);
         drawRect(paperLeft, paperTop, paperRight, paperTop + 1, PAPER_LIGHT);
-        drawRect(paperLeft, paperTop, paperLeft + 1, paperBottom, 0xFFD4D1B5);
-        drawRect(paperRight - 1, paperTop, paperRight, paperBottom, 0xFFB8B598);
-        drawRect(paperLeft, paperBottom - 1, paperRight, paperBottom, 0xFFB8B598);
+        drawRect(paperLeft, paperTop, paperLeft + 1, paperBottom, PAPER_EDGE_LIGHT);
+        drawRect(paperRight - 1, paperTop, paperRight, paperBottom, PAPER_EDGE_DARK);
+        drawRect(paperLeft, paperBottom - 1, paperRight, paperBottom, PAPER_EDGE_DARK);
     }
 
     private void drawHeader(int mouseX, int mouseY) {
@@ -273,11 +382,12 @@ public class GuiDocumentsFolder extends GuiScreen {
             drawRect(x, nameY - 1, x + width, nameY + 10, PAPER_LIGHT);
             drawRect(x, nameY + 10, x + width, nameY + 11, RED);
             if (renameText.isEmpty()) {
-                GuiContainerStyle.drawFlatString(fontRenderer, defaultName(), x + 2, nameY + 2, 0xFF8F8D6B);
+                GuiContainerStyle.drawFlatString(fontRenderer, defaultName(), x + 2, nameY + 2,
+                        NAME_PLACEHOLDER);
             } else {
                 if (renameSelectAll) {
                     drawRect(x + 2, nameY + 1, x + 2 + fontRenderer.getStringWidth(renameText),
-                            nameY + 9, 0xFFB8B598);
+                            nameY + 9, SELECTION);
                 }
                 GuiContainerStyle.drawFlatString(fontRenderer, renameText, x + 2, nameY + 2, INK);
             }
@@ -317,7 +427,7 @@ public class GuiDocumentsFolder extends GuiScreen {
         String text = pages[page];
         if (text.isEmpty()) {
             GuiContainerStyle.drawFlatString(fontRenderer, "Click here and write",
-                    left + TEXT_X, top + TEXT_Y, 0xFF8A8A8A);
+                    left + TEXT_X, top + TEXT_Y, PLACEHOLDER);
             return;
         }
 
@@ -336,11 +446,11 @@ public class GuiDocumentsFolder extends GuiScreen {
         int right = x + BOX_W;
         int bottom = y + BOX_H;
 
-        drawRect(x, y, right, bottom, 0xFFFFFFFF);
-        drawRect(x, y, right, y + 1, INK);
-        drawRect(x, bottom - 1, right, bottom, INK);
-        drawRect(x, y, x + 1, bottom, INK);
-        drawRect(right - 1, y, right, bottom, INK);
+        drawRect(x, y, right, bottom, BOX_BG);
+        drawRect(x, y, right, y + 1, BOX_BORDER);
+        drawRect(x, bottom - 1, right, bottom, BOX_BORDER);
+        drawRect(x, y, x + 1, bottom, BOX_BORDER);
+        drawRect(right - 1, y, right, bottom, BOX_BORDER);
     }
 
     private void drawCaret() {
@@ -359,7 +469,7 @@ public class GuiDocumentsFolder extends GuiScreen {
             boolean hovered = mouseX >= x && mouseX < x + TAB_W && mouseY >= y && mouseY < y + TAB_H;
             boolean written = !pages[i].isEmpty();
 
-            drawRect(x, y, x + TAB_W, y + TAB_H, 0xFF6F6D54);
+            drawRect(x, y, x + TAB_W, y + TAB_H, TAB_BORDER);
             int fill = current ? PAPER : hovered ? FOLDER_LIGHT : written ? FOLDER_DARK : FOLDER;
             drawRect(x + 1, y + 1, x + TAB_W - 1, y + TAB_H - 1, fill);
             if (current) {
@@ -372,7 +482,7 @@ public class GuiDocumentsFolder extends GuiScreen {
             GlStateManager.scale(0.7F, 0.7F, 1F);
             int width = fontRenderer.getStringWidth(label);
             GuiContainerStyle.drawFlatString(fontRenderer, label, -width / 2, 0,
-                    current ? INK : written ? 0xFFF0E8CC : MUTED);
+                    current ? INK : written ? TAB_TEXT : MUTED);
             GlStateManager.popMatrix();
         }
     }
@@ -393,7 +503,7 @@ public class GuiDocumentsFolder extends GuiScreen {
 
     private void drawButton(int x, int y, int w, int h, String label, int mouseX, int mouseY) {
         boolean hovered = mouseX >= x && mouseX < x + w && mouseY >= y && mouseY < y + h;
-        drawRect(x, y, x + w, y + h, 0xFF6F6D54);
+        drawRect(x, y, x + w, y + h, BUTTON_BORDER);
         drawRect(x + 1, y + 1, x + w - 1, y + h - 1, hovered ? PAPER : FOLDER);
         drawRect(x + 1, y + 1, x + w - 1, y + 2, hovered ? PAPER_LIGHT : FOLDER_LIGHT);
         GuiContainerStyle.drawFlatCenteredString(fontRenderer, label, x + w / 2, y + (h - 8) / 2, INK);
@@ -407,6 +517,10 @@ public class GuiDocumentsFolder extends GuiScreen {
         int localX = toLocalX(mouseX);
         int localY = toLocalY(mouseY);
         if (mouseButton == 0) {
+            if (hit(localX, localY, left + TOGGLE_X, top + TOGGLE_Y, TOGGLE_W, TOGGLE_H)) {
+                toggleDarkMode();
+                return;
+            }
             if (inName(localX, localY)) {
                 if (!renaming) {
                     startRename();

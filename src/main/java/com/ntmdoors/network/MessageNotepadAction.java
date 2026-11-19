@@ -12,8 +12,8 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 /**
- * Client to server: list, create, save, rename or delete the shared notes stored on a monitor
- * desk. The server always answers with the complete current notepad state.
+ * Client to server: list, create, save, rename, delete or theme the shared notes stored on a
+ * monitor desk. The server always answers with the complete current notepad state.
  */
 public class MessageNotepadAction implements IMessage {
 
@@ -22,6 +22,7 @@ public class MessageNotepadAction implements IMessage {
     public static final int SAVE = 2;
     public static final int RENAME = 3;
     public static final int DELETE = 4;
+    public static final int DARK_MODE = 5;
 
     private BlockPos deskPos;
     private int action;
@@ -91,12 +92,16 @@ public class MessageNotepadAction implements IMessage {
                 case DELETE:
                     desk.deleteNotepadDocument(message.documentId);
                     break;
+                case DARK_MODE:
+                    desk.toggleNotepadDarkMode();
+                    break;
                 case LIST:
                 default:
                     break;
             }
             ModNetwork.INSTANCE.sendTo(new MessageNotepadData(
-                    desk.getPos(), focusId, desk.getNotepadDocuments()), player);
+                    desk.getPos(), focusId, desk.getNotepadDocuments(),
+                    desk.isNotepadDarkMode()), player);
         }
     }
 }

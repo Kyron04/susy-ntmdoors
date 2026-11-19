@@ -25,15 +25,18 @@ public class MessageDocumentsFolderPages implements IMessage {
     private int page;
     private String name = "";
     private List<String> pages = new ArrayList<>();
+    private boolean darkMode;
 
     public MessageDocumentsFolderPages() {
     }
 
-    public MessageDocumentsFolderPages(EnumHand hand, int page, String name, List<String> pages) {
+    public MessageDocumentsFolderPages(EnumHand hand, int page, String name, List<String> pages,
+                                       boolean darkMode) {
         this.hand = hand == EnumHand.OFF_HAND ? 1 : 0;
         this.page = page;
         this.name = name == null ? "" : name;
         this.pages = pages == null ? new ArrayList<>() : pages;
+        this.darkMode = darkMode;
     }
 
     @Override
@@ -46,6 +49,7 @@ public class MessageDocumentsFolderPages implements IMessage {
         for (int i = 0; i < count; i++) {
             pages.add(ByteBufUtils.readUTF8String(buf));
         }
+        darkMode = buf.readBoolean();
     }
 
     @Override
@@ -59,6 +63,7 @@ public class MessageDocumentsFolderPages implements IMessage {
             String pageText = pages.get(i);
             ByteBufUtils.writeUTF8String(buf, pageText == null ? "" : pageText);
         }
+        buf.writeBoolean(darkMode);
     }
 
     public static class Handler implements IMessageHandler<MessageDocumentsFolderPages, IMessage> {
@@ -79,6 +84,7 @@ public class MessageDocumentsFolderPages implements IMessage {
             ItemDocumentsFolder.setPages(stack, pages);
             ItemDocumentsFolder.setCustomName(stack, message.name);
             ItemDocumentsFolder.setLastPage(stack, pages.isEmpty() ? 0 : message.page);
+            ItemDocumentsFolder.setDarkMode(stack, message.darkMode);
 
             HeldItems.sync(player);
         }

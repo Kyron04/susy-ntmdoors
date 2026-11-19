@@ -149,7 +149,7 @@ public class CommonProxy {
 
     /** Client only: route the shared notepad state into the open Notepad screen. */
     public void handleNotepadData(BlockPos pos, int focusId,
-                                  List<NotepadDocument> documents) {
+                                  List<NotepadDocument> documents, boolean darkMode) {
     }
 
     /** Client only: route the Security net landing rows into the open terminal. */

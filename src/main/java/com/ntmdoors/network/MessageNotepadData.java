@@ -18,17 +18,20 @@ public class MessageNotepadData implements IMessage {
     private BlockPos deskPos;
     private int focusId = -1;
     private List<NotepadDocument> documents = new ArrayList<>();
+    private boolean darkMode;
 
     public MessageNotepadData() {
     }
 
-    public MessageNotepadData(BlockPos deskPos, int focusId, List<NotepadDocument> documents) {
+    public MessageNotepadData(BlockPos deskPos, int focusId, List<NotepadDocument> documents,
+                              boolean darkMode) {
         this.deskPos = deskPos;
         this.focusId = focusId;
         for (NotepadDocument document : documents) {
             this.documents.add(new NotepadDocument(
                     document.id, document.getName(), document.getText()));
         }
+        this.darkMode = darkMode;
     }
 
     @Override
@@ -43,6 +46,7 @@ public class MessageNotepadData implements IMessage {
             String text = ByteBufUtils.readUTF8String(buf);
             documents.add(new NotepadDocument(id, name, text));
         }
+        darkMode = buf.readBoolean();
     }
 
     @Override
@@ -57,6 +61,7 @@ public class MessageNotepadData implements IMessage {
             ByteBufUtils.writeUTF8String(buf, document.getName());
             ByteBufUtils.writeUTF8String(buf, document.getText());
         }
+        buf.writeBoolean(darkMode);
     }
 
     public static class Handler implements IMessageHandler<MessageNotepadData, IMessage> {
@@ -65,7 +70,7 @@ public class MessageNotepadData implements IMessage {
         public IMessage onMessage(MessageNotepadData message, MessageContext ctx) {
             if (message.deskPos != null) {
                 NTMDoors.proxy.handleNotepadData(message.deskPos, message.focusId,
-                        message.documents);
+                        message.documents, message.darkMode);
             }
             return null;
         }

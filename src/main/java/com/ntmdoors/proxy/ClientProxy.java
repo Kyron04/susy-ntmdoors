@@ -183,11 +183,11 @@ public class ClientProxy extends CommonProxy {
 
     @Override
     public void handleNotepadData(BlockPos pos, int focusId,
-                                  List<NotepadDocument> documents) {
+                                  List<NotepadDocument> documents, boolean darkMode) {
         Minecraft mc = Minecraft.getMinecraft();
         mc.addScheduledTask(() -> {
             if (mc.currentScreen instanceof GuiNotepad) {
-                ((GuiNotepad) mc.currentScreen).handleData(pos, focusId, documents);
+                ((GuiNotepad) mc.currentScreen).handleData(pos, focusId, documents, darkMode);
             }
         });
     }

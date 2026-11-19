@@ -5,6 +5,7 @@ import com.ntmdoors.monitor.NotepadDocument;
 import com.ntmdoors.network.MessageMonitorDisplay;
 import com.ntmdoors.network.MessageNotepadAction;
 import com.ntmdoors.network.ModNetwork;
+import com.ntmdoors.tile.TileEntityMonitorDesk;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.util.math.BlockPos;
@@ -34,10 +35,14 @@ public class GuiNotepad extends GuiScreen {
     private static final int ORANGE_DIM = 0xFF7A3D00;
     private static final int TEXT = 0xFFFFD9A8;
     private static final int MUTED = 0xFF9A6A3A;
-    private static final int PAPER = 0xFFE9E4D4;
-    private static final int PAPER_DARK = 0xFFD5CEBA;
-    private static final int INK = 0xFF242018;
-    private static final int INK_MUTED = 0xFF706653;
+    private int PAPER = 0xFFE9E4D4;
+    private int PAPER_DARK = 0xFFD5CEBA;
+    private int INK = 0xFF242018;
+    private int INK_MUTED = 0xFF706653;
+    private int PAGE_EDGE = 0xFFB7AD93;
+    private int PAGE_DIVIDER = 0xFFB7AD93;
+    private int SCROLL_TRACK = 0xFFC9C0A9;
+    private int SCROLL_THUMB = 0xFF8C7A52;
     private static final int TITLE_BG = 0xFF0C0C0C;
     private static final int CASING = 0xFF141414;
     private static final int CASING_DARK = 0xFF080808;
@@ -49,6 +54,8 @@ public class GuiNotepad extends GuiScreen {
     private static final int TITLE_HEIGHT = 24;
     private static final int CLOSE_SIZE = 12;
     private static final int EXIT_BUTTON_WIDTH = 40;
+    private static final int DARK_TOGGLE_WIDTH = 48;
+    private static final int DARK_TOGGLE_HEIGHT = 12;
     private static final int ROW_HEIGHT = 20;
     private static final int ROW_GAP = 2;
 
@@ -78,6 +85,8 @@ public class GuiNotepad extends GuiScreen {
     private int editorScroll;
     private int ticks;
     private boolean requested;
+    private boolean darkMode;
+    private int darkModeHold;
     private final GuiKeyRepeat repeat = new GuiKeyRepeat();
     private boolean repeating;
 
@@ -194,11 +203,45 @@ public class GuiNotepad extends GuiScreen {
         visibleLines = Math.max(1, (pageBottom - textY - 8) / LINE_HEIGHT);
     }
 
+    private void applyPalette() {
+        if (darkMode) {
+            PAPER = 0xFF3E434B;
+            PAPER_DARK = 0xFF2E3239;
+            INK = 0xFFF2F2F2;
+            INK_MUTED = 0xFFB8BEC7;
+            PAGE_EDGE = 0xFF4A4F57;
+            PAGE_DIVIDER = 0xFF5A6069;
+            SCROLL_TRACK = 0xFF2E3239;
+            SCROLL_THUMB = 0xFF6E7681;
+        } else {
+            PAPER = 0xFFE9E4D4;
+            PAPER_DARK = 0xFFD5CEBA;
+            INK = 0xFF242018;
+            INK_MUTED = 0xFF706653;
+            PAGE_EDGE = 0xFFB7AD93;
+            PAGE_DIVIDER = 0xFFB7AD93;
+            SCROLL_TRACK = 0xFFC9C0A9;
+            SCROLL_THUMB = 0xFF8C7A52;
+        }
+    }
+
     @Override
     public void updateScreen() {
         super.updateScreen();
         ticks++;
         if (passive) return;
+        if (darkModeHold > 0) {
+            darkModeHold--;
+        } else if (mc.world != null) {
+            TileEntityMonitorDesk desk = TileEntityMonitorDesk.at(mc.world, origin);
+            if (desk != null) {
+                boolean current = desk.isNotepadDarkMode();
+                if (darkMode != current) {
+                    darkMode = current;
+                    applyPalette();
+                }
+            }
+        }
         updateRepeat();
         float target = sidebarOpen ? 1F : 0F;
         if (Math.abs(sidebarProgress - target) > 0.02F) {
@@ -228,7 +271,7 @@ public class GuiNotepad extends GuiScreen {
         NotepadDocument selected = selectedDocument();
         String status = saving ? "SAVING" : dirty ? "UNSAVED" : "READY";
         int statusRight = passive ? guiLeft + guiWidth - 12
-                : guiLeft + guiWidth - 66;
+                : guiLeft + guiWidth - 116;
         GuiContainerStyle.drawFlatString(fontRenderer, status, statusRight
                 - fontRenderer.getStringWidth(status), guiTop + 8, MUTED);
 
@@ -237,6 +280,10 @@ public class GuiNotepad extends GuiScreen {
         if (modal != Modal.NONE) drawModal(mouseX, mouseY);
 
         if (!passive) {
+            drawButton(darkMode ? "LIGHT" : "DARK", darkToggleX(), darkToggleY(),
+                    DARK_TOGGLE_WIDTH, DARK_TOGGLE_HEIGHT,
+                    isHovering(mouseX, mouseY, darkToggleX(), darkToggleY(),
+                            DARK_TOGGLE_WIDTH, DARK_TOGGLE_HEIGHT));
             drawButton("EXIT", exitButtonX(), exitButtonY(), EXIT_BUTTON_WIDTH, 12,
                     isHovering(mouseX, mouseY, exitButtonX(), exitButtonY(),
                             EXIT_BUTTON_WIDTH, 12));
@@ -350,14 +397,14 @@ public class GuiNotepad extends GuiScreen {
     private void drawPage(int mouseX, int mouseY) {
         drawRect(pageLeft, pageTop, pageRight, pageBottom, PAPER_DARK);
         drawRect(pageLeft + 2, pageTop + 2, pageRight - 2, pageBottom - 2, PAPER);
-        drawRect(pageLeft + 2, pageTop + 2, pageRight - 2, pageTop + 3, 0xFFB7AD93);
+        drawRect(pageLeft + 2, pageTop + 2, pageRight - 2, pageTop + 3, PAGE_EDGE);
 
         NotepadDocument selected = selectedDocument();
         String title = selected == null ? "No document selected" : selected.getName();
         GuiContainerStyle.drawFlatString(fontRenderer,
                 fontRenderer.trimStringToWidth(title, pageRight - pageLeft - 24),
                 pageLeft + 10, pageTop + 7, selected == null ? INK_MUTED : INK);
-        drawRect(pageLeft + 10, pageTop + 18, pageRight - 10, pageTop + 19, 0xFFB7AD93);
+        drawRect(pageLeft + 10, pageTop + 18, pageRight - 10, pageTop + 19, PAGE_DIVIDER);
 
         if (loading) {
             GuiContainerStyle.drawFlatCenteredString(fontRenderer, "Loading notes...",
@@ -385,6 +432,14 @@ public class GuiNotepad extends GuiScreen {
     }
 
     private int exitButtonY() {
+        return guiTop + 6;
+    }
+
+    private int darkToggleX() {
+        return guiLeft + guiWidth - 112;
+    }
+
+    private int darkToggleY() {
         return guiTop + 6;
     }
 
@@ -417,12 +472,12 @@ public class GuiNotepad extends GuiScreen {
         if (maxScroll > 0) {
             int barX = pageRight - 7;
             drawRect(barX, textY, barX + 2, textY + visibleLines * LINE_HEIGHT,
-                    0xFFC9C0A9);
+                    SCROLL_TRACK);
             int barHeight = Math.max(10, visibleLines * LINE_HEIGHT * visibleLines
                     / Math.max(1, lines.size()));
             int barY = textY + (visibleLines * LINE_HEIGHT - barHeight) * editorScroll
                     / Math.max(1, maxScroll);
-            drawRect(barX, barY, barX + 2, barY + barHeight, 0xFF8C7A52);
+            drawRect(barX, barY, barX + 2, barY + barHeight, SCROLL_THUMB);
         }
     }
 
@@ -483,6 +538,11 @@ public class GuiNotepad extends GuiScreen {
         if (mouseButton != 0) return;
         if (modal != Modal.NONE) {
             handleModalClick(mouseX, mouseY);
+            return;
+        }
+        if (isHovering(mouseX, mouseY, darkToggleX(), darkToggleY(),
+                DARK_TOGGLE_WIDTH, DARK_TOGGLE_HEIGHT)) {
+            toggleDarkMode();
             return;
         }
         if (isHovering(mouseX, mouseY, guiLeft + guiWidth - 16, guiTop + 6,
@@ -899,9 +959,17 @@ public class GuiNotepad extends GuiScreen {
                 origin, action, documentId, value));
     }
 
+    private void toggleDarkMode() {
+        send(MessageNotepadAction.DARK_MODE, -1, "");
+    }
+
     /** Called by the client proxy when the server sends the shared notepad state. */
-    public void handleData(BlockPos pos, int focusId, List<NotepadDocument> newDocuments) {
+    public void handleData(BlockPos pos, int focusId, List<NotepadDocument> newDocuments,
+                           boolean darkMode) {
         if (pos == null || !pos.equals(origin)) return;
+        this.darkMode = darkMode;
+        this.darkModeHold = 10;
+        applyPalette();
         documents = new ArrayList<>(newDocuments == null
                 ? Collections.emptyList() : newDocuments);
         loading = false;
@@ -1021,6 +1089,13 @@ public class GuiNotepad extends GuiScreen {
 
     public void setDisplayTicks(int ticks) {
         this.ticks = ticks;
+    }
+
+    /** Applies the desk's shared Notepad theme to a detached physical-screen page. */
+    public void setDisplayDarkMode(boolean darkMode) {
+        if (!passive || this.darkMode == darkMode) return;
+        this.darkMode = darkMode;
+        applyPalette();
     }
 
     /** Feeds the desk snapshot into the detached page shown on a physical screen. */
