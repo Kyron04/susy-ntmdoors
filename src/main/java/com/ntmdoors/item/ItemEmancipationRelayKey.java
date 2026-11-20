@@ -47,7 +47,7 @@ public class ItemEmancipationRelayKey extends Item {
         if (!(state.getBlock() instanceof BlockEmancipationGrill)) return EnumActionResult.PASS;
 
         BlockEmancipationGrill block = (BlockEmancipationGrill) state.getBlock();
-        BlockPos corePos = pos.down(block.layer().ordinal());
+        BlockPos corePos = block.corePos(pos, state);
         if (world.isRemote) {
             ModNetwork.INSTANCE.sendToServer(new MessageGrillAccess(corePos));
         }

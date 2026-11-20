@@ -112,6 +112,16 @@ public class ModContent {
             new BlockEmancipationGrill("emancipation_grill_middle", BlockEmancipationGrill.Layer.MIDDLE);
     public static final BlockEmancipationGrill EMANCIPATION_GRILL_TOP =
             new BlockEmancipationGrill("emancipation_grill_top", BlockEmancipationGrill.Layer.TOP);
+    /** 3x1x1 horizontal bar; the center cell owns the item and tile entity. */
+    public static final BlockEmancipationGrill EMANCIPATION_GRILL_HORIZONTAL_LEFT =
+            new BlockEmancipationGrill("emancipation_grill_horizontal_left",
+                    BlockEmancipationGrill.Layer.BOTTOM, BlockEmancipationGrill.Mount.HORIZONTAL);
+    public static final BlockEmancipationGrill EMANCIPATION_GRILL_HORIZONTAL =
+            new BlockEmancipationGrill("emancipation_grill_horizontal",
+                    BlockEmancipationGrill.Layer.MIDDLE, BlockEmancipationGrill.Mount.HORIZONTAL);
+    public static final BlockEmancipationGrill EMANCIPATION_GRILL_HORIZONTAL_RIGHT =
+            new BlockEmancipationGrill("emancipation_grill_horizontal_right",
+                    BlockEmancipationGrill.Layer.TOP, BlockEmancipationGrill.Mount.HORIZONTAL);
     /** Bottom row, including the core cell and the item form of the desk. */
     public static final BlockMonitorSetup MONITOR_SETUP =
             new BlockMonitorSetup("monitor_setup", BlockMonitorSetup.Layer.BOTTOM);
@@ -395,6 +405,9 @@ public class ModContent {
         e.getRegistry().register(EMANCIPATION_GRILL);
         e.getRegistry().register(EMANCIPATION_GRILL_MIDDLE);
         e.getRegistry().register(EMANCIPATION_GRILL_TOP);
+        e.getRegistry().register(EMANCIPATION_GRILL_HORIZONTAL_LEFT);
+        e.getRegistry().register(EMANCIPATION_GRILL_HORIZONTAL);
+        e.getRegistry().register(EMANCIPATION_GRILL_HORIZONTAL_RIGHT);
     }
 
     @SubscribeEvent
@@ -508,6 +521,10 @@ public class ModContent {
         // Emancipation Grill item goes last so every saved numeric item ID stays untouched.
         e.getRegistry().register(new ItemEmancipationGrill(EMANCIPATION_GRILL)
                 .setRegistryName(EMANCIPATION_GRILL.getRegistryName())
+                .setCreativeTab(NTMDoors.TAB));
+        e.getRegistry().register(new ItemEmancipationGrill(EMANCIPATION_GRILL_HORIZONTAL,
+                BlockEmancipationGrill.Mount.HORIZONTAL)
+                .setRegistryName(EMANCIPATION_GRILL_HORIZONTAL.getRegistryName())
                 .setCreativeTab(NTMDoors.TAB));
     }
 

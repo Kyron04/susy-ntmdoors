@@ -47,13 +47,15 @@ public final class EmancipationFieldRenderEvents {
             if (!grill.isPairOwner()) continue;
             if (!grill.isFieldEnabled()) continue;
             if (!grill.isDetectPlayers()) continue;
-            if (grill.getFieldMode() != TileEntityEmancipationGrill.FieldMode.SOLID) continue;
+            TileEntityEmancipationGrill.FieldMode mode = grill.getFieldMode();
+            if (mode != TileEntityEmancipationGrill.FieldMode.SOLID
+                    && mode != TileEntityEmancipationGrill.FieldMode.WALL) continue;
             if (grill.getPos().distanceSq(player.posX, player.posY, player.posZ) > 1024.0D) continue;
 
             AxisAlignedBB field = grill.getFieldBox();
             if (field == null) continue;
             if (!nearField(player, field)) continue;
-            if (grill.hasClearance(player)) continue;
+            if (mode == TileEntityEmancipationGrill.FieldMode.SOLID && grill.hasClearance(player)) continue;
             if (blockTowardsField(player, field, input)) return;
         }
     }

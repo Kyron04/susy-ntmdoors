@@ -204,11 +204,13 @@ public class RenderEmancipationField extends DeviceRenderer<TileEntityEmancipati
                 GlStateManager.DestFactor.ONE,
                 GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
+        double vRepeatScale = (box.maxY - box.minY) < 2.0D
+                ? (box.maxY - box.minY) / 3.0D : 1.0D;
         for (int layer = 0; layer < 3; layer++) {
             double u0 = pairU + time * LAYER_U_SPEED[layer];
             double u1 = u0 + alongLength / (LAYER_U_REPEAT[layer] * pairScale);
             double v0 = pairV + time * LAYER_V_SPEED[layer];
-            double v1 = v0 + LAYER_V_REPEAT[layer];
+            double v1 = v0 + LAYER_V_REPEAT[layer] * vRepeatScale;
             addPlaneQuadTex(buffer, core, spansX, planeX, planeZ, alongMin, alongMax,
                     box.minY, box.maxY, u0, u1, v0, v1,
                     LAYER_RED[layer], LAYER_GREEN[layer], LAYER_BLUE[layer], LAYER_ALPHA[layer]);

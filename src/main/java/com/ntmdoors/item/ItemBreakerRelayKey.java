@@ -133,7 +133,7 @@ public class ItemBreakerRelayKey extends Item {
         }
         if (state.getBlock() instanceof BlockEmancipationGrill) {
             BlockEmancipationGrill grill = (BlockEmancipationGrill) state.getBlock();
-            return world.getTileEntity(pos.down(grill.layer().ordinal()))
+            return world.getTileEntity(grill.corePos(pos, state))
                     instanceof TileEntityEmancipationGrill;
         }
         return world.getTileEntity(pos) instanceof TileEntitySafe;
@@ -154,7 +154,7 @@ public class ItemBreakerRelayKey extends Item {
 
         if (state.getBlock() instanceof BlockEmancipationGrill) {
             BlockEmancipationGrill grill = (BlockEmancipationGrill) state.getBlock();
-            BlockPos core = clicked.down(grill.layer().ordinal());
+            BlockPos core = grill.corePos(clicked, state);
             TileEntity te = world.getTileEntity(core);
             if (!(te instanceof TileEntityEmancipationGrill)) return null;
             return new Target(clicked, core, "Emancipation Grill", TARGET_GRILL);

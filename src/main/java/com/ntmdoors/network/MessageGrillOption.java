@@ -35,7 +35,8 @@ public class MessageGrillOption implements IMessage {
     public static final int REDSTONE_LETHAL_KILL = 16;
     public static final int REDSTONE_MATCH_USER_PASS = 17;
     public static final int REDSTONE_MATCH_USER_FAIL = 18;
-    public static final int OPTION_COUNT = 19;
+    public static final int MODE_WALL = 19;
+    public static final int OPTION_COUNT = 20;
 
     private BlockPos pos;
     private int option;
@@ -92,6 +93,9 @@ public class MessageGrillOption implements IMessage {
                     break;
                 case MODE_LETHAL:
                     grill.setFieldMode(FieldMode.LETHAL);
+                    break;
+                case MODE_WALL:
+                    grill.setFieldMode(FieldMode.WALL);
                     break;
                 case MATCH_USER:
                     grill.setMatchUser(message.value);

@@ -60,7 +60,8 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
     public enum FieldMode {
         SOLID,
         NEUTRAL,
-        LETHAL;
+        LETHAL,
+        WALL;
 
         public static FieldMode byId(int id) {
             FieldMode[] values = values();
@@ -721,6 +722,11 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
             int matchSignal = entity instanceof EntityPlayer
                     ? matchUserSignal((EntityPlayer) entity) : 0;
             present.add(id);
+            if (mode == FieldMode.WALL) {
+                // No clearance checks, no messages and no lethal effects: just push everyone back.
+                if (inside || crossing) clampEntity(entity, box);
+                continue;
+            }
             if (entity instanceof EntityPlayer && hasClearance((EntityPlayer) entity)) {
                 if (crossing) {
                     if (mode == FieldMode.SOLID) pulseRedstone(RS_SOLID_PASS);

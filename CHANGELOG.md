@@ -26,6 +26,11 @@ FEATURE
   one-tick pulse when an authorized player passes a Solid field, when an unauthorized entity is
   blocked, when a Lethal field kills a player or mob, and when a Match User check succeeds or fails.
   The five signals default to off and persist in NBT.
+- Added a horizontal Emancipation Grill variant. Its 3x1x1 bar runs left/right along the wall,
+  pairs with another horizontal bar, and shares the console, Redstone, terminal, ownership and field
+  logic. Its paired field is one block high.
+- Added Wall Mode to the grill console. It blocks detected players and mobs with no clearance checks,
+  no killing and no item erasure. Detect Players / Hostile / Neutral still decide who can be blocked.
 - The field now scans all living entities, not just players. Solid stops unauthorized mobs and
   Lethal disintegrates them; the detection toggles match the Motion Sensor's player/hostile/neutral
   categories.

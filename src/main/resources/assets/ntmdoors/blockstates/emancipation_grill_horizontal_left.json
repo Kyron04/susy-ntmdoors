@@ -1,0 +1,12 @@
+{
+  "variants": {
+  "facing=north,mirrored=false": { "model": "ntmdoors:emancipation_grill_horizontal_left" },
+  "facing=north,mirrored=true": { "model": "ntmdoors:emancipation_grill_horizontal_left" },
+  "facing=east,mirrored=false": { "model": "ntmdoors:emancipation_grill_horizontal_left", "y": 90 },
+  "facing=east,mirrored=true": { "model": "ntmdoors:emancipation_grill_horizontal_left", "y": 90 },
+  "facing=south,mirrored=false": { "model": "ntmdoors:emancipation_grill_horizontal_left", "y": 180 },
+  "facing=south,mirrored=true": { "model": "ntmdoors:emancipation_grill_horizontal_left", "y": 180 },
+  "facing=west,mirrored=false": { "model": "ntmdoors:emancipation_grill_horizontal_left", "y": 270 },
+  "facing=west,mirrored=true": { "model": "ntmdoors:emancipation_grill_horizontal_left", "y": 270 }
+  }
+}

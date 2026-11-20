@@ -157,7 +157,7 @@ public final class MonitorDevice {
         }
         if (block instanceof BlockEmancipationGrill) {
             BlockEmancipationGrill grill = (BlockEmancipationGrill) block;
-            BlockPos core = clicked.down(grill.layer().ordinal());
+            BlockPos core = grill.corePos(clicked, state);
             return world.getTileEntity(core) instanceof TileEntityEmancipationGrill
                     ? new MonitorDevice(Type.EMANCIPATION_GRILL, core, null) : null;
         }

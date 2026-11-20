@@ -24,9 +24,13 @@ wisps and bright emitter seams, rather than a solid blue wall.
   Operator Keycard to open the console. Page one assigns keys and IDs from an Operator Keycard in
   the player's inventory. Page two holds the field modes and access/destruction toggles. Page three
   controls redstone event outputs.
+- **Horizontal variant.** A second grill item places a 3x1x1 bar that runs left/right along the
+  wall. Two horizontal bars pair across an opening and create the same thin field, one block high.
+  It shares the console, ownership, Redstone links, terminal device type and detection toggles.
 - **Field modes.** Solid blocks unauthorized players and mobs; Neutral renders the field but has no
   effect; Lethal kills unauthorized players and mobs, and erases non-living entities such as dropped
-  items, projectiles, vehicles and item frames that touch the field. The field can also be enabled or
+  items, projectiles, vehicles and item frames that touch the field; Wall Mode blocks every detected
+  player and mob with no clearance, no killing and no item erasure. The field can also be enabled or
   disabled from page two. Ignore Items leaves dropped items alone in Lethal mode.
 - **Access toggles.** Match User makes biometric cards personal; Ignore Private Key and Ignore
   Biometric ID remove those credentials from the clearance check. Ignore Inventory leaves items and
@@ -49,8 +53,9 @@ wisps and bright emitter seams, rather than a solid blue wall.
   (N), Lethal kill, Match User match (Y) and Match User mismatch (N). Match User outputs only apply
   while Match User is on and Ignore Biometric ID is off. All five default to off and persist.
 - **Barrier.** In Solid mode unauthorized players and mobs are stopped at the field plane; authorized
-  players pass. Lethal mode kills instead of pushing back, and Neutral mode does neither. The thin
-  field cell remains exposed by `TileEntityEmancipationGrill#getFieldBox()`.
+  players pass. Wall Mode stops everyone detected, regardless of clearance. Lethal mode kills instead
+  of pushing back, and Neutral mode does neither. The thin field cell remains exposed by
+  `TileEntityEmancipationGrill#getFieldBox()`.
 - **Breaker and placement guard.** Breaker keys treat an owned grill like an owned security block.
   Blocks cannot be placed in the one-block doorway slice at the field line while the pair is
   active.
@@ -75,6 +80,7 @@ framebuffer and shader work.
 | `tools/render_grill_preview.ps1` | Optional software preview render. |
 | `tools/inspect_grill_model.ps1` | Checks coplanar face overlaps and UV aspect ratios. |
 | `tools/make_mod_assets.ps1` | Bakes the `.bbmodel` into the three layer models, mirrored variants, blockstates and item icon. |
+| `tools/make_horizontal_assets.ps1` | Rolls the same `.bbmodel` into the 3x1x1 horizontal left/centre/right models, blockstates and item icon. |
 | `tools/FieldTextureGenerator.java` | Generates the field, edge and spark textures. |
 
 ## Rebuilding the model assets
@@ -83,6 +89,7 @@ From this folder:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools\make_mod_assets.ps1
+powershell -ExecutionPolicy Bypass -File tools\make_horizontal_assets.ps1
 ```
 
 This writes into `..\susy-ntmdoors\src\main\resources\assets\ntmdoors`.
@@ -118,6 +125,9 @@ Outputs:
   model so both strips line up.
 - The 48-unit model is split into three 16-high layer models for Minecraft 1.12's model height
   limit. Each layer has a mirrored variant and its own blockstate.
+- The horizontal variant is the same model rolled 90 degrees around its front axis, then split into
+  three 16-wide cells. It uses the same textures and a 3x1x1 blockstate; `mirrored` only affects
+  pairing, not the horizontal model.
 
 ## Field notes
 

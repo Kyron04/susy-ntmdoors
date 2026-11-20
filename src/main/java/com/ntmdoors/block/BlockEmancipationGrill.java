@@ -31,14 +31,13 @@ import javax.annotation.Nullable;
 import java.util.Random;
 
 /**
- * One third of the 1x3x1 Emancipation Grill. The bottom block owns the tile entity and the full
- * three-block model is baked into that block; the middle and top blocks are occupancy/collision
- * cells so the column can be placed in one go and removed as one piece.
+ * One cell of an Emancipation Grill. The vertical unit is a 1x3x1 column; the horizontal unit is a
+ * 3x1x1 bar laid along the wall. The core cell owns the tile entity and the full model is split
+ * across the three cells. A vertical core is the bottom cell; a horizontal core is the centre cell.
  *
  * <p>The model is authored facing north with its back plate on the south edge. The blockstate
  * rotates it for the other three walls. The field itself is rendered by
- * {@link com.ntmdoors.client.RenderEmancipationField}; it has no collision and no fizzling logic
- * yet.</p>
+ * {@link com.ntmdoors.client.RenderEmancipationField}.</p>
  */
 public class BlockEmancipationGrill extends Block {
 
@@ -46,6 +45,12 @@ public class BlockEmancipationGrill extends Block {
         BOTTOM,
         MIDDLE,
         TOP
+    }
+
+    /** Vertical columns are 1x3x1; horizontal bars are 3x1x1 along the wall. */
+    public enum Mount {
+        VERTICAL,
+        HORIZONTAL
     }
 
     public static final PropertyDirection FACING =
@@ -59,10 +64,16 @@ public class BlockEmancipationGrill extends Block {
             new AxisAlignedBB(P - 0.5D, 0, 8 * P - 0.5D, 15 * P - 0.5D, 1, 16 * P - 0.5D);
 
     private final Layer layer;
+    private final Mount mount;
 
     public BlockEmancipationGrill(String name, Layer layer) {
+        this(name, layer, Mount.VERTICAL);
+    }
+
+    public BlockEmancipationGrill(String name, Layer layer, Mount mount) {
         super(Material.IRON);
         this.layer = layer;
+        this.mount = mount;
         setRegistryName(NTMDoors.MODID, name);
         setTranslationKey(NTMDoors.MODID + "." + name);
         setCreativeTab(NTMDoors.TAB);
@@ -78,6 +89,40 @@ public class BlockEmancipationGrill extends Block {
 
     public Layer layer() {
         return layer;
+    }
+
+    public Mount mount() {
+        return mount;
+    }
+
+    public boolean isCore() {
+        return mount == Mount.VERTICAL ? layer == Layer.BOTTOM : layer == Layer.MIDDLE;
+    }
+
+    /** The block whose item places this grill and whose tile entity owns the pair. */
+    public BlockEmancipationGrill coreBlock() {
+        return mount == Mount.VERTICAL
+                ? ModContent.EMANCIPATION_GRILL
+                : ModContent.EMANCIPATION_GRILL_HORIZONTAL;
+    }
+
+    /** Horizontal bars run along the wall, perpendicular to their facing. */
+    public static EnumFacing alongWall(EnumFacing facing) {
+        return facing.rotateY();
+    }
+
+    /** Finds the core cell from any part of this grill. */
+    public BlockPos corePos(BlockPos pos, IBlockState state) {
+        if (mount == Mount.VERTICAL) return pos.down(layer.ordinal());
+        EnumFacing along = alongWall(state.getValue(FACING));
+        int offset = layer.ordinal() - 1; // bottom=left, middle=core, top=right
+        return pos.offset(along, -offset);
+    }
+
+    /** Position of one layer relative to the core cell. */
+    public static BlockPos cellPos(BlockPos core, EnumFacing facing, Mount mount, Layer layer) {
+        if (mount == Mount.VERTICAL) return core.up(layer.ordinal());
+        return core.offset(alongWall(facing), layer.ordinal() - 1);
     }
 
     @Override
@@ -110,32 +155,33 @@ public class BlockEmancipationGrill extends Block {
 
     @Override
     public boolean hasTileEntity(IBlockState state) {
-        return layer == Layer.BOTTOM;
+        return isCore();
     }
 
     @Nullable
     @Override
     public TileEntity createTileEntity(World world, IBlockState state) {
-        return layer == Layer.BOTTOM ? new TileEntityEmancipationGrill() : null;
+        return isCore() ? new TileEntityEmancipationGrill() : null;
     }
 
     /**
-     * Breaking any cell removes the whole column. The core is derived from the broken cell's
+     * Breaking any cell removes the whole grill. The core is derived from the broken cell's
      * layer; the guard keeps the removed cells from recursively dismantling the rest.
      */
     @Override
     public void breakBlock(World world, BlockPos pos, IBlockState state) {
         if (!world.isRemote && !DISMANTLING.get()) {
-            BlockPos core = pos.down(layer.ordinal());
+            BlockPos core = corePos(pos, state);
             TileEntity te = world.getTileEntity(core);
             if (te instanceof TileEntityEmancipationGrill) {
                 ((TileEntityEmancipationGrill) te).getRedstoneBinding().clearGates();
             }
             RedstoneBinding.removeGrillLinks(world, core);
+            EnumFacing facing = state.getValue(FACING);
             DISMANTLING.set(true);
             try {
                 for (Layer l : Layer.values()) {
-                    BlockPos p = core.up(l.ordinal());
+                    BlockPos p = cellPos(core, facing, mount, l);
                     if (!p.equals(pos) && world.getBlockState(p).getBlock() instanceof BlockEmancipationGrill) {
                         world.setBlockState(p, Blocks.AIR.getDefaultState(), 2);
                     }
@@ -149,13 +195,13 @@ public class BlockEmancipationGrill extends Block {
 
     @Override
     public Item getItemDropped(IBlockState state, Random rand, int fortune) {
-        return Item.getItemFromBlock(ModContent.EMANCIPATION_GRILL);
+        return Item.getItemFromBlock(coreBlock());
     }
 
     @Override
     public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world,
                                   BlockPos pos, EntityPlayer player) {
-        return new ItemStack(ModContent.EMANCIPATION_GRILL);
+        return new ItemStack(coreBlock());
     }
 
     @Override

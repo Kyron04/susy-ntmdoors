@@ -140,7 +140,7 @@ public class ItemRedstoneRelayKey extends Item {
         IBlockState state = world.getBlockState(pos);
         if (!(state.getBlock() instanceof BlockEmancipationGrill)) return null;
         BlockEmancipationGrill grill = (BlockEmancipationGrill) state.getBlock();
-        BlockPos corePos = pos.down(grill.layer().ordinal());
+        BlockPos corePos = grill.corePos(pos, state);
         TileEntity te = world.getTileEntity(corePos);
         return te instanceof TileEntityEmancipationGrill ? (TileEntityEmancipationGrill) te : null;
     }

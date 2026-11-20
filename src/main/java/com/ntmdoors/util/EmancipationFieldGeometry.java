@@ -17,13 +17,17 @@ public final class EmancipationFieldGeometry {
 
     public static final int MAX_DISTANCE = 10;
     public static final double THICKNESS = 1.0D / 16.0D;
-    /** Total height of the three-block grill column. */
+    /** Total height of the three-block vertical grill column. */
     public static final double HEIGHT = 3.0D;
+    /** Height of the horizontal grill bar's field. */
+    public static final double HORIZONTAL_HEIGHT = 1.0D;
     /**
      * The blue emitter strip runs from 3 model pixels above the column bottom to 3 pixels below
      * the top (y 3..45 out of 48). The field must stop at those same lines.
      */
     public static final double VERTICAL_INSET = 3.0D / 16.0D;
+    /** Visual breathing room above and below a horizontal bar's one-block field. */
+    public static final double HORIZONTAL_INSET = 1.0D / 16.0D;
     private static final double EMITTER_INSET = 1.0D / 64.0D;
     /** Emitter strip centre is four model pixels from the block centre. */
     private static final int STRIP_OFFSET = 4;
@@ -39,11 +43,12 @@ public final class EmancipationFieldGeometry {
         IBlockState state = world.getBlockState(core);
         if (!(state.getBlock() instanceof BlockEmancipationGrill)) return null;
         BlockEmancipationGrill grill = (BlockEmancipationGrill) state.getBlock();
-        if (grill.layer() != BlockEmancipationGrill.Layer.BOTTOM) return null;
+        if (!grill.isCore()) return null;
 
         EnumFacing facing = state.getValue(BlockEmancipationGrill.FACING);
         if (facing.getAxis() == EnumFacing.Axis.Y) return null;
         boolean mirrored = state.getValue(BlockEmancipationGrill.MIRRORED);
+        BlockEmancipationGrill.Mount mount = grill.mount();
 
         for (int step = 1; step <= MAX_DISTANCE; step++) {
             BlockPos p = core.offset(facing, step);
@@ -51,11 +56,17 @@ public final class EmancipationFieldGeometry {
             if (!(other.getBlock() instanceof BlockEmancipationGrill)) continue;
 
             BlockEmancipationGrill otherGrill = (BlockEmancipationGrill) other.getBlock();
-            if (otherGrill.layer() != BlockEmancipationGrill.Layer.BOTTOM) continue;
+            if (!otherGrill.isCore() || otherGrill.mount() != mount) continue;
             if (other.getValue(BlockEmancipationGrill.FACING) != facing.getOpposite()) continue;
             if (other.getValue(BlockEmancipationGrill.MIRRORED) == mirrored) continue;
 
-            // The two columns must share the same line along the wall.
+            // Horizontal bars have no vertical tolerance: the center cells must line up.
+            if (mount == BlockEmancipationGrill.Mount.HORIZONTAL
+                    && p.getY() != core.getY()) {
+                continue;
+            }
+
+            // The two grill centers must share the same line along the wall.
             if (facing.getAxis() == EnumFacing.Axis.X) {
                 if (p.getZ() != core.getZ()) continue;
             } else if (p.getX() != core.getX()) {
@@ -63,8 +74,7 @@ public final class EmancipationFieldGeometry {
             }
 
             boolean otherMirror = !mirrored;
-            if (!isLayer(world, p.up(), BlockEmancipationGrill.Layer.MIDDLE, facing.getOpposite(), otherMirror)
-                    || !isLayer(world, p.up(2), BlockEmancipationGrill.Layer.TOP, facing.getOpposite(), otherMirror)) {
+            if (!hasParts(world, p, facing.getOpposite(), otherMirror, mount)) {
                 continue;
             }
             return p;
@@ -81,15 +91,16 @@ public final class EmancipationFieldGeometry {
         IBlockState state = world.getBlockState(core);
         if (!(state.getBlock() instanceof BlockEmancipationGrill)) return null;
         BlockEmancipationGrill grill = (BlockEmancipationGrill) state.getBlock();
-        if (grill.layer() != BlockEmancipationGrill.Layer.BOTTOM) return null;
+        if (!grill.isCore()) return null;
 
         EnumFacing facing = state.getValue(BlockEmancipationGrill.FACING);
         boolean mirrored = state.getValue(BlockEmancipationGrill.MIRRORED);
-        return box(core, partner, facing, mirrored);
+        return box(core, partner, facing, mirrored, grill.mount());
     }
 
     /** The thin field cell. Both grills compute the same box from their own state. */
-    public static AxisAlignedBB box(BlockPos core, BlockPos partner, EnumFacing facing, boolean mirrored) {
+    public static AxisAlignedBB box(BlockPos core, BlockPos partner, EnumFacing facing,
+                                    boolean mirrored, BlockEmancipationGrill.Mount mount) {
         int dx = facing.getDirectionVec().getX();
         int dz = facing.getDirectionVec().getZ();
 
@@ -98,9 +109,19 @@ public final class EmancipationFieldGeometry {
         double bx = partner.getX() + 0.5D + dx * EMITTER_INSET;
         double bz = partner.getZ() + 0.5D + dz * EMITTER_INSET;
 
-        double y0 = core.getY() + VERTICAL_INSET;
-        double y1 = core.getY() + HEIGHT - VERTICAL_INSET;
-        int strip = mirrored ? -STRIP_OFFSET : STRIP_OFFSET;
+        double y0;
+        double y1;
+        if (mount == BlockEmancipationGrill.Mount.HORIZONTAL) {
+            y0 = core.getY() + HORIZONTAL_INSET;
+            y1 = core.getY() + HORIZONTAL_HEIGHT - HORIZONTAL_INSET;
+        } else {
+            y0 = core.getY() + VERTICAL_INSET;
+            y1 = core.getY() + HEIGHT - VERTICAL_INSET;
+        }
+
+        // The horizontal bar's emitter spans the bar, so its field plane is centred on the core.
+        int strip = mount == BlockEmancipationGrill.Mount.HORIZONTAL
+                ? 0 : (mirrored ? -STRIP_OFFSET : STRIP_OFFSET);
 
         if (facing.getAxis() == EnumFacing.Axis.X) {
             double stripZ = core.getZ() + 0.5D + Facings.worldZ(strip, 0, facing) / 16.0D;
@@ -115,15 +136,33 @@ public final class EmancipationFieldGeometry {
                 stripX + THICKNESS / 2.0D, y1, Math.max(az, bz));
     }
 
+    /** Full opening height used by the placement guard. */
+    public static double fieldHeight(BlockEmancipationGrill.Mount mount) {
+        return mount == BlockEmancipationGrill.Mount.HORIZONTAL ? HORIZONTAL_HEIGHT : HEIGHT;
+    }
+
     public static boolean isOwner(BlockPos core, BlockPos partner) {
         return core.toLong() <= partner.toLong();
     }
 
+    private static boolean hasParts(World world, BlockPos core, EnumFacing facing,
+                                    boolean mirrored, BlockEmancipationGrill.Mount mount) {
+        if (mount == BlockEmancipationGrill.Mount.VERTICAL) {
+            return isLayer(world, core.up(), BlockEmancipationGrill.Layer.MIDDLE, facing, mirrored, mount)
+                    && isLayer(world, core.up(2), BlockEmancipationGrill.Layer.TOP, facing, mirrored, mount);
+        }
+        EnumFacing along = BlockEmancipationGrill.alongWall(facing);
+        return isLayer(world, core.offset(along, -1), BlockEmancipationGrill.Layer.BOTTOM, facing, mirrored, mount)
+                && isLayer(world, core.offset(along, 1), BlockEmancipationGrill.Layer.TOP, facing, mirrored, mount);
+    }
+
     private static boolean isLayer(World world, BlockPos pos, BlockEmancipationGrill.Layer layer,
-                                   EnumFacing facing, boolean mirrored) {
+                                   EnumFacing facing, boolean mirrored,
+                                   BlockEmancipationGrill.Mount mount) {
         IBlockState state = world.getBlockState(pos);
         return state.getBlock() instanceof BlockEmancipationGrill
                 && ((BlockEmancipationGrill) state.getBlock()).layer() == layer
+                && ((BlockEmancipationGrill) state.getBlock()).mount() == mount
                 && state.getValue(BlockEmancipationGrill.FACING) == facing
                 && state.getValue(BlockEmancipationGrill.MIRRORED) == mirrored;
     }

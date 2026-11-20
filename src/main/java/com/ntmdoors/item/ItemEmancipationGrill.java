@@ -24,8 +24,9 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 /**
- * Places the complete 1x3x1 Emancipation Grill. If an opposite-facing grill is already within ten
- * blocks, the new grill snaps to its bottom Y and to its line along the wall, then faces it.
+ * Places a complete 1x3x1 vertical Emancipation Grill or a 3x1x1 horizontal bar. If an
+ * opposite-facing grill of the same mount is already within ten blocks, the new unit snaps to its
+ * line along the wall and faces it.
  */
 public class ItemEmancipationGrill extends ItemBlock {
 
@@ -33,8 +34,15 @@ public class ItemEmancipationGrill extends ItemBlock {
     private static final int MAX_LINE_OFFSET = 3;
     private static final int MAX_Y_OFFSET = 2;
 
+    private final BlockEmancipationGrill.Mount mount;
+
     public ItemEmancipationGrill(BlockEmancipationGrill core) {
+        this(core, core.mount());
+    }
+
+    public ItemEmancipationGrill(BlockEmancipationGrill core, BlockEmancipationGrill.Mount mount) {
         super(core);
+        this.mount = mount;
         setCreativeTab(NTMDoors.TAB);
     }
 
@@ -56,39 +64,51 @@ public class ItemEmancipationGrill extends ItemBlock {
         BlockPos core = clickedCore;
         boolean mirrored = false;
 
-        Snap snap = findSnap(world, clickedCore, front);
-        if (snap != null && canPlace(world, snap.pos, side, player, stack)) {
+        Snap snap = findSnap(world, clickedCore, front, mount);
+        if (snap != null && canPlace(world, snap.pos, side, player, stack, mount)) {
             core = snap.pos;
             mirrored = snap.mirrored;
         } else {
             snap = null;
-            if (!canPlace(world, clickedCore, side, player, stack)) {
+            if (!canPlace(world, clickedCore, side, player, stack, mount)) {
                 return EnumActionResult.FAIL;
             }
         }
 
         if (!world.isRemote) {
-            BlockEmancipationGrill bottom = ModContent.EMANCIPATION_GRILL;
-            BlockEmancipationGrill middle = ModContent.EMANCIPATION_GRILL_MIDDLE;
-            BlockEmancipationGrill top = ModContent.EMANCIPATION_GRILL_TOP;
-            world.setBlockState(core, bottom.getDefaultState()
-                    .withProperty(BlockEmancipationGrill.FACING, front)
-                    .withProperty(BlockEmancipationGrill.MIRRORED, mirrored), 2);
-            world.setBlockState(core.up(), middle.getDefaultState()
-                    .withProperty(BlockEmancipationGrill.FACING, front)
-                    .withProperty(BlockEmancipationGrill.MIRRORED, mirrored), 2);
-            world.setBlockState(core.up(2), top.getDefaultState()
-                    .withProperty(BlockEmancipationGrill.FACING, front)
-                    .withProperty(BlockEmancipationGrill.MIRRORED, mirrored), 2);
+            BlockEmancipationGrill[] parts = parts(mount);
+            for (BlockEmancipationGrill.Layer layer : BlockEmancipationGrill.Layer.values()) {
+                BlockEmancipationGrill part = parts[layer.ordinal()];
+                BlockPos p = BlockEmancipationGrill.cellPos(core, front, mount, layer);
+                world.setBlockState(p, part.getDefaultState()
+                        .withProperty(BlockEmancipationGrill.FACING, front)
+                        .withProperty(BlockEmancipationGrill.MIRRORED, mirrored), 2);
+            }
             applyPairOwnership(world, player, core, snap);
         }
 
-        SoundType sound = ModContent.EMANCIPATION_GRILL.getSoundType(
-                ModContent.EMANCIPATION_GRILL.getDefaultState(), world, core, player);
+        BlockEmancipationGrill coreBlock = parts(mount)[BlockEmancipationGrill.Layer.MIDDLE.ordinal()];
+        SoundType sound = coreBlock.getSoundType(
+                coreBlock.getDefaultState(), world, core, player);
         world.playSound(player, core, sound.getPlaceSound(), SoundCategory.BLOCKS,
                 (sound.getVolume() + 1F) / 2F, sound.getPitch() * 0.8F);
         if (!player.capabilities.isCreativeMode) stack.shrink(1);
         return EnumActionResult.SUCCESS;
+    }
+
+    private static BlockEmancipationGrill[] parts(BlockEmancipationGrill.Mount mount) {
+        if (mount == BlockEmancipationGrill.Mount.HORIZONTAL) {
+            return new BlockEmancipationGrill[]{
+                    ModContent.EMANCIPATION_GRILL_HORIZONTAL_LEFT,
+                    ModContent.EMANCIPATION_GRILL_HORIZONTAL,
+                    ModContent.EMANCIPATION_GRILL_HORIZONTAL_RIGHT
+            };
+        }
+        return new BlockEmancipationGrill[]{
+                ModContent.EMANCIPATION_GRILL,
+                ModContent.EMANCIPATION_GRILL_MIDDLE,
+                ModContent.EMANCIPATION_GRILL_TOP
+        };
     }
 
     /** First grill owns the pair; a snapped second grill adopts that owner. */
@@ -120,26 +140,29 @@ public class ItemEmancipationGrill extends ItemBlock {
 
     /**
      * Looks for an existing grill on the opposite wall. The scan runs along the new grill's front,
-     * with a small tolerance along the wall and vertically, so the two columns can be lined up.
+     * with a small tolerance along the wall and vertically, so the two units can be lined up.
      */
-    private static Snap findSnap(World world, BlockPos clickedCore, EnumFacing front) {
+    private static Snap findSnap(World world, BlockPos clickedCore, EnumFacing front,
+                                 BlockEmancipationGrill.Mount mount) {
         EnumFacing alongWall = front.rotateY();
         Snap best = null;
         int bestScore = Integer.MAX_VALUE;
+        int minDy = mount == BlockEmancipationGrill.Mount.HORIZONTAL ? 0 : -MAX_Y_OFFSET;
+        int maxDy = mount == BlockEmancipationGrill.Mount.HORIZONTAL ? 0 : MAX_Y_OFFSET;
 
         for (int step = 1; step <= MAX_COUPLING_DISTANCE; step++) {
             BlockPos line = clickedCore.offset(front, step);
             for (int offset = -MAX_LINE_OFFSET; offset <= MAX_LINE_OFFSET; offset++) {
                 BlockPos base = line.offset(alongWall, offset);
-                for (int dy = -MAX_Y_OFFSET; dy <= MAX_Y_OFFSET; dy++) {
+                for (int dy = minDy; dy <= maxDy; dy++) {
                     BlockPos candidate = base.up(dy);
                     IBlockState state = world.getBlockState(candidate);
                     if (!(state.getBlock() instanceof BlockEmancipationGrill)) continue;
                     BlockEmancipationGrill grill = (BlockEmancipationGrill) state.getBlock();
-                    if (grill.layer() != BlockEmancipationGrill.Layer.BOTTOM) continue;
+                    if (!grill.isCore() || grill.mount() != mount) continue;
                     if (state.getValue(BlockEmancipationGrill.FACING) != front.getOpposite()) continue;
                     boolean existingMirrored = state.getValue(BlockEmancipationGrill.MIRRORED);
-                    if (!hasColumn(world, candidate, front.getOpposite(), existingMirrored)) continue;
+                    if (!hasParts(world, candidate, front.getOpposite(), existingMirrored, mount)) continue;
 
                     int score = step * 100 + Math.abs(offset) * 10 + Math.abs(dy);
                     if (score >= bestScore) continue;
@@ -170,25 +193,36 @@ public class ItemEmancipationGrill extends ItemBlock {
         }
     }
 
-    private static boolean hasColumn(World world, BlockPos core, EnumFacing facing, boolean mirrored) {
-        IBlockState middle = world.getBlockState(core.up());
-        IBlockState top = world.getBlockState(core.up(2));
-        return isLayer(middle, BlockEmancipationGrill.Layer.MIDDLE, facing, mirrored)
-                && isLayer(top, BlockEmancipationGrill.Layer.TOP, facing, mirrored);
+    private static boolean hasParts(World world, BlockPos core, EnumFacing facing, boolean mirrored,
+                                    BlockEmancipationGrill.Mount mount) {
+        if (mount == BlockEmancipationGrill.Mount.VERTICAL) {
+            return isLayer(world, core.up(), BlockEmancipationGrill.Layer.MIDDLE, facing, mirrored, mount)
+                    && isLayer(world, core.up(2), BlockEmancipationGrill.Layer.TOP, facing, mirrored, mount);
+        }
+        EnumFacing along = BlockEmancipationGrill.alongWall(facing);
+        return isLayer(world, core.offset(along, -1), BlockEmancipationGrill.Layer.BOTTOM, facing, mirrored, mount)
+                && isLayer(world, core.offset(along, 1), BlockEmancipationGrill.Layer.TOP, facing, mirrored, mount);
     }
 
     private static boolean isLayer(IBlockState state, BlockEmancipationGrill.Layer layer, EnumFacing facing,
-                                   boolean mirrored) {
+                                   boolean mirrored, BlockEmancipationGrill.Mount mount) {
         return state.getBlock() instanceof BlockEmancipationGrill
                 && ((BlockEmancipationGrill) state.getBlock()).layer() == layer
+                && ((BlockEmancipationGrill) state.getBlock()).mount() == mount
                 && state.getValue(BlockEmancipationGrill.FACING) == facing
                 && state.getValue(BlockEmancipationGrill.MIRRORED) == mirrored;
     }
 
+    private static boolean isLayer(World world, BlockPos pos, BlockEmancipationGrill.Layer layer,
+                                   EnumFacing facing, boolean mirrored, BlockEmancipationGrill.Mount mount) {
+        return isLayer(world.getBlockState(pos), layer, facing, mirrored, mount);
+    }
+
     private static boolean canPlace(World world, BlockPos core, EnumFacing side,
-                                    EntityPlayer player, ItemStack stack) {
-        for (int i = 0; i < 3; i++) {
-            BlockPos p = core.up(i);
+                                    EntityPlayer player, ItemStack stack,
+                                    BlockEmancipationGrill.Mount mount) {
+        for (BlockEmancipationGrill.Layer layer : BlockEmancipationGrill.Layer.values()) {
+            BlockPos p = BlockEmancipationGrill.cellPos(core, side, mount, layer);
             if (world.isOutsideBuildHeight(p) || !world.isBlockLoaded(p)) return false;
             if (!player.canPlayerEdit(p, side, stack)) return false;
             if (DoorPlacementGuard.blocksPlacement(world, p)) return false;
@@ -204,8 +238,14 @@ public class ItemEmancipationGrill extends ItemBlock {
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip,
                                ITooltipFlag flagIn) {
-        tooltip.add(TextFormatting.GRAY + "Place two grills on opposing walls to create");
-        tooltip.add(TextFormatting.GRAY + "a wall of energy that destroys unauthorized");
-        tooltip.add(TextFormatting.GRAY + "personnel or materials.");
+        if (mount == BlockEmancipationGrill.Mount.HORIZONTAL) {
+            tooltip.add(TextFormatting.GRAY + "Place two horizontal grills on opposing walls");
+            tooltip.add(TextFormatting.GRAY + "to create a wide, one-block-high energy wall.");
+            tooltip.add(TextFormatting.GRAY + "The three-block bar runs left/right along the wall.");
+        } else {
+            tooltip.add(TextFormatting.GRAY + "Place two grills on opposing walls to create");
+            tooltip.add(TextFormatting.GRAY + "a wall of energy that destroys unauthorized");
+            tooltip.add(TextFormatting.GRAY + "personnel or materials.");
+        }
     }
 }

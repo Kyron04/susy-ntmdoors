@@ -95,6 +95,7 @@ public class NTMDoors {
             items.add(new ItemStack(ModContent.SPATIAL_DISRUPTER));
             items.add(new ItemStack(ModContent.THERMITE_CHARGE));
             items.add(new ItemStack(ModContent.EMANCIPATION_GRILL));
+            items.add(new ItemStack(ModContent.EMANCIPATION_GRILL_HORIZONTAL));
             items.add(new ItemStack(ModContent.REDSTONE_MONOCLE));
             ConcreteSet.addCreativeStacks(items);
             HLBlocksContent.addCreativeStacks(items);

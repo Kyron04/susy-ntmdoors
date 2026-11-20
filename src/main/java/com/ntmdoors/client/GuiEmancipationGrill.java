@@ -57,6 +57,7 @@ public class GuiEmancipationGrill extends GuiScreen {
             MessageGrillOption.MODE_SOLID,
             MessageGrillOption.MODE_NEUTRAL,
             MessageGrillOption.MODE_LETHAL,
+            MessageGrillOption.MODE_WALL,
             MessageGrillOption.MATCH_USER,
             MessageGrillOption.IGNORE_PRIVATE_KEY,
             MessageGrillOption.IGNORE_BIOMETRIC_ID,
@@ -183,6 +184,8 @@ public class GuiEmancipationGrill extends GuiScreen {
                 return grill != null && grill.getFieldMode() == FieldMode.NEUTRAL;
             case MessageGrillOption.MODE_LETHAL:
                 return grill != null && grill.getFieldMode() == FieldMode.LETHAL;
+            case MessageGrillOption.MODE_WALL:
+                return grill != null && grill.getFieldMode() == FieldMode.WALL;
             case MessageGrillOption.MATCH_USER:
                 return grill == null || grill.isMatchUser();
             case MessageGrillOption.IGNORE_PRIVATE_KEY:
@@ -306,6 +309,7 @@ public class GuiEmancipationGrill extends GuiScreen {
             case MessageGrillOption.MODE_SOLID:
             case MessageGrillOption.MODE_NEUTRAL:
             case MessageGrillOption.MODE_LETHAL:
+            case MessageGrillOption.MODE_WALL:
             case MessageGrillOption.ENABLE_FIELD:
                 value = true;
                 break;
@@ -505,6 +509,8 @@ public class GuiEmancipationGrill extends GuiScreen {
                 return "Neutral Field";
             case MessageGrillOption.MODE_LETHAL:
                 return "Lethal Field";
+            case MessageGrillOption.MODE_WALL:
+                return "Wall Mode";
             case MessageGrillOption.MATCH_USER:
                 return "Match User";
             case MessageGrillOption.IGNORE_PRIVATE_KEY:
@@ -550,6 +556,8 @@ public class GuiEmancipationGrill extends GuiScreen {
                 return "Visible, no field effects";
             case MessageGrillOption.MODE_LETHAL:
                 return "Kill unauthorized players";
+            case MessageGrillOption.MODE_WALL:
+                return "Solid wall, no clearance";
             case MessageGrillOption.MATCH_USER:
                 return "Biometric ID must match carrier";
             case MessageGrillOption.IGNORE_PRIVATE_KEY:

@@ -50,7 +50,7 @@ public class ItemCreativeKeycard extends ItemRfidCard {
         IBlockState state = world.getBlockState(pos);
         if (state.getBlock() instanceof BlockEmancipationGrill) {
             BlockEmancipationGrill grill = (BlockEmancipationGrill) state.getBlock();
-            BlockPos corePos = pos.down(grill.layer().ordinal());
+            BlockPos corePos = grill.corePos(pos, state);
             if (world.isRemote) {
                 ModNetwork.INSTANCE.sendToServer(new MessageGrillAccess(corePos));
             }
