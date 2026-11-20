@@ -79,6 +79,7 @@ public class GuiEmancipationGrill extends GuiScreen {
 
     private static final int RED_PANEL = 0xFF2A0F12;
     private static final int RED_RULE = 0xFF6A2A2A;
+    private static final int RED_HOVER = 0xFF3A1418;
 
     private static final int COLOUR = 0xFFE8E8E8;
     private static final int MUTED = 0xFFAFAFAF;
@@ -444,7 +445,7 @@ public class GuiEmancipationGrill extends GuiScreen {
             if (y + OPTION_HEIGHT < top + OPTION_TOP || y > top + OPTION_TOP + OPTION_AREA) {
                 continue;
             }
-            drawOption(TOGGLE_OPTIONS[i], i, y, mouseX, mouseY, scrollOptions, false);
+            drawOption(TOGGLE_OPTIONS[i], i, y, mouseX, mouseY, scrollOptions);
         }
         GuiClip.end();
         drawScrollbar(left + PANEL_WIDTH - 8, top + OPTION_TOP, OPTION_AREA,
@@ -453,7 +454,7 @@ public class GuiEmancipationGrill extends GuiScreen {
 
     private void drawRedstonePage(int mouseX, int mouseY) {
         drawTitle("REDSTONE");
-        drawString(fontRenderer, "SIGNAL OUTPUTS", left + 12, top + 29, 0xFFF0C0C0);
+        drawString(fontRenderer, "EVENT OUTPUTS", left + 12, top + 29, 0xFFF0C0C0);
         drawRect(left + 12, top + 40, left + PANEL_WIDTH - 12, top + 41, RED_RULE);
 
         scrollRedstone = clampOptionsScroll(scrollRedstone, REDSTONE_OPTIONS.length);
@@ -463,7 +464,7 @@ public class GuiEmancipationGrill extends GuiScreen {
             if (y + OPTION_HEIGHT < top + OPTION_TOP || y > top + OPTION_TOP + OPTION_AREA) {
                 continue;
             }
-            drawOption(REDSTONE_OPTIONS[i], i, y, mouseX, mouseY, scrollRedstone, true);
+            drawOption(REDSTONE_OPTIONS[i], i, y, mouseX, mouseY, scrollRedstone);
         }
         GuiClip.end();
         drawScrollbar(left + PANEL_WIDTH - 8, top + OPTION_TOP, OPTION_AREA,
@@ -471,13 +472,12 @@ public class GuiEmancipationGrill extends GuiScreen {
     }
 
     /** One settings row: label and hint on the left, an ON/OFF pill on the right. */
-    private void drawOption(int option, int index, int y, int mouseX, int mouseY,
-                            int scroll, boolean signal) {
+    private void drawOption(int option, int index, int y, int mouseX, int mouseY, int scroll) {
         boolean on = optionValue(option);
         boolean hovered = inOption(index, mouseX, mouseY, scroll);
         if (hovered) {
             drawRect(left + 8, y - 3, left + PANEL_WIDTH - 8, y + OPTION_HEIGHT - 5,
-                    HOVER);
+                    page == 2 ? RED_HOVER : HOVER);
         }
 
         drawString(fontRenderer, optionLabel(option), left + 16, y, COLOUR);
@@ -485,21 +485,10 @@ public class GuiEmancipationGrill extends GuiScreen {
 
         int x = left + PANEL_WIDTH - 12 - PILL_WIDTH;
         int pillY = y + 1;
-        int fill;
-        int edge;
-        int text;
-        int bottom;
-        if (signal) {
-            fill = on ? 0xFF432A2A : 0xFF2A2222;
-            edge = on ? 0xFFC07A7A : 0xFF6A5252;
-            text = on ? 0xFFF0D6D6 : 0xFFC8B0B0;
-            bottom = on ? 0xFF2C1C1C : 0xFF1C1717;
-        } else {
-            fill = on ? 0xFF344434 : 0xFF3A3030;
-            edge = on ? 0xFF7FA87F : 0xFF8A6A6A;
-            text = on ? 0xFFD6F0D6 : 0xFFE6C8C8;
-            bottom = on ? 0xFF223022 : 0xFF241C1C;
-        }
+        int fill = on ? 0xFF344434 : 0xFF3A3030;
+        int edge = on ? 0xFF7FA87F : 0xFF8A6A6A;
+        int text = on ? 0xFFD6F0D6 : 0xFFE6C8C8;
+        int bottom = on ? 0xFF223022 : 0xFF241C1C;
 
         drawRect(x, pillY, x + PILL_WIDTH, pillY + PILL_HEIGHT, fill);
         drawRect(x, pillY, x + PILL_WIDTH, pillY + 1, edge);

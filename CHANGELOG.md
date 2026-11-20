@@ -42,6 +42,8 @@ FIX
   pick up a red tint as the visible render order changes.
 - Fixed the monitor Notepad dark mode reverting to light after a moment. The client applies the
   toggle immediately and the desk sync confirms it, so the page and physical screen stay dark.
+- Matched the Emancipation Grill's Redstone page heading, row hover and ON/OFF pill colours to the
+  other device Redstone pages.
 
 1.0.78
 FEATURE
