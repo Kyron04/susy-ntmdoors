@@ -28,6 +28,9 @@ public final class EmancipationFieldGeometry {
     public static final double HORIZONTAL_FIELD_Y = 4.0D / 16.0D;
     /** Length of the horizontal bar and its field. */
     public static final double HORIZONTAL_BAR_LENGTH = 3.0D;
+    /** The horizontal glow strip stops three pixels short at each end, like the vertical unit. */
+    public static final double HORIZONTAL_FIELD_LENGTH =
+            HORIZONTAL_BAR_LENGTH - VERTICAL_INSET * 2.0D;
     private static final double EMITTER_INSET = 1.0D / 64.0D;
     /** Emitter strip centre is four model pixels from the block centre. */
     private static final int STRIP_OFFSET = 4;
@@ -115,7 +118,7 @@ public final class EmancipationFieldGeometry {
             double planeY = core.getY() + HORIZONTAL_FIELD_Y;
             double y0 = planeY - THICKNESS / 2.0D;
             double y1 = planeY + THICKNESS / 2.0D;
-            double half = HORIZONTAL_BAR_LENGTH / 2.0D;
+            double half = HORIZONTAL_FIELD_LENGTH / 2.0D;
             if (facing.getAxis() == EnumFacing.Axis.X) {
                 double centreZ = core.getZ() + 0.5D;
                 return new AxisAlignedBB(
