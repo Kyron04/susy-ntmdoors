@@ -11,6 +11,7 @@ import net.minecraftforge.client.event.InputUpdateEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -29,6 +30,49 @@ public final class EmancipationFieldRenderEvents {
             RenderEmancipationField.drawDeferred(event.getPartialTicks());
         } finally {
             RenderEmancipationField.endFrame();
+        }
+    }
+
+    @SubscribeEvent
+    public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
+        if (event.phase != TickEvent.Phase.START && event.phase != TickEvent.Phase.END) return;
+        Minecraft mc = Minecraft.getMinecraft();
+        if (mc.world == null || event.player != mc.player
+                || !(event.player instanceof EntityPlayerSP)) {
+            return;
+        }
+        EntityPlayerSP player = (EntityPlayerSP) event.player;
+        if (player.isSpectator() || player.capabilities.isFlying || player.motionY > 0.0D) return;
+        boolean jumping = player.movementInput != null && player.movementInput.jump;
+
+        for (TileEntity te : mc.world.loadedTileEntityList) {
+            if (!(te instanceof TileEntityEmancipationGrill)) continue;
+            TileEntityEmancipationGrill grill = (TileEntityEmancipationGrill) te;
+            if (!grill.isPairOwner() || !grill.isFieldEnabled() || !grill.isDetectPlayers()) continue;
+            TileEntityEmancipationGrill.FieldMode mode = grill.getFieldMode();
+            if (mode != TileEntityEmancipationGrill.FieldMode.SOLID
+                    && mode != TileEntityEmancipationGrill.FieldMode.WALL) continue;
+
+            AxisAlignedBB field = grill.getFieldBox();
+            if (field == null || field.maxY - field.minY > 0.1D) continue;
+            double half = player.width * 0.5D;
+            if (player.posX + half < field.minX || player.posX - half > field.maxX
+                    || player.posZ + half < field.minZ || player.posZ - half > field.maxZ) {
+                continue;
+            }
+
+            double support = (field.minY + field.maxY) * 0.5D + 0.05D;
+            if (player.posY < support - 0.2D || player.posY > support + 0.35D) continue;
+            if (event.phase == TickEvent.Phase.START && jumping) continue;
+
+            // Keep the local player planted on the horizontal sheet. At the start of the tick
+            // the small upward motion cancels vanilla gravity before the movement packet is
+            // sent; at the end the position is locked to the support height.
+            player.setPosition(player.posX, support, player.posZ);
+            player.motionY = event.phase == TickEvent.Phase.START ? 0.08D : 0.0D;
+            player.onGround = true;
+            player.fallDistance = 0.0F;
+            return;
         }
     }
 
