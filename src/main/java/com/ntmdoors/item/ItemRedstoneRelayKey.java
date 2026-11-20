@@ -72,6 +72,12 @@ public class ItemRedstoneRelayKey extends Item {
             if (binding != null && binding.isGateHost()) {
                 binding.linkGrill(player, grill);
             } else {
+                TileEntityEmancipationGrill core = grill.getSecurityCore();
+                if (core.getOwnerId() != null && !core.isOwnedBy(player)) {
+                    player.sendStatusMessage(new TextComponentTranslation(
+                            "ntmdoors.msg.redstone_grill_bind_owner_only"), true);
+                    return EnumActionResult.SUCCESS;
+                }
                 grill.getRedstoneBinding().toggle(player);
             }
             return EnumActionResult.SUCCESS;

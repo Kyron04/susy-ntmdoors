@@ -289,7 +289,8 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
         // Track the gate state, but do not let a signal pulse this grill just sent to that gate
         // feed back into its own field.
         long sincePulse = world.getTotalWorldTime() - lastSignalPulseTick;
-        if (sincePulse >= 0 && sincePulse <= 1 && redstoneBinding.getGates().contains(key)) {
+        if (sincePulse >= 0 && sincePulse <= 1
+                && (linkedGates.containsKey(key) || redstoneBinding.getGates().contains(key))) {
             linkedGates.put(key, powered);
             return;
         }

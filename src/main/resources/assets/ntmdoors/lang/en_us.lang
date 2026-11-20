@@ -213,6 +213,7 @@ ntmdoors.msg.redstone_door_linked=Door linked to Redstone Gate
 ntmdoors.msg.redstone_door_unlinked=Door unlinked from Redstone Gate
 ntmdoors.msg.redstone_grill_gate_only=Grills can only be linked from a Redstone Gate
 ntmdoors.msg.redstone_grill_owner_only=Only the owner can link a gate to this grill
+ntmdoors.msg.redstone_grill_bind_owner_only=Only the owner can change this grill's Redstone link
 ntmdoors.msg.redstone_grill_linked=Field linked to Redstone Gate
 ntmdoors.msg.redstone_grill_unlinked=Field unlinked from Redstone Gate
 ntmdoors.msg.security_redstone_enabled=Security door: Redstone access enabled

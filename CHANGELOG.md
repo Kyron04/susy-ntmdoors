@@ -44,6 +44,10 @@ FIX
   toggle immediately and the desk sync confirms it, so the page and physical screen stay dark.
 - Matched the Emancipation Grill's Redstone page heading, row hover and ON/OFF pill colours to the
   other device Redstone pages.
+- Gates linked to a grill from the gate side now also receive that grill's Redstone event pulses,
+  without needing a second reverse link.
+- The Redstone Relay Key now refuses to start a binding session on an owned grill unless the player
+  is its owner. Non-owners cannot change the grill's Redstone links.
 
 1.0.78
 FEATURE

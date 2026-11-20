@@ -388,6 +388,25 @@ public final class RedstoneBinding {
     /** Server side: pulses every loaded gate for exactly one tick. */
     public void fireOneTick() {
         pulseGates(true);
+        pulseFieldControllerGates();
+    }
+
+    /**
+     * A gate that drives this grill's field is also a linked gate, so event outputs should reach it
+     * even when the player linked it from the gate's own binding session.
+     */
+    private void pulseFieldControllerGates() {
+        World world = host.getWorld();
+        if (world == null || world.isRemote) return;
+        if (!(host instanceof TileEntityEmancipationGrill)) return;
+        BlockPos grillPos = host.getPos().toImmutable();
+        for (TileEntity te : new ArrayList<>(world.loadedTileEntityList)) {
+            if (!(te instanceof TileEntityRedstoneGate)) continue;
+            TileEntityRedstoneGate gate = (TileEntityRedstoneGate) te;
+            if (!gate.getRedstoneBinding().getGrills().contains(grillPos)) continue;
+            if (gates.contains(gate.getPos())) continue;
+            gate.pulseOnce();
+        }
     }
 
     private void pulseGates(boolean oneTick) {
