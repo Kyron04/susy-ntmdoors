@@ -154,6 +154,7 @@ public class RenderEmancipationField extends DeviceRenderer<TileEntityEmancipati
         double alongMin = spansX ? box.minX : box.minZ;
         double alongMax = spansX ? box.maxX : box.maxZ;
         double alongLength = alongMax - alongMin;
+        boolean horizontal = (box.maxY - box.minY) <= 0.1D;
 
         boolean lighting = GL11.glIsEnabled(GL11.GL_LIGHTING);
         boolean cull = GL11.glIsEnabled(GL11.GL_CULL_FACE);
@@ -186,6 +187,9 @@ public class RenderEmancipationField extends DeviceRenderer<TileEntityEmancipati
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.getBuffer();
 
+        if (horizontal) {
+            drawHorizontalField(buffer, tessellator, core, box, time, pairU, pairV, pairScale, variant);
+        } else {
         // Pale glass wash. Normal alpha keeps the room visible through the field.
         GlStateManager.disableTexture2D();
         GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA,
@@ -240,6 +244,7 @@ public class RenderEmancipationField extends DeviceRenderer<TileEntityEmancipati
         addSparks(buffer, core, spansX, planeX, planeZ, alongMin, alongMax,
                 box.minY, box.maxY, time, pairSeed);
         tessellator.draw();
+        }
 
         GlStateManager.color(1F, 1F, 1F, 1F);
         OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit,
@@ -254,6 +259,105 @@ public class RenderEmancipationField extends DeviceRenderer<TileEntityEmancipati
         if (depthTest) GlStateManager.enableDepth(); else GlStateManager.disableDepth();
         GlStateManager.setActiveTexture(oldActiveTexture);
         GlStateManager.popMatrix();
+    }
+
+    private static void drawHorizontalField(BufferBuilder buffer, Tessellator tessellator,
+                                            BlockPos core, AxisAlignedBB box, double time,
+                                            double pairU, double pairV, double pairScale,
+                                            int variant) {
+        double y = (box.minY + box.maxY) * 0.5D - core.getY();
+        double x0 = box.minX - core.getX();
+        double x1 = box.maxX - core.getX();
+        double z0 = box.minZ - core.getZ();
+        double z1 = box.maxZ - core.getZ();
+        double lengthX = x1 - x0;
+        double lengthZ = z1 - z0;
+
+        GlStateManager.disableTexture2D();
+        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA,
+                GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+                GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
+        horizontalQuadColor(buffer, x0, z0, x1, z1, y, 0.64F, 0.86F, 1.0F, 0.10F);
+        tessellator.draw();
+
+        GlStateManager.enableTexture2D();
+        Minecraft.getMinecraft().getTextureManager().bindTexture(FIELD_VARIANTS[variant]);
+        setTextureParameters(GL11.GL_REPEAT, GL11.GL_LINEAR);
+        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA,
+                GlStateManager.DestFactor.ONE,
+                GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
+        for (int layer = 0; layer < 3; layer++) {
+            double u0 = pairU + time * LAYER_U_SPEED[layer];
+            double u1 = u0 + lengthX / (LAYER_U_REPEAT[layer] * pairScale);
+            double v0 = pairV + time * LAYER_V_SPEED[layer];
+            double v1 = v0 + lengthZ / (LAYER_V_REPEAT[layer] * pairScale);
+            horizontalQuadTex(buffer, x0, z0, x1, z1, y, u0, v0, u1, v1,
+                    LAYER_RED[layer], LAYER_GREEN[layer], LAYER_BLUE[layer], LAYER_ALPHA[layer]);
+        }
+        tessellator.draw();
+
+        Minecraft.getMinecraft().getTextureManager().bindTexture(EDGE);
+        setTextureParameters(GL12.GL_CLAMP_TO_EDGE, GL11.GL_LINEAR);
+        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
+        double edge = EDGE_WIDTH;
+        horizontalQuadTex(buffer, x0, z0, x0 + edge, z1, y, 0, 0, 1, 1,
+                0.88F, 0.97F, 1.0F, 0.95F);
+        horizontalQuadTex(buffer, x1 - edge, z0, x1, z1, y, 1, 0, 0, 1,
+                0.88F, 0.97F, 1.0F, 0.95F);
+        horizontalQuadTex(buffer, x0, z0, x1, z0 + edge, y, 0, 0, 1, 1,
+                0.88F, 0.97F, 1.0F, 0.95F);
+        horizontalQuadTex(buffer, x0, z1 - edge, x1, z1, y, 0, 1, 1, 0,
+                0.88F, 0.97F, 1.0F, 0.95F);
+        tessellator.draw();
+
+        GlStateManager.disableTexture2D();
+        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
+        double coreWidth = CORE_WIDTH;
+        horizontalQuadColor(buffer, x0, z0, x0 + coreWidth, z1, y, 0.90F, 0.99F, 1.0F, 0.85F);
+        horizontalQuadColor(buffer, x1 - coreWidth, z0, x1, z1, y, 0.90F, 0.99F, 1.0F, 0.85F);
+        horizontalQuadColor(buffer, x0, z0, x1, z0 + coreWidth, y, 0.90F, 0.99F, 1.0F, 0.85F);
+        horizontalQuadColor(buffer, x0, z1 - coreWidth, x1, z1, y, 0.90F, 0.99F, 1.0F, 0.85F);
+        tessellator.draw();
+
+        GlStateManager.enableTexture2D();
+        Minecraft.getMinecraft().getTextureManager().bindTexture(SPARK);
+        setTextureParameters(GL12.GL_CLAMP_TO_EDGE, GL11.GL_LINEAR);
+        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
+        for (int i = 0; i < PARTICLES; i++) {
+            double seed = i * 0.6180339887498949D + pairScale * 3.7D;
+            double phase = fract(seed + time * (0.010D + (i % 5) * 0.0016D));
+            double x = x0 + fract(seed * 7.13D
+                    + Math.sin(time * 0.02D + i * 1.7D) * 0.015D) * lengthX;
+            double z = z0 + fract(seed * 3.71D
+                    + Math.cos(time * 0.017D + i * 2.1D) * 0.015D) * lengthZ;
+            double size = 0.025D + (i % 4) * 0.007D;
+            float alpha = (float) (0.10D + 0.28D * Math.sin(Math.PI * phase));
+            if (alpha <= 0.01F) continue;
+            horizontalQuadTex(buffer, x - size, z - size, x + size, z + size, y,
+                    0.0D, 0.0D, 1.0D, 1.0D, 0.88F, 0.97F, 1.0F, alpha);
+        }
+        tessellator.draw();
+    }
+
+    private static void horizontalQuadColor(BufferBuilder buffer, double x0, double z0,
+                                            double x1, double z1, double y,
+                                            float red, float green, float blue, float alpha) {
+        buffer.pos(x0, y, z0).color(red, green, blue, alpha).endVertex();
+        buffer.pos(x1, y, z0).color(red, green, blue, alpha).endVertex();
+        buffer.pos(x1, y, z1).color(red, green, blue, alpha).endVertex();
+        buffer.pos(x0, y, z1).color(red, green, blue, alpha).endVertex();
+    }
+
+    private static void horizontalQuadTex(BufferBuilder buffer, double x0, double z0,
+                                          double x1, double z1, double y,
+                                          double u0, double v0, double u1, double v1,
+                                          float red, float green, float blue, float alpha) {
+        buffer.pos(x0, y, z0).tex(u0, v0).color(red, green, blue, alpha).endVertex();
+        buffer.pos(x1, y, z0).tex(u1, v0).color(red, green, blue, alpha).endVertex();
+        buffer.pos(x1, y, z1).tex(u1, v1).color(red, green, blue, alpha).endVertex();
+        buffer.pos(x0, y, z1).tex(u0, v1).color(red, green, blue, alpha).endVertex();
     }
 
     private static void setTextureParameters(int wrap, int filter) {

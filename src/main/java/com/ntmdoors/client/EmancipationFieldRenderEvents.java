@@ -54,10 +54,36 @@ public final class EmancipationFieldRenderEvents {
 
             AxisAlignedBB field = grill.getFieldBox();
             if (field == null) continue;
+            if (field.maxY - field.minY <= 0.1D) {
+                if (blockVerticalMovement(player, field, input)) return;
+                continue;
+            }
             if (!nearField(player, field)) continue;
             if (mode == TileEntityEmancipationGrill.FieldMode.SOLID && grill.hasClearance(player)) continue;
             if (blockTowardsField(player, field, input)) return;
         }
+    }
+
+    /** Stops a jump or sneak that would push the player through a horizontal field. */
+    private static boolean blockVerticalMovement(EntityPlayerSP player, AxisAlignedBB field,
+                                                 MovementInput input) {
+        double half = player.width * 0.5D;
+        if (player.posX + half < field.minX || player.posX - half > field.maxX
+                || player.posZ + half < field.minZ || player.posZ - half > field.maxZ) {
+            return false;
+        }
+        double plane = (field.minY + field.maxY) * 0.5D;
+        double centre = player.posY + player.height * 0.5D;
+        if (Math.abs(centre - plane) > player.height * 0.5D + 0.5D) return false;
+        if (centre < plane && input.jump) {
+            input.jump = false;
+            return true;
+        }
+        if (centre > plane && input.sneak) {
+            input.sneak = false;
+            return true;
+        }
+        return false;
     }
 
     /** True when the player is close enough to the plane for input rejection to matter. */

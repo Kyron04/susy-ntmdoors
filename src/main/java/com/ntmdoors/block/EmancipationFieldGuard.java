@@ -2,7 +2,6 @@ package com.ntmdoors.block;
 
 import com.ntmdoors.tile.TileEntityEmancipationGrill;
 import com.ntmdoors.util.EmancipationFieldGeometry;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -43,18 +42,20 @@ public final class EmancipationFieldGuard {
             AxisAlignedBB field = grill.getFieldBox();
             if (field == null) continue;
 
-            IBlockState coreState = world.getBlockState(core);
-            if (!(coreState.getBlock() instanceof BlockEmancipationGrill)) continue;
-            double height = EmancipationFieldGeometry.fieldHeight(
-                    ((BlockEmancipationGrill) coreState.getBlock()).mount());
-            if (block.intersects(doorwaySlice(field, core.getY(), height))) return true;
+            if (block.intersects(doorwaySlice(field, core.getY()))) return true;
         }
         return false;
     }
 
     /** One-block-thick opening centred on the field plane, full grill span and height. */
-    private static AxisAlignedBB doorwaySlice(AxisAlignedBB field, double y0, double height) {
-        double y1 = y0 + height;
+    private static AxisAlignedBB doorwaySlice(AxisAlignedBB field, double y0) {
+        if (field.maxY - field.minY <= EmancipationFieldGeometry.THICKNESS * 1.5D) {
+            double planeY = (field.minY + field.maxY) * 0.5D;
+            return new AxisAlignedBB(field.minX, planeY - 0.5D, field.minZ,
+                    field.maxX, planeY + 0.5D, field.maxZ);
+        }
+
+        double y1 = y0 + EmancipationFieldGeometry.HEIGHT;
         boolean spansX = (field.maxX - field.minX) > (field.maxZ - field.minZ);
         if (spansX) {
             double planeZ = (field.minZ + field.maxZ) * 0.5D;

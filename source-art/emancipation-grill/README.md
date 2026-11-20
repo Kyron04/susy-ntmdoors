@@ -25,8 +25,9 @@ wisps and bright emitter seams, rather than a solid blue wall.
   the player's inventory. Page two holds the field modes and access/destruction toggles. Page three
   controls redstone event outputs.
 - **Horizontal variant.** A second grill item places a 3x1x1 bar that runs left/right along the
-  wall. Two horizontal bars pair across an opening and create the same thin field, one block high.
-  It shares the console, ownership, Redstone links, terminal device type and detection toggles.
+  wall. Two horizontal bars pair across an opening and create a horizontal field sheet at the
+  emitter line. It shares the console, ownership, Redstone links, terminal device type and detection
+  toggles.
 - **Field modes.** Solid blocks unauthorized players and mobs; Neutral renders the field but has no
   effect; Lethal kills unauthorized players and mobs, and erases non-living entities such as dropped
   items, projectiles, vehicles and item frames that touch the field; Wall Mode blocks every detected

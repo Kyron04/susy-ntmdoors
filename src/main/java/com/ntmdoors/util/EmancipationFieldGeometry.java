@@ -19,15 +19,15 @@ public final class EmancipationFieldGeometry {
     public static final double THICKNESS = 1.0D / 16.0D;
     /** Total height of the three-block vertical grill column. */
     public static final double HEIGHT = 3.0D;
-    /** Height of the horizontal grill bar's field. */
-    public static final double HORIZONTAL_HEIGHT = 1.0D;
     /**
      * The blue emitter strip runs from 3 model pixels above the column bottom to 3 pixels below
      * the top (y 3..45 out of 48). The field must stop at those same lines.
      */
     public static final double VERTICAL_INSET = 3.0D / 16.0D;
-    /** Visual breathing room above and below a horizontal bar's one-block field. */
-    public static final double HORIZONTAL_INSET = 1.0D / 16.0D;
+    /** The horizontal emitter strip centre, measured from the bar's base. */
+    public static final double HORIZONTAL_FIELD_Y = 4.0D / 16.0D;
+    /** Length of the horizontal bar and its field. */
+    public static final double HORIZONTAL_BAR_LENGTH = 3.0D;
     private static final double EMITTER_INSET = 1.0D / 64.0D;
     /** Emitter strip centre is four model pixels from the block centre. */
     private static final int STRIP_OFFSET = 4;
@@ -109,19 +109,28 @@ public final class EmancipationFieldGeometry {
         double bx = partner.getX() + 0.5D + dx * EMITTER_INSET;
         double bz = partner.getZ() + 0.5D + dz * EMITTER_INSET;
 
-        double y0;
-        double y1;
         if (mount == BlockEmancipationGrill.Mount.HORIZONTAL) {
-            y0 = core.getY() + HORIZONTAL_INSET;
-            y1 = core.getY() + HORIZONTAL_HEIGHT - HORIZONTAL_INSET;
-        } else {
-            y0 = core.getY() + VERTICAL_INSET;
-            y1 = core.getY() + HEIGHT - VERTICAL_INSET;
+            // The bar's emitter plane is horizontal: thin in Y, spanning the gap and the
+            // three-block bar length along the wall.
+            double planeY = core.getY() + HORIZONTAL_FIELD_Y;
+            double y0 = planeY - THICKNESS / 2.0D;
+            double y1 = planeY + THICKNESS / 2.0D;
+            double half = HORIZONTAL_BAR_LENGTH / 2.0D;
+            if (facing.getAxis() == EnumFacing.Axis.X) {
+                double centreZ = core.getZ() + 0.5D;
+                return new AxisAlignedBB(
+                        Math.min(ax, bx), y0, centreZ - half,
+                        Math.max(ax, bx), y1, centreZ + half);
+            }
+            double centreX = core.getX() + 0.5D;
+            return new AxisAlignedBB(
+                    centreX - half, y0, Math.min(az, bz),
+                    centreX + half, y1, Math.max(az, bz));
         }
 
-        // The horizontal bar's emitter spans the bar, so its field plane is centred on the core.
-        int strip = mount == BlockEmancipationGrill.Mount.HORIZONTAL
-                ? 0 : (mirrored ? -STRIP_OFFSET : STRIP_OFFSET);
+        double y0 = core.getY() + VERTICAL_INSET;
+        double y1 = core.getY() + HEIGHT - VERTICAL_INSET;
+        int strip = mirrored ? -STRIP_OFFSET : STRIP_OFFSET;
 
         if (facing.getAxis() == EnumFacing.Axis.X) {
             double stripZ = core.getZ() + 0.5D + Facings.worldZ(strip, 0, facing) / 16.0D;
@@ -134,11 +143,6 @@ public final class EmancipationFieldGeometry {
         return new AxisAlignedBB(
                 stripX - THICKNESS / 2.0D, y0, Math.min(az, bz),
                 stripX + THICKNESS / 2.0D, y1, Math.max(az, bz));
-    }
-
-    /** Full opening height used by the placement guard. */
-    public static double fieldHeight(BlockEmancipationGrill.Mount mount) {
-        return mount == BlockEmancipationGrill.Mount.HORIZONTAL ? HORIZONTAL_HEIGHT : HEIGHT;
     }
 
     public static boolean isOwner(BlockPos core, BlockPos partner) {

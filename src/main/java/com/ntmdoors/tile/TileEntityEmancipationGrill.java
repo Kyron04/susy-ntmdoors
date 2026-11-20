@@ -853,6 +853,21 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
 
     /** True when the entity's last movement segment crossed the field plane inside the opening. */
     private static boolean crossesField(Entity entity, AxisAlignedBB box) {
+        boolean horizontal = (box.maxY - box.minY)
+                <= EmancipationFieldGeometry.THICKNESS * 1.5D;
+        if (horizontal) {
+            double plane = (box.minY + box.maxY) * 0.5D;
+            double previous = entity.lastTickPosY + entity.height * 0.5D;
+            double current = entity.posY + entity.height * 0.5D;
+            if (!((previous < plane && current >= plane)
+                    || (previous > plane && current <= plane))) {
+                return false;
+            }
+            double half = entity.width * 0.5D;
+            return entity.posX + half >= box.minX && entity.posX - half <= box.maxX
+                    && entity.posZ + half >= box.minZ && entity.posZ - half <= box.maxZ;
+        }
+
         boolean spansX = (box.maxX - box.minX) > (box.maxZ - box.minZ);
         double plane = spansX
                 ? (box.minZ + box.maxZ) * 0.5D
@@ -877,6 +892,25 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
      * is server-authoritative, so a client that keeps holding forward cannot walk through.
      */
     private static void clampEntity(Entity entity, AxisAlignedBB box) {
+        boolean horizontal = (box.maxY - box.minY)
+                <= EmancipationFieldGeometry.THICKNESS * 1.5D;
+        if (horizontal) {
+            double plane = (box.minY + box.maxY) * 0.5D;
+            double previous = entity.lastTickPosY + entity.height * 0.5D;
+            double current = entity.posY + entity.height * 0.5D;
+            boolean positive = previous > plane;
+            if (Math.abs(previous - plane) < 1.0E-4D || previous == current) {
+                positive = current >= plane;
+            }
+            double target = positive
+                    ? plane + 0.05D
+                    : plane - entity.height - 0.05D;
+            teleport(entity, entity.posX, target, entity.posZ);
+            entity.motionY = 0.0D;
+            entity.velocityChanged = true;
+            return;
+        }
+
         boolean spansX = (box.maxX - box.minX) > (box.maxZ - box.minZ);
         double plane = spansX
                 ? (box.minZ + box.maxZ) * 0.5D
