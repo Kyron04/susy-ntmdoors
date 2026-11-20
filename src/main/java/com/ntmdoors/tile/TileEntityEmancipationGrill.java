@@ -905,8 +905,16 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
             double target = positive
                     ? plane + 0.05D
                     : plane - entity.height - 0.05D;
-            teleport(entity, entity.posX, target, entity.posZ);
+            if (!positive || entity.posY < target) {
+                teleport(entity, entity.posX, target, entity.posZ);
+            }
             entity.motionY = 0.0D;
+            if (positive) {
+                // Standing on the sheet: keep the client's feet planted instead of letting
+                // gravity pull through and trigger a correction every tick.
+                entity.onGround = true;
+                entity.fallDistance = 0.0F;
+            }
             entity.velocityChanged = true;
             return;
         }
