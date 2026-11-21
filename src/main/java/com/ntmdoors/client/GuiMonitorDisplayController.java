@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.client;
 
 import com.ntmdoors.monitor.MonitorWallpaper;
@@ -8,7 +9,17 @@ import net.minecraft.client.renderer.GlStateManager;
 
 import java.util.List;
 
-import static com.ntmdoors.client.GuiMonitor.*;
+import static com.ntmdoors.client.GuiMonitor.BUTTON_HEIGHT;
+import static com.ntmdoors.client.GuiMonitor.DISPLAY_TILE_GAP;
+import static com.ntmdoors.client.GuiMonitor.DISPLAY_TILE_HEIGHT;
+import static com.ntmdoors.client.GuiMonitor.MUTED;
+import static com.ntmdoors.client.GuiMonitor.ORANGE;
+import static com.ntmdoors.client.GuiMonitor.ORANGE_DIM;
+import static com.ntmdoors.client.GuiMonitor.ORANGE_ERROR;
+import static com.ntmdoors.client.GuiMonitor.ORANGE_LIGHT;
+import static com.ntmdoors.client.GuiMonitor.ROW_BG;
+import static com.ntmdoors.client.GuiMonitor.ROW_HOVER;
+import static com.ntmdoors.client.GuiMonitor.TEXT;
 
 /**
  * Owns the terminal Display page. Only the packaged built-in wallpapers are offered; the monitor
