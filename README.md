@@ -10,7 +10,8 @@ Source design reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
 
 ## Build
 Needs JDK 8 (ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs). Chisel 1.12.2-1.0.2.45 is
-required at runtime. The Gradle wrapper is included, so:
+required at runtime. JEI/HEI is optional; the Grill's filter overlay only loads when it is present.
+The Gradle wrapper is included, so:
 
     export JAVA_HOME=/path/to/jdk8
     ./gradlew setupDecompWorkspace   # one-time: downloads + decompiles Minecraft
@@ -305,6 +306,106 @@ for editing.
 * ID Chip (`ntmdoors:id_chip`), Monitor Screen (`ntmdoors:monitor_screen`), Uncased USB
   (`ntmdoors:uncased_usb`), Circuit Board (`ntmdoors:circuit_board`), Card Reader
   (`ntmdoors:card_reader`) and RFID Chip (`ntmdoors:rfid_chip`): plain crafting components.
+* Emancipation Grill (`ntmdoors:emancipation_grill`) and Emancipation Relay Key
+  (`ntmdoors:emancipation_relay_key`): paired field emitters with five modes, a five-page console,
+  field colour, redstone event outputs and an inventory filter. See
+  [Emancipation Grill](#emancipation-grill).
+
+## Emancipation Grill
+
+The Emancipation Grill is a paired security field based on the Portal 2 fizzler. The vertical item
+places a 1x3x1 column; the horizontal item places a 3x1x1 bar. Two units pair across an opening up
+to 10 blocks apart; the second snaps to the first's bottom Y and wall line, faces it, and mirrors
+its emitter strip. The first unit placed owns the pair; the second adopts that owner. Breaking any
+cell dismantles the whole grill and returns one core item.
+
+### Field modes
+
+* **Solid** blocks unauthorized players and mobs. Players pass with a private key or biometric
+  identity on an RFID/Operator Keycard, or with a Creative Keycard. Ownership controls the console
+  and Breaker permissions, not passage.
+* **Neutral** renders the field but has no effect.
+* **Lethal** kills unauthorized players and mobs, and erases non-living entities that touch the
+  plane, including dropped items, projectiles, minecarts, boats, item frames, XP orbs and armor
+  stands. `Ignore Items` leaves dropped items alone; `Ignore Inventory` leaves a killed player's
+  inventory and armor to the normal death drop instead of clearing them first.
+* **Wall** blocks every detected player and mob with no clearance checks, no killing and no item
+  erasure.
+* **Filter** lets everyone pass and applies the page-five whitelist and blacklist to carried,
+  worn, dropped and mob-held items.
+* `Detect Players`, `Detect Hostile Mobs` and `Detect Neutral Mobs` decide which living categories
+  Solid, Lethal and Wall act on. Filter mode applies to all living mobs and players; those toggles
+  do not gate it.
+* The field can be enabled or disabled from page two. Solid, Lethal and Wall reserve the doorway
+  against block placement; Neutral and Filter are pass-through and leave it buildable.
+* The field visual uses three scrolling wisp layers, edge lines and drifting sparks. The renderer
+  is deliberately cheap: no shaders or per-frame texture uploads.
+
+### Console
+
+Sneak + right-click a grill you own with the Emancipation Relay Key or an Operator Keycard to open
+the console. It has five pages:
+
+1. **Keys and IDs.** Assign or remove private keys and biometric identities from an Operator
+   Keycard carried in the player's inventory.
+2. **Modes and toggles.** Solid, Neutral, Lethal, Wall and Filter, plus `Match User`,
+   `Ignore Private Key`, `Ignore Biometric ID`, `Enable Field`, `Disable Field`,
+   `Ignore Inventory`, `Ignore Items`, `Audio`, `Detect Players`, `Detect Hostile Mobs` and
+   `Detect Neutral Mobs`.
+3. **Field colour.** Red, green or blue. The palette is stored on the pair's security core and
+   blue is the original default.
+4. **Redstone events.** Five independent one-tick outputs: Solid pass (Y), Solid block (N),
+   Lethal kill, Match User match (Y) and Match User mismatch (N). All default to off and persist.
+5. **Filter lists.** Two 9x6 grids of ghost patterns, one whitelist and one blacklist.
+
+### Filter mode
+
+Page two's `Filter Mode` lets everyone pass regardless of clearance. The page-five grids hold 54
+ghost patterns each; they are matching patterns, not item storage.
+
+* Drag an item from JEI/HEI onto a slot to set its pattern. Right-click a slot to clear it. Clicking
+  a slot does not take the held hotbar item.
+* Matching uses the registered item and subtype metadata; stack size and NBT are ignored. Whole
+  stacks are voided or kept.
+* The whitelist wins. An item on both lists is preserved. An item on the blacklist is voided.
+* Main inventory, armor and offhand are scanned; creative and spectator players are skipped.
+* Dropped item entities are checked too. Mob equipment, villager inventories,
+  horse/donkey/llama item handlers and standard mob `IInventory`/`IItemHandler` inventories are
+  scanned as well.
+* Container items are checked recursively through Forge's item-handler capability and the standard
+  `Items` NBT layout, covering modded backpacks, toolbelts, vanilla shulker boxes and root-list
+  backpack inventories. Whitelisting a container protects the container itself, not its contents;
+  a blacklisted container is voided whole. Recursion is bounded by depth and slot count.
+* Inventories that do not expose `IItemHandler` or the standard `Items` layout are not scanned.
+  Worn backpacks in custom slots are outside the main/armor/offhand scan.
+* A player or mob is checked once per contact; crossing the field again rechecks it. An item picked
+  up while standing inside the field is rechecked after leaving and re-entering or crossing.
+* Each void plays the same disintegration one-shot as Lethal mode, rate-limited by the grill and
+  respecting the `Audio` toggle. `Ignore Items` remains Lethal-only and does not disable Filter mode.
+* Page five warns when the field is disabled, Filter Mode is off, or the player is creative or a
+  spectator. The JEI/HEI overlay is positioned beside the console on page five only.
+
+### Redstone, terminals and audio
+
+* Bind gates to the grill with the Redstone Relay Key to receive its event pulses. A Security
+  terminal can list a grill as a device, toggle its field, and run net-wide Drop all fields / Raise
+  all fields actions.
+* Linking a grill to an off gate drops the field once so the console can be configured. Afterwards
+  gate activation can raise the field, but gate deactivation and the grill's own pulses leave the
+  configured field alone.
+* The field uses the Portal 2 fizzler start, loop and shutdown sounds, with the material
+  emancipation one-shot for lethal and filter disintegration. Sounds have a three-block audible
+  radius and can be muted from the console. The loop follows each active field; start/shutdown play
+  when the field becomes active or stops.
+
+### Ownership and placement
+
+* The first grill placed owns the pair. The second adopts that owner. The owner can open the
+  console and use Breaker keys on it; ownership alone does not grant field passage.
+* Solid, Lethal and Wall reserve the one-block doorway slice at the field line. Neutral and Filter
+  do not, so the doorway can be built through while those modes are active.
+* The horizontal variant shares the console, ownership, Redstone, terminal device type and
+  detection toggles. Its paired field is a horizontal sheet at the emitter line.
 
 ## Crafting
 
@@ -317,9 +418,10 @@ also uses iron bars), and the Fire Door uses iron ingots instead of glass.
 Locked and security door variants are upgrades from the normal door using two redstone or two
 ID Chips; office-door variants use full shaped recipes, while industrial and large-door upgrades
 are shapeless.
-The Relay, Biometric Relay, Redstone, Motion, Terminal, Weapons and Breaker Relay Keys,
-programmer-made RFID card colours, the Creative Keycard, Developer Keycard and Spatial Disrupter
-are recipe-free.
+The Relay, Biometric Relay, Redstone, Motion, Terminal, Weapons, Breaker and Emancipation Relay
+Keys, programmer-made RFID card colours, the Creative Keycard, Developer Keycard and Spatial
+Disrupter are recipe-free. The Emancipation Grill and its horizontal variant are also creative-only
+and have no crafting recipe.
 * Redstone Gate (`ntmdoors:redstone_gate`): a full-cube redstone component with separate off and on
   textures. It starts off, turns on while it receives redstone power or a wireless pulse, and emits
   a full-strength signal while on. Redstone dust sitting on top is refreshed when the gate switches,
@@ -593,9 +695,11 @@ and `.clipZ(...)` where the original HBM renderer used a clip plane. Moving part
 for explicit model-space bounds; `.collisionSplits(n)` tightens rotating parts by slicing their AABB.
 
 ## Not included
-Configs, NEI/JEI and other NTM items are not included. All 27 doors have crafting recipes; the
-screwdriver, most non-door items and machines, the decorative desks and monitors, and the concrete
-set also have recipes. The included HL Blocks are creative-only.
+Configs and other NTM items are not included. JEI/HEI is optional: without it the Grill console
+still opens, but filter patterns can only be cleared, not set, because setting them uses JEI/HEI
+dragging. All 27 doors have crafting recipes; the screwdriver, most non-door items and machines,
+the decorative desks and monitors, and the concrete set also have recipes. The included HL Blocks
+are creative-only.
 
 ## Concrete and HL Blocks
 
@@ -699,5 +803,5 @@ LGPL-3.0; see `NOTICE` for the exact file lists and links.
 ## AI assistance
 
 This project was developed with AI assistance, including the concrete and HL Blocks integration,
-security equipment behaviour and release housekeeping. See [`AI_DISCLOSURE.md`](AI_DISCLOSURE.md)
-for the tool, the extent of use and the human review.
+Emancipation Grill field/filter work, security equipment behaviour and release housekeeping. See
+[`AI_DISCLOSURE.md`](AI_DISCLOSURE.md) for the tool, the extent of use and the human review.
