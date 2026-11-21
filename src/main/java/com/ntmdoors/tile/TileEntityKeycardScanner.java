@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.tile;
 
 import com.ntmdoors.block.BlockDoorGeneric;
@@ -1177,8 +1178,18 @@ public class TileEntityKeycardScanner extends TileEntitySynced implements ITicka
         ticks = tag.getInteger("scanTicks");
         visibleCount = tag.getInteger("visibleCount");
         bindingTicks = tag.getInteger("bindingTicks");
-        bindingPlayer = tag.hasKey("bindingPlayer") ? UUID.fromString(tag.getString("bindingPlayer")) : null;
-        scanningPlayer = tag.hasKey("scanningPlayer") ? UUID.fromString(tag.getString("scanningPlayer")) : null;
+        bindingPlayer = readUuid(tag, "bindingPlayer");
+        scanningPlayer = readUuid(tag, "scanningPlayer");
+    }
+
+    @Nullable
+    private static UUID readUuid(NBTTagCompound tag, String key) {
+        if (!tag.hasKey(key)) return null;
+        try {
+            return UUID.fromString(tag.getString(key));
+        } catch (IllegalArgumentException ignored) {
+            return null;
+        }
     }
 
     /** Matches the keypad and the doors: the screen stays legible out to 128 blocks. */

@@ -137,6 +137,13 @@ jar {
     }
 }
 
+sourceJar {
+    // The source jar is for developers; runtime assets belong only in the main jar.
+    exclude 'assets/**'
+    exclude 'mcmod.info'
+    exclude 'pack.mcmeta'
+}
+
 // ForgeGradle 2.3 downloads game assets from http://resources.download.minecraft.net, which now
 // rejects plain HTTP requests. Fetch the same objects over HTTPS before FG's getAssets task runs.
 def mcVersion = project.minecraft.version.split('-')[0]

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.weapons;
 
 import com.ntmdoors.item.ItemWeaponsRelayKey;
@@ -28,8 +29,16 @@ public final class WeaponsKeyData {
         if (id.isEmpty()) {
             id = UUID.randomUUID().toString();
             tag.setString(KEY_ID, id);
+            return UUID.fromString(id);
         }
-        return UUID.fromString(id);
+        try {
+            return UUID.fromString(id);
+        } catch (IllegalArgumentException ignored) {
+            // Repair malformed item NBT instead of failing every use of the key.
+            UUID replacement = UUID.randomUUID();
+            tag.setString(KEY_ID, replacement.toString());
+            return replacement;
+        }
     }
 
     public static UUID keyId(ItemStack stack) {

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.network;
 
 import com.ntmdoors.item.ItemOperatorKeycard;
@@ -63,6 +64,7 @@ public class MessageGrillKey implements IMessage {
 
         private static void apply(EntityPlayerMP player, MessageGrillKey message) {
             if (message.pos == null || message.value == null || message.value.isEmpty()) return;
+            if (!NetworkUtil.isWithinReach(player, message.pos)) return;
 
             TileEntity te = player.world.getTileEntity(message.pos);
             if (!(te instanceof TileEntityEmancipationGrill)) return;

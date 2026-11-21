@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.registry;
 
 import com.ntmdoors.NTMDoors;
@@ -514,10 +515,10 @@ public class ModContent {
         for (ItemRfidCard card : UAC_CARDS) e.getRegistry().register(card);
         // Newest keys go last for the same reason.
         e.getRegistry().register(BREAKER_RELAY_KEY);
-        // The Emancipation key belongs with the relay-key group; later cards/block items shift by one.
-        e.getRegistry().register(EMANCIPATION_RELAY_KEY);
         // The O5 card is newer still, so it takes the next free numeric item ID.
         for (ItemRfidCard card : O5_CARDS) e.getRegistry().register(card);
+        // The Emancipation key is new in 1.0.79 and must follow every older item.
+        e.getRegistry().register(EMANCIPATION_RELAY_KEY);
         // Emancipation Grill item goes last so every saved numeric item ID stays untouched.
         e.getRegistry().register(new ItemEmancipationGrill(EMANCIPATION_GRILL)
                 .setRegistryName(EMANCIPATION_GRILL.getRegistryName())
