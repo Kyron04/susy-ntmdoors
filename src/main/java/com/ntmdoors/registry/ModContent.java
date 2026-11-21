@@ -528,7 +528,7 @@ public class ModContent {
                 .setCreativeTab(NTMDoors.TAB));
     }
 
-    /** Keeps existing worlds working after the SCP card registry names moved from 1-6 to 0-5. */
+    /** Keeps existing worlds working after registry names moved. */
     @SubscribeEvent
     public static void remapMissingItems(RegistryEvent.MissingMappings<Item> event) {
         for (RegistryEvent.MissingMappings.Mapping<Item> mapping : event.getMappings()) {
@@ -552,10 +552,54 @@ public class ModContent {
                 case "scp_level_6_keycard":
                     mapping.remap(SCP_LEVEL_5_KEYCARD);
                     break;
+                case "black_mesa_door":
+                    remapDoorItem(mapping, "office_door_1");
+                    break;
+                case "black_mesa_door_locked":
+                    remapDoorItem(mapping, "office_door_1_locked");
+                    break;
+                case "black_mesa_door_security":
+                    remapDoorItem(mapping, "office_door_1_security");
+                    break;
                 default:
                     break;
             }
         }
+    }
+
+    /** Keeps existing worlds working after Office Door 1 moved from black_mesa_door. */
+    @SubscribeEvent
+    public static void remapMissingBlocks(RegistryEvent.MissingMappings<Block> event) {
+        for (RegistryEvent.MissingMappings.Mapping<Block> mapping : event.getMappings()) {
+            if (!NTMDoors.MODID.equals(mapping.key.getNamespace())) continue;
+            switch (mapping.key.getPath()) {
+                case "black_mesa_door":
+                    remapDoorBlock(mapping, "office_door_1");
+                    break;
+                case "black_mesa_door_locked":
+                    remapDoorBlock(mapping, "office_door_1_locked");
+                    break;
+                case "black_mesa_door_security":
+                    remapDoorBlock(mapping, "office_door_1_security");
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    private static void remapDoorItem(RegistryEvent.MissingMappings.Mapping<Item> mapping,
+                                      String replacementPath) {
+        Item replacement = Item.REGISTRY.getObject(
+                new ResourceLocation(NTMDoors.MODID, replacementPath));
+        if (replacement != null) mapping.remap(replacement);
+    }
+
+    private static void remapDoorBlock(RegistryEvent.MissingMappings.Mapping<Block> mapping,
+                                       String replacementPath) {
+        Block replacement = Block.REGISTRY.getObject(
+                new ResourceLocation(NTMDoors.MODID, replacementPath));
+        if (replacement != null) mapping.remap(replacement);
     }
 
     @SubscribeEvent

@@ -547,7 +547,9 @@ derived from its model, and the keycard scanner uses a flat 16x16 icon while its
 | `blast_door` | `Tooth`, `Slider1`-`Slider4` | 1x7 roller shutter (Roller Blast Door) |
 | `water_door` | `Door_Cube.003`, `Bolts`, `Top`, `Bottom` | 3x3 swinging water-tight door |
 | `transition_seal` | 20 rigid keyframed groups | converted from HBM `seal.dae`; full Collada action replayed as per-group matrices |
-| `black_mesa_door` | `Door` | 1x2 office door with straight front/back levers, dark frame and static hinges |
+| `office_door_1` | `Door`, `Handle` | 1x2 office door with straight front/back levers, dark frame and static hinges |
+| `office_door_2` | `Door` | 1x2 red office door with a wire-glass window, panic bar and vertical latch rod |
+| `office_door_3` | `Door` | 1x2 brown wood office door with straight levers |
 | `office_door_1_double` | `DoorLeft`, `DoorRight` | 2x2 double office door with mirrored leaves and front/back handles |
 | `office_door_2_double` | `DoorLeft`, `DoorRight` | 2x2 red double office door with mirrored leaves |
 | `office_door_3_double` | `DoorLeft`, `DoorRight` | 2x2 brown double office door with mirrored leaves |

@@ -26,7 +26,7 @@ NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system, secur
 - **Large Silo Hatch** — 7x7 tilting hatch
 - **Transition Seal** — huge keyframed 24-second sequence
 - **Test Door** — 3x3 red/white containment door
-- **Office Door 1** — 1x2 Black Mesa style swing door
+- **Office Door 1** — 1x2 metal office door with straight front/back levers
 - **Office Door 2** — 1x2 red painted office door with a wire-glass window
 - **Office Door 3** — 1x2 brown wood office door with straight levers
 - **Office Door 1/2/3 (Double)** — 2x2 mirrored-leaf versions of each office door

@@ -18,7 +18,7 @@ the original office-door assets described below:
     src/main/java/com/ntmdoors/door/DoorDecls.java
 
 Office-door assets
-(`black_mesa_door*`, `office_door_1*`, `office_door_2*`, `office_door_3*` under
+(`office_door_1*`, `office_door_2*`, `office_door_3*` under
 `assets/ntmdoors/models/doors/` and `assets/ntmdoors/textures/models/doors/`,
 plus the matching files under `source-art/office-doors/`) are original
 recreations inspired by the Black Mesa/Half-Life office-door style. They are not

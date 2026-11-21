@@ -156,7 +156,7 @@ public final class ModRecipes {
      * security doors replace them with ID Chips.
      */
     private static void officeDoors(RegistryEvent.Register<IRecipe> e) {
-        officeDoorSet(e, DoorDecls.BLACK_MESA_DOOR, "WDW",
+        officeDoorSet(e, DoorDecls.OFFICE_DOOR_1, "WDW",
                 "plankWood", Items.IRON_DOOR);
         officeDoorSet(e, DoorDecls.OFFICE_DOOR_1_DOUBLE, "DWD",
                 "plankWood", Items.IRON_DOOR);

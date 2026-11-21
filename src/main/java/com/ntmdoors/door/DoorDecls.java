@@ -576,7 +576,7 @@ public final class DoorDecls {
 
     // ------------------------------------------------------------ office door family
     //
-    // Black Mesa style office doors share the same frame, swing behaviour and latch sounds.
+    // The office doors share the same frame, swing behaviour and latch sounds.
     // New variants only need id, display name, model/texture paths, and whether the metal
     // threshold is a clickable selection box (older office doors have it; thresholdless
     // variants do not).
@@ -693,23 +693,23 @@ public final class DoorDecls {
     }
 
     /**
-     * 1x2 Black Mesa style office door. The leaf is hinged on the left and swings toward the
+     * 1x2 office door. The leaf is hinged on the left and swings toward the
      * front of the door. The footprint is two cells deep so the open leaf has a real cell to
      * occupy; the cell in front of the closed door is clear and can be walked through.
      */
-    public static final DoorDecl BLACK_MESA_DOOR = officeDoorSingle(
-            "black_mesa_door", "Office door 1",
-            "models/doors/black_mesa_door.obj", "textures/models/doors/black_mesa_door.png",
+    public static final DoorDecl OFFICE_DOOR_1 = officeDoorSingle(
+            "office_door_1", "Office door 1",
+            "models/doors/office_door_1.obj", "textures/models/doors/office_door_1.png",
             true,
             // White leaf panel variants: dark blue, olive, taupe, black.
-            "textures/models/doors/black_mesa_door_2d4a73.png",
-            "textures/models/doors/black_mesa_door_a39c48.png",
-            "textures/models/doors/black_mesa_door_785e5c.png",
-            "textures/models/doors/black_mesa_door_212121.png")
+            "textures/models/doors/office_door_1_2d4a73.png",
+            "textures/models/doors/office_door_1_a39c48.png",
+            "textures/models/doors/office_door_1_785e5c.png",
+            "textures/models/doors/office_door_1_212121.png")
             // The handle rotates with the leaf but keeps its original metal texture; the
             // leaf's coloured edge is painted in the main variant texture.
             .anim("Handle", PartAnim.rotate(-90, 0, 1, 0, 0.395, 0, 0, 0F, 1F))
-            .partSkin("Handle", "textures/models/doors/black_mesa_door_handle.png");
+            .partSkin("Handle", "textures/models/doors/office_door_1_handle.png");
 
     /**
      * 2x2 double office door. Two mirrored leaves meet in the middle; the right leaf is hinged
@@ -721,18 +721,18 @@ public final class DoorDecls {
             "models/doors/office_door_1_double.obj", "textures/models/doors/office_door_1_double.png",
             true,
             // The double uses the same white-panel variants as the single.
-            "textures/models/doors/black_mesa_door_2d4a73.png",
-            "textures/models/doors/black_mesa_door_a39c48.png",
-            "textures/models/doors/black_mesa_door_785e5c.png",
-            "textures/models/doors/black_mesa_door_212121.png")
+            "textures/models/doors/office_door_1_2d4a73.png",
+            "textures/models/doors/office_door_1_a39c48.png",
+            "textures/models/doors/office_door_1_785e5c.png",
+            "textures/models/doors/office_door_1_212121.png")
             .anim("HandleRight", PartAnim.rotate(-90, 0, 1, 0, 0.90, 0, 0, 0F, 1F))
             .anim("HandleLeft", PartAnim.rotate(90, 0, 1, 0, -0.90, 0, 0, 0F, 1F))
-            .partSkin("HandleRight", "textures/models/doors/black_mesa_door_handle.png")
-            .partSkin("HandleLeft", "textures/models/doors/black_mesa_door_handle.png");
+            .partSkin("HandleRight", "textures/models/doors/office_door_1_handle.png")
+            .partSkin("HandleLeft", "textures/models/doors/office_door_1_handle.png");
 
     /**
-     * Red single office door based on the Black Mesa fire/office doors. It reuses the office
-     * frame and swing behaviour, with a wire-glass window, panic bar and vertical latch rod.
+     * Red single office door. It reuses the office frame and swing behaviour, with a wire-glass
+     * window, panic bar and vertical latch rod.
      */
     public static final DoorDecl OFFICE_DOOR_2 = officeDoorSingle(
             "office_door_2", "Office door 2",
@@ -763,8 +763,7 @@ public final class DoorDecls {
             "textures/models/doors/office_door_2_212121.png");
 
     /**
-     * Brown single office door based on the Black Mesa office doors. Plain wood leaf, square
-     * rosette and a straight lever on each face.
+     * Brown single office door. Plain wood leaf, square rosette and a straight lever on each face.
      */
     public static final DoorDecl OFFICE_DOOR_3 = officeDoorSingle(
             "office_door_3", "Office door 3",
@@ -800,14 +799,14 @@ public final class DoorDecls {
             "textures/models/doors/office_door_1_double.png",
             true, 3, 3, 2, 1.5,
             // The 3x3 double uses the same white-panel variants as the single.
-            "textures/models/doors/black_mesa_door_2d4a73.png",
-            "textures/models/doors/black_mesa_door_a39c48.png",
-            "textures/models/doors/black_mesa_door_785e5c.png",
-            "textures/models/doors/black_mesa_door_212121.png")
+            "textures/models/doors/office_door_1_2d4a73.png",
+            "textures/models/doors/office_door_1_a39c48.png",
+            "textures/models/doors/office_door_1_785e5c.png",
+            "textures/models/doors/office_door_1_212121.png")
             .anim("HandleRight", PartAnim.rotate(-90, 0, 1, 0, 1.35, 0, 0, 0F, 1F))
             .anim("HandleLeft", PartAnim.rotate(90, 0, 1, 0, -1.35, 0, 0, 0F, 1F))
-            .partSkin("HandleRight", "textures/models/doors/black_mesa_door_handle.png")
-            .partSkin("HandleLeft", "textures/models/doors/black_mesa_door_handle.png"));
+            .partSkin("HandleRight", "textures/models/doors/office_door_1_handle.png")
+            .partSkin("HandleLeft", "textures/models/doors/office_door_1_handle.png"));
 
     /** 3x3 red double office door. */
     public static final DoorDecl OFFICE_DOOR_2_DOUBLE_3X3 = regLate(officeDoorScaled(
