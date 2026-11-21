@@ -67,13 +67,14 @@ for editing.
   off → **Distance** → **Multi** → off. In either mode, sneak + right click each **closed** door
   within 32 blocks to link it. Distance binds one door; Multi holds up to nine, next to the pad or
   away from it. Both modes share one code, and the pad shows `Confirm Door Binding?` (with
-  `X Doors` under Multi) until `E` accepts the links; the LCD then shows `Input code` /
-  `Input multi code`, and the code typed there toggles every linked door. Pressing any key ends
-  linking. Once a code or link exists the mode is fixed and the screwdriver can only reset the
-  pad, which clears every link and code. A keypad placed next to an already-bound door auto-syncs
-  its code and skips the confirmation. A keypad never binds or drives a security door: placing one
-  against a security door shows `Unable to bound` in red on the LCD. A door is also driven by
-  keypads or keycard scanners, never both, so a pad refuses a door a scanner already controls.
+  `X Doors` under Multi) until `E` accepts the links; other keys are ignored while the prompt is
+  up. The LCD then shows `Input code` / `Input multi code`, and the code typed there toggles every
+  linked door. Pressing any key otherwise ends linking. Once a code or link exists the mode is
+  fixed and the screwdriver can only reset the pad, which clears every link and code. A keypad
+  placed next to an already-bound door auto-syncs its code and skips the confirmation. A keypad
+  never binds or drives a security door: placing one against a security door shows `Unable to
+  bound` in red on the LCD. A door is also driven by keypads or keycard scanners, never both, so a
+  pad refuses a door a scanner already controls.
   Keypads have two codes: the normal door code above, and a separate security code that gates the
   Redstone Relay Key screen. Sneak + right click a keypad with that key to enter (or first set) the
   security code; the screen then sets the first door code, toggles `On fail` / `On success`
@@ -440,7 +441,8 @@ are recipe-free.
     fail, Private key success, Biometric fail, Biometric success, Lockout.
   - Keypad (Redstone Relay Key screen): On fail, On success.
   The safe's Redstone page does not show the player inventory. Breaking a safe, scanner, keypad or
-  gate clears the reciprocal wireless links; door/keypad/scanner bindings are untouched.
+  gate clears the reciprocal wireless links. A broken safe also clears its own safe-to-door links;
+  keypad and scanner door bindings are untouched.
 * RFID cards: one blank card plus red, violet, green, blue, black, orange and yellow variants.
   Each colour is a separate item (`ntmdoors:red_rfid_card` and so on) sharing a single item class
   and one hand-display model, so they all sit in the hand identically. The scanner recognises them
@@ -471,10 +473,10 @@ are recipe-free.
   `ntmdoors:level_12_access_keycard`): twelve fixed-name cards with `Level 1 access` through
   `Level 12 access` tooltips. They use the same private-key storage, card viewer, holder, scanner
   and programmer-palette behaviour as the other RFID cards.
-* Operator Keycard (`ntmdoors:operator_keycard`): a dark card with an orange stripe and three orange
-  dots. It shares the RFID hand-display model and, aimed at a bound scanner, opens that scanner's
-  security code screen; anywhere else sneak right-click opens the same private-key viewer as a
-  colour card.
+* Operator Keycard (`ntmdoors:operator_keycard`): a dark card with an orange stripe and three
+  orange dots. It shares the RFID hand-display model; sneak + right-click a bound scanner opens
+  that scanner's security code screen, while sneak + right-click anywhere else opens the same
+  private-key viewer as a colour card.
 * Biometric items (`ntmdoors:biometric_keycard`, `ntmdoors:biometric_operator_keycard`,
   `ntmdoors:biometric_relay_key`): a Biometric Relay Key collects your identity on sneak right-click
   instead of creating a private key, and the programmer binds that identity onto a card. Biometric
