@@ -1115,6 +1115,7 @@ FIXES
   right-click check called a client-only ray trace and crashed the server.
 - Operator Keycard scanner lookup uses the same server-safe ray trace.
 
+Internal 1.0.28
 Everything below is new since the 1.0.26 CurseForge release. The 1.0.26 jar contained
 the doors, keypad and screwdriver only; 1.0.28 added the full keycard access-control layer
 and the Documents Folder.
