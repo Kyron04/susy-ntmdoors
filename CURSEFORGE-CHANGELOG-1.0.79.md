@@ -1,35 +1,41 @@
-# NTM Doors 1.0.79 — CurseForge Release
+# NTM Doors 1.0.79 - CurseForge Release
 
 Minecraft 1.12.2 / Forge 14.23.5.2847+ (tested on 14.23.5.2860)
 Requires Chisel 1.12.2-1.0.2.45
 
 **File:** `ntmdoors-1.0.79.jar`
-**SHA-256:** `4039B2C078680431D1147D64549F6E7853DAB97C1DFC4E8905A893E5822828C6`
+**SHA-256:** `9B1F9ED05D33047BFA57407097FB12827A73ACB62772040898B9F093943C5800`
 
-This release adds a dark mode toggle to both document editors and fixes the monitor page
-reverting after the toggle.
+This release adds the Emancipation Grill, a paired security field based on the Portal 2 fizzler,
+with five field modes, item filtering, a five-page console, Redstone event outputs, terminal and
+gate integration, and Portal 2 fizzler audio. It also fixes translucent field rendering and render
+state leaks between device special renderers.
 
-## Documents Folder
+## Highlights
 
-- New `DARK` / `LIGHT` button in the top-right bar.
-- Dark mode changes the writing field to `#3E434B` with white text.
-- The folder body, tabs, borders and red accents switch to a complementary dark palette.
-- The choice is stored in the folder's NBT and reopens with it.
-- Light mode is unchanged.
-
-## Monitor Notepad
-
-- New `DARK` / `LIGHT` button in the top-right bar.
-- Only the paper page changes: `#3E434B` background with white text. The casing, title bar, sidebar
-  and buttons keep their existing colours.
-- The theme is stored on the desk, shared by everyone using that terminal, and mirrored on the
-  physical monitor screen.
-- The toggle applies immediately and the desk sync confirms it, so the page no longer reverts to
-  light after a moment.
-- Light mode is unchanged.
+- Vertical 1x3x1 and horizontal 3x1x1 Emancipation Grill variants. Two units pair across an opening
+  up to 10 blocks apart; the first unit placed owns the pair and breaking any cell dismantles it.
+- Five field modes: Solid blocks unauthorized players and mobs, Neutral does nothing, Lethal kills
+  unauthorized players and mobs and erases non-living entities, Wall blocks every detected entity
+  without clearance checks, and Filter lets everyone pass while applying item lists.
+- Filter Mode with 54 whitelist and 54 blacklist patterns. Whitelist wins; blacklisted stacks in
+  player inventories, mob equipment and inventories, dropped items and nested containers are
+  voided with the disintegration sound. JEI/HEI dragging sets patterns.
+- Console pages for keys and biometric IDs, modes and detection toggles, field colour, five Redstone
+  event outputs, and the filter grids. Owners open it with the Emancipation Relay Key or an
+  Operator Keycard; Creative Keycards bypass ownership.
+- Security terminal and Redstone Gate integration, including net-wide field raise/drop actions and
+  one-tick event pulses for authorized passage, blocked entities, lethal kills and Match User
+  checks.
+- Portal 2 fizzler start, loop and shutdown sounds, plus a disintegration one-shot for lethal and
+  filter voids, with a three-block radius and an Audio toggle.
+- Fixed the field being overwritten by doors and devices, and reset GL state between device special
+  renderers so keypads, scanners, programmers, monitors, motion sensors and doors no longer pick up
+  a red tint or change shade with render order.
 
 ## Compatibility
 
-- Existing 1.0.77 and 1.0.78 worlds load normally.
-- Clients and servers must both update. Older jars keep the old behavior.
+- Existing 1.0.78 worlds load normally. The Emancipation Grill and filter lists default safely.
+- Clients and servers must both update for the Grill console packet changes.
 - Chisel 1.12.2-1.0.2.45 remains required. No NTM installation is required.
+- JEI or HEI remains optional; the filter overlay loads only when one is present.

@@ -1,7 +1,7 @@
 [{
   "modid": "ntmdoors",
   "name": "NTM Doors",
-  "description": "Standalone port of the multiblock door system, security equipment and concrete building set from HBM's Nuclear Tech Mod, plus the decorative HL Blocks set.",
+  "description": "Standalone port of the multiblock door system, security equipment including the Emancipation Grill, and concrete building set from HBM's Nuclear Tech Mod, plus the decorative HL Blocks set.",
   "version": "${version}",
   "mcversion": "${mcversion}",
   "credits": "Based on the door system and concrete blocks of HBM's Nuclear Tech Mod (LGPL-3.0). Includes HL Blocks by NeoRussia (LGPL-3.0).",

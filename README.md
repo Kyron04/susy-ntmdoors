@@ -1,30 +1,63 @@
-# NTM Doors (Minecraft 1.12.2, Forge 14.23.5.2847)
+# NTM Doors
 
-Standalone port of the HBM's Nuclear Tech Mod door system, security equipment and concrete building
-set to Minecraft 1.12.2. The implementation and the included door, concrete and HL Blocks assets are
-used under the LGPL-3.0. See `LICENSE.LESSER` and `NOTICE` for attribution and source information.
+Standalone Forge 1.12.2 port of the HBM's Nuclear Tech Mod multiblock door system, security
+equipment and concrete building set.
 
-Current development version: see `gradle.properties` (`mod_version`).
+| Component | Version |
+|---|---|
+| Minecraft | 1.12.2 |
+| Forge | 14.23.5.2847+ (tested on 14.23.5.2860) |
+| Chisel | 1.12.2-1.0.2.45 (required) |
+| JEI/HEI | Optional; enables the Grill filter overlay |
+| Java (build) | JDK 8 |
 
-Source design reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
+## Overview
 
-## Build
-Needs JDK 8 (ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs). Chisel 1.12.2-1.0.2.45 is
-required at runtime. JEI/HEI is optional; the Grill's filter overlay only loads when it is present.
-The Gradle wrapper is included, so:
+NTM Doors adds 27 multiblock doors, keycard and biometric access control, keypads, safes, monitors,
+motion sensors, speakers, the Emancipation Grill and the concrete and HL Blocks building sets. It is
+a standalone port: no NTM installation is required, and every model, texture and sound is bundled.
+The implementation and the included door, concrete and HL Blocks assets are used under the
+LGPL-3.0; see [LICENSE.LESSER](LICENSE.LESSER) and [NOTICE](NOTICE) for attribution and source
+information.
 
-    export JAVA_HOME=/path/to/jdk8
-    ./gradlew setupDecompWorkspace   # one-time: downloads + decompiles Minecraft
-    ./gradlew build                  # jar in build/libs
-    ./gradlew runClient
+The current development version is in `gradle.properties` (`mod_version`). Source design
+reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
 
-The jar version lives in `gradle.properties` (`mod_version`). Every successful `build` writes its
-jar with that version and then bumps the patch number, so the next jar is never the same version.
-Pass `-PnoVersionBump` to rebuild the current version without advancing it. The build strips
-insignificant whitespace from packaged model and blockstate JSON; the source files stay formatted
-for editing.
+## Requirements
 
-## What is implemented
+- Minecraft 1.12.2 with Forge 14.23.5.2847 or newer.
+- Chisel 1.12.2-1.0.2.45. It is required at runtime, not only for building.
+- JEI or HEI is optional. The Emancipation Grill filter overlay loads only when one is present.
+- Building from source requires JDK 8; ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs.
+
+## Installation
+
+1. Install Minecraft Forge 14.23.5.2847 or newer for Minecraft 1.12.2.
+2. Put the Chisel 1.12.2-1.0.2.45 jar and `ntmdoors-<version>.jar` in the `mods` folder.
+3. Launch the game. No NTM installation or additional library is required.
+4. Install the same jar on both client and server. The Grill console and device packets require both
+   sides to run the same version.
+
+## Contents
+
+- [Overview](#overview)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Features](#features)
+- [Emancipation Grill](#emancipation-grill)
+- [Crafting](#crafting)
+- [Motion Sensor appearance](#motion-sensor-appearance)
+- [Included door assets](#included-door-assets)
+- [Tuning to match the real models](#tuning-to-match-the-real-models)
+- [Not included](#not-included)
+- [Concrete and HL Blocks](#concrete-and-hl-blocks)
+- [Compatibility](#compatibility)
+- [Building from source](#building-from-source)
+- [Contributing](#contributing)
+- [License and credits](#license-and-credits)
+- [AI assistance](#ai-assistance)
+
+## Features
 * Multiblock doors of any footprint, placed in one click, rotate with the player, removed as one piece
 * Core tile entity with state machine CLOSED / OPENING / OPEN / CLOSING, synced to clients
 * Redstone from any cell of the door (edge triggered), right click toggle
@@ -794,11 +827,47 @@ Forge builds the blockstate lookup key from a sorted property map, so a slab key
 made every single slab fall back to the missing model even though the model files were present. The
 committed blockstates use the sorted order.
 
-#### Attribution
+## Compatibility
+
+- Existing 1.0.78 and older worlds load normally. The Emancipation Grill and filter lists default
+  safely when absent.
+- Clients and servers must run the same NTM Doors version for Grill console and device packet
+  changes.
+- Chisel 1.12.2-1.0.2.45 is required. JEI/HEI is optional.
+- No NTM installation is required.
+
+## Building from source
+
+Needs JDK 8 (ForgeGradle 2.3 and Gradle 4.x do not run on newer JDKs). The Gradle wrapper is
+included, so:
+
+```bash
+export JAVA_HOME=/path/to/jdk8
+./gradlew setupDecompWorkspace   # one-time: downloads + decompiles Minecraft
+./gradlew build                  # jar in build/libs
+./gradlew runClient
+```
+
+The jar version lives in `gradle.properties` (`mod_version`). Every successful `build` writes its
+jar with that version and then bumps the patch number, so the next jar is never the same version.
+Pass `-PnoVersionBump` to rebuild the current version without advancing it. The build strips
+insignificant whitespace from packaged model and blockstate JSON; the source files stay formatted
+for editing.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution workflow and [docs/standards/](docs/standards/)
+for repository layout, Java style, documentation, assets and release rules. Run `./gradlew build`
+before opening a pull request and include the regression checks relevant to the changed area.
+
+## License and credits
+
+NTM Doors is licensed under the LGPL-3.0. See [LICENSE.LESSER](LICENSE.LESSER) for the license text
+and [NOTICE](NOTICE) for third-party code, model, texture and sound attribution.
 
 The concrete assets come from HBM's Nuclear Tech Mod Community Edition. The HL Blocks assets and
 the original block definitions come from NeoRussia's HL Blocks project. Both are used under
-LGPL-3.0; see `NOTICE` for the exact file lists and links.
+LGPL-3.0; see [NOTICE](NOTICE) for the exact file lists and links. No endorsement is implied.
 
 ## AI assistance
 

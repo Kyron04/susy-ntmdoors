@@ -2,7 +2,7 @@ NTM DOORS: 1.0.79
 Minecraft 1.12.2 / Forge 14.23.5.2847
 
 1.0.79
-FEATURE
+FEATURES
 - Added Emancipation Grill field modes: Solid, Neutral and Lethal. Lethal disintegrates unauthorized
   players and destroys their inventory and armor unless Ignore Inventory is enabled.
 - Added the grill console's toggles page: Solid/Neutral/Lethal mode, Match User, Ignore Private Key,
@@ -36,7 +36,18 @@ FEATURE
   categories.
 - Lethal fields now also erase non-living entities that touch or cross the plane, including dropped
   items, arrows and other projectiles, minecarts, boats, item frames, XP orbs and armor stands.
-FIX
+- Added the console's field colour page with red, green and blue palettes.
+- Added Filter Mode. It lets everyone pass regardless of clearance and applies page-five whitelist
+  and blacklist patterns to player inventories, mob equipment and inventories, dropped items and
+  nested containers. Whitelist wins, blacklisted stacks are voided, and each void plays the
+  disintegration one-shot.
+- Page five configures two 9x6 grids (54 patterns each). JEI/HEI dragging sets a pattern,
+  right-click clears it, and clicking a slot does not take the held hotbar item. JEI/HEI is optional;
+  the overlay only loads when present.
+- Filter mode checks the main inventory, armor and offhand, plus villager, horse/donkey/llama and
+  standard mob inventories. Nested containers are scanned through Forge's item-handler capability
+  and the standard `Items` NBT layout; creative and spectator players are skipped.
+FIXES
 - Fixed the Emancipation field being overwritten by doors and devices when the TESR order put them
   after the grill. The translucent plane is now collected during the TESR pass and drawn in the
   world-last pass with depth testing, so it blends over things behind it and is hidden by things in
@@ -53,9 +64,12 @@ FIX
   without needing a second reverse link.
 - The Redstone Relay Key now refuses to start a binding session on an owned grill unless the player
   is its owner. Non-owners cannot change the grill's Redstone links.
+COMPATIBILITY
+- Existing 1.0.78 worlds load normally. The Grill and filter lists default safely.
+- Clients and servers must both update for the Grill console packet changes.
 
 1.0.78
-FEATURE
+FEATURES
 - Added a dark mode toggle to the Documents Folder and the monitor Notepad.
 - The dark writing field uses #3E434B with white text. The folder also uses a complementary dark
   palette; the Notepad casing, sidebar and buttons keep their existing colours.
@@ -67,12 +81,12 @@ CHANGES
 - Both Silo Hatch recipes now use iron blocks instead of vanilla iron doors, with the center slot
   left empty.
 - The Fire Door recipe now uses iron ingots in place of glass.
-DOCS
+INTERNAL
 - Prepared the 1.0.77 CurseForge release changelog and updated the public recipe and Documents
   Folder notes.
 
 1.0.76
-FEATURE
+FEATURES
 - Added crafting recipes for the remaining twelve doors: Vault Door, Sliding Blast Door, Fire
   Door, Secure Access Door, Round Airlock Door, both Silo Hatches, Large Vehicle Door,
   QE Containment, Blast Door, Transition Seal and Test Door.
@@ -80,7 +94,7 @@ FEATURE
   iron bars, glass and pistons around vanilla iron-door cores.
 
 1.0.75
-FEATURE
+FEATURES
 - Added crafting recipes for the Blast Shutter, Water Door, Sliding Seal, Cargo Door and both
   QE sliding doors. Each is built around vanilla iron doors with iron bars, ingots, glass, iron
   blocks and pistons.
@@ -88,7 +102,7 @@ FEATURE
   two redstone or two ID Chips.
 
 1.0.74
-FEATURE
+FEATURES
 - Added crafting recipes for all Office Door 1/2/3 single, 2x2 double and 3x3 forms, including
   their locked and security variants.
 - Each office door is built around a vanilla door. Office Doors 1 and 3 use a wood-plank frame
@@ -97,46 +111,46 @@ FEATURE
   them with ID Chips.
 
 1.0.73
-FIX
+FIXES
 - Filled the two transparent corner pixels used by the Documents Folder's 3D front face and
   limited the page-edge UVs to opaque pixels, removing the missing corner on the held model.
 
 1.0.72
-FIX
+FIXES
 - The Vault-Tec door's closing scrape now starts on the first tick of the close instead of 30
   ticks in, so the beginning of the closing movement is no longer silent.
 - The Documents Folder's right-side page-edge strip now spans the full height of the folder,
   filling the small notch at the top and bottom corners when the item is held.
 
 1.0.71
-FIX
+FIXES
 - The Documents Folder and Notepad editors now draw all interface text without the vanilla font
   drop shadow. The Documents heading is a single flat label instead of a dark offset layer.
 
 1.0.70
-FEATURE
+FEATURES
 - Added the O5 Keycard. It uses the supplied 16x16 black card sprite byte-for-byte, carries the
   tooltip "For the 13 most powerful beings in the Foundation", and behaves as an ordinary RFID
   card in the creative tab and Keycard Programmer palette.
 
 1.0.69
-FIX
+FIXES
 - The Safe Binding Key now requires the safe's owner or a player who has already unlocked it
   before starting a binding session. Legacy ownerless safes remain public. This closes an
   access-control gap on owned safes.
 
 1.0.68
-FEATURE
+FEATURES
 - Added crafting recipes for the decorative monitor-only blocks: a Single Monitor uses a Monitor
   Screen, a Circuit Board and an iron ingot, and the 1x2 and 1x3 versions combine two or three
   Single Monitors.
-FIX
+FIXES
 - Monitor-only blocks now use the same half-depth monitor collision as the monitor desks, leaving
   the front half of the cell walkable.
 - The 1x2 and 1x3 Desk item icons now show the desk-only model instead of a keyboard and mouse,
   and the oversized item models are gone.
 - The Keycard Holder now rejects invalid offhand swaps as well as invalid hotbar swaps.
-CLEANUP
+INTERNAL
 - Removed UTF-8 BOMs from 13 model JSON files.
 - Removed unused Keycard Holder count helpers and two unused imports.
 - Corrected the SCP card level labels, the Keycard Programmer recipe note, the scanner and flat-icon
@@ -144,23 +158,23 @@ CLEANUP
   current feature set.
 
 1.0.67
-FEATURE
+FEATURES
 - Reworked the Keycard Holder into two 4x4 sections: 16 keycards and 16 relay/utility keys.
   Relay keys use their own empty-slot ghost, both sections have separate counts, and the tooltip
   now includes "Also holds Relay Keys".
 
 1.0.66
-FIX
+FIXES
 - Breaker Relay Key sneak-clicks now claim the high-priority block interaction event, so clicking
   a door cell opens the confirmation screen instead of being consumed by the door.
 
 1.0.65
-FIX
+FIXES
 - The Breaker Relay Key can now break ownerless security doors. Security doors with an owner
   remain restricted to that owner; doors owned by another player ignore the key entirely.
 
 1.0.64
-FEATURE
+FEATURES
 - Added the Breaker Relay Key. Sneak + right-click a security door or safe you placed to open a
   confirmation screen. The server revalidates ownership and reach before breaking it; other owners
   are refused.
@@ -170,7 +184,7 @@ FEATURE
   Breaker.
 
 1.0.63
-FIX
+FIXES
 - Tooltips in the Keycard Programmer, Safe, Keycard Holder, Terminal Backup and Documents Folder
   now draw inside a scoped GL state save/restore. Hovering a slot no longer leaks lighting, depth,
   blend, alpha or rescale state into the next frame.
@@ -178,24 +192,24 @@ FIX
   function.
 
 1.0.62
-FIX
+FIXES
 - Right-aligned the Keycard Programmer page-two `CARD STYLE` label so it no longer overlaps the
   `RFID Card` heading.
 
 1.0.61
-FIX
+FIXES
 - Reworked Keycard Programmer page two: the RFID card slot is now at the top-left, the card-style
   palette occupies the right side, and the palette shows six columns by four rows instead of two
   rows. The remaining styles scroll as before.
 
 1.0.60
-FEATURE
+FEATURES
 - Added Yellow, Blue and Red UAC Keycards. They are ordinary RFID cards with the supplied
   16x16 sprites, normal private-key storage, the standard card viewer, scanner support and
   Keycard Programmer palette entries.
 
 1.0.59
-FIX
+FIXES
 - The Redstone Monocle overlay now only draws links whose two endpoints are within four
   chunks of the player. This is a rendering limit only; link behaviour and range are unchanged.
 - Non-door devices newly confirmed into a Security net now start with their enabled toggle off.
@@ -203,32 +217,32 @@ FIX
   device.
 
 1.0.58
-FEATURE
+FEATURES
 - Added decorative monitor-only blocks: Single Monitor (1x1), 1x2 Monitor and 1x3 Monitor.
   They reuse the monitor desk's monitor geometry without the desk, terminal or tile entity.
   The 1x2 and 1x3 versions place as one multi-block structure and break as one.
 
 1.0.57
-FEATURE
+FEATURES
 - Added crafting recipes for the new components, keycards, keys, tools, security machines, monitor
   desks and decorative desks.
 - Doors, relay keys, programmer-made RFID card colours, the Creative Keycard, Developer Keycard and
   Spatial Disrupter remain recipe-free.
 
 1.0.56
-FEATURE
+FEATURES
 - Added the RFID Chip crafting component, in the same end-of-tab crafting section.
-ART
+CHANGES
 - Replaced the ID Chip, Monitor Screen, Uncased USB, Circuit Board and Card Reader textures with
   the supplied 16x16 sprites, copied byte-for-byte.
 
 1.0.55
-FEATURE
+FEATURES
 - Added the Uncased USB, Circuit Board and Card Reader crafting components. They are plain items
   with no logic and sit in the same end-of-tab crafting section as ID Chip and Monitor Screen.
 
 1.0.54
-FEATURE
+FEATURES
 - Added the ID Chip and Monitor Screen crafting components. They are plain items with no logic.
 - Added decorative desk-only blocks: Single Desk (1x1), 1x2 Desk and 1x3 Desk. They reuse the
   monitor desk's desk geometry without monitors, terminals or tile entities. The 1x2 and 1x3
@@ -236,12 +250,12 @@ FEATURE
 - All five new items are appended to the existing NTM Doors creative tab.
 
 1.0.53
-FIX
+FIXES
 - Added the Undefined Relay Key to the mod's fixed creative-tab list. It was registered and
   usable, but the custom NTM Doors tab does not use registry order, so it was not visible there.
 
 1.0.52
-FEATURE
+FEATURES
 - Added the Undefined Relay Key. Sneak + Right Click opens a key-type picker; choosing a type
   replaces the held programming key with a fresh blank key of that type.
 - The picker covers the six relay keys plus the Safe Binding Key and Terminal Backup Key.
@@ -249,7 +263,7 @@ FEATURE
   added for the target keys.
 
 1.0.51
-SECURITY
+CHANGES
 - Removed the monitor's custom URL wallpaper import. The Display page now offers only the packaged
   built-in images, so clients no longer make outbound HTTP requests for monitor content.
 - Monitor terminal actions now require a server-side session created by a successful password
@@ -903,10 +917,13 @@ FEATURES
   maintenance and red for motion. Detection logic is not wired yet.
 - Added the Motion Sensor to the NTM Doors creative tab.
 
-The public 1.0.31 release was the cumulative build of the internal 1.0.31-1.0.47
-changes. The internal history follows.
+## Internal development history
 
-1.0.47
+The public 1.0.31 release was the cumulative build of the internal 1.0.31-1.0.47 changes. Entries
+below are internal build numbers, not public releases; the public 1.0.32-1.0.44 notes above are
+cumulative release builds with different content.
+
+Internal 1.0.47
 FIXES
 - Concrete and HL Blocks now appear in the NTM Doors creative tab. The separate NTM Concrete tab
   and the vanilla Building Blocks placement were removed.
@@ -914,7 +931,7 @@ FIXES
   textures and display names. Existing level 6 cards are remapped to level 5 when an old world
   loads; the shared 1-5 registry names remain valid.
 
-1.0.46
+Internal 1.0.46
 FEATURES
 - Added the NTM CE concrete building set: plain, smooth, 16 dyed, Builder's Choice, bricks,
   pillar, rebar, asbestos, Über Concrete and Moldy Debris.
@@ -931,14 +948,14 @@ CHANGES
 FIXES
 - Fixed the concrete slab model lookup by writing blockstate keys in the order Forge uses.
 
-1.0.45
+Internal 1.0.45
 FEATURES
 - The Speaker now offers four selectable alarms: Air Raid, Facility, Industrial and EAS.
 - Added an independent 0-100% volume slider next to the range slider.
 - Speaker alarms now use a client-side loop, so switching off redstone or Enabled stops the
   selected sound immediately instead of letting a long alarm ring out.
 
-1.0.44
+Internal 1.0.44
 FEATURES
 - Added a 1-64 block range slider to the Speaker screen, defaulting to 32. The range controls how
   far the alarm is heard; the value is saved with the block.
@@ -946,32 +963,32 @@ FEATURES
   starts/finishes the speaker's binding session, then gates are linked as usual. Starting the alarm
   pulses every linked gate.
 
-1.0.43
+Internal 1.0.43
 FEATURES
 - The Speaker is now functional. Shift-right-click (any held item or empty hand) opens a
   safe-style toggle screen with Enabled and Sound; anyone may use it. While enabled and receiving
   redstone power, it loops the existing lockout alarm until the signal or Enabled is removed.
   The alarm is the first placeholder sound; the selected sound is saved with the block.
 
-1.0.42
+Internal 1.0.42
 FIXES
 - The Speaker now uses the safe's non-opaque, non-full-cube rendering/support setup, so its
   recessed front and shallow driver/trim details are not culled by neighbouring blocks.
 
-1.0.41
+Internal 1.0.41
 FEATURES
 - Added the decorative Speaker block (`ntmdoors:speaker`). It is a 1x1x1 cabinet with a woofer,
   tweeter and bass reflex port, faces the player when placed, and has no tile entity or behaviour.
 
-1.0.40
-CLEANUP
+Internal 1.0.40
+INTERNAL
 - Removed unused Redstone Gate and Redstone Binding accessors.
 - Cached each door's normalized item-model bounds instead of recalculating them every frame.
 - Door rendering now skips redundant texture binds when consecutive groups share a texture.
 - Removed the stale version-specific CurseForge 1.0.30 notes; the changelog and current
   CurseForge description are the maintained release documents.
 
-1.0.39
+Internal 1.0.39
 FEATURES
 - Keypads now have a separate GUI security code. Sneak + right-click with the Redstone Relay Key
   opens a code screen: the first entry sets the code, later entries must match before the keypad
@@ -986,7 +1003,7 @@ FIXES
 - Added the missing item models for the security silo hatches, and limited the silo item preview
   to the hatch lid so both silo variants render correctly in hand.
 
-1.0.38
+Internal 1.0.38
 FEATURES
 - Keypads now work with the Redstone Relay Key. A normal click starts/finishes the wireless gate
   session; sneak + right-click opens a two-page keypad screen. Page one sets the first code, and
@@ -997,19 +1014,19 @@ FEATURES
   and their blast resistance is raised so explosions cannot shortcut that.
 - Normal and locked doors keep their existing break times.
 
-1.0.37
-FIX
+Internal 1.0.37
+FIXES
 - The whole redstone network attached to a Redstone Gate now settles after a wireless pulse.
   The gate ignores input for one tick while it is forced off, so lines beyond the first dust
   drop to 0 and the gate cannot latch itself back on.
 
-1.0.36
-FIX
+Internal 1.0.36
+FIXES
 - Fixed the Redstone Gate latching on when redstone dust sits on top of it. The pulse expiry
   now forces the gate off before it checks for real external power, so the dust can no longer
   feed the gate's own output back in as an input.
 
-1.0.35
+Internal 1.0.35
 FEATURES
 - The Creative Keycard now opens the scanner console directly on sneak + right-click, with no
   security code and even when the scanner has no bound doors.
@@ -1019,20 +1036,20 @@ FEATURES
 - Wireless events now keep the gate powered for a full 20 ticks using an absolute expiry, so the
   pulse cannot lose a tick depending on tile-entity update order. Further events extend it.
 
-1.0.34
+Internal 1.0.34
 FIXES
 - Fixed Redstone Relay Key binding on Keycard Scanners. The scanner right-click guard
   canceled any held item except its allow-list, and the Redstone Relay Key was missing.
 - Safes no longer expose their slots to hoppers or logistics automation. Their sided
   inventory is empty and their item-handler capability exposes zero slots.
 
-1.0.33
-FIX
+Internal 1.0.33
+FIXES
 - Fixed the Redstone Relay Key not starting a binding session on sneak + right-click. Vanilla
   skips block activation while sneaking, so the Redstone binding now runs from the key's
   item-use path, matching the Safe Binding Key.
 
-1.0.32
+Internal 1.0.32
 REDSTONE NETWORK
 - Both safes and the keycard scanner have a third Redstone page with scrolling and a red
   panel tint. The safe page does not show the player inventory.
@@ -1049,7 +1066,7 @@ REDSTONE NETWORK
 - Breaking a safe, scanner or gate clears its reciprocal links. Existing safe-door,
   scanner-door, keypad and safe-binding links are untouched.
 
-1.0.31
+Internal 1.0.31
 REDSTONE
 - Normal and locked doors now both respond to redstone. Security doors still require a
   keycard scanner or the Creative Keycard, and lockdown still blocks redstone edges.
@@ -1060,7 +1077,7 @@ REDSTONE
   while receiving redstone, and emits a full-strength signal while on. The bound-activity
   logic is not implemented yet.
 
-1.0.30
+Internal 1.0.30
 SAFE BINDING
 - The Safe Binding Key now has a green name and lists its sneak + right-click controls in the
   tooltip. Sneak right-click a safe to start or finish a binding session, then sneak right-click
@@ -1071,7 +1088,7 @@ SAFE BINDING
   closes every linked door once. Turning it off pauses linking and the lockout-door response
   without deleting existing links. Breaking a safe or door clears the link.
 
-1.0.29
+Internal 1.0.29
 SAFES
 - Code Safe: a 1x1x1 steel safe with a keypad front. The first accepted 1-6 digit code becomes
   the safe's code; later entries must match. There is no owner restriction, so anyone who knows
@@ -1157,7 +1174,7 @@ DOCUMENTS FOLDER
 - The editor screen is scaled up 1.5x, with a fit guard for smaller windows.
 - Tooltip shows the number of pages written.
 
-FIXES AND POLISH
+FIXES
 - Fixed multiplayer access holes and kept scanner/keycard state in sync.
 - Tightened keypad/scanner access tiers and restored keypad control of locked doors.
 - Fixed keypad binding, reset scope, model caching and collision-box clipping.
