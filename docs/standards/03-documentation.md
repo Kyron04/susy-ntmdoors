@@ -68,7 +68,7 @@ Rules:
 version, no duplicate version headings.
 
 ```text
-1.0.79
+<version>
 FEATURES
 - Added ...
 FIXES
@@ -98,12 +98,12 @@ CurseForge release notes are a short, release-specific copy derived from the
 changelog. They are not a second history.
 
 ```markdown
-# NTM Doors 1.0.79 - CurseForge Release
+# NTM Doors <version> - CurseForge Release
 
 Minecraft 1.12.2 / Forge 14.23.5.2847+ (tested on 14.23.5.2860)
 Requires Chisel 1.12.2-1.0.2.45
 
-**File:** `ntmdoors-1.0.79.jar`
+**File:** `ntmdoors-<version>.jar`
 **SHA-256:** `<hash of the published jar>`
 
 One-paragraph summary.

@@ -261,8 +261,9 @@ reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
     net device row's ON/OFF switch change the same setting. A Creative Keycard in the main
     inventory or offhand counts as clearance, but it does not open the console.
 * Concrete and HL Blocks: the NTM CE concrete building set and decorative HL Blocks, with metadata
-  families, flat Chisel carving groups, shift-scroll cycling, concrete recipes, and `concrete` /
-  `blockConcrete` / `blockhl` ore dictionary entries. Chisel is required.
+  families, flat Chisel carving groups, shift-scroll cycling and concrete recipes. Concrete
+  registers under `concrete` and `blockConcrete`; HL Blocks register under `blockhl`. Chisel is
+  required.
 * Ultra High Performance Concrete (`ntmdoors:ultra_high_performance_concrete`): six grayscale
   variants (the original texture plus five progressively darker shades) that take three real hours
   to mine. Only ICBM Classic nuclear, antimatter and red matter blasts can destroy it; every other
@@ -277,8 +278,9 @@ reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
   on the front half of the desk but cannot walk through the screens. Right-clicking any monitor
   cell opens the black-and-orange terminal: the first open offers to set a per-desk password or skip
   it; if a password is set, later opens require it, while skipping leaves the terminal open on later
-  visits. The unlocked screen lists Security, Opencomputers, Factory, Display,
-  Notepad and Terminal Backup. Passwords are stored as SHA-256 hashes on a tile entity on the desk
+  visits. The unlocked screen lists Security, Display, Notepad and Terminal Backup, plus reserved
+  Opencomputers and Factory entries that do not open a page yet. Passwords are stored as SHA-256
+  hashes on a tile entity on the desk
   core and are checked server-side; a successful check creates a short-lived session, and terminal
   actions sent without that session are ignored. Most pages carry an `EXIT` button in the footer;
   the Notepad's `EXIT` is in its title bar.
@@ -312,10 +314,10 @@ reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
   their existing colours.
 * Terminal Backup: opens a task page with `Initiate backup` and `Restore backup`. `Initiate backup`
   opens a programmer-style console: put a Terminal Backup Key in the left slot, press `Upload` to
-  write every Security net, device binding, notepad document, wallpaper, saved screen page and the
-  terminal password hash onto that key, then put a blank Terminal Backup Key in the right slot and
-  press `Backup`. The copy takes ten seconds and uses the same progress bar, loop and completion
-  chime as the keycard programmer's legacy backup. `Restore backup` opens the same console with a
+  write every Security net and its event state, device binding, notepad document and next ID,
+  wallpaper, saved screen page, notepad theme and the terminal password hash onto that key. Put a
+  blank Terminal Backup Key in the right slot and press `Backup`. The copy takes ten seconds and
+  uses the same progress bar, loop and completion chime as the keycard programmer's legacy backup. `Restore backup` opens the same console with a
   single key slot; press `Restore` to overwrite the current terminal with the key's saved data. The
   backup key is not consumed.
 * Smaller monitor desks use the same sliced-cell approach and behaviour: `3 Monitor Setup`
@@ -361,7 +363,8 @@ cell dismantles the whole grill and returns one core item.
 * **Lethal** kills unauthorized players and mobs, and erases non-living entities that touch the
   plane, including dropped items, projectiles, minecarts, boats, item frames, XP orbs and armor
   stands. `Ignore Items` leaves dropped items alone; `Ignore Inventory` leaves a killed player's
-  inventory and armor to the normal death drop instead of clearing them first.
+  inventory and armor to the normal death drop instead of clearing them first. Creative players
+  are unaffected.
 * **Wall** blocks every detected player and mob with no clearance checks, no killing and no item
   erasure.
 * **Filter** lets everyone pass and applies the page-five whitelist and blacklist to carried,
@@ -377,7 +380,7 @@ cell dismantles the whole grill and returns one core item.
 ### Console
 
 Sneak + right-click a grill you own with the Emancipation Relay Key or an Operator Keycard to open
-the console. It has five pages:
+the console. A Creative Keycard also opens it, without an ownership check. It has five pages:
 
 1. **Keys and IDs.** Assign or remove private keys and biometric identities from an Operator
    Keycard carried in the player's inventory.
@@ -611,7 +614,7 @@ and have no crafting recipe.
 * Operator Keycard (`ntmdoors:operator_keycard`): a dark card with an orange stripe and three
   orange dots. It shares the RFID hand-display model; sneak + right-click a bound scanner opens
   that scanner's security code screen, while sneak + right-click anywhere else opens the same
-  private-key viewer as a colour card.
+  private-key viewer as a colour card. Its tooltip lists the private keys it carries.
 * Biometric items (`ntmdoors:biometric_keycard`, `ntmdoors:biometric_operator_keycard`,
   `ntmdoors:biometric_relay_key`): a Biometric Relay Key collects your identity on sneak right-click
   instead of creating a private key, and the programmer binds that identity onto a card. Biometric
@@ -625,9 +628,10 @@ and have no crafting recipe.
   its name is purple, and right clicking any door opens or closes it regardless of locked/security
   variants, keypad codes or redstone; opening a door shows the purple `Door overridden` status
   message. It also
-  bypasses both safes, every scanner and Motion Sensor clearance, and sneak + right-clicking a
-  scanner opens its full console without a code or bound doors. Sneak + right-clicking a Redstone
-  Gate opens the gate screen. A blank Relay Key creates one private key when the player
+  bypasses both safes, every scanner, Motion Sensor clearance and Emancipation Grill ownership;
+  sneak + right-clicking a scanner opens its full console without a code or bound doors, and
+  sneak + right-clicking a grill opens its console. Sneak + right-clicking a Redstone Gate opens
+  the gate screen. A blank Relay Key creates one private key when the player
   sneak right-clicks it away from any machine: a naming screen takes up to 32 characters, and
   confirming it generates a ten digit serial on the server and stores both in the key's NBT. A named
   key cannot be renamed or reset. Its name is yellow, and its tooltip carries a grey
@@ -752,7 +756,7 @@ Blocks to the door port:
 The concrete set has its own recipes; most non-door mod items also have recipes in `ModRecipes`,
 while the screwdriver recipe is registered in `ModContent`.
 
-#### Block layout
+### Block layout
 
 Cubes are one block id per family; metadata selects the texture. Stairs stay one block id per
 texture because `BlockStairs` already uses its metadata bits for facing and half. Slabs use one
@@ -777,7 +781,7 @@ That is 61 placeable block ids, plus the 6 technical double slabs, covering 142 
 variants. Creative and HEI list 127 of them; Über Concrete stages 1-15 are deliberately hidden and
 remain reachable by metadata.
 
-#### In-game behaviour
+### In-game behaviour
 
 - **Creative tabs.** The concrete and HL families are listed in the `NTM Doors` creative tab.
 - **Shift-scroll cycling.** Hold a concrete or HL stack and scroll with the cycle modifier
@@ -805,7 +809,7 @@ remain reachable by metadata.
   build with per-variant concrete ids, those old ids are not migrated; new worlds get the grouped
   ids.
 
-#### Ultra High Performance Concrete
+### Ultra High Performance Concrete
 
 The UHPC family shares six 16x16 textures: the original plus five black overlays at 10-50%
 opacity. Both blocks are creative-only (no recipes) and are not registered in a Chisel group.
@@ -820,7 +824,7 @@ carries the `GBU-57 not included` tooltip; the soft panels do not. The hard set 
 material so ICBM's exothermic/endothermic terrain beams skip it; add it to ICBM's flying-block ban
 list to stop the beam's flying-block phase as well.
 
-#### Slab model note
+### Slab model note
 
 Forge builds the blockstate lookup key from a sorted property map, so a slab key must be written
 `half=bottom,variant=1`. The generated blockstates originally used `variant=1,half=bottom`, which
@@ -829,7 +833,7 @@ committed blockstates use the sorted order.
 
 ## Compatibility
 
-- Existing 1.0.78 and older worlds load normally. The Emancipation Grill and filter lists default
+- Existing 1.0.79 and older worlds load normally. The Emancipation Grill and filter lists default
   safely when absent.
 - Clients and servers must run the same NTM Doors version for Grill console and device packet
   changes.

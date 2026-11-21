@@ -28,11 +28,11 @@ gradually rather than reformatted in one pass.
 The standards are also a checklist for the later repository cleanup. Known
 targets are:
 
-- Collapse duplicate version headings in `CHANGELOG.md`; the public and
-  internal histories currently share version numbers and need clearer labels.
-- Keep reference-only source art out of the packaged jar and attribute
-  third-party material in `NOTICE`.
-- Replace repeated asset stubs with shared models where the item registry
-  allows it.
+- Complete attribution for display wallpapers, Portal 2 reference images and
+  other supplied source material in `NOTICE`.
+- Replace the remaining monitor composite item models only with a dedicated
+  item renderer and full visual testing; they cannot be deduplicated as JSON.
+- Review the remaining code duplication candidates (GUI widgets, facing
+  helpers and desk placement) as separate, tested refactors.
 
 These are cleanup tasks, not requirements for the current change.

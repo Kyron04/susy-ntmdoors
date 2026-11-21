@@ -4,7 +4,7 @@
 
 NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system, security equipment and concrete building set from HBM's Nuclear Tech Mod. No NTM installation is required. Chisel 1.12.2-1.0.2.45 is required. Every model, texture and sound is bundled.
 
-**Current version: 1.0.79**
+**Current version: 1.0.80**
 
 ## 27 multiblock doors
 
@@ -62,6 +62,7 @@ upgrades are shapeless.
 - The six crafting components, craftable keycards, craftable utility keys, Keycard Holder,
   Documents Folder, security machines, monitor desks, decorative desks and monitor-only blocks
   also have recipes.
+- The Emancipation Grill and its horizontal variant are creative-only and have no crafting recipe.
 
 ## Keypad
 
@@ -105,7 +106,7 @@ Screwdriver + sneak + right-click cycles door skins:
 - **RFID cards** - blank plus red, violet, green, blue, black, orange and yellow variants, plus Yellow, Blue and Red UAC cards and the O5 Keycard.
 - **Themed keycards** — Keycard with Blue Marking, Labyrinth, Engine Room, Terminal and Terragroup Labs Access.
 - **Operator Keycard** - aimed at a bound scanner, opens its security code screen; aimed at a Redstone Gate, opens its settings screen. The Biometric Operator Keycard does the same. Elsewhere it shows its private keys.
-- **Creative Keycard** - bypasses card checks on bound doors, opens every scanner, opens both safes, and sneak + right-clicking a scanner opens its full console without a code or bound doors. It also opens the Redstone Gate screen.
+- **Creative Keycard** - bypasses card checks on bound doors, opens every scanner, opens both safes, and sneak + right-clicking a scanner opens its full console without a code or bound doors. It also opens the Redstone Gate screen and the Emancipation Grill console.
 - **Relay Key and Biometric Relay Key** — create named private keys; the biometric version captures the holder's identity instead.
 - **Undefined Relay Key** - a grey programming key. Sneak + right-click opens a picker for the six relay keys plus the Safe Binding, Terminal Backup and Breaker Relay Keys; choosing one replaces the held key with a fresh blank key of that type. Crafted from a Circuit Board, an Uncased USB and an ID Chip.
 - **Breaker Relay Key** - an orange relay key. Sneak + right-click a security door or safe to open a confirmation screen; confirming breaks it instantly. Ownerless security doors can be broken by anyone with the key; an owned security door or a safe is restricted to its recorded owner. Security doors drop their door item, and safes drop their safe item plus every stored stack even when Void on Destroy is enabled. Code and biometric safes record their placer as owner; legacy ownerless safes refuse the key.
@@ -158,8 +159,8 @@ Screwdriver + sneak + right-click cycles door skins:
 ## Emancipation Grill
 
 - **Emancipation Grill** — a paired security field based on the Portal 2 fizzler. The vertical item places a 1x3x1 column; the horizontal item places a 3x1x1 bar. Two units pair across an opening up to 10 blocks apart. The first unit placed owns the pair and opens the console; breaking any cell dismantles the whole grill and returns one core item.
-- **Field modes** — Solid blocks unauthorized players and mobs; Neutral renders the field but does nothing; Lethal kills unauthorized players and mobs and erases non-living entities; Wall blocks every detected player and mob with no clearance checks; Filter lets everyone pass and applies the page-five item lists. Solid, Lethal and Wall reserve the doorway against block placement.
-- **Console** — five pages: keys and biometric IDs, modes and toggles, field colour (red/green/blue), five redstone event outputs, and the filter lists. Open it by sneak + right-clicking a grill you own with the Emancipation Relay Key or an Operator Keycard.
+- **Field modes** - Solid blocks unauthorized players and mobs; Neutral renders the field but does nothing; Lethal kills unauthorized players and mobs and erases non-living entities, but leaves creative players alone; Wall blocks every detected player and mob with no clearance checks; Filter lets everyone pass and applies the page-five item lists. Solid, Lethal and Wall reserve the doorway against block placement.
+- **Console** - five pages: keys and biometric IDs, modes and toggles, field colour (red/green/blue), five redstone event outputs, and the filter lists. Open it by sneak + right-clicking a grill you own with the Emancipation Relay Key or an Operator Keycard; a Creative Keycard also opens it without an ownership check.
 - **Filter Mode** — two 9x6 grids (54 whitelist and 54 blacklist ghost patterns). Drag from JEI/HEI to set a pattern; right-click clears one; clicking a slot does not take the held hotbar item. Whitelist wins, blacklisted stacks are voided, and an item on both lists is preserved.
 - **Filter scanning** — main inventory, armor and offhand; dropped item entities; mob equipment, villager inventories, horse/donkey/llama item handlers and standard mob inventories. Nested containers are scanned through Forge's item-handler capability and the standard `Items` NBT layout. Creative and spectator players are skipped.
 - **Sounds** — Portal 2 fizzler start, loop and shutdown, plus a disintegration one-shot for lethal and filter voids. Three-block audible radius with an Audio toggle.
@@ -174,7 +175,7 @@ Screwdriver + sneak + right-click cycles door skins:
   red matter warheads can damage it; every other explosion is fully resisted. The hard set carries
   the `GBU-57 not included` tooltip. A decorative **UHPC Panel** set shares the same textures with
   vanilla-concrete hardness and no tooltip.
-- Concrete has recipes and flat Chisel carving groups; both concrete and HL Blocks register `concrete` / `blockConcrete` / `blockhl` ore dictionary entries. HL Blocks are creative-only.
+- Concrete has recipes and flat Chisel carving groups. Concrete registers under `concrete` and `blockConcrete`; HL Blocks register under `blockhl`. HL Blocks are creative-only.
 - All concrete and HL Blocks are listed in the NTM Doors creative tab.
 - Shift + scroll cycles a held concrete or HL stack through its texture family. The cycle modifier is rebindable under Controls.
 - Chisel 1.12.2-1.0.2.45 is required.
@@ -210,7 +211,7 @@ Screwdriver + sneak + right-click cycles door skins:
 
 ## Documents Folder
 
-- New carried folder item with a three-layer paper model, a full-height right page edge and a
+- Carried folder item with a three-layer paper model, a full-height right page edge and a
   fully opaque 3D front face.
 - Right-click opens a twenty-page editor styled as an open manila folder in the item's tan, grey and dark-red palette.
 - Typed caret with click-to-place, arrows, Home/End, Delete/Backspace, Ctrl+V paste and word wrap.
@@ -226,9 +227,9 @@ Screwdriver + sneak + right-click cycles door skins:
 
 ## Technical
 
-- Minecraft **1.12.2**, Forge **14.23.5.2847**, Chisel **1.12.2-1.0.2.45**
+- Minecraft **1.12.2**, Forge **14.23.5.2847+** (tested on 14.23.5.2860), Chisel **1.12.2-1.0.2.45**
 - OBJ/TESR rendering with per-group translation/rotation, clipping, and 3D inventory/hand/ground items
-- 17 shared door sound events
+- 17 door sound events
 - No configs and no NTM dependency
 
 ## Credits
@@ -249,6 +250,6 @@ Developers of the port:
 
 Playtesters: Neeyo, Creg2, SuperObama, Juniper Kynour, Gloo
 
-AI tools were used in mod development. All features were extensively tested in singleplayer and on dedicated servers, quality assured, and swept multiple times for issues. All assets, materials, functionality and features were derived from human developers, with AI assisting in augmenting materials for development purposes.
+AI tools were used in mod development for code, documentation and some textures. Every feature was tested in singleplayer and on dedicated servers, quality assured, and reviewed by the maintainer. See `AI_DISCLOSURE.md` in the repository for the scope and the human review process.
 
-Based on the door system and assets of **HBM's Nuclear Tech Mod** (LGPL-3.0). See `LICENSE.LESSER` and `NOTICE` for attribution. This project is not affiliated with the original author.
+Based on the door system and assets of **HBM's Nuclear Tech Mod** (LGPL-3.0). See [LICENSE.LESSER](https://github.com/Kyron04/susy-ntmdoors/blob/main/LICENSE.LESSER) and [NOTICE](https://github.com/Kyron04/susy-ntmdoors/blob/main/NOTICE) for attribution. This project is not affiliated with the original author.

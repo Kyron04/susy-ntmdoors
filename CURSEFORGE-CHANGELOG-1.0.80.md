@@ -1,10 +1,10 @@
-# NTM Doors 1.0.79 - CurseForge Release
+# NTM Doors 1.0.80 - CurseForge Release
 
 Minecraft 1.12.2 / Forge 14.23.5.2847+ (tested on 14.23.5.2860)
 Requires Chisel 1.12.2-1.0.2.45
 
-**File:** `ntmdoors-1.0.79.jar`
-**SHA-256:** `9B1F9ED05D33047BFA57407097FB12827A73ACB62772040898B9F093943C5800`
+**File:** `ntmdoors-1.0.80.jar`
+**SHA-256:** `A27208105F62666F523081ECD5CB1606368CAD53E2981D50356D42F5FA173140`
 
 This release adds the Emancipation Grill, a paired security field based on the Portal 2 fizzler,
 with five field modes, item filtering, a five-page console, Redstone event outputs, terminal and
@@ -17,7 +17,8 @@ state leaks between device special renderers.
   up to 10 blocks apart; the first unit placed owns the pair and breaking any cell dismantles it.
 - Five field modes: Solid blocks unauthorized players and mobs, Neutral does nothing, Lethal kills
   unauthorized players and mobs and erases non-living entities, Wall blocks every detected entity
-  without clearance checks, and Filter lets everyone pass while applying item lists.
+  without clearance checks, and Filter lets everyone pass while applying item lists. Creative
+  players are unaffected by Lethal contact.
 - Filter Mode with 54 whitelist and 54 blacklist patterns. Whitelist wins; blacklisted stacks in
   player inventories, mob equipment and inventories, dropped items and nested containers are
   voided with the disintegration sound. JEI/HEI dragging sets patterns.
@@ -35,7 +36,7 @@ state leaks between device special renderers.
 
 ## Compatibility
 
-- Existing 1.0.78 worlds load normally. The Emancipation Grill and filter lists default safely.
+- Existing 1.0.79 worlds load normally. The Emancipation Grill and filter lists default safely.
 - Clients and servers must both update for the Grill console packet changes.
 - Chisel 1.12.2-1.0.2.45 remains required. No NTM installation is required.
 - JEI or HEI remains optional; the filter overlay loads only when one is present.

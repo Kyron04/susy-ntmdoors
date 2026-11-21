@@ -141,13 +141,11 @@ You need the right versions of everything or it will not work!!!
 Good:
 
 ```text
-1.0.79
+1.0.80
 FEATURES
 - Added a field colour page to the Emancipation Grill console.
-FIXES
-- Fixed the monitor page reverting after the dark-mode toggle.
 COMPATIBILITY
-- Existing 1.0.78 worlds load normally.
+- Existing 1.0.79 worlds load normally.
 ```
 
 Avoid:
@@ -168,12 +166,12 @@ FEATURES
 Good:
 
 ```markdown
-# NTM Doors 1.0.79 - CurseForge Release
+# NTM Doors 1.0.80 - CurseForge Release
 
 Minecraft 1.12.2 / Forge 14.23.5.2847+ (tested on 14.23.5.2860)
 Requires Chisel 1.12.2-1.0.2.45
 
-**File:** `ntmdoors-1.0.79.jar`
+**File:** `ntmdoors-1.0.80.jar`
 **SHA-256:** `<hash of the published jar>`
 
 This release adds the Emancipation Grill console and field modes.
@@ -185,8 +183,8 @@ This release adds the Emancipation Grill console and field modes.
 Avoid:
 
 ```markdown
-# NTM Doors 1.0.79
-This is the same text as 1.0.78.
+# NTM Doors 1.0.80
+This is the same text as 1.0.79.
 ```
 
 ## NOTICE entry

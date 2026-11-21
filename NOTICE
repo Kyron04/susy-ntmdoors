@@ -68,6 +68,27 @@ Emancipation Grill field sounds:
     sound assets via https://github.com/sourcesounds/portal2.
   * Portal 2 is a property of Valve Corporation. No endorsement is implied.
 
+Emancipation Grill models and textures are original recreations for this
+project and are released under the LGPL-3.0. They are not extracted from
+Portal 2. The reference screenshots under
+source-art/emancipation-grill/refs/ are used only for visual reference and are
+not packaged in the jar. Portal 2 is a property of Valve Corporation; no
+endorsement is implied.
+
+Monitor display wallpapers:
+
+  * source-art/display/*.png are project-supplied source images packaged as
+    assets/ntmdoors/textures/display/*.png.
+  * Black Mesa, Half-Life, Windows and other marks remain the property of
+    their respective owners. No endorsement is implied.
+
+Supplied item and block assets:
+
+  * source-art/thermite-charge/, source-art/redstone-monocle/ and
+    source-art/terminal-backup-key/ contain model, texture or audio material
+    supplied for this project by the project owner. The corresponding runtime
+    assets are under assets/ntmdoors/. No external license is recorded.
+
 The Java implementation in this repository is a fresh 1.12.2 implementation
 and is also released under the LGPL-3.0. See LICENSE.LESSER for the full
 license text.

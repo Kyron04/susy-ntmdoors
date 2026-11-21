@@ -12,6 +12,8 @@ susy-ntmdoors/
   src/main/java/            Java source
   src/main/resources/       Runtime assets and metadata
   source-art/               Source art, reference material, regeneration tools
+  CONTRIBUTING.md           Short contributor guide
+  AGENTS.md                 Agent and contributor instructions
   docs/standards/           This reference
   docs/releases/            Archived CurseForge release notes
   README.md                 Player and developer overview
@@ -20,7 +22,6 @@ susy-ntmdoors/
   NOTICE                    Third-party attribution
   AI_DISCLOSURE.md          Scope of AI-assisted work
   CURSEFORGE-*.md           Current CurseForge description and release note
-  CONTRIBUTING.md           Short contributor guide
 ```
 
 Build outputs such as `build/`, `.gradle/`, logs, crash reports, and local
@@ -81,8 +82,8 @@ src/main/resources/
 - Model, blockstate, texture, sound, and lang names use `snake_case`.
 - Names match the registry name unless the asset is explicitly a shared or
   technical asset.
-- The `display/` textures are generated from `source-art/display/` at build
-  time; do not add a second source copy under `src/main/resources`.
+- The `display/` textures are copied from `source-art/display/` and renamed at
+  build time; do not add a second source copy under `src/main/resources`.
 
 ## Source art
 

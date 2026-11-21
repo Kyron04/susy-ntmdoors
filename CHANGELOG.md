@@ -1,7 +1,7 @@
-NTM DOORS: 1.0.79
+NTM DOORS: 1.0.80
 Minecraft 1.12.2 / Forge 14.23.5.2847
 
-1.0.79
+1.0.80
 FEATURES
 - Added Emancipation Grill field modes: Solid, Neutral and Lethal. Lethal disintegrates unauthorized
   players and destroys their inventory and armor unless Ignore Inventory is enabled.
@@ -56,8 +56,6 @@ FIXES
   in the frame can no longer leave a tinted colour, disabled lighting, or a changed depth/cull
   state that makes the keypad, scanner, programmer, monitor, motion sensor or door change shade or
   pick up a red tint as the visible render order changes.
-- Fixed the monitor Notepad dark mode reverting to light after a moment. The client applies the
-  toggle immediately and the desk sync confirms it, so the page and physical screen stay dark.
 - Matched the Emancipation Grill's Redstone page heading, row hover and ON/OFF pill colours to the
   other device Redstone pages.
 - Gates linked to a grill from the gate side now also receive that grill's Redstone event pulses,
@@ -65,8 +63,13 @@ FIXES
 - The Redstone Relay Key now refuses to start a binding session on an owned grill unless the player
   is its owner. Non-owners cannot change the grill's Redstone links.
 COMPATIBILITY
-- Existing 1.0.78 worlds load normally. The Grill and filter lists default safely.
+- Existing 1.0.79 worlds load normally. The Grill and filter lists default safely.
 - Clients and servers must both update for the Grill console packet changes.
+
+1.0.79
+FIXES
+- Fixed the monitor Notepad dark mode reverting to light after a moment. The client applies the
+  toggle immediately and the desk sync confirms it, so the page and physical screen stay dark.
 
 1.0.78
 FEATURES
