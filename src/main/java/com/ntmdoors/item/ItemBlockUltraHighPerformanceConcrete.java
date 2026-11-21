@@ -26,10 +26,6 @@ public class ItemBlockUltraHighPerformanceConcrete extends ItemBlockConcreteVari
         this(block, "Ultra High Performance Concrete", true);
     }
 
-    public ItemBlockUltraHighPerformanceConcrete(BlockConcreteVariant block, String fallbackName) {
-        this(block, fallbackName, true);
-    }
-
     public ItemBlockUltraHighPerformanceConcrete(BlockConcreteVariant block, String fallbackName,
                                                  boolean showDescription) {
         super(block);
