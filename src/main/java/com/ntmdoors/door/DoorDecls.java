@@ -710,7 +710,7 @@ public final class DoorDecls {
             // The handle rotates with the leaf but keeps its original metal texture; the
             // leaf's coloured edge is painted in the main variant texture.
             .anim("Handle", PartAnim.rotate(-90, 0, 1, 0, 0.395, 0, 0, 0F, 1F))
-            .partSkin("Handle", "textures/models/doors/office_door_1_handle.png");
+            .partSkin("Handle", "textures/models/doors/office_door_1.png");
 
     /**
      * 2x2 double office door. Two mirrored leaves meet in the middle; the right leaf is hinged
@@ -719,7 +719,7 @@ public final class DoorDecls {
      */
     public static final DoorDecl OFFICE_DOOR_1_DOUBLE = officeDoorDouble(
             "office_door_1_double", "Office door 1 (Double)",
-            "models/doors/office_door_1_double.obj", "textures/models/doors/office_door_1_double.png",
+            "models/doors/office_door_1_double.obj", "textures/models/doors/office_door_1.png",
             true,
             // The double uses the same white-panel variants as the single.
             "textures/models/doors/office_door_1_2d4a73.png",
@@ -728,8 +728,8 @@ public final class DoorDecls {
             "textures/models/doors/office_door_1_212121.png")
             .anim("HandleRight", PartAnim.rotate(-90, 0, 1, 0, 0.90, 0, 0, 0F, 1F))
             .anim("HandleLeft", PartAnim.rotate(90, 0, 1, 0, -0.90, 0, 0, 0F, 1F))
-            .partSkin("HandleRight", "textures/models/doors/office_door_1_handle.png")
-            .partSkin("HandleLeft", "textures/models/doors/office_door_1_handle.png");
+            .partSkin("HandleRight", "textures/models/doors/office_door_1.png")
+            .partSkin("HandleLeft", "textures/models/doors/office_door_1.png");
 
     /**
      * Red single office door. It reuses the office frame and swing behaviour, with a wire-glass
@@ -797,7 +797,7 @@ public final class DoorDecls {
     public static final DoorDecl OFFICE_DOOR_1_DOUBLE_3X3 = regLate(officeDoorScaled(
             "office_door_1_double_3x3", "Office door 1 (3x3)",
             "models/doors/office_door_1_double_3x3.obj",
-            "textures/models/doors/office_door_1_double.png",
+            "textures/models/doors/office_door_1.png",
             true, 3, 3, 2, 1.5,
             // The 3x3 double uses the same white-panel variants as the single.
             "textures/models/doors/office_door_1_2d4a73.png",
@@ -806,8 +806,8 @@ public final class DoorDecls {
             "textures/models/doors/office_door_1_212121.png")
             .anim("HandleRight", PartAnim.rotate(-90, 0, 1, 0, 1.35, 0, 0, 0F, 1F))
             .anim("HandleLeft", PartAnim.rotate(90, 0, 1, 0, -1.35, 0, 0, 0F, 1F))
-            .partSkin("HandleRight", "textures/models/doors/office_door_1_handle.png")
-            .partSkin("HandleLeft", "textures/models/doors/office_door_1_handle.png"));
+            .partSkin("HandleRight", "textures/models/doors/office_door_1.png")
+            .partSkin("HandleLeft", "textures/models/doors/office_door_1.png"));
 
     /** 3x3 red double office door. */
     public static final DoorDecl OFFICE_DOOR_2_DOUBLE_3X3 = regLate(officeDoorScaled(

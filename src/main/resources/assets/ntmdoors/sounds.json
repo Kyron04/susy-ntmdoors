@@ -110,13 +110,13 @@
   "button9": {
     "category": "block",
     "sounds": [
-      "ntmdoors:button9"
+      "ntmdoors:ui/button9"
     ]
   },
   "gui_click": {
     "category": "master",
     "sounds": [
-      "ntmdoors:gui_click"
+      "ntmdoors:ui/gui_click"
     ]
   },
   "scanner_bell1": {
