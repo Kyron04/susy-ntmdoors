@@ -483,12 +483,16 @@ are recipe-free.
   default, clean, nuclear trefoil, and plain white, red and grey; the plain skins have no letters,
   numbers, trefoil or hazard stripes.
 
-## Motion Sensor preview
+## Motion Sensor appearance
 
-![Motion Sensor final model preview](source-art/motion-sensor/motion-sensor-model-preview-final.png)
-
-The 1.0.36 model is 8x8x1.375 with a centred GUI model and four status lights. The full source
-materials and texture generator live in `source-art/motion-sensor/`.
+The Motion Sensor is a thin, surface-mounted slab: an 8x8 mounting plate sits flush against the
+clicked surface, and the off-white body, charcoal bezel and raised concentric Fresnel lens bring the
+total depth to only 1.375 pixels. A single small status LED sits below the lens and shows green when
+idle, blue when authorized players are inside, yellow when the sensor is unbound or locally
+disabled, and red when an unauthorized player or mob is inside. The housing can be mounted on
+floors, walls and ceilings; the clicked face becomes the lens direction. The item uses a centred
+copy of the same model. The full source materials and texture generator live in
+`source-art/motion-sensor/`.
 
 ## Included door assets
 Models live under `src/main/resources/assets/ntmdoors/models/doors/`, textures under

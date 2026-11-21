@@ -2,11 +2,9 @@
 
 Final model and texture source materials for the NTM Doors Motion Sensor (model 1.0.36).
 
-![Motion Sensor final model preview](motion-sensor-model-preview-final.png)
-
 These files are archived here for reference. The active copies loaded by the mod live under
-`src/main/resources/assets/ntmdoors/`. The generators below write directly to that folder; no
-duplicate asset tree is kept here.
+`src/main/resources/assets/ntmdoors/`. The texture generator below writes directly to that folder;
+no duplicate asset tree is kept here.
 
 ## Model
 
@@ -35,9 +33,11 @@ Status mapping: idle green, authorised blue, maintenance yellow, motion red.
 
 ## Rebuilding
 
-Run the PowerShell generator to rebuild every texture exactly:
+Run the texture generator to rebuild every texture exactly:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\generate_motion_sensor_textures.ps1
-powershell -ExecutionPolicy Bypass -File scripts\generate_motion_sensor_preview.ps1
 ```
+
+`scripts\generate_motion_sensor_preview.ps1` is kept only as a historical design mockup; it does
+not represent the current thin-slab model.
