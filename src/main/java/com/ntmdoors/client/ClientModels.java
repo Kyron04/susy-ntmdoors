@@ -6,6 +6,7 @@ import com.ntmdoors.block.BlockDoorGeneric;
 import com.ntmdoors.concrete.ItemConcreteSlab;
 import com.ntmdoors.hlblocks.ItemBlockGroup;
 import com.ntmdoors.item.ItemBlockConcreteVariant;
+import com.ntmdoors.item.ItemDoorBlock;
 import com.ntmdoors.registry.ModContent;
 
 import net.minecraft.block.Block;
@@ -25,6 +26,8 @@ public class ClientModels {
 
     private static final ModelResourceLocation EMPTY =
             new ModelResourceLocation(NTMDoors.MODID + ":door_empty", "normal");
+    private static final ModelResourceLocation DOOR_ITEM =
+            new ModelResourceLocation(NTMDoors.MODID + ":door_item", "inventory");
 
     @SubscribeEvent
     public static void onModelRegistry(ModelRegistryEvent e) {
@@ -40,7 +43,9 @@ public class ClientModels {
         for (Item item : Item.REGISTRY) {
             ResourceLocation name = item.getRegistryName();
             if (name == null || !NTMDoors.MODID.equals(name.getNamespace())) continue;
-            if (item instanceof ItemBlockGroup) {
+            if (item instanceof ItemDoorBlock) {
+                ModelLoader.setCustomModelResourceLocation(item, 0, DOOR_ITEM);
+            } else if (item instanceof ItemBlockGroup) {
                 hlGroup((ItemBlockGroup) item);
             } else if (item instanceof ItemConcreteSlab) {
                 slabVariants((ItemConcreteSlab) item);

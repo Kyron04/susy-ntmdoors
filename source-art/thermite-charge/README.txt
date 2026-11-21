@@ -9,8 +9,8 @@ thermite-charge-preview.png
 audio\short-beep-countdown.mp3, audio\bomb-explosion.mp3
     Supplied source audio for the fuse countdown and detonation.
 
-audio\thermite_beep.ogg, audio\thermite_explosion.ogg
-    Mono Ogg Vorbis conversions shipped under assets/ntmdoors/sounds/thermite/.
+The mono Ogg Vorbis conversions are packaged only under
+assets/ntmdoors/sounds/thermite/; the source MP3 masters above are kept here.
 
 The active block/item models and textures are packaged under
 src/main/resources/assets/ntmdoors/. This folder keeps only the source
