@@ -1,0 +1,23 @@
+# Normalize text files to LF in the repository.
+* text=auto eol=lf
+
+# Windows entry points.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary assets.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ogg binary
+*.mp3 binary
+*.jar binary
+*.zip binary
+*.7z binary
+*.rar binary
+
+# Text-based model formats.
+*.bbmodel text eol=lf
+*.obj text eol=lf
+*.anim text eol=lf
