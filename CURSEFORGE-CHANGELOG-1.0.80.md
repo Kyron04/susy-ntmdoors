@@ -4,7 +4,7 @@ Minecraft 1.12.2 / Forge 14.23.5.2847+ (tested on 14.23.5.2860)
 Requires Chisel 1.12.2-1.0.2.45
 
 **File:** `ntmdoors-1.0.80.jar`
-**SHA-256:** `A27208105F62666F523081ECD5CB1606368CAD53E2981D50356D42F5FA173140`
+**SHA-256:** `7EFF5D9A6FCE6AEA59C89544C1685CB0EF7D0148F194C346C7BDB7AB18049CE3`
 
 This release adds the Emancipation Grill, a paired security field based on the Portal 2 fizzler,
 with five field modes, item filtering, a five-page console, Redstone event outputs, terminal and
