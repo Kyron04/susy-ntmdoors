@@ -2,6 +2,8 @@
 
 Source: `https://github.com/sourcesounds/portal2`
 
+Portal 2 is a property of Valve Corporation. No endorsement is implied.
+
 The mod uses these Portal 2 fizzler assets, converted to OGG Vorbis:
 
 | Portal 2 source | Mod asset | Use |

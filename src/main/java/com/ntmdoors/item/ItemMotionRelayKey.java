@@ -1,8 +1,8 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.item;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.tile.TileEntityMotionSensor;
-import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.Names;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
@@ -58,11 +58,6 @@ public class ItemMotionRelayKey extends Item {
             return EnumActionResult.SUCCESS;
         }
         return EnumActionResult.PASS;
-    }
-
-    /** True when either hand holds a Motion Relay Key. */
-    public static boolean isHeldBy(EntityPlayer player) {
-        return HeldItems.holds(player, ItemMotionRelayKey.class);
     }
 
     @Override

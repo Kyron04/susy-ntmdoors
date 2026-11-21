@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.tile;
 
 import com.ntmdoors.NTMDoors;
@@ -39,22 +40,6 @@ public class TileEntitySpatialDisrupter extends net.minecraft.tileentity.TileEnt
     private int sectionIndex;
     private int converted;
     private long startedTick;
-
-    public boolean isActivated() {
-        return activated;
-    }
-
-    public int getConverted() {
-        return converted;
-    }
-
-    public int getChunkIndex() {
-        return chunkIndex;
-    }
-
-    public int getSectionIndex() {
-        return sectionIndex;
-    }
 
     /** Server side: starts the irreversible operation for this player. */
     public boolean activate(EntityPlayer player) {

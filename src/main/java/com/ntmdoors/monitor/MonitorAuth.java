@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.monitor;
 
 import com.ntmdoors.network.NetworkUtil;
@@ -86,15 +87,6 @@ public final class MonitorAuth {
     /** Drops one player's session, for example after the terminal GUI closes. */
     public static void clear(EntityPlayer player) {
         if (player != null) SESSIONS.remove(player.getUniqueID());
-    }
-
-    /** Drops a player's session only when it belongs to the given desk. */
-    public static void clear(EntityPlayer player, BlockPos desk) {
-        if (player == null || desk == null) return;
-        Session session = SESSIONS.get(player.getUniqueID());
-        if (session != null && session.desk.equals(desk)) {
-            SESSIONS.remove(player.getUniqueID());
-        }
     }
 
     private MonitorAuth() {

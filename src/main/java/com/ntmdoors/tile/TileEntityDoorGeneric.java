@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.tile;
 
 import com.ntmdoors.block.BlockDoorGeneric;
@@ -586,11 +587,6 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         return boundSafe;
     }
 
-    /** True when a safe is responsible for closing this door on lockout. */
-    public boolean isBoundToSafe() {
-        return boundSafe != null;
-    }
-
     /** True when {@code safePos} is the safe linked to this door. */
     public boolean isBoundToSafe(BlockPos safePos) {
         return safePos != null && safePos.equals(boundSafe);
@@ -823,17 +819,9 @@ public class TileEntityDoorGeneric extends TileEntitySynced implements ITickable
         return security.acceptsRedstone(isSecurityDoor());
     }
 
-    public boolean isRedstoneEnabled() {
-        return security.isRedstoneEnabled();
-    }
-
     @Nullable
     public UUID getOwnerId() {
         return security.getOwnerId();
-    }
-
-    public String getOwnerName() {
-        return security.getOwnerName();
     }
 
     /** True when {@code player} is the recorded owner of this security door. */

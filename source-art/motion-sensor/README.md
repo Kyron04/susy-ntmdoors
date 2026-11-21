@@ -29,7 +29,8 @@ All textures are 16x16:
 - `sensor_led_yellow.png`
 - `sensor_led_red.png`
 
-Status mapping: idle green, authorised blue, maintenance yellow, motion red.
+Status mapping: idle green, authorized blue, yellow for no bound area or a disabled sensor,
+red for an unauthorized player or mob inside.
 
 ## Rebuilding
 

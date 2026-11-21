@@ -1,17 +1,19 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.network;
 
 import com.ntmdoors.tile.TileEntityEmancipationGrill;
+import com.ntmdoors.tile.TileEntityEmancipationGrill.FieldColour;
 import com.ntmdoors.tile.TileEntityEmancipationGrill.FieldMode;
-import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import io.netty.buffer.ByteBuf;
 
 /**
- * Client to server: one row on the Emancipation Grill toggles page. The server checks reach and
+ * Client to server: one option from the Emancipation Grill console. The server checks reach and
  * console access before changing the pair's security core.
  */
 public class MessageGrillOption implements IMessage {
@@ -36,7 +38,11 @@ public class MessageGrillOption implements IMessage {
     public static final int REDSTONE_MATCH_USER_PASS = 17;
     public static final int REDSTONE_MATCH_USER_FAIL = 18;
     public static final int MODE_WALL = 19;
-    public static final int OPTION_COUNT = 20;
+    public static final int COLOUR_RED = 20;
+    public static final int COLOUR_GREEN = 21;
+    public static final int COLOUR_BLUE = 22;
+    public static final int MODE_FILTER = 23;
+    public static final int OPTION_COUNT = 24;
 
     private BlockPos pos;
     private int option;
@@ -96,6 +102,18 @@ public class MessageGrillOption implements IMessage {
                     break;
                 case MODE_WALL:
                     grill.setFieldMode(FieldMode.WALL);
+                    break;
+                case COLOUR_RED:
+                    grill.setFieldColour(FieldColour.RED);
+                    break;
+                case COLOUR_GREEN:
+                    grill.setFieldColour(FieldColour.GREEN);
+                    break;
+                case COLOUR_BLUE:
+                    grill.setFieldColour(FieldColour.BLUE);
+                    break;
+                case MODE_FILTER:
+                    grill.setFieldMode(FieldMode.FILTER);
                     break;
                 case MATCH_USER:
                     grill.setMatchUser(message.value);

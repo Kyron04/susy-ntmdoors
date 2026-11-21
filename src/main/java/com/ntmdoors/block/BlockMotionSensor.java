@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.block;
 
 import com.ntmdoors.NTMDoors;
@@ -129,19 +130,6 @@ public class BlockMotionSensor extends Block {
         if (world.isRemote || world.getTileEntity(pos) instanceof TileEntityMotionSensor) return;
         TileEntity tile = createTileEntity(world, state);
         if (tile != null) world.setTileEntity(pos, tile);
-    }
-
-    /** Changes the status light without disturbing the facing. Used by the future sensor logic. */
-    public static void setStatus(World world, BlockPos pos, Status status) {
-        if (world.isRemote) return;
-        IBlockState state = world.getBlockState(pos);
-        if (!(state.getBlock() instanceof BlockMotionSensor)) return;
-        BlockMotionSensor block = (BlockMotionSensor) state.getBlock();
-        block.ensureTileEntity(world, pos, state);
-        TileEntity te = world.getTileEntity(pos);
-        if (te instanceof TileEntityMotionSensor) {
-            ((TileEntityMotionSensor) te).setStatus(status);
-        }
     }
 
     /**

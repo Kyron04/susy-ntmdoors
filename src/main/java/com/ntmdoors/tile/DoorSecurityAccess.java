@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.tile;
 
 import com.ntmdoors.util.BlockPositions;
@@ -96,14 +97,6 @@ final class DoorSecurityAccess {
         return ownerId;
     }
 
-    String getOwnerName() {
-        return ownerName;
-    }
-
-    boolean isRedstoneEnabled() {
-        return redstoneEnabled;
-    }
-
     boolean isOwnedBy(EntityPlayer player) {
         return player != null && ownerId != null && ownerId.equals(player.getUniqueID());
     }
@@ -160,15 +153,7 @@ final class DoorSecurityAccess {
         door.sync();
     }
 
-    /** Server side: drops this door from linked gates using known backrefs. */
-    void unlinkKnownGates(World world, BlockPos pos) {
-        if (world == null || world.isRemote) return;
-        unlinkGates(world, pos.toImmutable(), new ArrayList<>(linkedGates));
-        linkedGates.clear();
-    }
-
-    /**
-     * Server side: drops this door from every loaded gate's receiver list. Scans loaded gates so
+    /** Server side: drops this door from every loaded gate's receiver list. Scans loaded gates so
      * links from worlds saved before gate backrefs were tracked are still removed.
      */
     void unlinkAllLoadedGates(World world, BlockPos pos) {
@@ -176,16 +161,6 @@ final class DoorSecurityAccess {
         BlockPos self = pos.toImmutable();
         linkedGates.clear();
         for (TileEntity te : new ArrayList<>(world.loadedTileEntityList)) {
-            if (te instanceof TileEntityRedstoneGate) {
-                ((TileEntityRedstoneGate) te).getRedstoneBinding().onDoorRemoved(self);
-            }
-        }
-    }
-
-    private static void unlinkGates(World world, BlockPos self, List<BlockPos> gates) {
-        for (BlockPos gatePos : gates) {
-            if (!world.isBlockLoaded(gatePos)) continue;
-            TileEntity te = world.getTileEntity(gatePos);
             if (te instanceof TileEntityRedstoneGate) {
                 ((TileEntityRedstoneGate) te).getRedstoneBinding().onDoorRemoved(self);
             }

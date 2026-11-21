@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.client;
 
 import net.minecraft.client.Minecraft;
@@ -49,10 +50,6 @@ public final class MonitorReturnContext {
         if (terminal != null && Minecraft.getMinecraft().currentScreen == null) {
             terminal = null;
         }
-    }
-
-    public static void clear() {
-        terminal = null;
     }
 
     private MonitorReturnContext() {

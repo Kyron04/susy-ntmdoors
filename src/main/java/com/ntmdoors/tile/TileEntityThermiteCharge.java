@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.tile;
 
 import com.ntmdoors.block.BlockDoorGeneric;
@@ -39,10 +40,6 @@ public class TileEntityThermiteCharge extends TileEntitySynced implements ITicka
 
     public int getInset() {
         return inset;
-    }
-
-    public boolean isDoorTracked() {
-        return doorTracked;
     }
 
     public boolean isLit() {

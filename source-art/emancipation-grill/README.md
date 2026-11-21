@@ -1,6 +1,6 @@
 # Emancipation Grill - Portal 2-style emitter and field
 
-The physical emitter and paired energy field implemented in `../susy-ntmdoors`.
+The physical emitter and paired energy field implemented in this repository.
 
 The visual target is the modern Portal 2 fizzler: a pale white-cyan, glassy curtain with soft
 wisps and bright emitter seams, rather than a solid blue wall.
@@ -23,7 +23,8 @@ wisps and bright emitter seams, rather than a solid blue wall.
 - **Relay key console.** Sneak right-click a grill you own with the Emancipation Relay Key or an
   Operator Keycard to open the console. Page one assigns keys and IDs from an Operator Keycard in
   the player's inventory. Page two holds the field modes and access/destruction toggles. Page three
-  controls redstone event outputs.
+  sets the field colour. Page four controls redstone event outputs. Page five configures the Filter
+  mode whitelist and blacklist.
 - **Horizontal variant.** A second grill item places a 3x1x1 bar that runs left/right along the
   wall. Two horizontal bars pair across an opening and create a horizontal field sheet at the
   emitter line. It shares the console, ownership, Redstone links, terminal device type and detection
@@ -31,8 +32,9 @@ wisps and bright emitter seams, rather than a solid blue wall.
 - **Field modes.** Solid blocks unauthorized players and mobs; Neutral renders the field but has no
   effect; Lethal kills unauthorized players and mobs, and erases non-living entities such as dropped
   items, projectiles, vehicles and item frames that touch the field; Wall Mode blocks every detected
-  player and mob with no clearance, no killing and no item erasure. The field can also be enabled or
-  disabled from page two. Ignore Items leaves dropped items alone in Lethal mode.
+  player and mob with no clearance, no killing and no item erasure; Filter Mode lets everyone pass
+  and applies the page-five item lists. The field can also be enabled or disabled from page two.
+  Ignore Items leaves dropped items alone in Lethal mode.
 - **Access toggles.** Match User makes biometric cards personal; Ignore Private Key and Ignore
   Biometric ID remove those credentials from the clearance check. Ignore Inventory leaves items and
   armor alone when the Lethal field kills an unauthorized player. Creative players are unaffected by
@@ -50,19 +52,39 @@ wisps and bright emitter seams, rather than a solid blue wall.
   once so the console can be configured; afterwards gate activation can raise the field, but gate
   deactivation and the grill's own signal pulses leave the configured field alone.
 - **Redstone event outputs.** Bind gates to the grill with the Redstone Relay Key to receive one-tick
-  event pulses. The third console page enables five independent outputs: Solid pass (Y), Solid block
+  event pulses. The fourth console page enables five independent outputs: Solid pass (Y), Solid block
   (N), Lethal kill, Match User match (Y) and Match User mismatch (N). Match User outputs only apply
   while Match User is on and Ignore Biometric ID is off. All five default to off and persist.
+- **Filter mode.** Page two includes a `Filter Mode` that lets everyone pass regardless of
+  clearance. Page five configures two 9x6 grids (54 pattern slots each) of whitelist and blacklist
+  patterns. Drag from JEI/HEI to set a pattern; right-click a slot to clear it. Clicking a slot does
+  not take the held hotbar item. When a player contacts a Filter mode field, the inventory is scanned
+  once per contact; crossing the field again rechecks it, even without leaving the wider detection
+  radius. Blacklisted items are deleted, whitelisted items are preserved, and an item in both lists
+  is preserved. Dropped item entities are checked the same way: blacklisted stacks are voided and
+  whitelisted or unlisted stacks pass through. Living mobs are checked too: equipment slots,
+  villager inventories, horse/donkey/llama item handlers and any standard item-handler capability
+  are scanned, independently of the detection toggles. Container items are checked recursively
+  through Forge's item-handler capability and the standard `Items` NBT layout, covering modded
+  backpacks, toolbelts, vanilla shulker boxes and root-list backpack inventories. Whitelisting a
+  container protects the container itself, not its contents; a blacklisted container is voided
+  whole. Each void plays the same disintegration one-shot as Lethal mode, rate-limited by the grill.
+  Matching uses the registered item and subtype metadata; stack size and NBT are ignored. Main
+  inventory, armor and offhand are scanned; creative and spectator players are skipped. Ignore Items
+  remains Lethal-only and does not disable Filter mode. The JEI/HEI overlay is positioned beside the
+  console on page five. Page five warns when the field is disabled, Filter Mode is off, or the player
+  is creative/spectator. Filter mode does not change the existing Lethal inventory wipe.
 - **Barrier.** In Solid mode unauthorized players and mobs are stopped at the field plane; authorized
   players pass. Wall Mode stops everyone detected, regardless of clearance. Lethal mode kills instead
-  of pushing back, and Neutral mode does neither. The thin field cell remains exposed by
+  of pushing back, while Neutral and Filter mode do neither. The thin field cell remains exposed by
   `TileEntityEmancipationGrill#getFieldBox()`.
 - **Breaker and placement guard.** Breaker keys treat an owned grill like an owned security block.
-  Blocks cannot be placed in the one-block doorway slice at the field line while the pair is
-  active.
+  Blocks cannot be placed in the one-block doorway slice at the field line while a Solid, Lethal or
+  Wall pair is active.
 - **Performance.** The renderer stays at three layered quads, edge strips and a handful of sparks.
-  The server checks players inside the field and scans their inventories each tick; there are no
-  shaders or per-frame texture uploads.
+  The server checks entities near the field each tick; Filter mode scans player and mob inventories
+  and equipment once per contact, checks nearby dropped item entities each tick, and bounds recursive
+  container scans by depth and slot count. There are no shaders or per-frame texture uploads.
 
 The preview's **glass bend** is a preview-only effect. The in-game version deliberately avoids
 framebuffer and shader work.
@@ -93,7 +115,7 @@ powershell -ExecutionPolicy Bypass -File tools\make_mod_assets.ps1
 powershell -ExecutionPolicy Bypass -File tools\make_horizontal_assets.ps1
 ```
 
-This writes into `..\susy-ntmdoors\src\main\resources\assets\ntmdoors`.
+This writes into `..\..\src\main\resources\assets\ntmdoors`.
 
 `make_mod_assets.ps1` does **not** generate the field effect textures; those are handled by the
 Java tool below so the two pipelines can be tuned independently.
@@ -105,7 +127,7 @@ Use any JDK 8 or newer. From this folder:
 ```powershell
 $jdk = 'C:\path\to\jdk8'
 & "$jdk\bin\javac.exe" -d tools\build tools\FieldTextureGenerator.java
-& "$jdk\bin\java.exe" -cp tools\build FieldTextureGenerator ..\susy-ntmdoors\src\main\resources\assets\ntmdoors\textures\blocks
+& "$jdk\bin\java.exe" -cp tools\build FieldTextureGenerator ..\..\src\main\resources\assets\ntmdoors\textures\blocks
 ```
 
 Outputs:

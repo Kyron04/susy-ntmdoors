@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.util;
 
 import com.ntmdoors.block.BlockEmancipationGrill;
@@ -146,10 +147,6 @@ public final class EmancipationFieldGeometry {
         return new AxisAlignedBB(
                 stripX - THICKNESS / 2.0D, y0, Math.min(az, bz),
                 stripX + THICKNESS / 2.0D, y1, Math.max(az, bz));
-    }
-
-    public static boolean isOwner(BlockPos core, BlockPos partner) {
-        return core.toLong() <= partner.toLong();
     }
 
     private static boolean hasParts(World world, BlockPos core, EnumFacing facing,

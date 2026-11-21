@@ -1,4 +1,4 @@
-HBM DOORS: 1.0.79
+NTM DOORS: 1.0.79
 Minecraft 1.12.2 / Forge 14.23.5.2847
 
 1.0.79

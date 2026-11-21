@@ -3,7 +3,7 @@ Add-Type -AssemblyName System.Drawing
 $root = Join-Path $PSScriptRoot '..'
 $repoRoot = Join-Path $root '..\..'
 if (-not (Test-Path (Join-Path $repoRoot 'src\main\resources'))) {
-    $repoRoot = Join-Path $root '..\susy-ntmdoors'
+    throw "Could not find the repository root at $repoRoot"
 }
 $mod = Join-Path $repoRoot 'src\main\resources\assets\ntmdoors'
 $bbPath = Join-Path $root 'emancipation_grill.bbmodel'

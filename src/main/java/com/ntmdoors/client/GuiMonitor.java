@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.client;
 
 import com.ntmdoors.NTMDoors;
@@ -165,7 +166,6 @@ public class GuiMonitor extends GuiScreen {
     private String linkedKeyName = "";
     private int pendingKeyHand = -1;
     private final StringBuilder nameInput = new StringBuilder();
-    private Stage nameReturnStage = Stage.SECURITY_HOME;
     private boolean deleteRequested;
 
     private int lastSentStage = Integer.MIN_VALUE;
@@ -2041,7 +2041,6 @@ public class GuiMonitor extends GuiScreen {
 
     private void startNameNet() {
         stage = Stage.NAME_NET;
-        nameReturnStage = Stage.SECURITY_HOME;
         nameInput.setLength(0);
         error = "";
         waiting = false;
@@ -2050,7 +2049,6 @@ public class GuiMonitor extends GuiScreen {
 
     private void startRenameKey() {
         stage = Stage.NAME_KEY;
-        nameReturnStage = Stage.SECURITY;
         nameInput.setLength(0);
         nameInput.append(linkedKeyName);
         error = "";

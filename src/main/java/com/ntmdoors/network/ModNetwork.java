@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.network;
 
 import com.ntmdoors.NTMDoors;
@@ -96,6 +97,8 @@ public final class ModNetwork {
                 MessageGrillAccessResult.class, 42, Side.CLIENT);
         INSTANCE.registerMessage(MessageGrillOption.Handler.class,
                 MessageGrillOption.class, 43, Side.SERVER);
+        INSTANCE.registerMessage(MessageGrillFilter.Handler.class,
+                MessageGrillFilter.class, 44, Side.SERVER);
     }
 
     private ModNetwork() {

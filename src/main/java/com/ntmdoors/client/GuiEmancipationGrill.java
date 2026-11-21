@@ -1,17 +1,22 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.client;
 
 import com.ntmdoors.item.ItemDeveloperKeycard;
 import com.ntmdoors.item.ItemOperatorKeycard;
+import com.ntmdoors.network.MessageGrillFilter;
 import com.ntmdoors.network.MessageGrillKey;
 import com.ntmdoors.network.MessageGrillOption;
 import com.ntmdoors.network.ModNetwork;
 import com.ntmdoors.tile.TileEntityEmancipationGrill;
 import com.ntmdoors.tile.TileEntityEmancipationGrill.BiometricId;
+import com.ntmdoors.tile.TileEntityEmancipationGrill.FieldColour;
 import com.ntmdoors.tile.TileEntityEmancipationGrill.FieldMode;
 import com.ntmdoors.util.Biometrics;
 import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.PrivateKeys;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
@@ -19,6 +24,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,14 +34,15 @@ import java.util.List;
 /**
  * Emancipation Grill console. Page one assigns private keys and biometric identities from the
  * Operator Keycard carried in the player's inventory. Page two holds the field behavior modes and
- * access/destruction toggles. Page three is the redstone placeholder for the next logic pass.
+ * access/destruction toggles. Page three sets the field colour. Page four holds the redstone events.
+ * Page five configures the whitelist and blacklist patterns used by Filter mode.
  */
 @SideOnly(Side.CLIENT)
 public class GuiEmancipationGrill extends GuiScreen {
 
     private static final int PANEL_WIDTH = 344;
     private static final int PANEL_HEIGHT = 196;
-    private static final int PAGE_COUNT = 3;
+    private static final int PAGE_COUNT = 5;
 
     private static final int LIST_TOP = 46;
     private static final int LIST_HEIGHT = 102;
@@ -49,7 +56,7 @@ public class GuiEmancipationGrill extends GuiScreen {
     private static final int ARROW_Y = 159;
 
     private static final int OPTION_TOP = 46;
-    private static final int OPTION_HEIGHT = 26;
+    private static final int OPTION_HEIGHT = 20;
     private static final int OPTION_AREA = 102;
     private static final int PILL_WIDTH = 54;
     private static final int PILL_HEIGHT = 14;
@@ -58,6 +65,7 @@ public class GuiEmancipationGrill extends GuiScreen {
             MessageGrillOption.MODE_NEUTRAL,
             MessageGrillOption.MODE_LETHAL,
             MessageGrillOption.MODE_WALL,
+            MessageGrillOption.MODE_FILTER,
             MessageGrillOption.MATCH_USER,
             MessageGrillOption.IGNORE_PRIVATE_KEY,
             MessageGrillOption.IGNORE_BIOMETRIC_ID,
@@ -77,6 +85,21 @@ public class GuiEmancipationGrill extends GuiScreen {
             MessageGrillOption.REDSTONE_MATCH_USER_PASS,
             MessageGrillOption.REDSTONE_MATCH_USER_FAIL
     };
+    private static final int[] COLOUR_OPTIONS = {
+            MessageGrillOption.COLOUR_RED,
+            MessageGrillOption.COLOUR_GREEN,
+            MessageGrillOption.COLOUR_BLUE
+    };
+
+    private static final int FILTER_PAGE = 4;
+    private static final int FILTER_COLUMNS = TileEntityEmancipationGrill.FILTER_COLUMNS;
+    private static final int FILTER_ROWS = TileEntityEmancipationGrill.FILTER_ROWS;
+    private static final int FILTER_SLOT = 16;
+    private static final int FILTER_GAP = 1;
+    private static final int FILTER_STEP = FILTER_SLOT + FILTER_GAP;
+    private static final int FILTER_TOP = 46;
+    private static final int FILTER_LEFT_X = 14;
+    private static final int FILTER_RIGHT_X = 178;
 
     private static final int RED_PANEL = 0xFF2A0F12;
     private static final int RED_RULE = 0xFF6A2A2A;
@@ -100,6 +123,7 @@ public class GuiEmancipationGrill extends GuiScreen {
     private int scrollRedstone;
     private int lastMouseX;
     private int lastMouseY;
+    private ItemStack hoveredFilterStack = ItemStack.EMPTY;
 
     public GuiEmancipationGrill(BlockPos pos) {
         this.pos = pos;
@@ -186,6 +210,14 @@ public class GuiEmancipationGrill extends GuiScreen {
                 return grill != null && grill.getFieldMode() == FieldMode.LETHAL;
             case MessageGrillOption.MODE_WALL:
                 return grill != null && grill.getFieldMode() == FieldMode.WALL;
+            case MessageGrillOption.MODE_FILTER:
+                return grill != null && grill.getFieldMode() == FieldMode.FILTER;
+            case MessageGrillOption.COLOUR_RED:
+                return grill != null && grill.getFieldColour() == FieldColour.RED;
+            case MessageGrillOption.COLOUR_GREEN:
+                return grill != null && grill.getFieldColour() == FieldColour.GREEN;
+            case MessageGrillOption.COLOUR_BLUE:
+                return grill == null || grill.getFieldColour() == FieldColour.BLUE;
             case MessageGrillOption.MATCH_USER:
                 return grill == null || grill.isMatchUser();
             case MessageGrillOption.IGNORE_PRIVATE_KEY:
@@ -248,7 +280,7 @@ public class GuiEmancipationGrill extends GuiScreen {
             scrollOptions = clampOptionsScroll(
                     scrollOptions + (wheel > 0 ? -OPTION_HEIGHT : OPTION_HEIGHT),
                     TOGGLE_OPTIONS.length);
-        } else if (page == 2 && inOptionsArea(lastMouseX, lastMouseY)) {
+        } else if (page == 3 && inOptionsArea(lastMouseX, lastMouseY)) {
             scrollRedstone = clampOptionsScroll(
                     scrollRedstone + (wheel > 0 ? -OPTION_HEIGHT : OPTION_HEIGHT),
                     REDSTONE_OPTIONS.length);
@@ -257,6 +289,14 @@ public class GuiEmancipationGrill extends GuiScreen {
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+        if (page == FILTER_PAGE && mouseButton == 1) {
+            FilterTarget target = filterSlotAt(mouseX, mouseY);
+            if (target != null) {
+                clearFilterSlot(target);
+                return;
+            }
+        }
+
         if (mouseButton == 0) {
             if (inArrow(mouseX, mouseY, false)) {
                 changePage(-1);
@@ -288,6 +328,12 @@ public class GuiEmancipationGrill extends GuiScreen {
                     return;
                 }
             } else if (page == 2) {
+                int option = optionAt(mouseX, mouseY, COLOUR_OPTIONS, 0);
+                if (option >= 0) {
+                    sendOption(option);
+                    return;
+                }
+            } else if (page == 3) {
                 int option = optionAt(mouseX, mouseY, REDSTONE_OPTIONS, scrollRedstone);
                 if (option >= 0) {
                     sendOption(option);
@@ -310,7 +356,11 @@ public class GuiEmancipationGrill extends GuiScreen {
             case MessageGrillOption.MODE_NEUTRAL:
             case MessageGrillOption.MODE_LETHAL:
             case MessageGrillOption.MODE_WALL:
+            case MessageGrillOption.MODE_FILTER:
             case MessageGrillOption.ENABLE_FIELD:
+            case MessageGrillOption.COLOUR_RED:
+            case MessageGrillOption.COLOUR_GREEN:
+            case MessageGrillOption.COLOUR_BLUE:
                 value = true;
                 break;
             case MessageGrillOption.DISABLE_FIELD:
@@ -400,22 +450,28 @@ public class GuiEmancipationGrill extends GuiScreen {
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         lastMouseX = mouseX;
         lastMouseY = mouseY;
+        hoveredFilterStack = ItemStack.EMPTY;
         drawDefaultBackground();
 
         drawRect(left - 1, top - 1, left + PANEL_WIDTH + 1, top + PANEL_HEIGHT + 1, COLOUR);
         drawRect(left, top, left + PANEL_WIDTH, top + PANEL_HEIGHT, 0xFF111111);
         drawRect(left + 1, top + 1, left + PANEL_WIDTH - 1, top + PANEL_HEIGHT - 1, 0xFF2B2B2E);
         drawRect(left + 1, top + 1, left + PANEL_WIDTH - 1, top + 2, 0xFF3C3C40);
-        if (page == 2) {
+        if (page == 3) {
             drawRect(left + 1, top + 1, left + PANEL_WIDTH - 1, top + PANEL_HEIGHT - 1, RED_PANEL);
         }
 
         if (page == 0) drawKeysPage(mouseX, mouseY);
         else if (page == 1) drawTogglesPage(mouseX, mouseY);
-        else drawRedstonePage(mouseX, mouseY);
+        else if (page == 2) drawColourPage(mouseX, mouseY);
+        else if (page == 3) drawRedstonePage(mouseX, mouseY);
+        else drawFilterPage(mouseX, mouseY);
 
         drawFooter(mouseX, mouseY);
         super.drawScreen(mouseX, mouseY, partialTicks);
+        if (page == FILTER_PAGE && !hoveredFilterStack.isEmpty()) {
+            renderToolTip(hoveredFilterStack, mouseX, mouseY);
+        }
     }
 
     private void drawKeysPage(int mouseX, int mouseY) {
@@ -456,6 +512,141 @@ public class GuiEmancipationGrill extends GuiScreen {
                 TOGGLE_OPTIONS.length, OPTION_HEIGHT, scrollOptions);
     }
 
+    private void drawColourPage(int mouseX, int mouseY) {
+        drawTitle(colourName() + " FIELD");
+        drawString(fontRenderer, "FIELD COLOUR", left + 12, top + 29, HEADING);
+        drawRect(left + 12, top + 40, left + PANEL_WIDTH - 12, top + 41, RULE);
+
+        for (int i = 0; i < COLOUR_OPTIONS.length; i++) {
+            int y = top + OPTION_TOP + i * OPTION_HEIGHT;
+            drawColourOption(COLOUR_OPTIONS[i], i, y, mouseX, mouseY);
+        }
+    }
+
+    private void drawFilterPage(int mouseX, int mouseY) {
+        drawTitle("FILTER LISTS");
+        drawString(fontRenderer, "WHITELIST", left + FILTER_LEFT_X, top + 29, 0xFFB8D8B8);
+        drawString(fontRenderer, "BLACKLIST", left + FILTER_RIGHT_X, top + 29, 0xFFD8B8B8);
+        drawRect(left + 12, top + 40, left + PANEL_WIDTH - 12, top + 41, RULE);
+
+        drawFilterGrid(FILTER_LEFT_X, filterStacks(true), mouseX, mouseY);
+        drawFilterGrid(FILTER_RIGHT_X, filterStacks(false), mouseX, mouseY);
+    }
+
+    private void drawFilterGrid(int listX, List<ItemStack> stacks,
+                                int mouseX, int mouseY) {
+        for (int row = 0; row < FILTER_ROWS; row++) {
+            for (int col = 0; col < FILTER_COLUMNS; col++) {
+                int x = left + listX + col * FILTER_STEP;
+                int y = top + FILTER_TOP + row * FILTER_STEP;
+                boolean hovered = mouseX >= x && mouseX < x + FILTER_SLOT
+                        && mouseY >= y && mouseY < y + FILTER_SLOT;
+                drawRect(x, y, x + FILTER_SLOT, y + FILTER_SLOT,
+                        hovered ? HOVER : 0xFF1B1B1E);
+                drawRect(x, y, x + FILTER_SLOT, y + 1, 0xFF3A3A3E);
+                drawRect(x, y, x + 1, y + FILTER_SLOT, 0xFF3A3A3E);
+            }
+        }
+
+        boolean depth = GL11.glIsEnabled(GL11.GL_DEPTH_TEST);
+        boolean lighting = GL11.glIsEnabled(GL11.GL_LIGHTING);
+        RenderHelper.enableGUIStandardItemLighting();
+        GlStateManager.enableDepth();
+        for (int row = 0; row < FILTER_ROWS; row++) {
+            for (int col = 0; col < FILTER_COLUMNS; col++) {
+                int index = row * FILTER_COLUMNS + col;
+                int x = left + listX + col * FILTER_STEP;
+                int y = top + FILTER_TOP + row * FILTER_STEP;
+                ItemStack stack = index < stacks.size() ? stacks.get(index) : ItemStack.EMPTY;
+                if (stack.isEmpty()) continue;
+
+                mc.getRenderItem().renderItemAndEffectIntoGUI(stack, x, y);
+                mc.getRenderItem().renderItemOverlayIntoGUI(fontRenderer, stack, x, y, null);
+                boolean hovered = mouseX >= x && mouseX < x + FILTER_SLOT
+                        && mouseY >= y && mouseY < y + FILTER_SLOT;
+                if (hovered) hoveredFilterStack = stack;
+            }
+        }
+        RenderHelper.disableStandardItemLighting();
+        if (depth) GlStateManager.enableDepth();
+        else GlStateManager.disableDepth();
+        if (lighting) GlStateManager.enableLighting();
+        else GlStateManager.disableLighting();
+        GlStateManager.enableTexture2D();
+        GlStateManager.color(1F, 1F, 1F, 1F);
+    }
+
+    private List<ItemStack> filterStacks(boolean whitelist) {
+        TileEntityEmancipationGrill grill = grill();
+        if (grill == null) return Collections.emptyList();
+        return grill.getFilterStacks(whitelist);
+    }
+
+    private FilterTarget filterSlotAt(int mouseX, int mouseY) {
+        for (FilterTarget target : getFilterTargets()) {
+            if (mouseX >= target.x && mouseX < target.x + target.width
+                    && mouseY >= target.y && mouseY < target.y + target.height) {
+                return target;
+            }
+        }
+        return null;
+    }
+
+    private void clearFilterSlot(FilterTarget target) {
+        if (page != FILTER_PAGE) return;
+        sendFilter(target.whitelist, target.slot, ItemStack.EMPTY);
+    }
+
+    private void sendFilter(boolean whitelist, int slot, ItemStack stack) {
+        ModNetwork.INSTANCE.sendToServer(
+                new MessageGrillFilter(pos, whitelist, slot, stack));
+    }
+
+    /** Called by the JEI ghost handler; only valid while the filter page is open. */
+    public void setFilterFromJei(boolean whitelist, int slot, ItemStack stack) {
+        if (page != FILTER_PAGE || stack == null || stack.isEmpty()) return;
+        sendFilter(whitelist, slot, stack);
+    }
+
+    public List<FilterTarget> getFilterTargets() {
+        if (page != FILTER_PAGE) return Collections.emptyList();
+        List<FilterTarget> targets = new ArrayList<>(FILTER_COLUMNS * FILTER_ROWS * 2);
+        addFilterTargets(targets, true, FILTER_LEFT_X);
+        addFilterTargets(targets, false, FILTER_RIGHT_X);
+        return targets;
+    }
+
+    public boolean isFilterPage() {
+        return page == FILTER_PAGE;
+    }
+
+    public int getPanelLeft() {
+        return left;
+    }
+
+    public int getPanelTop() {
+        return top;
+    }
+
+    public int getPanelWidth() {
+        return PANEL_WIDTH;
+    }
+
+    public int getPanelHeight() {
+        return PANEL_HEIGHT;
+    }
+
+    private void addFilterTargets(List<FilterTarget> targets, boolean whitelist, int listX) {
+        for (int row = 0; row < FILTER_ROWS; row++) {
+            for (int col = 0; col < FILTER_COLUMNS; col++) {
+                int index = row * FILTER_COLUMNS + col;
+                int x = left + listX + col * FILTER_STEP;
+                int y = top + FILTER_TOP + row * FILTER_STEP;
+                targets.add(new FilterTarget(whitelist, index, x, y, FILTER_SLOT, FILTER_SLOT));
+            }
+        }
+    }
+
     private void drawRedstonePage(int mouseX, int mouseY) {
         drawTitle("REDSTONE");
         drawString(fontRenderer, "EVENT OUTPUTS", left + 12, top + 29, 0xFFF0C0C0);
@@ -481,24 +672,67 @@ public class GuiEmancipationGrill extends GuiScreen {
         boolean hovered = inOption(index, mouseX, mouseY, scroll);
         if (hovered) {
             drawRect(left + 8, y - 3, left + PANEL_WIDTH - 8, y + OPTION_HEIGHT - 5,
-                    page == 2 ? RED_HOVER : HOVER);
+                    page == 3 ? RED_HOVER : HOVER);
         }
 
         drawString(fontRenderer, optionLabel(option), left + 16, y, COLOUR);
         drawString(fontRenderer, optionHint(option), left + 16, y + 10, MUTED);
+        drawPill(left + PANEL_WIDTH - 12 - PILL_WIDTH, y + 1, on);
+    }
 
-        int x = left + PANEL_WIDTH - 12 - PILL_WIDTH;
-        int pillY = y + 1;
+    /** One colour row: a swatch, label and hint on the left, an ON/OFF pill on the right. */
+    private void drawColourOption(int option, int index, int y, int mouseX, int mouseY) {
+        boolean on = optionValue(option);
+        boolean hovered = inOption(index, mouseX, mouseY, 0);
+        if (hovered) {
+            drawRect(left + 8, y - 3, left + PANEL_WIDTH - 8, y + OPTION_HEIGHT - 5, HOVER);
+        }
+
+        int swatchX = left + 16;
+        int swatchY = y + 3;
+        drawRect(swatchX - 1, swatchY - 1, swatchX + 11, swatchY + 11, 0xFF111111);
+        drawRect(swatchX, swatchY, swatchX + 10, swatchY + 10, colourSwatch(option));
+        drawString(fontRenderer, optionLabel(option), left + 32, y, COLOUR);
+        drawString(fontRenderer, optionHint(option), left + 32, y + 10, MUTED);
+        drawPill(left + PANEL_WIDTH - 12 - PILL_WIDTH, y + 1, on);
+    }
+
+    private void drawPill(int x, int y, boolean on) {
         int fill = on ? 0xFF344434 : 0xFF3A3030;
         int edge = on ? 0xFF7FA87F : 0xFF8A6A6A;
         int text = on ? 0xFFD6F0D6 : 0xFFE6C8C8;
         int bottom = on ? 0xFF223022 : 0xFF241C1C;
 
-        drawRect(x, pillY, x + PILL_WIDTH, pillY + PILL_HEIGHT, fill);
-        drawRect(x, pillY, x + PILL_WIDTH, pillY + 1, edge);
-        drawRect(x, pillY + PILL_HEIGHT - 1, x + PILL_WIDTH, pillY + PILL_HEIGHT, bottom);
-        drawCenteredString(fontRenderer, on ? "ON" : "OFF",
-                x + PILL_WIDTH / 2, pillY + 3, text);
+        drawRect(x, y, x + PILL_WIDTH, y + PILL_HEIGHT, fill);
+        drawRect(x, y, x + PILL_WIDTH, y + 1, edge);
+        drawRect(x, y + PILL_HEIGHT - 1, x + PILL_WIDTH, y + PILL_HEIGHT, bottom);
+        drawCenteredString(fontRenderer, on ? "ON" : "OFF", x + PILL_WIDTH / 2, y + 3, text);
+    }
+
+    private String colourName() {
+        TileEntityEmancipationGrill grill = grill();
+        FieldColour colour = grill == null ? FieldColour.BLUE : grill.getFieldColour();
+        switch (colour) {
+            case RED:
+                return "RED";
+            case GREEN:
+                return "GREEN";
+            default:
+                return "BLUE";
+        }
+    }
+
+    private static int colourSwatch(int option) {
+        switch (option) {
+            case MessageGrillOption.COLOUR_RED:
+                return 0xFFF24D40;
+            case MessageGrillOption.COLOUR_GREEN:
+                return 0xFF40D961;
+            case MessageGrillOption.COLOUR_BLUE:
+                return 0xFF94D1FF;
+            default:
+                return 0xFF808080;
+        }
     }
 
     private static String optionLabel(int option) {
@@ -511,6 +745,14 @@ public class GuiEmancipationGrill extends GuiScreen {
                 return "Lethal Field";
             case MessageGrillOption.MODE_WALL:
                 return "Wall Mode";
+            case MessageGrillOption.MODE_FILTER:
+                return "Filter Mode";
+            case MessageGrillOption.COLOUR_RED:
+                return "Red";
+            case MessageGrillOption.COLOUR_GREEN:
+                return "Green";
+            case MessageGrillOption.COLOUR_BLUE:
+                return "Blue";
             case MessageGrillOption.MATCH_USER:
                 return "Match User";
             case MessageGrillOption.IGNORE_PRIVATE_KEY:
@@ -558,6 +800,14 @@ public class GuiEmancipationGrill extends GuiScreen {
                 return "Kill unauthorized players";
             case MessageGrillOption.MODE_WALL:
                 return "Solid wall, no clearance";
+            case MessageGrillOption.MODE_FILTER:
+                return "Everyone passes; void blacklisted items";
+            case MessageGrillOption.COLOUR_RED:
+                return "Tint the energy field red";
+            case MessageGrillOption.COLOUR_GREEN:
+                return "Tint the energy field green";
+            case MessageGrillOption.COLOUR_BLUE:
+                return "Tint the energy field blue";
             case MessageGrillOption.MATCH_USER:
                 return "Biometric ID must match carrier";
             case MessageGrillOption.IGNORE_PRIVATE_KEY:
@@ -672,8 +922,25 @@ public class GuiEmancipationGrill extends GuiScreen {
             hint = "Click a key or ID to move it - ESC to close";
         } else if (page == 1) {
             hint = "Click a setting to change it - ESC to close";
-        } else {
+        } else if (page == 2) {
+            hint = "Click a colour to apply it - ESC to close";
+        } else if (page == 3) {
             hint = "Click a signal to enable it - pulses linked gates";
+        } else {
+            TileEntityEmancipationGrill grill = grill();
+            if (grill == null || !grill.isFieldEnabled()) {
+                hint = "Field is disabled - enable it on page 2";
+                colour = 0xFFE6A0A0;
+            } else if (grill.getFieldMode() != FieldMode.FILTER) {
+                hint = "Filter Mode is off - enable it on page 2";
+                colour = 0xFFE6A0A0;
+            } else if (mc.player != null
+                    && (mc.player.isCreative() || mc.player.isSpectator())) {
+                hint = "Creative/spectator players are not filtered";
+                colour = 0xFFE6A0A0;
+            } else {
+                hint = "Drag from JEI/HEI to set - right-click to clear";
+            }
         }
         drawCenteredString(fontRenderer, hint, left + PANEL_WIDTH / 2, top + 164, colour);
         drawCenteredString(fontRenderer, (page + 1) + "/" + PAGE_COUNT,
@@ -697,6 +964,26 @@ public class GuiEmancipationGrill extends GuiScreen {
         for (int i = 0; i < 5; i++) {
             int dx = right ? 4 - i : i - 4;
             drawRect(centreX + dx, centreY - i, centreX + dx + 1, centreY + 1 + i, COLOUR);
+        }
+    }
+
+    /** One filter slot in either grid. Public for the optional JEI ghost handler. */
+    public static final class FilterTarget {
+
+        public final boolean whitelist;
+        public final int slot;
+        public final int x;
+        public final int y;
+        public final int width;
+        public final int height;
+
+        private FilterTarget(boolean whitelist, int slot, int x, int y, int width, int height) {
+            this.whitelist = whitelist;
+            this.slot = slot;
+            this.x = x;
+            this.y = y;
+            this.width = width;
+            this.height = height;
         }
     }
 

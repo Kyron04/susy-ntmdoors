@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.tile;
 
 import com.ntmdoors.NTMDoors;
@@ -239,10 +240,6 @@ public class TileEntitySafe extends TileEntitySynced implements IInventory, ISid
     @Nullable
     public UUID getOwnerId() {
         return ownerId;
-    }
-
-    public String getOwnerName() {
-        return ownerName;
     }
 
     public boolean hasOwner() {

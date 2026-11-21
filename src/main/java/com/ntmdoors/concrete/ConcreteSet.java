@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.concrete;
 
 import com.ntmdoors.item.ItemBlockConcreteVariant;
@@ -74,7 +75,6 @@ public final class ConcreteSet {
     private static final Map<String, Block> STAIRS = new LinkedHashMap<>();
     private static final List<StairSpec> STAIR_SPECS = new ArrayList<>();
     private static final List<SlabGroup> SLAB_GROUPS = new ArrayList<>();
-    private static final Map<String, SlabGroup> SLAB_BY_NAME = new LinkedHashMap<>();
 
     // --- grouped cubes -----------------------------------------------------------------------
     public static final BlockConcreteVariant CONCRETE = new BlockConcreteVariant(
@@ -180,10 +180,6 @@ public final class ConcreteSet {
         return STAIRS.get(name);
     }
 
-    public static SlabGroup slabGroup(String name) {
-        return SLAB_BY_NAME.get(name);
-    }
-
     public static boolean isHazard(String type) {
         return "hazard".equals(type) || type.startsWith("hazard_");
     }
@@ -249,7 +245,6 @@ public final class ConcreteSet {
         }
         SlabGroup group = new SlabGroup(name, variantNames, itemModels, single, doubled);
         SLAB_GROUPS.add(group);
-        SLAB_BY_NAME.put(name, group);
         return group;
     }
 

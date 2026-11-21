@@ -28,13 +28,8 @@ gradually rather than reformatted in one pass.
 The standards are also a checklist for the later repository cleanup. Known
 targets are:
 
-- Remove the duplicate `LICENSE.LESSER` and `NOTICE.txt` copies under
-  `src/main/resources`; the root files are canonical and Gradle packages them
-  into `META-INF`.
-- Archive old per-release CurseForge notes under `docs/releases/` instead of
-  leaving them beside the current release.
-- Collapse duplicate version headings in `CHANGELOG.md` into one section per
-  release.
+- Collapse duplicate version headings in `CHANGELOG.md`; the public and
+  internal histories currently share version numbers and need clearer labels.
 - Keep reference-only source art out of the packaged jar and attribute
   third-party material in `NOTICE`.
 - Replace repeated asset stubs with shared models where the item registry

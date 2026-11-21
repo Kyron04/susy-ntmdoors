@@ -10,15 +10,16 @@ susy-ntmdoors/
   gradlew / gradlew.bat     Gradle wrapper
   gradle/                   Wrapper jar and properties
   src/main/java/            Java source
-  src/main/resources/       Runtime assets, metadata, packaged notices
+  src/main/resources/       Runtime assets and metadata
   source-art/               Source art, reference material, regeneration tools
   docs/standards/           This reference
+  docs/releases/            Archived CurseForge release notes
   README.md                 Player and developer overview
   CHANGELOG.md              Canonical release history
   LICENSE.LESSER            LGPL-3.0 license text
   NOTICE                    Third-party attribution
   AI_DISCLOSURE.md          Scope of AI-assisted work
-  CURSEFORGE-*.md           CurseForge description and release notes
+  CURSEFORGE-*.md           Current CurseForge description and release note
   CONTRIBUTING.md           Short contributor guide
 ```
 
@@ -100,8 +101,7 @@ source and terms in `NOTICE` even when it is not shipped.
 
 - `LICENSE.LESSER` and `NOTICE` at the repository root are canonical.
 - `build.gradle` packages them into `META-INF` in the jar.
-- Do not add a second copy under `src/main/resources`; existing duplicates are
-  a legacy cleanup target.
+- Do not add copies under `src/main/resources`.
 
 ## Documentation files
 

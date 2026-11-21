@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.tile;
 
 import com.ntmdoors.item.ItemCreativeKeycard;
@@ -13,10 +14,13 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityArmorStand;
 import net.minecraft.entity.monster.IMob;
+import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -30,6 +34,9 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.IItemHandlerModifiable;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -47,25 +54,39 @@ import java.util.UUID;
  *
  * <p>The first grill placed owns the pair. The second grill adopts that owner and keeps a copy for
  * display and breaker checks, but the GUI and field checks use the pair's security core. An enabled
- * field can be Solid (blocks unauthorized players and mobs), Neutral (visible but inert) or Lethal
- * (kills unauthorized players and mobs, and erases other entities on contact). Players pass with an
- * identity on an RFID/Operator Keycard, or a Creative Keycard, subject to the console's Match User,
- * Ignore Private Key and Ignore Biometric ID toggles. The Detect Players, Detect Hostile Mobs and
- * Detect Neutral Mobs toggles decide which living entity categories the field acts on. Ownership
- * alone does not grant passage.</p>
+ * field can be Solid (blocks unauthorized players and mobs), Neutral (visible but inert), Lethal
+ * (kills unauthorized players and mobs, and erases other entities on contact), Wall (blocks everyone)
+ * or Filter (lets everyone pass and scans player/mob inventories and equipment against the page-five
+ * lists). Players pass with an identity on an RFID/Operator Keycard, or a Creative Keycard, subject
+ * to the console's Match User, Ignore Private Key and Ignore Biometric ID toggles. The Detect
+ * Players, Detect Hostile Mobs and Detect Neutral Mobs toggles decide which living entity categories
+ * the field acts on. Ownership alone does not grant passage.</p>
  */
 public class TileEntityEmancipationGrill extends TileEntitySynced implements ITickable, RedstoneBindingHost {
 
-    /** How an enabled field treats a player without clearance. */
+    /** How an enabled field treats players and their inventories. */
     public enum FieldMode {
         SOLID,
         NEUTRAL,
         LETHAL,
-        WALL;
+        WALL,
+        FILTER;
 
         public static FieldMode byId(int id) {
             FieldMode[] values = values();
             return id >= 0 && id < values.length ? values[id] : SOLID;
+        }
+    }
+
+    /** Palette applied to the energy field. Blue preserves the original look. */
+    public enum FieldColour {
+        RED,
+        GREEN,
+        BLUE;
+
+        public static FieldColour byId(int id) {
+            FieldColour[] values = values();
+            return id >= 0 && id < values.length ? values[id] : BLUE;
         }
     }
 
@@ -88,6 +109,12 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
     private final List<BiometricId> assignedIds = new ArrayList<>();
     /** Players already told they are denied, so the message/sound fires once per entry. */
     private final Set<UUID> deniedInside = new HashSet<>();
+    /** Players already scanned by Filter mode while they remain in contact with the field. */
+    private final Set<UUID> filteredInside = new HashSet<>();
+    /** Dropped item entities already scanned for nested contents during this contact. */
+    private final Set<UUID> filteredItemsInside = new HashSet<>();
+    /** Living mobs already scanned by Filter mode while they remain in contact. */
+    private final Set<UUID> filteredMobsInside = new HashSet<>();
     private final RedstoneBinding redstoneBinding = new RedstoneBinding(this);
     /** Gate outputs currently controlling the field, including explicit off sources. */
     private final Map<BlockPos, Boolean> linkedGates = new HashMap<>();
@@ -102,8 +129,24 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
     private boolean pairOwner = true;
 
     // ------------------------------------------------------------ field settings
+    public static final int FILTER_COLUMNS = 9;
+    public static final int FILTER_ROWS = 6;
+    public static final int FILTER_SLOTS = FILTER_COLUMNS * FILTER_ROWS;
+    private static final double FILTER_SCAN_RADIUS = 2.0D;
+    private static final double FILTER_DROP_SCAN_RADIUS = 8.0D;
+    private static final int FILTER_MAX_CONTAINER_DEPTH = 8;
+    private static final int FILTER_MAX_NESTED_SLOTS = 2048;
+    private static final String NBT_ITEMS = "Items";
+    private static final String NBT_BLOCK_ENTITY = "BlockEntityTag";
+    private static final String NBT_SLOT = "Slot";
+
     private boolean fieldEnabled = true;
     private FieldMode fieldMode = FieldMode.SOLID;
+    private FieldColour fieldColour = FieldColour.BLUE;
+    private final List<ItemStack> filterWhitelist =
+            new ArrayList<>(Collections.nCopies(FILTER_SLOTS, ItemStack.EMPTY));
+    private final List<ItemStack> filterBlacklist =
+            new ArrayList<>(Collections.nCopies(FILTER_SLOTS, ItemStack.EMPTY));
     private boolean matchUser = true;
     private boolean ignorePrivateKey;
     private boolean ignoreBiometricId;
@@ -338,6 +381,7 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
         if (fieldEnabled == value) return false;
         fieldEnabled = value;
         deniedInside.clear();
+        clearFilterTracking();
         sync();
         return true;
     }
@@ -347,7 +391,7 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
         return core == this ? fieldMode : core.getFieldMode();
     }
 
-    /** Server side: selects Solid, Neutral or Lethal field behavior. */
+    /** Server side: selects Solid, Neutral, Lethal, Wall or Filter field behavior. */
     public boolean setFieldMode(FieldMode value) {
         if (world == null || world.isRemote || value == null) return false;
         TileEntityEmancipationGrill core = getSecurityCore();
@@ -355,6 +399,51 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
         if (fieldMode == value) return false;
         fieldMode = value;
         deniedInside.clear();
+        clearFilterTracking();
+        sync();
+        return true;
+    }
+
+    public FieldColour getFieldColour() {
+        TileEntityEmancipationGrill core = getSecurityCore();
+        return core == this ? fieldColour : core.getFieldColour();
+    }
+
+    /** Server side: selects the red, green or blue field palette. */
+    public boolean setFieldColour(FieldColour value) {
+        if (world == null || world.isRemote || value == null) return false;
+        TileEntityEmancipationGrill core = getSecurityCore();
+        if (core != this) return core.setFieldColour(value);
+        if (fieldColour == value) return false;
+        fieldColour = value;
+        sync();
+        return true;
+    }
+
+    public List<ItemStack> getFilterStacks(boolean whitelist) {
+        TileEntityEmancipationGrill core = getSecurityCore();
+        if (core != this) return core.getFilterStacks(whitelist);
+        return Collections.unmodifiableList(whitelist ? filterWhitelist : filterBlacklist);
+    }
+
+    /** Server side: sets or clears one filter pattern. Count and NBT are discarded. */
+    public boolean setFilterStack(boolean whitelist, int slot, ItemStack stack) {
+        if (world == null || world.isRemote) return false;
+        TileEntityEmancipationGrill core = getSecurityCore();
+        if (core != this) return core.setFilterStack(whitelist, slot, stack);
+        if (slot < 0 || slot >= FILTER_SLOTS) return false;
+
+        ItemStack pattern = ItemStack.EMPTY;
+        if (stack != null && !stack.isEmpty()) {
+            Item item = stack.getItem();
+            if (item == null || item.getRegistryName() == null) return false;
+            pattern = new ItemStack(item, 1, stack.getMetadata());
+        }
+
+        List<ItemStack> list = whitelist ? filterWhitelist : filterBlacklist;
+        if (ItemStack.areItemStacksEqual(list.get(slot), pattern)) return false;
+        list.set(slot, pattern);
+        clearFilterTracking();
         sync();
         return true;
     }
@@ -680,16 +769,32 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
             pairOwner = true;
             sync();
         }
-        if (!pairOwner) return;
-        if (getSecurityCore() != this) return;
+        if (!pairOwner) {
+            clearFilterTracking();
+            return;
+        }
+        if (getSecurityCore() != this) {
+            clearFilterTracking();
+            return;
+        }
 
         AxisAlignedBB box = getFieldBox();
         if (box == null) {
             deniedInside.clear();
+            clearFilterTracking();
             return;
         }
 
         FieldMode mode = getFieldMode();
+        if (mode == FieldMode.FILTER) {
+            // Filter mode lets everyone pass and only voids/protects inventory items.
+            filterContactPlayers(box);
+            filterContactMobs(box);
+            filterDroppedItems(box);
+            deniedInside.clear();
+            return;
+        }
+        clearFilterTracking();
         if (mode == FieldMode.NEUTRAL) {
             deniedInside.clear();
             return;
@@ -844,6 +949,368 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
         }
     }
 
+    /**
+     * Filter mode only: scans players once per contact with the field. A player who leaves contact
+     * and comes back is scanned again, even while still inside the wider detection radius.
+     */
+    private void filterContactPlayers(AxisAlignedBB box) {
+        if (!hasFilterEntries(filterWhitelist) && !hasFilterEntries(filterBlacklist)) {
+            clearFilterTracking();
+            return;
+        }
+
+        AxisAlignedBB scan = box.grow(FILTER_SCAN_RADIUS);
+        Set<UUID> contacting = new HashSet<>();
+        for (EntityPlayer player : world.getEntitiesWithinAABB(EntityPlayer.class, scan)) {
+            if (player == null || !player.isEntityAlive()
+                    || player.isCreative() || player.isSpectator()) {
+                continue;
+            }
+
+            boolean crossing = crossesField(player, box);
+            boolean contact = crossing || player.getEntityBoundingBox().intersects(box);
+            if (!contact) continue;
+
+            UUID id = player.getUniqueID();
+            contacting.add(id);
+            // Always recheck an actual crossing, even if the player was already touching the
+            // field while configuring the console.
+            if (crossing || filteredInside.add(id)) {
+                filterPlayerInventory(player);
+            }
+        }
+        filteredInside.retainAll(contacting);
+    }
+
+    /**
+     * Filter mode only: scans living mobs once per contact. Equipment, villager/horse inventories
+     * and standard item-handler capabilities are checked, regardless of the detection toggles.
+     */
+    private void filterContactMobs(AxisAlignedBB box) {
+        if (!hasFilterEntries(filterWhitelist) && !hasFilterEntries(filterBlacklist)) {
+            filteredMobsInside.clear();
+            return;
+        }
+
+        AxisAlignedBB scan = box.grow(FILTER_SCAN_RADIUS);
+        Set<UUID> contacting = new HashSet<>();
+        for (EntityLivingBase mob : world.getEntitiesWithinAABB(EntityLivingBase.class, scan)) {
+            if (mob == null || !mob.isEntityAlive() || mob instanceof EntityPlayer) {
+                continue;
+            }
+
+            boolean crossing = crossesField(mob, box);
+            boolean contact = crossing || mob.getEntityBoundingBox().intersects(box);
+            if (!contact) continue;
+
+            UUID id = mob.getUniqueID();
+            contacting.add(id);
+            if (crossing || filteredMobsInside.add(id)) {
+                if (filterMobInventory(mob)) {
+                    playDisintegrateSound(mob, true);
+                }
+            }
+        }
+        filteredMobsInside.retainAll(contacting);
+    }
+
+    private static boolean hasFilterEntries(List<ItemStack> stacks) {
+        for (ItemStack stack : stacks) {
+            if (!stack.isEmpty()) return true;
+        }
+        return false;
+    }
+
+    private void clearFilterTracking() {
+        filteredInside.clear();
+        filteredItemsInside.clear();
+        filteredMobsInside.clear();
+    }
+
+    private void filterPlayerInventory(EntityPlayer player) {
+        boolean changed = filterStacks(player.inventory.mainInventory,
+                new int[]{FILTER_MAX_NESTED_SLOTS});
+        changed |= filterStacks(player.inventory.armorInventory,
+                new int[]{FILTER_MAX_NESTED_SLOTS});
+        changed |= filterStacks(player.inventory.offHandInventory,
+                new int[]{FILTER_MAX_NESTED_SLOTS});
+        if (!changed) return;
+
+        playDisintegrateSound(player, true);
+        player.inventory.markDirty();
+        if (player instanceof EntityPlayerMP) {
+            ((EntityPlayerMP) player).inventoryContainer.detectAndSendChanges();
+        }
+    }
+
+    /** Checks a mob's equipment, villager/horse inventory and any item-handler capability. */
+    private boolean filterMobInventory(EntityLivingBase mob) {
+        int[] budget = {FILTER_MAX_NESTED_SLOTS};
+        boolean changed = false;
+        for (EntityEquipmentSlot slot : EntityEquipmentSlot.values()) {
+            ItemStack stack = mob.getItemStackFromSlot(slot);
+            if (stack.isEmpty()) continue;
+
+            boolean blacklisted = isBlacklisted(stack) && !isWhitelisted(stack);
+            if (blacklisted) {
+                mob.setItemStackToSlot(slot, ItemStack.EMPTY);
+                changed = true;
+                continue;
+            }
+
+            if (filterContainerContents(stack, 0, budget)) {
+                mob.setItemStackToSlot(slot, stack);
+                changed = true;
+            }
+        }
+
+        if (mob instanceof EntityVillager) {
+            changed |= filterInventory(((EntityVillager) mob).getVillagerInventory(), budget);
+        } else if (mob instanceof IInventory) {
+            changed |= filterInventory((IInventory) mob, budget);
+        }
+
+        IItemHandler handler = mob.getCapability(
+                CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+        if (handler != null) {
+            changed |= filterHandlerContents(handler, 0, budget);
+        }
+        return changed;
+    }
+
+    private boolean filterInventory(IInventory inventory, int[] budget) {
+        boolean changed = false;
+        for (int slot = 0; slot < inventory.getSizeInventory() && budget[0] > 0; slot++) {
+            budget[0]--;
+            ItemStack stack = inventory.getStackInSlot(slot);
+            if (stack.isEmpty()) continue;
+
+            boolean blacklisted = isBlacklisted(stack) && !isWhitelisted(stack);
+            if (blacklisted) {
+                inventory.setInventorySlotContents(slot, ItemStack.EMPTY);
+                changed = true;
+                continue;
+            }
+
+            if (filterContainerContents(stack, 0, budget)) {
+                inventory.setInventorySlotContents(slot, stack);
+                changed = true;
+            }
+        }
+        if (changed) inventory.markDirty();
+        return changed;
+    }
+
+    /**
+     * Filter mode also applies to dropped item entities: blacklisted stacks are voided and play the
+     * disintegration one-shot, while whitelisted and unlisted stacks pass through. Container
+     * contents are checked recursively. The wider scan catches items thrown or pushed through the
+     * thin plane between ticks.
+     */
+    private void filterDroppedItems(AxisAlignedBB box) {
+        if (!hasFilterEntries(filterWhitelist) && !hasFilterEntries(filterBlacklist)) {
+            clearFilterTracking();
+            return;
+        }
+
+        AxisAlignedBB scan = box.grow(FILTER_DROP_SCAN_RADIUS);
+        Set<UUID> contacting = new HashSet<>();
+        for (EntityItem entity : world.getEntitiesWithinAABB(EntityItem.class, scan)) {
+            if (entity == null || !entity.isEntityAlive()) continue;
+
+            boolean crossing = crossesField(entity, box);
+            boolean contact = crossing || entity.getEntityBoundingBox().intersects(box);
+            if (!contact) continue;
+
+            ItemStack stack = entity.getItem();
+            if (stack.isEmpty()) continue;
+
+            boolean blacklisted = isBlacklisted(stack) && !isWhitelisted(stack);
+            if (blacklisted) {
+                entity.setDead();
+                filteredItemsInside.remove(entity.getUniqueID());
+                playDisintegrateSound(entity, true);
+                continue;
+            }
+
+            UUID id = entity.getUniqueID();
+            contacting.add(id);
+            if (crossing || filteredItemsInside.add(id)) {
+                if (filterContainerContents(stack, 0, new int[]{FILTER_MAX_NESTED_SLOTS})) {
+                    entity.setItem(stack);
+                    playDisintegrateSound(entity, true);
+                }
+            }
+        }
+        filteredItemsInside.retainAll(contacting);
+    }
+
+    private boolean filterStacks(List<ItemStack> stacks, int[] budget) {
+        boolean changed = false;
+        for (int i = 0; i < stacks.size(); i++) {
+            ItemStack stack = stacks.get(i);
+            if (stack.isEmpty()) continue;
+
+            boolean blacklisted = isBlacklisted(stack) && !isWhitelisted(stack);
+            if (blacklisted) {
+                stacks.set(i, ItemStack.EMPTY);
+                changed = true;
+                continue;
+            }
+
+            if (filterContainerContents(stack, 0, budget)) {
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
+    /**
+     * Recursively checks a container item's contents. Forge item handlers cover modded backpacks
+     * and toolbelts; the standard Items NBT layout covers vanilla shulker boxes and root-level
+     * backpack lists. Whitelisting a container protects the container itself, not its contents.
+     */
+    private boolean filterContainerContents(ItemStack container, int depth, int[] budget) {
+        if (container.isEmpty() || depth >= FILTER_MAX_CONTAINER_DEPTH || budget[0] <= 0) {
+            return false;
+        }
+
+        boolean changed = false;
+        IItemHandler handler = container.getCapability(
+                CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+        if (handler != null) {
+            changed = filterHandlerContents(handler, depth, budget);
+        }
+        if (filterNbtContents(container, depth, budget)) {
+            changed = true;
+        }
+        return changed;
+    }
+
+    private boolean filterHandlerContents(IItemHandler handler, int depth, int[] budget) {
+        boolean changed = false;
+        for (int slot = 0; slot < handler.getSlots() && budget[0] > 0; slot++) {
+            budget[0]--;
+            ItemStack stack = handler.getStackInSlot(slot);
+            if (stack.isEmpty()) continue;
+
+            boolean blacklisted = isBlacklisted(stack) && !isWhitelisted(stack);
+            if (blacklisted && removeFromHandler(handler, slot, stack)) {
+                changed = true;
+                continue;
+            }
+
+            if (filterContainerContents(stack, depth + 1, budget)
+                    && writeBackToHandler(handler, slot, stack)) {
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
+    private boolean filterNbtContents(ItemStack container, int depth, int[] budget) {
+        NBTTagCompound root = container.getTagCompound();
+        if (root == null) return false;
+
+        boolean changed = false;
+        if (root.hasKey(NBT_BLOCK_ENTITY, Constants.NBT.TAG_COMPOUND)) {
+            changed = filterNbtItems(root.getCompoundTag(NBT_BLOCK_ENTITY), depth, budget);
+        }
+        if (root.hasKey(NBT_ITEMS, Constants.NBT.TAG_LIST)) {
+            changed |= filterNbtItems(root, depth, budget);
+        }
+        return changed;
+    }
+
+    private boolean filterNbtItems(NBTTagCompound holder, int depth, int[] budget) {
+        NBTTagList items = holder.getTagList(NBT_ITEMS, Constants.NBT.TAG_COMPOUND);
+        if (items.tagCount() == 0) return false;
+
+        NBTTagCompound first = items.getCompoundTagAt(0);
+        if (!first.hasKey("id", Constants.NBT.TAG_STRING)
+                || !first.hasKey("Count") || !first.hasKey(NBT_SLOT)) {
+            return false;
+        }
+
+        boolean changed = false;
+        for (int i = items.tagCount() - 1; i >= 0 && budget[0] > 0; i--) {
+            budget[0]--;
+            NBTTagCompound entry = items.getCompoundTagAt(i);
+            ItemStack stack = new ItemStack(entry);
+            if (stack.isEmpty()) continue;
+
+            boolean blacklisted = isBlacklisted(stack) && !isWhitelisted(stack);
+            if (blacklisted) {
+                items.removeTag(i);
+                changed = true;
+                continue;
+            }
+
+            if (filterContainerContents(stack, depth + 1, budget)) {
+                byte slot = entry.getByte(NBT_SLOT);
+                NBTTagCompound updated = new NBTTagCompound();
+                stack.writeToNBT(updated);
+                updated.setByte(NBT_SLOT, slot);
+                items.set(i, updated);
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
+    private static boolean removeFromHandler(IItemHandler handler, int slot, ItemStack stack) {
+        try {
+            if (handler instanceof IItemHandlerModifiable) {
+                ((IItemHandlerModifiable) handler).setStackInSlot(slot, ItemStack.EMPTY);
+                if (handler.getStackInSlot(slot).isEmpty()) return true;
+            }
+        } catch (RuntimeException ignored) {
+            // Fall through to extraction when the modifiable view rejects the empty stack.
+        }
+        try {
+            return !handler.extractItem(slot, stack.getCount(), false).isEmpty();
+        } catch (RuntimeException ignored) {
+            // A read-only or misbehaving container cannot be edited; leave the stack in place.
+            return false;
+        }
+    }
+
+    private static boolean writeBackToHandler(IItemHandler handler, int slot, ItemStack stack) {
+        try {
+            if (handler instanceof IItemHandlerModifiable) {
+                ((IItemHandlerModifiable) handler).setStackInSlot(slot, stack);
+                return true;
+            }
+            // Some handlers return their live stack from getStackInSlot; in-place NBT changes
+            // are already stored in that case.
+            return handler.getStackInSlot(slot) == stack;
+        } catch (RuntimeException ignored) {
+            // A handler that rejects the updated stack cannot be written back.
+            return false;
+        }
+    }
+
+    private boolean isWhitelisted(ItemStack stack) {
+        for (ItemStack filter : filterWhitelist) {
+            if (matchesFilter(filter, stack)) return true;
+        }
+        return false;
+    }
+
+    private boolean isBlacklisted(ItemStack stack) {
+        for (ItemStack filter : filterBlacklist) {
+            if (matchesFilter(filter, stack)) return true;
+        }
+        return false;
+    }
+
+    /** Stack size and NBT are ignored; subtype metadata is matched when the item has subtypes. */
+    private static boolean matchesFilter(ItemStack filter, ItemStack stack) {
+        if (filter.isEmpty() || stack.isEmpty()) return false;
+        if (filter.getItem() != stack.getItem()) return false;
+        return !filter.getItem().getHasSubtypes() || filter.getMetadata() == stack.getMetadata();
+    }
+
     /** Mobs do not have an InventoryPlayer, so strip their equipment slots instead. */
     private static void destroyMobEquipment(EntityLivingBase entity) {
         for (EntityEquipmentSlot slot : EntityEquipmentSlot.values()) {
@@ -857,7 +1324,7 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
                 <= EmancipationFieldGeometry.THICKNESS * 1.5D;
         if (horizontal) {
             double plane = (box.minY + box.maxY) * 0.5D;
-            double previous = entity.lastTickPosY + entity.height * 0.5D;
+            double previous = entity.prevPosY + entity.height * 0.5D;
             double current = entity.posY + entity.height * 0.5D;
             if (!((previous < plane && current >= plane)
                     || (previous > plane && current <= plane))) {
@@ -872,7 +1339,7 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
         double plane = spansX
                 ? (box.minZ + box.maxZ) * 0.5D
                 : (box.minX + box.maxX) * 0.5D;
-        double previous = spansX ? entity.lastTickPosZ : entity.lastTickPosX;
+        double previous = spansX ? entity.prevPosZ : entity.prevPosX;
         double current = spansX ? entity.posZ : entity.posX;
         if (!((previous < plane && current >= plane)
                 || (previous > plane && current <= plane))) {
@@ -896,7 +1363,7 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
                 <= EmancipationFieldGeometry.THICKNESS * 1.5D;
         if (horizontal) {
             double plane = (box.minY + box.maxY) * 0.5D;
-            double previous = entity.lastTickPosY + entity.height * 0.5D;
+            double previous = entity.prevPosY + entity.height * 0.5D;
             double current = entity.posY + entity.height * 0.5D;
             boolean positive = previous > plane;
             if (Math.abs(previous - plane) < 1.0E-4D || previous == current) {
@@ -923,7 +1390,7 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
         double plane = spansX
                 ? (box.minZ + box.maxZ) * 0.5D
                 : (box.minX + box.maxX) * 0.5D;
-        double previous = spansX ? entity.lastTickPosZ : entity.lastTickPosX;
+        double previous = spansX ? entity.prevPosZ : entity.prevPosX;
         double current = spansX ? entity.posZ : entity.posX;
 
         boolean positive = previous > plane;
@@ -958,6 +1425,7 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
     @Override
     public void invalidate() {
         deniedInside.clear();
+        clearFilterTracking();
         super.invalidate();
     }
 
@@ -1010,6 +1478,35 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
         }
     }
 
+    private static NBTTagList writeFilterList(List<ItemStack> stacks) {
+        NBTTagList list = new NBTTagList();
+        for (int i = 0; i < stacks.size(); i++) {
+            ItemStack stack = stacks.get(i);
+            if (stack.isEmpty()) continue;
+            if (stack.getItem().getRegistryName() == null) continue;
+            NBTTagCompound entry = new NBTTagCompound();
+            entry.setByte("slot", (byte) i);
+            entry.setString("item", stack.getItem().getRegistryName().toString());
+            entry.setInteger("meta", stack.getMetadata());
+            list.appendTag(entry);
+        }
+        return list;
+    }
+
+    private static void readFilterList(NBTTagCompound tag, String key, List<ItemStack> out) {
+        for (int i = 0; i < out.size(); i++) out.set(i, ItemStack.EMPTY);
+        if (!tag.hasKey(key, Constants.NBT.TAG_LIST)) return;
+        NBTTagList list = tag.getTagList(key, Constants.NBT.TAG_COMPOUND);
+        for (int i = 0; i < list.tagCount(); i++) {
+            NBTTagCompound entry = list.getCompoundTagAt(i);
+            int slot = entry.getByte("slot") & 0xFF;
+            if (slot >= out.size()) continue;
+            Item item = Item.getByNameOrId(entry.getString("item"));
+            if (item == null) continue;
+            out.set(slot, new ItemStack(item, 1, entry.getInteger("meta")));
+        }
+    }
+
     @Override
     public void readFromNBT(NBTTagCompound tag) {
         super.readFromNBT(tag);
@@ -1029,6 +1526,10 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
 
         fieldEnabled = !tag.hasKey("fieldEnabled") || tag.getBoolean("fieldEnabled");
         fieldMode = FieldMode.byId(tag.hasKey("fieldMode") ? tag.getByte("fieldMode") : 0);
+        fieldColour = tag.hasKey("fieldColour", Constants.NBT.TAG_BYTE)
+                ? FieldColour.byId(tag.getByte("fieldColour")) : FieldColour.BLUE;
+        readFilterList(tag, "filterWhitelist", filterWhitelist);
+        readFilterList(tag, "filterBlacklist", filterBlacklist);
         matchUser = !tag.hasKey("matchUser") || tag.getBoolean("matchUser");
         ignorePrivateKey = tag.getBoolean("ignorePrivateKey");
         ignoreBiometricId = tag.getBoolean("ignoreBiometricId");
@@ -1049,6 +1550,7 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
         }
         readIds(tag);
         deniedInside.clear();
+        clearFilterTracking();
     }
 
     @Override
@@ -1061,6 +1563,9 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
         tag.setBoolean("pairOwner", pairOwner);
         tag.setBoolean("fieldEnabled", fieldEnabled);
         tag.setByte("fieldMode", (byte) fieldMode.ordinal());
+        tag.setByte("fieldColour", (byte) fieldColour.ordinal());
+        tag.setTag("filterWhitelist", writeFilterList(filterWhitelist));
+        tag.setTag("filterBlacklist", writeFilterList(filterBlacklist));
         tag.setBoolean("matchUser", matchUser);
         tag.setBoolean("ignorePrivateKey", ignorePrivateKey);
         tag.setBoolean("ignoreBiometricId", ignoreBiometricId);

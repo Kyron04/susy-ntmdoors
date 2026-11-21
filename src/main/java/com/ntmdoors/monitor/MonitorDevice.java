@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.monitor;
 
 import com.ntmdoors.block.BlockDoorGeneric;
@@ -201,11 +202,6 @@ public final class MonitorDevice {
                     state.getValue(BlockMonitorDesk.FACING)));
         }
         return null;
-    }
-
-    /** Doors use their Open/Close buttons; the other five families have an enabled state. */
-    public static boolean supportsToggle(MonitorDevice device) {
-        return device != null && device.type != Type.DOOR;
     }
 
     /** Reads the live enabled state from the device tile. Doors always report enabled. */

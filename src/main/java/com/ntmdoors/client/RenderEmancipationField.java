@@ -1,7 +1,9 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.client;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.tile.TileEntityEmancipationGrill;
+import com.ntmdoors.tile.TileEntityEmancipationGrill.FieldColour;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
@@ -60,13 +62,45 @@ public class RenderEmancipationField extends DeviceRenderer<TileEntityEmancipati
     private static final int PARTICLES = 16;
 
     /**
-     * One texture, three looks. The broad layer is slightly blue, the middle layer pale cyan and
-     * the fine layer almost white.
+     * Per-colour palettes, indexed by {@link FieldColour#ordinal()} (RED, GREEN, BLUE). The wisp
+     * arrays are indexed by layer. Blue keeps the original field colours exactly.
      */
-    private static final float[] LAYER_RED = {0.58F, 0.80F, 0.95F};
-    private static final float[] LAYER_GREEN = {0.82F, 0.94F, 0.99F};
-    private static final float[] LAYER_BLUE = {1.00F, 1.00F, 1.00F};
+    private static final float[][] LAYER_RED = {
+            {0.95F, 1.00F, 1.00F},
+            {0.25F, 0.55F, 0.88F},
+            {0.58F, 0.80F, 0.95F}
+    };
+    private static final float[][] LAYER_GREEN = {
+            {0.30F, 0.55F, 0.88F},
+            {0.85F, 1.00F, 1.00F},
+            {0.82F, 0.94F, 0.99F}
+    };
+    private static final float[][] LAYER_BLUE = {
+            {0.25F, 0.48F, 0.84F},
+            {0.38F, 0.62F, 0.90F},
+            {1.00F, 1.00F, 1.00F}
+    };
     private static final float[] LAYER_ALPHA = {0.20F, 0.13F, 0.07F};
+    private static final float[][] WASH = {
+            {1.00F, 0.40F, 0.34F, 0.10F},
+            {0.42F, 1.00F, 0.48F, 0.10F},
+            {0.64F, 0.86F, 1.00F, 0.10F}
+    };
+    private static final float[][] EDGE_COLOUR = {
+            {1.00F, 0.72F, 0.68F, 0.95F},
+            {0.70F, 1.00F, 0.76F, 0.95F},
+            {0.88F, 0.97F, 1.00F, 0.95F}
+    };
+    private static final float[][] CORE_COLOUR = {
+            {1.00F, 0.92F, 0.90F, 0.85F},
+            {0.90F, 1.00F, 0.92F, 0.85F},
+            {0.90F, 0.99F, 1.00F, 0.85F}
+    };
+    private static final float[][] SPARK_COLOUR = {
+            {1.00F, 0.76F, 0.72F},
+            {0.72F, 1.00F, 0.76F},
+            {0.88F, 0.97F, 1.00F}
+    };
     /** Blocks per horizontal texture repeat. */
     private static final double[] LAYER_U_REPEAT = {3.0D, 2.0D, 1.35D};
     /** Texture repeats over the three-block field height. */
@@ -145,6 +179,8 @@ public class RenderEmancipationField extends DeviceRenderer<TileEntityEmancipati
 
         World world = te.getWorld();
         if (world == null) return;
+        FieldColour colour = te.getFieldColour();
+        int palette = colour == null ? FieldColour.BLUE.ordinal() : colour.ordinal();
 
         BlockPos core = te.getPos();
         double time = world.getTotalWorldTime() + partialTicks;
@@ -188,7 +224,8 @@ public class RenderEmancipationField extends DeviceRenderer<TileEntityEmancipati
         BufferBuilder buffer = tessellator.getBuffer();
 
         if (horizontal) {
-            drawHorizontalField(buffer, tessellator, core, box, time, pairU, pairV, pairScale, variant);
+            drawHorizontalField(buffer, tessellator, core, box, time, pairU, pairV, pairScale,
+                    variant, palette);
         } else {
         // Pale glass wash. Normal alpha keeps the room visible through the field.
         GlStateManager.disableTexture2D();
@@ -196,8 +233,9 @@ public class RenderEmancipationField extends DeviceRenderer<TileEntityEmancipati
                 GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
                 GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
+        float[] wash = WASH[palette];
         addPlaneQuadColor(buffer, core, spansX, planeX, planeZ, alongMin, alongMax,
-                box.minY, box.maxY, 0.64F, 0.86F, 1.0F, 0.10F);
+                box.minY, box.maxY, wash[0], wash[1], wash[2], wash[3]);
         tessellator.draw();
 
         // Three scrolling wisp layers sharing one texture and one draw call.
@@ -217,7 +255,8 @@ public class RenderEmancipationField extends DeviceRenderer<TileEntityEmancipati
             double v1 = v0 + LAYER_V_REPEAT[layer] * vRepeatScale;
             addPlaneQuadTex(buffer, core, spansX, planeX, planeZ, alongMin, alongMax,
                     box.minY, box.maxY, u0, u1, v0, v1,
-                    LAYER_RED[layer], LAYER_GREEN[layer], LAYER_BLUE[layer], LAYER_ALPHA[layer]);
+                    LAYER_RED[palette][layer], LAYER_GREEN[palette][layer],
+                    LAYER_BLUE[palette][layer], LAYER_ALPHA[layer]);
         }
         tessellator.draw();
 
@@ -225,15 +264,17 @@ public class RenderEmancipationField extends DeviceRenderer<TileEntityEmancipati
         Minecraft.getMinecraft().getTextureManager().bindTexture(EDGE);
         setTextureParameters(GL12.GL_CLAMP_TO_EDGE, GL11.GL_LINEAR);
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
+        float[] edge = EDGE_COLOUR[palette];
         addEdgeGradient(buffer, core, spansX, planeX, planeZ, alongMin, alongMax,
-                box.minY, box.maxY, 0.88F, 0.97F, 1.0F, 0.95F);
+                box.minY, box.maxY, edge[0], edge[1], edge[2], edge[3]);
         tessellator.draw();
 
-        // Crisp white-cyan core lines.
+        // Crisp core lines.
         GlStateManager.disableTexture2D();
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
+        float[] coreLine = CORE_COLOUR[palette];
         addEdgeCore(buffer, core, spansX, planeX, planeZ, alongMin, alongMax,
-                box.minY, box.maxY, 0.90F, 0.99F, 1.0F, 0.85F);
+                box.minY, box.maxY, coreLine[0], coreLine[1], coreLine[2], coreLine[3]);
         tessellator.draw();
 
         // A few drifting sparks. They sit on the field plane, so this is just 16 tiny quads.
@@ -242,7 +283,7 @@ public class RenderEmancipationField extends DeviceRenderer<TileEntityEmancipati
         setTextureParameters(GL12.GL_CLAMP_TO_EDGE, GL11.GL_LINEAR);
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
         addSparks(buffer, core, spansX, planeX, planeZ, alongMin, alongMax,
-                box.minY, box.maxY, time, pairSeed);
+                box.minY, box.maxY, time, pairSeed, palette);
         tessellator.draw();
         }
 
@@ -264,7 +305,7 @@ public class RenderEmancipationField extends DeviceRenderer<TileEntityEmancipati
     private static void drawHorizontalField(BufferBuilder buffer, Tessellator tessellator,
                                             BlockPos core, AxisAlignedBB box, double time,
                                             double pairU, double pairV, double pairScale,
-                                            int variant) {
+                                            int variant, int palette) {
         double y = (box.minY + box.maxY) * 0.5D - core.getY();
         double x0 = box.minX - core.getX();
         double x1 = box.maxX - core.getX();
@@ -278,7 +319,8 @@ public class RenderEmancipationField extends DeviceRenderer<TileEntityEmancipati
                 GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
                 GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
-        horizontalQuadColor(buffer, x0, z0, x1, z1, y, 0.64F, 0.86F, 1.0F, 0.10F);
+        float[] wash = WASH[palette];
+        horizontalQuadColor(buffer, x0, z0, x1, z1, y, wash[0], wash[1], wash[2], wash[3]);
         tessellator.draw();
 
         GlStateManager.enableTexture2D();
@@ -294,7 +336,8 @@ public class RenderEmancipationField extends DeviceRenderer<TileEntityEmancipati
             double v0 = pairV + time * LAYER_V_SPEED[layer];
             double v1 = v0 + lengthZ / (LAYER_V_REPEAT[layer] * pairScale);
             horizontalQuadTex(buffer, x0, z0, x1, z1, y, u0, v0, u1, v1,
-                    LAYER_RED[layer], LAYER_GREEN[layer], LAYER_BLUE[layer], LAYER_ALPHA[layer]);
+                    LAYER_RED[palette][layer], LAYER_GREEN[palette][layer],
+                    LAYER_BLUE[palette][layer], LAYER_ALPHA[layer]);
         }
         tessellator.draw();
 
@@ -302,29 +345,36 @@ public class RenderEmancipationField extends DeviceRenderer<TileEntityEmancipati
         setTextureParameters(GL12.GL_CLAMP_TO_EDGE, GL11.GL_LINEAR);
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
         double edge = EDGE_WIDTH;
+        float[] edgeColour = EDGE_COLOUR[palette];
         horizontalQuadTex(buffer, x0, z0, x0 + edge, z1, y, 0, 0, 1, 1,
-                0.88F, 0.97F, 1.0F, 0.95F);
+                edgeColour[0], edgeColour[1], edgeColour[2], edgeColour[3]);
         horizontalQuadTex(buffer, x1 - edge, z0, x1, z1, y, 1, 0, 0, 1,
-                0.88F, 0.97F, 1.0F, 0.95F);
+                edgeColour[0], edgeColour[1], edgeColour[2], edgeColour[3]);
         horizontalQuadTex(buffer, x0, z0, x1, z0 + edge, y, 0, 0, 1, 1,
-                0.88F, 0.97F, 1.0F, 0.95F);
+                edgeColour[0], edgeColour[1], edgeColour[2], edgeColour[3]);
         horizontalQuadTex(buffer, x0, z1 - edge, x1, z1, y, 0, 1, 1, 0,
-                0.88F, 0.97F, 1.0F, 0.95F);
+                edgeColour[0], edgeColour[1], edgeColour[2], edgeColour[3]);
         tessellator.draw();
 
         GlStateManager.disableTexture2D();
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
         double coreWidth = CORE_WIDTH;
-        horizontalQuadColor(buffer, x0, z0, x0 + coreWidth, z1, y, 0.90F, 0.99F, 1.0F, 0.85F);
-        horizontalQuadColor(buffer, x1 - coreWidth, z0, x1, z1, y, 0.90F, 0.99F, 1.0F, 0.85F);
-        horizontalQuadColor(buffer, x0, z0, x1, z0 + coreWidth, y, 0.90F, 0.99F, 1.0F, 0.85F);
-        horizontalQuadColor(buffer, x0, z1 - coreWidth, x1, z1, y, 0.90F, 0.99F, 1.0F, 0.85F);
+        float[] coreLine = CORE_COLOUR[palette];
+        horizontalQuadColor(buffer, x0, z0, x0 + coreWidth, z1, y,
+                coreLine[0], coreLine[1], coreLine[2], coreLine[3]);
+        horizontalQuadColor(buffer, x1 - coreWidth, z0, x1, z1, y,
+                coreLine[0], coreLine[1], coreLine[2], coreLine[3]);
+        horizontalQuadColor(buffer, x0, z0, x1, z0 + coreWidth, y,
+                coreLine[0], coreLine[1], coreLine[2], coreLine[3]);
+        horizontalQuadColor(buffer, x0, z1 - coreWidth, x1, z1, y,
+                coreLine[0], coreLine[1], coreLine[2], coreLine[3]);
         tessellator.draw();
 
         GlStateManager.enableTexture2D();
         Minecraft.getMinecraft().getTextureManager().bindTexture(SPARK);
         setTextureParameters(GL12.GL_CLAMP_TO_EDGE, GL11.GL_LINEAR);
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
+        float[] spark = SPARK_COLOUR[palette];
         for (int i = 0; i < PARTICLES; i++) {
             double seed = i * 0.6180339887498949D + pairScale * 3.7D;
             double phase = fract(seed + time * (0.010D + (i % 5) * 0.0016D));
@@ -336,7 +386,7 @@ public class RenderEmancipationField extends DeviceRenderer<TileEntityEmancipati
             float alpha = (float) (0.10D + 0.28D * Math.sin(Math.PI * phase));
             if (alpha <= 0.01F) continue;
             horizontalQuadTex(buffer, x - size, z - size, x + size, z + size, y,
-                    0.0D, 0.0D, 1.0D, 1.0D, 0.88F, 0.97F, 1.0F, alpha);
+                    0.0D, 0.0D, 1.0D, 1.0D, spark[0], spark[1], spark[2], alpha);
         }
         tessellator.draw();
     }
@@ -445,9 +495,11 @@ public class RenderEmancipationField extends DeviceRenderer<TileEntityEmancipati
     private static void addSparks(BufferBuilder buffer, BlockPos core,
                                   boolean spansX, double planeX, double planeZ,
                                   double alongMin, double alongMax,
-                                  double minY, double maxY, double time, double pairSeed) {
+                                  double minY, double maxY, double time, double pairSeed,
+                                  int palette) {
         double length = alongMax - alongMin;
         double height = maxY - minY;
+        float[] spark = SPARK_COLOUR[palette];
 
         for (int i = 0; i < PARTICLES; i++) {
             double seed = i * 0.6180339887498949D + pairSeed * 3.7D;
@@ -460,13 +512,13 @@ public class RenderEmancipationField extends DeviceRenderer<TileEntityEmancipati
             if (alpha <= 0.01F) continue;
 
             planeTex(buffer, core, spansX, planeX, planeZ, along - size, y - size,
-                    0.0D, 0.0D, 0.88F, 0.97F, 1.0F, alpha);
+                    0.0D, 0.0D, spark[0], spark[1], spark[2], alpha);
             planeTex(buffer, core, spansX, planeX, planeZ, along + size, y - size,
-                    1.0D, 0.0D, 0.88F, 0.97F, 1.0F, alpha);
+                    1.0D, 0.0D, spark[0], spark[1], spark[2], alpha);
             planeTex(buffer, core, spansX, planeX, planeZ, along + size, y + size,
-                    1.0D, 1.0D, 0.88F, 0.97F, 1.0F, alpha);
+                    1.0D, 1.0D, spark[0], spark[1], spark[2], alpha);
             planeTex(buffer, core, spansX, planeX, planeZ, along - size, y + size,
-                    0.0D, 1.0D, 0.88F, 0.97F, 1.0F, alpha);
+                    0.0D, 1.0D, spark[0], spark[1], spark[2], alpha);
         }
     }
 

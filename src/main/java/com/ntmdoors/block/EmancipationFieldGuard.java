@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.block;
 
 import com.ntmdoors.tile.TileEntityEmancipationGrill;
@@ -33,8 +34,11 @@ public final class EmancipationFieldGuard {
             if (!(te instanceof TileEntityEmancipationGrill)) continue;
             TileEntityEmancipationGrill grill = (TileEntityEmancipationGrill) te;
             if (!grill.isPairOwner()) continue;
-            // Neutral is purely decorative, so it does not reserve the doorway.
-            if (grill.getFieldMode() == TileEntityEmancipationGrill.FieldMode.NEUTRAL) continue;
+            // Neutral and Filter are pass-through, so they do not reserve the doorway.
+            if (grill.getFieldMode() == TileEntityEmancipationGrill.FieldMode.NEUTRAL
+                    || grill.getFieldMode() == TileEntityEmancipationGrill.FieldMode.FILTER) {
+                continue;
+            }
 
             BlockPos core = grill.getPos();
             if (core.distanceSq(tx, ty, tz) > MAX_DISTANCE_SQ) continue;

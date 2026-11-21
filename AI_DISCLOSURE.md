@@ -54,6 +54,10 @@ AI assistance was used for:
 - the Documents Folder UV corner fill that keeps the 3D front face opaque when held;
 - the Documents Folder and monitor Notepad dark-mode toggles, including the item-NBT and
   desk-saved themes, the immediate client-side handoff and the physical-screen mirror;
+- the Emancipation Grill console and field: field modes, colour palettes, redstone event outputs,
+  the JEI/HEI filter overlay, player/mob/dropped-item inventory filtering, recursive container
+  scanning, and the fizzler integration;
+- the repository formatting standards pack and the formatting cleanup of touched files;
 - final housekeeping: asset reference validation, stale comment and documentation cleanup,
   BOM removal, item-icon correction and release docs;
 - this disclosure and the concrete/HL Blocks section of `README.md`.
@@ -75,7 +79,8 @@ NeoRussia reviewed the AI-assisted changes, built the mod with the repository's 
 tested the concrete, slab, stair, Chisel, ore dictionary, recipe, HL Block, Thermite Charge,
 office-door skin and 3x3 door, Redstone Monocle, safe and door-breach behaviour in game, including
 the slab model fix. The security equipment and Keycard Holder changes are also built and checked
-against a dedicated-server load. The repository owner owns the code, can explain it, and is
+against a dedicated-server load. The Emancipation Grill field modes and inventory filter were tested
+in game by the repository owner. The repository owner owns the code, can explain it, and is
 responsible for supporting it.
 
 If you redistribute this mod or a pack containing it, keep this disclosure with the sources.
