@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.block;
 
 import com.ntmdoors.NTMDoors;
@@ -6,6 +7,7 @@ import com.ntmdoors.monitor.MonitorAuth;
 import com.ntmdoors.network.MessageMonitorState;
 import com.ntmdoors.network.ModNetwork;
 import com.ntmdoors.tile.TileEntityMonitorDesk;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.EnumPushReaction;
@@ -33,7 +35,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
-
 import javax.annotation.Nullable;
 
 /**

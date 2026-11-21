@@ -1,9 +1,11 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.item;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.block.BlockEmancipationGrill;
 import com.ntmdoors.network.MessageGrillAccess;
 import com.ntmdoors.network.ModNetwork;
+
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;

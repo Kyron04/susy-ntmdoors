@@ -1,9 +1,9 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.network;
 
 import com.ntmdoors.monitor.MonitorAccess;
-
 import com.ntmdoors.tile.TileEntityKeycardScanner;
-import io.netty.buffer.ByteBuf;
+
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
@@ -11,6 +11,8 @@ import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+
+import io.netty.buffer.ByteBuf;
 
 /**
  * Client to server: the player activated one of the scanner's option rows. Gated by the same

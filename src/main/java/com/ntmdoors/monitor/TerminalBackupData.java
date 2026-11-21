@@ -1,6 +1,8 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.monitor;
 
 import com.ntmdoors.item.ItemTerminalBackupKey;
+
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTSizeTracker;

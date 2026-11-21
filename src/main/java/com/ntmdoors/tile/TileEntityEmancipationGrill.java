@@ -10,6 +10,7 @@ import com.ntmdoors.util.EmancipationFieldGeometry;
 import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.ModSounds;
 import com.ntmdoors.util.PrivateKeys;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityArmorStand;

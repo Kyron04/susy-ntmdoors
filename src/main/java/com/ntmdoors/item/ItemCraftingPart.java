@@ -1,6 +1,8 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.item;
 
 import com.ntmdoors.NTMDoors;
+
 import net.minecraft.item.Item;
 
 /** Plain crafting component with no behaviour. */

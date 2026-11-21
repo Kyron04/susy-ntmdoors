@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.monitor;
 
 /** Lightweight row data for a Security net landing page. */

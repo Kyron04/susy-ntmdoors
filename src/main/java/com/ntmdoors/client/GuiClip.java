@@ -1,9 +1,11 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+
 import org.lwjgl.opengl.GL11;
 
 /** Scissor helpers for scrolling GUI lists. */

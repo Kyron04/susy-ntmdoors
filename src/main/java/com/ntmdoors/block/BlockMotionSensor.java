@@ -5,6 +5,7 @@ import com.ntmdoors.NTMDoors;
 import com.ntmdoors.item.ItemMotionRelayKey;
 import com.ntmdoors.tile.TileEntityMotionSensor;
 import com.ntmdoors.util.HeldItems;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.EnumPushReaction;

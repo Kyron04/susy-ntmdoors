@@ -1,9 +1,11 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.registry;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.block.BlockDoorGeneric;
 import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.DoorDecls;
+
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;

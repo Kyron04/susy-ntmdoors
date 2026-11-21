@@ -9,6 +9,7 @@ import com.ntmdoors.door.DoorState;
 import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.monitor.SecurityEvents;
 import com.ntmdoors.util.BlockPositions;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;

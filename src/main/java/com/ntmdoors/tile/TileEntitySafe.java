@@ -10,6 +10,7 @@ import com.ntmdoors.network.ModNetwork;
 import com.ntmdoors.util.BlockPositions;
 import com.ntmdoors.util.Codes;
 import com.ntmdoors.util.ModSounds;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.IInventory;

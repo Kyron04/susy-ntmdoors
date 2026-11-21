@@ -1,15 +1,17 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.network;
 
 import com.ntmdoors.monitor.MonitorAccess;
-
 import com.ntmdoors.tile.TileEntityMotionSensor;
-import io.netty.buffer.ByteBuf;
+
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+
+import io.netty.buffer.ByteBuf;
 
 /** Client to server: one toggle row on the Motion Sensor's options page. */
 public class MessageSensorOption implements IMessage {

@@ -1,6 +1,8 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.client;
 
 import com.ntmdoors.tile.TileEntitySpeaker;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.ISound;
 import net.minecraft.client.audio.MovingSound;

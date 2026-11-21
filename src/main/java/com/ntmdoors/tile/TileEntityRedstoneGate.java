@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.tile;
 
 import com.ntmdoors.block.BlockRedstoneGate;
@@ -5,6 +6,7 @@ import com.ntmdoors.monitor.SecurityEvents;
 import com.ntmdoors.util.BlockPositions;
 import com.ntmdoors.util.TimedSources;
 import com.ntmdoors.weapons.WeaponsBindings;
+
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;

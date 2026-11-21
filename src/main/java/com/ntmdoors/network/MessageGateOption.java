@@ -1,18 +1,20 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.network;
 
 import com.ntmdoors.monitor.MonitorAccess;
-
 import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.item.ItemOperatorKeycard;
 import com.ntmdoors.tile.TileEntityRedstoneGate;
 import com.ntmdoors.util.HeldItems;
-import io.netty.buffer.ByteBuf;
+
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+
+import io.netty.buffer.ByteBuf;
 
 /** Client to server: the Redstone Gate screen changed one setting. */
 public class MessageGateOption implements IMessage {

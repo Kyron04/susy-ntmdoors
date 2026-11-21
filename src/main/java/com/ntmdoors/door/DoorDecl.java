@@ -1,7 +1,9 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.door;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.util.Facings;
+
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;

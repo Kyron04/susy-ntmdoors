@@ -1,9 +1,11 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.client;
 
 import com.ntmdoors.network.MessageScannerCode;
 import com.ntmdoors.network.MessageScannerCodeResult;
 import com.ntmdoors.network.ModNetwork;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
+
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;

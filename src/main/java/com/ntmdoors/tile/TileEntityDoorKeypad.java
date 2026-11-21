@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.tile;
 
 import com.ntmdoors.block.BlockDoorKeypad;
@@ -6,6 +7,7 @@ import com.ntmdoors.monitor.SecurityEvents;
 import com.ntmdoors.util.Codes;
 import com.ntmdoors.util.Facings;
 import com.ntmdoors.util.ModSounds;
+
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;

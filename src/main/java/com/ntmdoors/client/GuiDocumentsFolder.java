@@ -1,8 +1,10 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.client;
 
 import com.ntmdoors.item.ItemDocumentsFolder;
 import com.ntmdoors.network.MessageDocumentsFolderPages;
 import com.ntmdoors.network.ModNetwork;
+
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
@@ -11,6 +13,7 @@ import net.minecraft.util.ChatAllowedCharacters;
 import net.minecraft.util.EnumHand;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 

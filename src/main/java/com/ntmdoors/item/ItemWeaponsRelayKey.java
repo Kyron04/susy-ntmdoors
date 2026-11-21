@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.item;
 
 import com.ntmdoors.NTMDoors;
@@ -8,6 +9,7 @@ import com.ntmdoors.weapons.Explosives;
 import com.ntmdoors.weapons.WeaponsBindings;
 import com.ntmdoors.weapons.WeaponsKeyData;
 import com.ntmdoors.weapons.WeaponsMode;
+
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;

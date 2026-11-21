@@ -1,9 +1,11 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.client;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.gui.ContainerTerminalBackup;
 import com.ntmdoors.tile.TileEntityMonitorDesk;
 import com.ntmdoors.util.ModSounds;
+
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -13,6 +15,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+
 import org.lwjgl.input.Keyboard;
 
 import java.io.IOException;

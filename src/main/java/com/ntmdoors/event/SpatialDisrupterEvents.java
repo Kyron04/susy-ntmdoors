@@ -1,7 +1,9 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.event;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.block.BlockSpatialDisrupter;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.fml.common.Mod;

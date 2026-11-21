@@ -6,7 +6,7 @@ import com.ntmdoors.tile.TileEntityEmancipationGrill;
 import com.ntmdoors.util.Biometrics;
 import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.PrivateKeys;
-import io.netty.buffer.ByteBuf;
+
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -15,6 +15,8 @@ import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+
+import io.netty.buffer.ByteBuf;
 
 /**
  * Client to server: one row on the Emancipation Grill assignment page. The server checks the

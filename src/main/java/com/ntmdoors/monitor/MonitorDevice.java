@@ -12,6 +12,7 @@ import com.ntmdoors.tile.TileEntityKeycardScanner;
 import com.ntmdoors.tile.TileEntityMotionSensor;
 import com.ntmdoors.tile.TileEntityRedstoneGate;
 import com.ntmdoors.tile.TileEntitySpeaker;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;

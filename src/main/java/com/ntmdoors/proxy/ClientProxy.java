@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.proxy;
 
 import com.ntmdoors.NTMDoors;
@@ -47,6 +48,7 @@ import com.ntmdoors.tile.TileEntityKeycardProgrammer;
 import com.ntmdoors.tile.TileEntityKeycardScanner;
 import com.ntmdoors.tile.TileEntityMonitorDesk;
 import com.ntmdoors.tile.TileEntityMotionSensor;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IReloadableResourceManager;
 import net.minecraft.client.resources.IResourceManager;

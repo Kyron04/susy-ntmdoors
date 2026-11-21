@@ -1,8 +1,10 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.gui;
 
 import com.ntmdoors.registry.ModContent;
 import com.ntmdoors.tile.TileEntityKeycardProgrammer;
 import com.ntmdoors.util.ModSounds;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.ClickType;

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.client;
 
 import com.ntmdoors.NTMDoors;
@@ -6,6 +7,7 @@ import com.ntmdoors.concrete.ItemConcreteSlab;
 import com.ntmdoors.hlblocks.ItemBlockGroup;
 import com.ntmdoors.item.ItemBlockConcreteVariant;
 import com.ntmdoors.registry.ModContent;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;

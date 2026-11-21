@@ -1,9 +1,11 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.client;
 
 import com.ntmdoors.item.ItemUndefinedRelayKey;
 import com.ntmdoors.network.MessageRelayKeyType;
 import com.ntmdoors.network.ModNetwork;
 import com.ntmdoors.registry.ModContent;
+
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
@@ -12,6 +14,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 

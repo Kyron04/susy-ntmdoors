@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.client;
 
 import com.ntmdoors.block.BlockMonitorDesk;
@@ -8,6 +9,7 @@ import com.ntmdoors.monitor.MonitorWallpaper;
 import com.ntmdoors.registry.ModContent;
 import com.ntmdoors.tile.TileEntityMonitorDesk;
 import com.ntmdoors.util.Facings;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -24,6 +26,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;

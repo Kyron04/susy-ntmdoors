@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.block;
 
 import com.ntmdoors.NTMDoors;
@@ -5,6 +6,7 @@ import com.ntmdoors.item.ItemBiometricOperatorKeycard;
 import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.tile.TileEntityBiometricSafe;
 import com.ntmdoors.util.HeldItems;
+
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;

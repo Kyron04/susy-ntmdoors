@@ -1,13 +1,16 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.client;
 
 import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.item.ItemDeveloperKeycard;
 import com.ntmdoors.util.Biometrics;
 import com.ntmdoors.util.PrivateKeys;
+
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 

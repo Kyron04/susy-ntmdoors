@@ -1,9 +1,11 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.block;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.gui.GuiHandler;
 import com.ntmdoors.tile.TileEntityKeycardProgrammer;
 import com.ntmdoors.util.Facings;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.EnumPushReaction;

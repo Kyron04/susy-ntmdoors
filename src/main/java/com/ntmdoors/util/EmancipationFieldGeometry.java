@@ -2,6 +2,7 @@
 package com.ntmdoors.util;
 
 import com.ntmdoors.block.BlockEmancipationGrill;
+
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;

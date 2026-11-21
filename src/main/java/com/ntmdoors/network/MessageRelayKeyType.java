@@ -1,10 +1,11 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.network;
 
 import com.ntmdoors.item.ItemUndefinedRelayKey;
 import com.ntmdoors.registry.ModContent;
 import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.ModSounds;
-import io.netty.buffer.ByteBuf;
+
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -14,6 +15,8 @@ import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+
+import io.netty.buffer.ByteBuf;
 
 import java.util.List;
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.tile;
 
 import com.ntmdoors.client.BackupLoopSound;
@@ -11,6 +12,7 @@ import com.ntmdoors.registry.ModContent;
 import com.ntmdoors.util.Biometrics;
 import com.ntmdoors.util.ModSounds;
 import com.ntmdoors.util.PrivateKeys;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.entity.player.EntityPlayer;

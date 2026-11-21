@@ -1,12 +1,15 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.network;
 
 import com.ntmdoors.NTMDoors;
-import io.netty.buffer.ByteBuf;
+
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+
+import io.netty.buffer.ByteBuf;
 
 /** Server to client: result of binding, unlinking or renaming a net's Terminal Relay Key. */
 public class MessageMonitorKeyResult implements IMessage {

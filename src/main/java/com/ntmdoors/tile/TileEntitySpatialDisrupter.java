@@ -5,6 +5,7 @@ import com.ntmdoors.NTMDoors;
 import com.ntmdoors.concrete.BlockConcreteVariant;
 import com.ntmdoors.concrete.ConcreteSet;
 import com.ntmdoors.util.ModSounds;
+
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;

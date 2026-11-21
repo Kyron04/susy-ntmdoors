@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.client;
 
 import com.ntmdoors.item.ItemWeaponsRelayKey;
@@ -5,11 +6,13 @@ import com.ntmdoors.network.MessageWeaponsKeyMode;
 import com.ntmdoors.network.ModNetwork;
 import com.ntmdoors.weapons.WeaponsKeyData;
 import com.ntmdoors.weapons.WeaponsMode;
+
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+
 import org.lwjgl.input.Keyboard;
 
 import java.io.IOException;

@@ -3,6 +3,7 @@ package com.ntmdoors.tile;
 
 import com.ntmdoors.util.BlockPositions;
 import com.ntmdoors.util.TimedSources;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;

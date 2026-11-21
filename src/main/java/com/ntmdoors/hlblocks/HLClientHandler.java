@@ -1,8 +1,10 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.hlblocks;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.concrete.ConcreteGroups;
 import com.ntmdoors.network.ModNetwork;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.EntityPlayer;
@@ -15,6 +17,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+
 import org.lwjgl.input.Keyboard;
 
 /** Client side of the HL/concrete shift-scroll cycle. */

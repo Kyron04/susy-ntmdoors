@@ -1,11 +1,14 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.client;
 
 import com.ntmdoors.network.MessageBreakerBreak;
 import com.ntmdoors.network.ModNetwork;
+
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+
 import org.lwjgl.input.Keyboard;
 
 import java.io.IOException;

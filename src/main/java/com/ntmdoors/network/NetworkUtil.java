@@ -1,8 +1,10 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.network;
 
-import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
+
+import io.netty.buffer.ByteBuf;
 
 import javax.annotation.Nullable;
 

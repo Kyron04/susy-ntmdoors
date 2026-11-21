@@ -4,6 +4,7 @@ package com.ntmdoors.item;
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.tile.TileEntityMotionSensor;
 import com.ntmdoors.util.Names;
+
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;

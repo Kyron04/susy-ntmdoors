@@ -1,8 +1,10 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.tile;
 
 import com.ntmdoors.client.SpeakerLoopSound;
 import com.ntmdoors.monitor.SecurityEvents;
 import com.ntmdoors.util.ModSounds;
+
 import net.minecraft.block.BlockRedstoneWire;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;

@@ -4,6 +4,7 @@ package com.ntmdoors.tile;
 import com.ntmdoors.block.BlockDoorGeneric;
 import com.ntmdoors.block.BlockThermiteCharge;
 import com.ntmdoors.util.ModSounds;
+
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;

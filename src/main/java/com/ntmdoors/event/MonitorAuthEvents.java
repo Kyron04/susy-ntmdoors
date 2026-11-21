@@ -1,7 +1,9 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.event;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.monitor.MonitorAuth;
+
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors;
 
 import com.ntmdoors.block.BlockDoorGeneric;
@@ -9,6 +10,7 @@ import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.proxy.CommonProxy;
 import com.ntmdoors.registry.ModContent;
 import com.ntmdoors.util.Names;
+
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
@@ -19,6 +21,7 @@ import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

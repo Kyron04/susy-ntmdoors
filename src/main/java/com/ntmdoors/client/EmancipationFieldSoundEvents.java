@@ -1,8 +1,10 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.client;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.tile.TileEntityEmancipationGrill;
 import com.ntmdoors.util.ModSounds;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.SoundCategory;

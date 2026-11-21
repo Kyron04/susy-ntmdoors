@@ -3,6 +3,7 @@ package com.ntmdoors.block;
 
 import com.ntmdoors.tile.TileEntityEmancipationGrill;
 import com.ntmdoors.util.EmancipationFieldGeometry;
+
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;

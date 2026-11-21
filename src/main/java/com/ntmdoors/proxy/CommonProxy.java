@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.proxy;
 
 import com.ntmdoors.NTMDoors;
@@ -25,19 +26,20 @@ import com.ntmdoors.tile.TileEntitySafe;
 import com.ntmdoors.tile.TileEntitySpeaker;
 import com.ntmdoors.tile.TileEntitySpatialDisrupter;
 import com.ntmdoors.tile.TileEntityThermiteCharge;
+
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-
-import java.util.List;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+
+import java.util.List;
 
 public class CommonProxy {
 

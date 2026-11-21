@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.client;
 
 import com.ntmdoors.item.ItemDeveloperKeycard;
@@ -11,6 +12,7 @@ import com.ntmdoors.tile.TileEntityMotionSensor.BiometricId;
 import com.ntmdoors.util.Biometrics;
 import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.PrivateKeys;
+
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.item.ItemStack;
@@ -18,6 +20,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 

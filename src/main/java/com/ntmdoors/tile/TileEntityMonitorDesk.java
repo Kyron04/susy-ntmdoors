@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.tile;
 
 import com.ntmdoors.block.BlockMonitorDesk;
@@ -15,6 +16,7 @@ import com.ntmdoors.monitor.TerminalBackupData;
 import com.ntmdoors.network.NetworkUtil;
 import com.ntmdoors.util.ModSounds;
 import com.ntmdoors.util.MonitorPasswords;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;

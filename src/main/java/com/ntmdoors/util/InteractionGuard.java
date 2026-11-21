@@ -1,9 +1,11 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.util;
 
 import com.ntmdoors.block.BlockDoorGeneric;
 import com.ntmdoors.block.BlockDoorKeypad;
 import com.ntmdoors.block.BlockKeycardProgrammer;
 import com.ntmdoors.block.BlockKeycardScanner;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;

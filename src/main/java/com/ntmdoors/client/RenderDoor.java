@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.client;
 
 import com.ntmdoors.block.BlockDoorGeneric;
@@ -5,6 +6,7 @@ import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.door.PartAnim;
 import com.ntmdoors.tile.TileEntityDoorGeneric;
 import com.ntmdoors.util.Facings;
+
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -12,6 +14,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 

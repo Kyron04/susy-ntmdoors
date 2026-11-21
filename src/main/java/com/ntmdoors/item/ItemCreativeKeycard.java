@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.item;
 
 import com.ntmdoors.NTMDoors;
@@ -8,6 +9,7 @@ import com.ntmdoors.tile.TileEntityKeycardScanner;
 import com.ntmdoors.tile.TileEntityRedstoneGate;
 import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.Names;
+
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;

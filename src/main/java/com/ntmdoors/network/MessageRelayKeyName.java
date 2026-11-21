@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.network;
 
 import com.ntmdoors.item.ItemBiometricRelayKey;
@@ -5,7 +6,7 @@ import com.ntmdoors.item.ItemRelayKey;
 import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.ModSounds;
 import com.ntmdoors.util.PrivateKeys;
-import io.netty.buffer.ByteBuf;
+
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
@@ -15,6 +16,8 @@ import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+
+import io.netty.buffer.ByteBuf;
 
 /**
  * Client to server: the player confirmed a name in the Relay Key naming screen. The server owns

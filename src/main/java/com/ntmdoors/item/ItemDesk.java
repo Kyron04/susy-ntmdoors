@@ -1,9 +1,11 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.item;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.block.BlockDesk;
 import com.ntmdoors.block.BlockMonitorSetup;
 import com.ntmdoors.door.DoorPlacementGuard;
+
 import net.minecraft.block.SoundType;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;

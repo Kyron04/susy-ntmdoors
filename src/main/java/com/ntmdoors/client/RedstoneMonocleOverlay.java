@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.client;
 
 import com.ntmdoors.NTMDoors;
@@ -5,6 +6,7 @@ import com.ntmdoors.item.ItemRedstoneMonocle;
 import com.ntmdoors.tile.RedstoneBinding;
 import com.ntmdoors.tile.RedstoneBindingHost;
 import com.ntmdoors.tile.TileEntityRedstoneGate;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
@@ -19,6 +21,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;

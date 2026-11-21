@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.event;
 
 import com.ntmdoors.NTMDoors;
@@ -17,6 +18,7 @@ import com.ntmdoors.item.ItemSafeBindingKey;
 import com.ntmdoors.item.ItemScrewdriver;
 import com.ntmdoors.item.ItemTerminalRelayKey;
 import com.ntmdoors.tile.TileEntityDoorGeneric;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;

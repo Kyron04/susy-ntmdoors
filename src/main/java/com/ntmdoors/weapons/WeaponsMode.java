@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.weapons;
 
 /** The two binding behaviours offered by the Weapons Relay Key. */

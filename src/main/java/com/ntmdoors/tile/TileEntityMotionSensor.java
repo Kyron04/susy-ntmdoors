@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.tile;
 
 import com.ntmdoors.block.BlockMotionSensor;
@@ -8,6 +9,7 @@ import com.ntmdoors.monitor.SecurityEvents;
 import com.ntmdoors.util.Biometrics;
 import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.PrivateKeys;
+
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityArmorStand;

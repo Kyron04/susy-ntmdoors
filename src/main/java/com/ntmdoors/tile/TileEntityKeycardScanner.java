@@ -13,6 +13,7 @@ import com.ntmdoors.util.BlockPositions;
 import com.ntmdoors.util.Codes;
 import com.ntmdoors.util.ModSounds;
 import com.ntmdoors.util.PrivateKeys;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.entity.player.EntityPlayer;

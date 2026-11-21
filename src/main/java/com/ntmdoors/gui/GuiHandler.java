@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.gui;
 
 import com.ntmdoors.client.GuiKeycardHolder;
@@ -8,6 +9,7 @@ import com.ntmdoors.item.ItemKeycardHolder;
 import com.ntmdoors.tile.TileEntityKeycardProgrammer;
 import com.ntmdoors.tile.TileEntityMonitorDesk;
 import com.ntmdoors.tile.TileEntitySafe;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;

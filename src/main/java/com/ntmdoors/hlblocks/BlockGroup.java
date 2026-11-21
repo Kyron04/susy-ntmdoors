@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.hlblocks;
 
 import net.minecraft.block.SoundType;

@@ -1,8 +1,10 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.monitor;
 
 import com.ntmdoors.tile.TileEntityDoorGeneric;
 import com.ntmdoors.tile.TileEntityEmancipationGrill;
 import com.ntmdoors.tile.TileEntityMonitorDesk;
+
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;

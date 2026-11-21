@@ -3,6 +3,7 @@ package com.ntmdoors.door;
 
 import com.ntmdoors.block.BlockDoorGeneric;
 import com.ntmdoors.tile.TileEntityDoorGeneric;
+
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;

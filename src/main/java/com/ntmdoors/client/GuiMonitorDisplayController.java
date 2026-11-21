@@ -5,6 +5,7 @@ import com.ntmdoors.monitor.MonitorWallpaper;
 import com.ntmdoors.network.MessageMonitorWallpaper;
 import com.ntmdoors.network.ModNetwork;
 import com.ntmdoors.tile.TileEntityMonitorDesk;
+
 import net.minecraft.client.renderer.GlStateManager;
 
 import java.util.List;

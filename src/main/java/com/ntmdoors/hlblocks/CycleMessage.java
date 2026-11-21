@@ -1,8 +1,10 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.hlblocks;
 
-import io.netty.buffer.ByteBuf;
 import net.minecraft.util.EnumHand;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+
+import io.netty.buffer.ByteBuf;
 
 /** Client-to-server request to cycle the held HL or concrete block by one variant. */
 public class CycleMessage implements IMessage {

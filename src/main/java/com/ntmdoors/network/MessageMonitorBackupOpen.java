@@ -1,15 +1,18 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.network;
 
 import com.ntmdoors.NTMDoors;
 import com.ntmdoors.gui.GuiHandler;
 import com.ntmdoors.monitor.MonitorAuth;
 import com.ntmdoors.tile.TileEntityMonitorDesk;
-import io.netty.buffer.ByteBuf;
+
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+
+import io.netty.buffer.ByteBuf;
 
 /** Client to server: opens the Terminal Backup console for one monitor desk. */
 public class MessageMonitorBackupOpen implements IMessage {

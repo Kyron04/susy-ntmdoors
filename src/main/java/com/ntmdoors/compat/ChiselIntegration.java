@@ -1,8 +1,11 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.compat;
 
 import com.ntmdoors.concrete.ConcreteGroups;
+
 import net.minecraft.block.state.IBlockState;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+
 import team.chisel.api.carving.CarvingUtils;
 import team.chisel.api.carving.ICarvingGroup;
 import team.chisel.api.carving.ICarvingRegistry;

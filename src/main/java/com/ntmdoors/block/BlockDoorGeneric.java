@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.block;
 
 import com.ntmdoors.NTMDoors;
@@ -5,6 +6,7 @@ import com.ntmdoors.door.DoorDecl;
 import com.ntmdoors.tile.TileEntityDoorGeneric;
 import com.ntmdoors.tile.TileEntityDoorPart;
 import com.ntmdoors.util.Names;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.SoundType;
