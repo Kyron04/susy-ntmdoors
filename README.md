@@ -174,31 +174,52 @@ for editing.
   Key starts/finishes a wireless binding session, and starting the alarm pulses every linked
   Redstone Gate.
 * Motion Sensor (`ntmdoors:motion_sensor`): a compact 8x8x1.375 surface-mounted PIR housing with an
-  off-white body, charcoal bezel, ringed concentric Fresnel lens and four status-light colours.
-  It can be placed on floors, walls and ceilings; the clicked face becomes the lens direction.
-  It passively scans the cells selected inside a 5x5 footprint that projects five blocks away from
-  the mounting surface along the sensor's facing, and checks every card in a player's inventory
-  against the private keys and biometric IDs assigned through its console. A normal right-click
-  with the Motion Relay Key opens the console. Page three is a 5x5 grid: left-click adds one block
-  of depth to a column, right-click removes one, and opacity shows the selected depth. The centre
-  cell keeps the green sensor dot. Sneak + right-click the sensor toggles a client-side transparent
-  blue projection of the selected cells; sneak + right-click again hides it. An unbound sensor
-  stays inactive and shows yellow. Detection goes through walls. Page two has `Detect players`,
-  `Detect hostile mobs` and `Detect neutral mobs`; all three start on, so every living entity type
-  is covered. Non-player living entities are always unauthorized intruders, while players use the
-  card rules above. `Persist within bounds` is also on page two: when on, a linked gate stays
-  powered while any entity matching an enabled entry event remains inside, and releases as soon as
-  the area is empty. `Persist out of bounds` is the inverse and mutually exclusive with it: the
-  gate is powered while the area is empty and the hold drops as soon as anything steps in. When
-  several out-of-bounds sensors share one gate, every one of them must be empty. Green
-  means idle, blue means authorised players are inside, red means any
-  unauthorized player or mob is inside, and yellow means the sensor is disabled or has no area
-  bound. Page four is the red `REDSTONE` page with
-  `Authorized entry`, `Unauthorized entry`, `Sensor disabled` and `Sensor enabled` event switches.
-  Sneak + right-click the sensor with the Redstone Relay Key to start or finish a gate-binding
-  session, then sneak + right-click gates to link them. With both persistence modes off, each
-  enabled event pulses every linked gate on the matching entry edge. `Persist within bounds` holds
-  using the enabled entry events; `Persist out of bounds` holds while the area is empty.
+  off-white body, charcoal bezel, ringed concentric Fresnel lens and one status LED with four
+  colours. It can be placed on floors, walls and ceilings; the clicked face becomes the lens
+  direction. It passively scans the cells selected inside a 5x5 footprint that projects five
+  blocks away from the mounting surface along the sensor's facing, and checks every RFID card in
+  a player's main inventory or offhand against the private keys and biometric IDs assigned through
+  its console. A normal right-click with the Motion Relay Key opens the console, and a Security
+  terminal can open it remotely once the sensor is linked to one of its nets. Detection goes
+  through walls. An unbound sensor does not scan and shows yellow. Non-player living entities that
+  are detected are always unauthorized intruders, while players use the assigned key and ID
+  rules; armor stands are never detected.
+  - **Page one - access:** `ASSIGNED KEYS/IDS` lists the private keys and biometric IDs the sensor
+    checks. `AVAILABLE KEYS/IDS` lists the entries on the Operator Keycard or Biometric Operator
+    Keycard you carry; click an available row to assign it and an assigned row to remove it. The
+    page shows `carry an Operator Keycard` when no compatible card is in the inventory.
+  - **Page two - options:** nine toggles. `Detect players` (spectators ignored),
+    `Detect hostile mobs` and `Detect neutral mobs` decide which living entities are scanned;
+    all three start on. `Match user` starts on and makes biometric identities work only for their
+    owner. `Ignore private keys` and `Ignore biometric IDs` start off and remove those credentials
+    from the clearance check. `Enabled` starts on and turns detection off; a newly confirmed
+    Security net device starts OFF. `Persist within bounds` starts off and holds a linked gate
+    while any entity matching an enabled entry event remains inside; it releases when the area is
+    empty. `Persist out of bounds` is the inverse and mutually exclusive with it: the gate is
+    powered while the area is empty and the hold drops as soon as any detected entity enters.
+    When several out-of-bounds sensors share one gate, every one of them must be empty.
+  - **Page three - area:** a 5x5 depth grid. Left-click adds one block of depth to a column,
+    right-click removes one, and opacity shows the selected depth. The centre cell keeps the green
+    sensor dot. When an area is bound, the centre column always keeps at least depth one.
+    `Full 5x5x5` sets every column to depth five.
+    `Clear` unbinds the area and returns the sensor to the yellow unbound state. Sneak +
+    right-click the sensor with the Motion Relay Key toggles a client-side transparent blue
+    projection of the selected cells; sneak + right-click again hides it.
+  - **Page four - redstone:** the red `REDSTONE` page has `Authorized entry`, `Unauthorized entry`,
+    `Sensor disabled` and `Sensor enabled` switches, all off by default. With both persistence
+    modes off, each enabled entry event pulses every linked gate on the matching entry edge.
+    `Persist within bounds` holds using those entry events; `Persist out of bounds` holds while the
+    area is empty. The `Sensor disabled` and `Sensor enabled` switches fire from the sensor's own
+    `Enabled` toggle, including the terminal ON/OFF switch, not from Security net events,
+    regardless of the persistence mode. Sneak + right-click the sensor with the Redstone Relay Key
+    to start or finish a gate-binding session, then sneak + right-click gates to link them.
+  - **Status LED:** green when idle, blue when authorized players are inside, and red when any
+    unauthorized player or mob is inside. Yellow normally means no area is bound or the sensor's
+    own `Enabled` toggle is off. A Security net's `System Shutdown` or `Disable Sensors` stops a
+    bound sensor detecting without changing its local `Enabled` setting; the LED can therefore
+    stay green while the net event idles the sensor. The console's `Enabled` toggle and a Security
+    net device row's ON/OFF switch change the same setting. A Creative Keycard in the main
+    inventory or offhand counts as clearance, but it does not open the console.
 * Concrete and HL Blocks: the NTM CE concrete building set and decorative HL Blocks, with metadata
   families, flat Chisel carving groups, shift-scroll cycling, recipes, and `concrete` /
   `blockConcrete` / `blockhl` ore dictionary entries. Chisel is required.
@@ -360,8 +381,9 @@ are recipe-free.
   held key with a fresh blank key of that type. It is crafted shapeless from a Circuit Board, an
   Uncased USB and an ID Chip.
 * Motion Relay Key (`ntmdoors:motion_relay_key`) and Terminal Relay Key
-  (`ntmdoors:terminal_relay_key`): blue and orange/grey relay keys. The Motion Relay Key is
-  reserved for defining the 5x5x5 area a Motion Sensor watches. The Terminal Relay Key starts a
+  (`ntmdoors:terminal_relay_key`): blue and orange/grey relay keys. The Motion Relay Key opens a
+  Motion Sensor's console, where page three defines the 5x5x5 area it watches; sneak +
+  right-clicking the sensor toggles the blue area projection. The Terminal Relay Key starts a
   binding session with a sneak + right click on a monitor desk, adds doors, keypads, keycard
   scanners, motion sensors, Redstone Gates and speakers with further sneak + right clicks, asks
   for a name for each device, and confirms the whole list by sneak + right clicking the same desk
@@ -446,9 +468,9 @@ are recipe-free.
   creates the private keys that scanners check. The Creative Keycard is the debug item for testing:
   its name is purple, and right clicking any door opens or closes it regardless of locked/security
   variants, keypad codes or redstone, with a purple `Door overridden` status message. It also
-  bypasses both safes and every scanner, and sneak + right-clicking a scanner opens its full
-  console without a code or bound doors. Sneak + right-clicking a Redstone Gate opens the gate
-  screen. A blank Relay Key creates one private key when the player
+  bypasses both safes, every scanner and Motion Sensor clearance, and sneak + right-clicking a
+  scanner opens its full console without a code or bound doors. Sneak + right-clicking a Redstone
+  Gate opens the gate screen. A blank Relay Key creates one private key when the player
   sneak right-clicks it away from any machine: a naming screen takes up to 32 characters, and
   confirming it generates a ten digit serial on the server and stores both in the key's NBT. A key
   can be created once and never reset. Its name is yellow, and its tooltip carries a grey
