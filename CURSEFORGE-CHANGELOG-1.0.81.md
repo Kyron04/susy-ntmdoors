@@ -4,7 +4,7 @@ Minecraft 1.12.2 / Forge 14.23.5.2847+ (tested on 14.23.5.2860)
 Requires Chisel 1.12.2-1.0.2.45
 
 **File:** `ntmdoors-1.0.81.jar`
-**SHA-256:** `979C5D55B3D9F005E08DA920AB7D8735D03969FC525728981EABD4DB0B27A82C`
+**SHA-256:** `B01C27E61552B5C306B67CCDCD8026AF71BEDFE0262BE7DF3665BE9FEE620242`
 
 This release adds Contraband Containment to the Emancipation Grill. In Filter Mode, blacklisted
 stacks from player inventories, nested containers and mob inventories can be inserted into a

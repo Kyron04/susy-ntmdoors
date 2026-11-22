@@ -83,8 +83,10 @@ public final class GrillContainmentData {
         BlockPos grill = BlockPos.fromLong(tag.getLong(GRILL));
         BlockPos container = tag.hasKey(CONTAINER)
                 ? BlockPos.fromLong(tag.getLong(CONTAINER)) : null;
+        int stage = tag.getByte(STAGE);
+        if (stage != AWAIT_CONTAINER && stage != AWAIT_CONFIRM) return null;
         return new Session(
-                tag.getByte(STAGE), grill, tag.getInteger(GRILL_DIM), container,
+                stage, grill, tag.getInteger(GRILL_DIM), container,
                 tag.getInteger(CONTAINER_DIM), tag.getByte(CONTAINER_SIDE),
                 tag.getString(CONTAINER_NAME), owner, tag.getLong(EXPIRES));
     }

@@ -1303,9 +1303,12 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
         if (hasHandler) {
             changed = filterHandlerContents(handler, depth, budget);
         }
-        // When containment is enabled, trust a real handler over its NBT mirror so the same
-        // stack cannot be inserted twice. With containment off, keep the old double-pass.
-        if ((!hasHandler || !contrabandEnabled)
+        // When a usable containment target exists, trust a real handler over its NBT mirror so
+        // the same stack cannot be inserted twice. Otherwise keep the old double-pass.
+        boolean containmentActive = contrabandEnabled && contrabandPos != null
+                && ContrabandContainers.isStillValid(world, contrabandDim, contrabandPos,
+                contrabandSide, pos);
+        if ((!hasHandler || !containmentActive)
                 && filterNbtContents(container, depth, budget)) {
             changed = true;
         }
