@@ -28,7 +28,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.ArrayList;
 import java.util.List;
 
-@Mod(modid = NTMDoors.MODID, name = "NTM Doors", version = "1.0.80",
+@Mod(modid = NTMDoors.MODID, name = "NTM Doors", version = "1.0.81",
         acceptedMinecraftVersions = "[1.12.2]", dependencies = "required-after:chisel")
 public class NTMDoors {
 

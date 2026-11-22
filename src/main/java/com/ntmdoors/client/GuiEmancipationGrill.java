@@ -2,7 +2,9 @@
 package com.ntmdoors.client;
 
 import com.ntmdoors.item.ItemDeveloperKeycard;
+import com.ntmdoors.item.ItemEmancipationRelayKey;
 import com.ntmdoors.item.ItemOperatorKeycard;
+import com.ntmdoors.network.MessageGrillBindStart;
 import com.ntmdoors.network.MessageGrillFilter;
 import com.ntmdoors.network.MessageGrillKey;
 import com.ntmdoors.network.MessageGrillOption;
@@ -37,14 +39,16 @@ import java.util.List;
  * Emancipation Grill console. Page one assigns private keys and biometric identities from the
  * Operator Keycard carried in the player's inventory. Page two holds the field behavior modes and
  * access/destruction toggles. Page three sets the field colour. Page four holds the redstone events.
- * Page five configures the whitelist and blacklist patterns used by Filter mode.
+ * Page five configures the whitelist and blacklist patterns used by Filter mode. Page six configures
+ * the contraband container and starts the Relay Key binding session.
  */
 @SideOnly(Side.CLIENT)
 public class GuiEmancipationGrill extends GuiScreen {
 
     private static final int PANEL_WIDTH = 344;
     private static final int PANEL_HEIGHT = 196;
-    private static final int PAGE_COUNT = 5;
+    private static final int PAGE_COUNT = 6;
+    private static final int CONTAINMENT_PAGE = 5;
 
     private static final int LIST_TOP = 46;
     private static final int LIST_HEIGHT = 102;
@@ -102,6 +106,13 @@ public class GuiEmancipationGrill extends GuiScreen {
     private static final int FILTER_TOP = 46;
     private static final int FILTER_LEFT_X = 14;
     private static final int FILTER_RIGHT_X = 178;
+
+    private static final int CONTAINMENT_TOGGLE_X = 20;
+    private static final int CONTAINMENT_TOGGLE_Y = 50;
+    private static final int CONTAINMENT_BIND_X = 20;
+    private static final int CONTAINMENT_BIND_Y = 78;
+    private static final int CONTAINMENT_BIND_WIDTH = 160;
+    private static final int CONTAINMENT_BIND_HEIGHT = 20;
 
     private static final int RED_PANEL = 0xFF2A0F12;
     private static final int RED_RULE = 0xFF6A2A2A;
@@ -214,6 +225,8 @@ public class GuiEmancipationGrill extends GuiScreen {
                 return grill != null && grill.getFieldMode() == FieldMode.WALL;
             case MessageGrillOption.MODE_FILTER:
                 return grill != null && grill.getFieldMode() == FieldMode.FILTER;
+            case MessageGrillOption.CONTRABAND:
+                return grill != null && grill.isContrabandEnabled();
             case MessageGrillOption.COLOUR_RED:
                 return grill != null && grill.getFieldColour() == FieldColour.RED;
             case MessageGrillOption.COLOUR_GREEN:
@@ -295,6 +308,17 @@ public class GuiEmancipationGrill extends GuiScreen {
             FilterTarget target = filterSlotAt(mouseX, mouseY);
             if (target != null) {
                 clearFilterSlot(target);
+                return;
+            }
+        }
+
+        if (page == CONTAINMENT_PAGE && mouseButton == 0) {
+            if (inContainmentToggle(mouseX, mouseY)) {
+                sendOption(MessageGrillOption.CONTRABAND);
+                return;
+            }
+            if (inContainmentBind(mouseX, mouseY) && canStartBinding()) {
+                ModNetwork.INSTANCE.sendToServer(new MessageGrillBindStart(pos));
                 return;
             }
         }
@@ -467,7 +491,8 @@ public class GuiEmancipationGrill extends GuiScreen {
         else if (page == 1) drawTogglesPage(mouseX, mouseY);
         else if (page == 2) drawColourPage(mouseX, mouseY);
         else if (page == 3) drawRedstonePage(mouseX, mouseY);
-        else drawFilterPage(mouseX, mouseY);
+        else if (page == FILTER_PAGE) drawFilterPage(mouseX, mouseY);
+        else drawContainmentPage(mouseX, mouseY);
 
         drawFooter(mouseX, mouseY);
         super.drawScreen(mouseX, mouseY, partialTicks);
@@ -535,6 +560,62 @@ public class GuiEmancipationGrill extends GuiScreen {
         drawFilterGrid(FILTER_RIGHT_X, filterStacks(false), mouseX, mouseY);
     }
 
+    private void drawContainmentPage(int mouseX, int mouseY) {
+        drawTitle("CONTRABAND CONTAINMENT");
+        TileEntityEmancipationGrill grill = grill();
+        boolean enabled = grill != null && grill.isContrabandEnabled();
+        boolean filterOn = grill != null && grill.getFieldMode() == FieldMode.FILTER;
+        ItemStack key = HeldItems.findInInventory(mc.player, ItemEmancipationRelayKey.class);
+        boolean hasKey = !key.isEmpty();
+        boolean canBind = enabled && filterOn && hasKey;
+
+        drawString(fontRenderer, "Contraband Containment",
+                left + CONTAINMENT_TOGGLE_X, top + CONTAINMENT_TOGGLE_Y + 3, COLOUR);
+        drawPill(left + PANEL_WIDTH - 12 - PILL_WIDTH, top + CONTAINMENT_TOGGLE_Y, enabled);
+
+        int bx = left + CONTAINMENT_BIND_X;
+        int by = top + CONTAINMENT_BIND_Y;
+        int fill = canBind ? 0xFF2E3430 : 0xFF2A2A2C;
+        int border = canBind ? 0xFF8FB08F : 0xFF56565A;
+        drawRect(bx, by, bx + CONTAINMENT_BIND_WIDTH, by + CONTAINMENT_BIND_HEIGHT, fill);
+        drawRect(bx, by, bx + CONTAINMENT_BIND_WIDTH, by + 1, border);
+        drawRect(bx, by + CONTAINMENT_BIND_HEIGHT - 1,
+                bx + CONTAINMENT_BIND_WIDTH, by + CONTAINMENT_BIND_HEIGHT, border);
+        drawCenteredString(fontRenderer,
+                canBind ? "BEGIN BINDING SESSION" : "BINDING UNAVAILABLE",
+                bx + CONTAINMENT_BIND_WIDTH / 2, by + 6, canBind ? 0xFFD6F0D6 : DIM);
+
+        int statusY = top + 112;
+        if (grill != null && grill.hasContrabandBinding()) {
+            String name = grill.getContrabandName();
+            if (name.isEmpty()) name = "container";
+            drawString(fontRenderer, trim("Container: " + name, PANEL_WIDTH - 40),
+                    left + 20, statusY, COLOUR);
+            BlockPos bound = grill.getContrabandPos();
+            if (bound != null) {
+                drawString(fontRenderer, "Position: " + bound.getX() + ", " + bound.getY()
+                        + ", " + bound.getZ(), left + 20, statusY + 12, MUTED);
+            }
+        } else {
+            drawString(fontRenderer, "No container bound - contraband will be voided",
+                    left + 20, statusY, 0xFFE6A0A0);
+            drawString(fontRenderer, "Full or unavailable containers void the remainder",
+                    left + 20, statusY + 12, MUTED);
+        }
+
+        String warning = null;
+        if (!filterOn) {
+            warning = "Filter Mode is off - enable it on page 2";
+        } else if (!enabled) {
+            warning = "Enable Contraband Containment above";
+        } else if (!hasKey) {
+            warning = "Carry the Emancipation Relay Key to bind";
+        }
+        if (warning != null) {
+            drawString(fontRenderer, warning, left + 20, top + 140, 0xFFE6A0A0);
+        }
+    }
+
     private void drawFilterGrid(int listX, List<ItemStack> stacks,
                                 int mouseX, int mouseY) {
         for (int row = 0; row < FILTER_ROWS; row++) {
@@ -594,8 +675,28 @@ public class GuiEmancipationGrill extends GuiScreen {
         return null;
     }
 
-    private void clearFilterSlot(FilterTarget target) {
-        if (page != FILTER_PAGE) return;
+    private boolean inContainmentToggle(int mouseX, int mouseY) {
+        return mouseX >= left + CONTAINMENT_TOGGLE_X
+                && mouseX < left + PANEL_WIDTH - 12
+                && mouseY >= top + CONTAINMENT_TOGGLE_Y
+                && mouseY < top + CONTAINMENT_TOGGLE_Y + PILL_HEIGHT;
+    }
+
+    private boolean inContainmentBind(int mouseX, int mouseY) {
+        return mouseX >= left + CONTAINMENT_BIND_X
+                && mouseX < left + CONTAINMENT_BIND_X + CONTAINMENT_BIND_WIDTH
+                && mouseY >= top + CONTAINMENT_BIND_Y
+                && mouseY < top + CONTAINMENT_BIND_Y + CONTAINMENT_BIND_HEIGHT;
+    }
+
+    private boolean canStartBinding() {
+        TileEntityEmancipationGrill grill = grill();
+        if (grill == null || !grill.isContrabandEnabled()) return false;
+        if (grill.getFieldMode() != FieldMode.FILTER) return false;
+        return !HeldItems.findInInventory(mc.player, ItemEmancipationRelayKey.class).isEmpty();
+    }
+
+    private void clearFilterSlot(FilterTarget target) {        if (page != FILTER_PAGE) return;
         sendFilter(target.whitelist, target.slot, ItemStack.EMPTY);
     }
 
@@ -928,7 +1029,7 @@ public class GuiEmancipationGrill extends GuiScreen {
             hint = "Click a colour to apply it - ESC to close";
         } else if (page == 3) {
             hint = "Click a signal to enable it - pulses linked gates";
-        } else {
+        } else if (page == FILTER_PAGE) {
             TileEntityEmancipationGrill grill = grill();
             if (grill == null || !grill.isFieldEnabled()) {
                 hint = "Field is disabled - enable it on page 2";
@@ -942,6 +1043,22 @@ public class GuiEmancipationGrill extends GuiScreen {
                 colour = 0xFFE6A0A0;
             } else {
                 hint = "Drag from JEI/HEI to set - right-click to clear";
+            }
+        } else {
+            TileEntityEmancipationGrill grill = grill();
+            if (grill == null || !grill.isFieldEnabled()) {
+                hint = "Field is disabled - enable it on page 2";
+                colour = 0xFFE6A0A0;
+            } else if (grill.getFieldMode() != FieldMode.FILTER) {
+                hint = "Filter Mode is off - enable it on page 2";
+                colour = 0xFFE6A0A0;
+            } else if (!grill.isContrabandEnabled()) {
+                hint = "Contraband Containment is off - enable it above";
+            } else if (!grill.hasContrabandBinding()) {
+                hint = "No container bound - contraband will be voided";
+                colour = 0xFFE6A0A0;
+            } else {
+                hint = "Bind a container, then confirm at the Grill";
             }
         }
         drawCenteredString(fontRenderer, hint, left + PANEL_WIDTH / 2, top + 164, colour);

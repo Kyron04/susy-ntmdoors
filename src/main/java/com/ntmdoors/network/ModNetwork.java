@@ -100,6 +100,10 @@ public final class ModNetwork {
                 MessageGrillOption.class, 43, Side.SERVER);
         INSTANCE.registerMessage(MessageGrillFilter.Handler.class,
                 MessageGrillFilter.class, 44, Side.SERVER);
+        INSTANCE.registerMessage(MessageGrillBindStart.Handler.class,
+                MessageGrillBindStart.class, 45, Side.SERVER);
+        INSTANCE.registerMessage(MessageGrillBindStartResult.Handler.class,
+                MessageGrillBindStartResult.class, 46, Side.CLIENT);
     }
 
     private ModNetwork() {

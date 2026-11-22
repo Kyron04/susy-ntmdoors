@@ -6,6 +6,7 @@ import com.ntmdoors.item.ItemEmancipationRelayKey;
 import com.ntmdoors.item.ItemOperatorKeycard;
 import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.util.Biometrics;
+import com.ntmdoors.util.ContrabandContainers;
 import com.ntmdoors.util.EmancipationFieldGeometry;
 import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.ModSounds;
@@ -157,6 +158,15 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
     private boolean detectPlayers = true;
     private boolean detectHostile = true;
     private boolean detectNeutral = true;
+
+    /** Filter-mode contraband storage. The final binding lives on the security core. */
+    private boolean contrabandEnabled;
+    @Nullable
+    private BlockPos contrabandPos;
+    private int contrabandDim = Integer.MIN_VALUE;
+    private int contrabandSide = -1;
+    private String contrabandName = "";
+    private boolean contrabandVoidedThisScan;
 
     /** Redstone event outputs, in the order shown on the grill's Redstone page. */
     public static final int RS_SOLID_PASS = 0;
@@ -444,6 +454,80 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
         List<ItemStack> list = whitelist ? filterWhitelist : filterBlacklist;
         if (ItemStack.areItemStacksEqual(list.get(slot), pattern)) return false;
         list.set(slot, pattern);
+        clearFilterTracking();
+        sync();
+        return true;
+    }
+
+    public boolean isContrabandEnabled() {
+        TileEntityEmancipationGrill core = getSecurityCore();
+        return core == this ? contrabandEnabled : core.isContrabandEnabled();
+    }
+
+    public boolean setContrabandEnabled(boolean value) {
+        if (world == null || world.isRemote) return false;
+        TileEntityEmancipationGrill core = getSecurityCore();
+        if (core != this) return core.setContrabandEnabled(value);
+        if (contrabandEnabled == value) return false;
+        contrabandEnabled = value;
+        clearFilterTracking();
+        sync();
+        return true;
+    }
+
+    public boolean hasContrabandBinding() {
+        TileEntityEmancipationGrill core = getSecurityCore();
+        return core == this ? contrabandPos != null : core.hasContrabandBinding();
+    }
+
+    @Nullable
+    public BlockPos getContrabandPos() {
+        TileEntityEmancipationGrill core = getSecurityCore();
+        return core == this ? contrabandPos : core.getContrabandPos();
+    }
+
+    public int getContrabandDim() {
+        TileEntityEmancipationGrill core = getSecurityCore();
+        return core == this ? contrabandDim : core.getContrabandDim();
+    }
+
+    public int getContrabandSide() {
+        TileEntityEmancipationGrill core = getSecurityCore();
+        return core == this ? contrabandSide : core.getContrabandSide();
+    }
+
+    public String getContrabandName() {
+        TileEntityEmancipationGrill core = getSecurityCore();
+        return core == this ? contrabandName : core.getContrabandName();
+    }
+
+    public boolean setContrabandBinding(BlockPos pos, int dimension, int side, String name) {
+        if (world == null || world.isRemote || pos == null) return false;
+        TileEntityEmancipationGrill core = getSecurityCore();
+        if (core != this) return core.setContrabandBinding(pos, dimension, side, name);
+        String safeName = name == null ? "" : name;
+        if (pos.equals(contrabandPos) && dimension == contrabandDim
+                && side == contrabandSide && safeName.equals(contrabandName)) {
+            return false;
+        }
+        contrabandPos = pos;
+        contrabandDim = dimension;
+        contrabandSide = side;
+        contrabandName = safeName;
+        clearFilterTracking();
+        sync();
+        return true;
+    }
+
+    public boolean clearContrabandBinding() {
+        if (world == null || world.isRemote) return false;
+        TileEntityEmancipationGrill core = getSecurityCore();
+        if (core != this) return core.clearContrabandBinding();
+        if (contrabandPos == null && contrabandName.isEmpty()) return false;
+        contrabandPos = null;
+        contrabandDim = Integer.MIN_VALUE;
+        contrabandSide = -1;
+        contrabandName = "";
         clearFilterTracking();
         sync();
         return true;
@@ -903,6 +987,13 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
                 ModSounds.EMANCIPATION_DISINTEGRATE);
     }
 
+    /** A quieter click when every blacklisted stack was stored instead of voided. */
+    private void playStoredSound(Entity entity) {
+        if (world == null || entity == null || !audioEnabled) return;
+        playSoundNear(entity.posX, entity.posY + entity.height * 0.5D, entity.posZ,
+                ModSounds.BUTTON9);
+    }
+
     /** Sends a one-shot only to players within the grill's three-block sound radius. */
     private void playSoundNear(double x, double y, double z, SoundEvent sound) {
         if (world == null) return;
@@ -1008,7 +1099,11 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
             contacting.add(id);
             if (crossing || filteredMobsInside.add(id)) {
                 if (filterMobInventory(mob)) {
-                    playDisintegrateSound(mob, true);
+                    if (contrabandEnabled && !contrabandVoidedThisScan) {
+                        playStoredSound(mob);
+                    } else {
+                        playDisintegrateSound(mob, true);
+                    }
                 }
             }
         }
@@ -1028,7 +1123,24 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
         filteredMobsInside.clear();
     }
 
+    /**
+     * Sends a blacklisted stack to the bound contraband container. The caller has already removed
+     * it from its source; whatever the container does not accept is voided.
+     */
+    private void containOrVoid(ItemStack stack) {
+        if (stack.isEmpty()) return;
+        if (!contrabandEnabled || contrabandPos == null) {
+            contrabandVoidedThisScan = true;
+            return;
+        }
+
+        int inserted = ContrabandContainers.insert(world, contrabandDim, contrabandPos,
+                contrabandSide, pos, stack);
+        if (inserted < stack.getCount()) contrabandVoidedThisScan = true;
+    }
+
     private void filterPlayerInventory(EntityPlayer player) {
+        contrabandVoidedThisScan = false;
         boolean changed = filterStacks(player.inventory.mainInventory,
                 new int[]{FILTER_MAX_NESTED_SLOTS});
         changed |= filterStacks(player.inventory.armorInventory,
@@ -1037,7 +1149,11 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
                 new int[]{FILTER_MAX_NESTED_SLOTS});
         if (!changed) return;
 
-        playDisintegrateSound(player, true);
+        if (contrabandEnabled && !contrabandVoidedThisScan) {
+            playStoredSound(player);
+        } else {
+            playDisintegrateSound(player, true);
+        }
         player.inventory.markDirty();
         if (player instanceof EntityPlayerMP) {
             ((EntityPlayerMP) player).inventoryContainer.detectAndSendChanges();
@@ -1046,6 +1162,7 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
 
     /** Checks a mob's equipment, villager/horse inventory and any item-handler capability. */
     private boolean filterMobInventory(EntityLivingBase mob) {
+        contrabandVoidedThisScan = false;
         int[] budget = {FILTER_MAX_NESTED_SLOTS};
         boolean changed = false;
         for (EntityEquipmentSlot slot : EntityEquipmentSlot.values()) {
@@ -1054,6 +1171,7 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
 
             boolean blacklisted = isBlacklisted(stack) && !isWhitelisted(stack);
             if (blacklisted) {
+                containOrVoid(stack);
                 mob.setItemStackToSlot(slot, ItemStack.EMPTY);
                 changed = true;
                 continue;
@@ -1088,6 +1206,7 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
 
             boolean blacklisted = isBlacklisted(stack) && !isWhitelisted(stack);
             if (blacklisted) {
+                containOrVoid(stack);
                 inventory.setInventorySlotContents(slot, ItemStack.EMPTY);
                 changed = true;
                 continue;
@@ -1154,6 +1273,7 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
 
             boolean blacklisted = isBlacklisted(stack) && !isWhitelisted(stack);
             if (blacklisted) {
+                containOrVoid(stack);
                 stacks.set(i, ItemStack.EMPTY);
                 changed = true;
                 continue;
@@ -1179,10 +1299,14 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
         boolean changed = false;
         IItemHandler handler = container.getCapability(
                 CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-        if (handler != null) {
+        boolean hasHandler = handler != null && handler.getSlots() > 0;
+        if (hasHandler) {
             changed = filterHandlerContents(handler, depth, budget);
         }
-        if (filterNbtContents(container, depth, budget)) {
+        // When containment is enabled, trust a real handler over its NBT mirror so the same
+        // stack cannot be inserted twice. With containment off, keep the old double-pass.
+        if ((!hasHandler || !contrabandEnabled)
+                && filterNbtContents(container, depth, budget)) {
             changed = true;
         }
         return changed;
@@ -1197,6 +1321,7 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
 
             boolean blacklisted = isBlacklisted(stack) && !isWhitelisted(stack);
             if (blacklisted && removeFromHandler(handler, slot, stack)) {
+                containOrVoid(stack);
                 changed = true;
                 continue;
             }
@@ -1243,6 +1368,7 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
             boolean blacklisted = isBlacklisted(stack) && !isWhitelisted(stack);
             if (blacklisted) {
                 items.removeTag(i);
+                containOrVoid(stack);
                 changed = true;
                 continue;
             }
@@ -1531,6 +1657,20 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
                 ? FieldColour.byId(tag.getByte("fieldColour")) : FieldColour.BLUE;
         readFilterList(tag, "filterWhitelist", filterWhitelist);
         readFilterList(tag, "filterBlacklist", filterBlacklist);
+
+        contrabandEnabled = tag.getBoolean("contrabandEnabled");
+        if (tag.hasKey("contrabandPos", Constants.NBT.TAG_LONG)) {
+            contrabandPos = BlockPos.fromLong(tag.getLong("contrabandPos"));
+            contrabandDim = tag.getInteger("contrabandDim");
+            contrabandSide = tag.hasKey("contrabandSide") ? tag.getByte("contrabandSide") : -1;
+            contrabandName = tag.getString("contrabandName");
+        } else {
+            contrabandPos = null;
+            contrabandDim = Integer.MIN_VALUE;
+            contrabandSide = -1;
+            contrabandName = "";
+        }
+        contrabandVoidedThisScan = false;
         matchUser = !tag.hasKey("matchUser") || tag.getBoolean("matchUser");
         ignorePrivateKey = tag.getBoolean("ignorePrivateKey");
         ignoreBiometricId = tag.getBoolean("ignoreBiometricId");
@@ -1567,6 +1707,19 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
         tag.setByte("fieldColour", (byte) fieldColour.ordinal());
         tag.setTag("filterWhitelist", writeFilterList(filterWhitelist));
         tag.setTag("filterBlacklist", writeFilterList(filterBlacklist));
+
+        tag.setBoolean("contrabandEnabled", contrabandEnabled);
+        if (contrabandPos != null) {
+            tag.setLong("contrabandPos", contrabandPos.toLong());
+            tag.setInteger("contrabandDim", contrabandDim);
+            tag.setByte("contrabandSide", (byte) contrabandSide);
+            tag.setString("contrabandName", contrabandName);
+        } else {
+            tag.removeTag("contrabandPos");
+            tag.removeTag("contrabandDim");
+            tag.removeTag("contrabandSide");
+            tag.removeTag("contrabandName");
+        }
         tag.setBoolean("matchUser", matchUser);
         tag.setBoolean("ignorePrivateKey", ignorePrivateKey);
         tag.setBoolean("ignoreBiometricId", ignoreBiometricId);

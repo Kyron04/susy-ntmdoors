@@ -44,7 +44,8 @@ public class MessageGrillOption implements IMessage {
     public static final int COLOUR_GREEN = 21;
     public static final int COLOUR_BLUE = 22;
     public static final int MODE_FILTER = 23;
-    public static final int OPTION_COUNT = 24;
+    public static final int CONTRABAND = 24;
+    public static final int OPTION_COUNT = 25;
 
     private BlockPos pos;
     private int option;
@@ -116,6 +117,9 @@ public class MessageGrillOption implements IMessage {
                     break;
                 case MODE_FILTER:
                     grill.setFieldMode(FieldMode.FILTER);
+                    break;
+                case CONTRABAND:
+                    grill.setContrabandEnabled(message.value);
                     break;
                 case MATCH_USER:
                     grill.setMatchUser(message.value);
