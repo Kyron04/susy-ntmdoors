@@ -23,6 +23,7 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemMonsterPlacer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -449,6 +450,16 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
             Item item = stack.getItem();
             if (item == null || item.getRegistryName() == null) return false;
             pattern = new ItemStack(item, 1, stack.getMetadata());
+            // Spawn eggs keep their entity type in NBT. Copy only EntityTag so the ghost icon
+            // shows the right colours and the filter stays specific to that mob.
+            if (item instanceof ItemMonsterPlacer && stack.hasTagCompound()) {
+                NBTTagCompound tag = stack.getTagCompound();
+                if (tag.hasKey("EntityTag", Constants.NBT.TAG_COMPOUND)) {
+                    NBTTagCompound patternTag = new NBTTagCompound();
+                    patternTag.setTag("EntityTag", tag.getCompoundTag("EntityTag").copy());
+                    pattern.setTagCompound(patternTag);
+                }
+            }
         }
 
         List<ItemStack> list = whitelist ? filterWhitelist : filterBlacklist;
@@ -1438,7 +1449,19 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
     private static boolean matchesFilter(ItemStack filter, ItemStack stack) {
         if (filter.isEmpty() || stack.isEmpty()) return false;
         if (filter.getItem() != stack.getItem()) return false;
+        // Spawn eggs all share one item id; their entity type lives in EntityTag. Match the
+        // entity so a ghost egg keeps its colours and the pattern stays specific.
+        if (filter.getItem() instanceof ItemMonsterPlacer) {
+            return filter.getMetadata() == stack.getMetadata()
+                    && spawnEggId(filter).equals(spawnEggId(stack));
+        }
         return !filter.getItem().getHasSubtypes() || filter.getMetadata() == stack.getMetadata();
+    }
+
+    private static String spawnEggId(ItemStack stack) {
+        NBTTagCompound tag = stack.getTagCompound();
+        if (tag == null || !tag.hasKey("EntityTag", Constants.NBT.TAG_COMPOUND)) return "";
+        return tag.getCompoundTag("EntityTag").getString("id");
     }
 
     /** Mobs do not have an InventoryPlayer, so strip their equipment slots instead. */
@@ -1618,6 +1641,7 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
             entry.setByte("slot", (byte) i);
             entry.setString("item", stack.getItem().getRegistryName().toString());
             entry.setInteger("meta", stack.getMetadata());
+            if (stack.hasTagCompound()) entry.setTag("nbt", stack.getTagCompound().copy());
             list.appendTag(entry);
         }
         return list;
@@ -1633,7 +1657,11 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
             if (slot >= out.size()) continue;
             Item item = Item.getByNameOrId(entry.getString("item"));
             if (item == null) continue;
-            out.set(slot, new ItemStack(item, 1, entry.getInteger("meta")));
+            ItemStack stack = new ItemStack(item, 1, entry.getInteger("meta"));
+            if (entry.hasKey("nbt", Constants.NBT.TAG_COMPOUND)) {
+                stack.setTagCompound(entry.getCompoundTag("nbt").copy());
+            }
+            out.set(slot, stack);
         }
     }
 

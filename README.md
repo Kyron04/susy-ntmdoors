@@ -396,8 +396,9 @@ ghost patterns each; they are matching patterns, not item storage.
 
 * Drag an item from JEI/HEI onto a slot to set its pattern. Right-click a slot to clear it. Clicking
   a slot does not take the held hotbar item.
-* Matching uses the registered item and subtype metadata; stack size and NBT are ignored. Whole
-  stacks are stored in the page-six container when possible, otherwise voided.
+* Matching uses the registered item and subtype metadata; stack size and NBT are ignored, except
+  spawn eggs match their entity type so the ghost icon keeps its colours. Whole stacks are stored
+  in the page-six container when possible, otherwise voided.
 * The whitelist wins. An item on both lists is preserved. A blacklisted stack is stored in the
   bound contraband container when containment is enabled and the container can accept it;
   otherwise it is voided.
