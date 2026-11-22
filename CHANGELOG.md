@@ -1,5 +1,26 @@
-NTM DOORS: 1.0.80
+NTM DOORS: 1.0.81
 Minecraft 1.12.2 / Forge 14.23.5.2847
+
+1.0.81
+FEATURES
+- Added Contraband Containment to Filter Mode. A valid container bound to the Grill receives the
+  blacklisted stacks from player inventories, armor, offhand, nested container items, mob
+  equipment and mob inventories.
+- Added a sixth Grill console page for the containment toggle, container binding, container
+  status and the Begin Binding Session button.
+- The Emancipation Relay Key now carries a five-minute pending binding session. Starting at the
+  Grill moves the key to the main hand with a safe inventory swap. The player selects a container
+  within 8 chunks in the same dimension, returns to the original Grill and sneak + right-clicks it
+  to confirm.
+- Containers use Forge's item-handler capability. Vanilla chests, hoppers and furnaces work;
+  automation-blocked containers, locked containers and blocks without a handler are rejected.
+- Items are inserted up to the container's capacity. When no valid container is bound, or the
+  container is full, missing, unloaded, out of range or in another dimension, the remainder is
+  voided. Loose dropped items keep the normal Filter Mode void behavior.
+COMPATIBILITY
+- Existing 1.0.80 worlds load normally. The containment toggle defaults off and no container is
+  bound until the player completes the confirmation.
+- Clients and servers must both update for the new binding packets.
 
 1.0.80
 FEATURES

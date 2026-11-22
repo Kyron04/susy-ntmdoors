@@ -335,9 +335,9 @@ reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
   (`ntmdoors:uncased_usb`), Circuit Board (`ntmdoors:circuit_board`), Card Reader
   (`ntmdoors:card_reader`) and RFID Chip (`ntmdoors:rfid_chip`): plain crafting components.
 * Emancipation Grill (`ntmdoors:emancipation_grill`) and Emancipation Relay Key
-  (`ntmdoors:emancipation_relay_key`): paired field emitters with five modes, a five-page console,
-  field colour, redstone event outputs and an inventory filter. See
-  [Emancipation Grill](#emancipation-grill).
+  (`ntmdoors:emancipation_relay_key`): paired field emitters with five modes, a six-page console,
+  field colour, redstone event outputs, an inventory filter and optional contraband containment.
+  See [Emancipation Grill](#emancipation-grill).
 
 ## Emancipation Grill
 
@@ -373,7 +373,7 @@ cell dismantles the whole grill and returns one core item.
 ### Console
 
 Sneak + right-click a grill you own with the Emancipation Relay Key or an Operator Keycard to open
-the console. A Creative Keycard also opens it, without an ownership check. It has five pages:
+the console. A Creative Keycard also opens it, without an ownership check. It has six pages:
 
 1. **Keys and IDs.** Assign or remove private keys and biometric identities from an Operator
    Keycard carried in the player's inventory.
@@ -386,6 +386,8 @@ the console. A Creative Keycard also opens it, without an ownership check. It ha
 4. **Redstone events.** Five independent one-tick outputs: Solid pass (Y), Solid block (N),
    Lethal kill, Match User match (Y) and Match User mismatch (N). All default to off and persist.
 5. **Filter lists.** Two 9x6 grids of ghost patterns, one whitelist and one blacklist.
+6. **Contraband containment.** Optional storage for blacklisted Filter Mode items, with the
+   container-binding session started from this page.
 
 ### Filter mode
 
@@ -395,8 +397,10 @@ ghost patterns each; they are matching patterns, not item storage.
 * Drag an item from JEI/HEI onto a slot to set its pattern. Right-click a slot to clear it. Clicking
   a slot does not take the held hotbar item.
 * Matching uses the registered item and subtype metadata; stack size and NBT are ignored. Whole
-  stacks are voided or kept.
-* The whitelist wins. An item on both lists is preserved. An item on the blacklist is voided.
+  stacks are stored in the page-six container when possible, otherwise voided.
+* The whitelist wins. An item on both lists is preserved. A blacklisted stack is stored in the
+  bound contraband container when containment is enabled and the container can accept it;
+  otherwise it is voided.
 * Main inventory, armor and offhand are scanned; creative and spectator players are skipped.
 * Dropped item entities are checked too. Mob equipment, villager inventories,
   horse/donkey/llama item handlers and standard mob `IInventory`/`IItemHandler` inventories are
@@ -404,15 +408,39 @@ ghost patterns each; they are matching patterns, not item storage.
 * Container items are checked recursively through Forge's item-handler capability and the standard
   `Items` NBT layout, covering modded backpacks, toolbelts, vanilla shulker boxes and root-list
   backpack inventories. Whitelisting a container protects the container itself, not its contents;
-  a blacklisted container is voided whole. Recursion is bounded by depth and slot count.
+  a blacklisted container is stored or voided whole. Recursion is bounded by depth and slot count.
 * Inventories that do not expose `IItemHandler` or the standard `Items` layout are not scanned.
   Worn backpacks in custom slots are outside the main/armor/offhand scan.
 * A player or mob is checked once per contact; crossing the field again rechecks it. An item picked
   up while standing inside the field is rechecked after leaving and re-entering or crossing.
-* Each void plays the same disintegration one-shot as Lethal mode, rate-limited by the grill and
-  respecting the `Audio` toggle. `Ignore Items` remains Lethal-only and does not disable Filter mode.
+* Stored items play a short click. Voided items play the same disintegration one-shot as Lethal
+  mode, rate-limited by the grill and respecting the `Audio` toggle. `Ignore Items` remains
+  Lethal-only and does not disable Filter mode.
 * Page five warns when the field is disabled, Filter Mode is off, or the player is creative or a
   spectator. The JEI/HEI overlay is positioned beside the console on page five only.
+
+### Contraband containment
+
+Page six configures an optional storage container for blacklisted Filter Mode items. The feature
+only runs while Filter Mode is active.
+
+* Enable `Contraband Containment`, then press `Begin Binding Session`. The server moves the
+  Emancipation Relay Key to the main hand, swapping the displaced stack into the key's old slot so
+  nothing is dropped.
+* Sneak + right-click a compatible container within 8 chunks of the Grill in the same dimension.
+  The key stores the pending selection; return to the original Grill and sneak + right-click it to
+  confirm. The final binding is stored on the Grill's security core, not on the key.
+* Containers must expose Forge's `IItemHandler` capability. Vanilla chests, hoppers and furnaces
+  work. Automation-blocked containers such as the mod's safes, and locked containers, are rejected.
+* Blacklisted stacks from the player's main inventory, armor, offhand, nested container items and
+  mob equipment/inventories are inserted into the bound container. Whatever the container cannot
+  accept is voided.
+* When no container is bound, or the bound container is full, looted, unloaded, out of range, in
+  another dimension or has lost its item handler, blacklisted items are voided instead.
+* Loose dropped items keep the normal Filter Mode void behavior; they are not routed into the
+  container.
+* The key carries only the pending session, which expires after five minutes. The Grill's binding
+  survives world saves and reloads.
 
 ### Redstone, terminals and audio
 
@@ -808,7 +836,7 @@ committed blockstates use the sorted order.
 
 ## Compatibility
 
-- Existing 1.0.79 and older worlds load normally. The Emancipation Grill and filter lists default
+- Existing 1.0.80 and older worlds load normally. The Emancipation Grill and filter lists default
   safely when absent.
 - Clients and servers must run the same NTM Doors version for Grill console and device packet
   changes.

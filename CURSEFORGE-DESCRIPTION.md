@@ -4,7 +4,7 @@
 
 NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system, security equipment and concrete building set from HBM's Nuclear Tech Mod. No NTM installation is required. Chisel 1.12.2-1.0.2.45 is required. Every model, texture and sound is bundled.
 
-**Current version: 1.0.80**
+**Current version: 1.0.81**
 
 ## 27 multiblock doors
 
@@ -160,8 +160,9 @@ Screwdriver + sneak + right-click cycles door skins:
 
 - **Emancipation Grill** — a paired security field based on the Portal 2 fizzler. The vertical item places a 1x3x1 column; the horizontal item places a 3x1x1 bar. Two units pair across an opening up to 10 blocks apart. The first unit placed owns the pair and opens the console; breaking any cell dismantles the whole grill and returns one core item.
 - **Field modes** - Solid blocks unauthorized players and mobs; Neutral renders the field but does nothing; Lethal kills unauthorized players and mobs and erases non-living entities, but leaves creative players alone; Wall blocks every detected player and mob with no clearance checks; Filter lets everyone pass and applies the page-five item lists. Solid, Lethal and Wall reserve the doorway against block placement.
-- **Console** - five pages: keys and biometric IDs, modes and toggles, field colour (red/green/blue), five redstone event outputs, and the filter lists. Open it by sneak + right-clicking a grill you own with the Emancipation Relay Key or an Operator Keycard; a Creative Keycard also opens it without an ownership check.
-- **Filter Mode** — two 9x6 grids (54 whitelist and 54 blacklist ghost patterns). Drag from JEI/HEI to set a pattern; right-click clears one; clicking a slot does not take the held hotbar item. Whitelist wins, blacklisted stacks are voided, and an item on both lists is preserved.
+- **Console** - six pages: keys and biometric IDs, modes and toggles, field colour (red/green/blue), five redstone event outputs, the filter lists, and contraband containment. Open it by sneak + right-clicking a grill you own with the Emancipation Relay Key or an Operator Keycard; a Creative Keycard also opens it without an ownership check.
+- **Filter Mode** - two 9x6 grids (54 whitelist and 54 blacklist ghost patterns). Drag from JEI/HEI to set a pattern; right-click clears one; clicking a slot does not take the held hotbar item. Whitelist wins. With Contraband Containment enabled, blacklisted stacks are inserted into the bound container; otherwise, or when the container cannot accept them, they are voided.
+- **Contraband Containment** - page six binds one container to the Grill. Enable the toggle, press Begin Binding Session, sneak + right-click a compatible container within 8 chunks in the same dimension, then return and sneak + right-click the original Grill to confirm. The feature only runs in Filter Mode. It uses Forge's `IItemHandler` capability, so vanilla chests, hoppers and furnaces work; safes, locked containers and automation-blocked blocks are rejected. Player inventory, armor, offhand, nested container items and mob equipment/inventories are routed to the container. Full, missing, unloaded or out-of-range containers void the remainder; loose dropped items keep the normal Filter Mode void behavior.
 - **Filter scanning** — main inventory, armor and offhand; dropped item entities; mob equipment, villager inventories, horse/donkey/llama item handlers and standard mob inventories. Nested containers are scanned through Forge's item-handler capability and the standard `Items` NBT layout. Creative and spectator players are skipped.
 - **Sounds** — Portal 2 fizzler start, loop and shutdown, plus a disintegration one-shot for lethal and filter voids. Three-block audible radius with an Audio toggle.
 - **Optional JEI/HEI** — the filter overlay appears beside page five and only loads when JEI/HEI is present. Without it the console still opens, but patterns can only be cleared, not set.
