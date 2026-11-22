@@ -76,12 +76,10 @@ reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
   (walk through when open, click-through gaps)
 * OBJ renderer (TESR) with per-group translate/rotate animations, X/Y/Z clipping and sounds
 * 3D door item rendering (inventory, hand, ground) from the same OBJ model, matching HBM's door item renderer
-* 27 multiblock OBJ doors: the 17 classic HBM doors (`vault_door`, `sliding_blast_door`,
-  `qe_sliding_door`, `qe_sliding_panel`, `fire_door`, `secure_access_door`, `sliding_seal_door`,
-  `round_airlock_door`, `silo_hatch`, `silo_hatch_large`, `large_vehicle_door`, `qe_containment`,
-  `blast_shutter`, `blast_door`, `cargo_door`, `water_door`, `transition_seal`), the public
-  `test_door` 3x3 containment door, plus Office Doors 1-3 in single, 2x2 double and 3x3 double
-  forms, and a `_locked` and `_security` copy of each
+* 27 multiblock OBJ doors: the 17 classic HBM doors, the public `test_door` 3x3 containment door,
+  and Office Doors 1-3 in single, 2x2 double and 3x3 double forms, plus a `_locked` and `_security`
+  copy of each. See [Included door assets](#included-door-assets) for the full door list and
+  animated groups.
 * Screwdriver: sneak + right click on a door with alternate skins cycles through them; right click
   a keypad to start its code-reset sequence; sneak + right click an unused keypad cycles its
   binding mode. Every interaction the tool handles plays `button9`, so nearby players hear the
@@ -260,17 +258,12 @@ reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
     stay green while the net event idles the sensor. The console's `Enabled` toggle and a Security
     net device row's ON/OFF switch change the same setting. A Creative Keycard in the main
     inventory or offhand counts as clearance, but it does not open the console.
-* Concrete and HL Blocks: the NTM CE concrete building set and decorative HL Blocks, with metadata
-  families, flat Chisel carving groups, shift-scroll cycling and concrete recipes. Concrete
-  registers under `concrete` and `blockConcrete`; HL Blocks register under `blockhl`. Chisel is
-  required.
-* Ultra High Performance Concrete (`ntmdoors:ultra_high_performance_concrete`): six grayscale
-  variants (the original texture plus five progressively darker shades) that take three real hours
-  to mine. Only ICBM Classic nuclear, antimatter and red matter blasts can destroy it; every other
-  explosion is fully resisted. The ICBM beam's flying-block phase is separate and needs the ban-list
-  entry noted below. A decorative `UHPC Panel` set
-  (`ntmdoors:ultra_high_performance_concrete_panel`) uses the same textures with vanilla-concrete
-  hardness.
+* Concrete and HL Blocks: the NTM CE concrete building set and decorative HL Blocks. See
+  [Concrete and HL Blocks](#concrete-and-hl-blocks) for the families, Chisel groups, ore dictionary
+  entries and recipes.
+* Ultra High Performance Concrete: six hard shades and a matching decorative panel set. See
+  [Ultra High Performance Concrete](#ultra-high-performance-concrete) for mining, blast and ICBM
+  behaviour.
 * 6 Monitor Setup (`ntmdoors:monitor_setup`): a decorative 3x3x1 desk with six monitors, a
   keyboard, mouse and mousepad. It places as one item, faces the player, and reserves its full
   3x3x1 footprint; breaking any part removes the whole desk. The bottom row is solid, while the
@@ -658,24 +651,13 @@ and have no crafting recipe.
   folder name can be clicked and renamed, reopening returns to the page you closed on when the
   folder has written pages (an empty folder reopens at page one), and the tooltip counts the pages
   written. All editor text is drawn without the vanilla font drop shadow.
-* The secure access door ships nine skins: red, yellow, green, blue, grey, black (white writing),
-  HBM yellow, white (black writing) and orange (white writing). The colour variants are generated
-  by recolouring only the red warning paint; all other pixels are unchanged. Base colours: green
-  `#2b401a`, blue `#162138`, yellow `#4a3f1a` (dark muted industrial yellow)
-* The sliding blast door ships default, black and grey schemes. The sliding seal door ships
-  default, clean, nuclear trefoil, and plain white, red and grey; the plain skins have no letters,
-  numbers, trefoil or hazard stripes.
 
 ## Motion Sensor appearance
 
-The Motion Sensor is a thin, surface-mounted slab: an 8x8 mounting plate sits flush against the
-clicked surface, and the off-white body, charcoal bezel and raised concentric Fresnel lens bring the
-total depth to only 1.375 pixels. A single small status LED sits below the lens and shows green when
-idle, blue when authorized players are inside, yellow when the sensor is unbound or locally
-disabled, and red when an unauthorized player or mob is inside. The housing can be mounted on
-floors, walls and ceilings; the clicked face becomes the lens direction. The item uses a centred
-copy of the same model. The full source materials and texture generator live in
-`source-art/motion-sensor/`.
+The housing is a thin surface-mounted slab: an 8x8 mounting plate sits flush against the clicked
+surface, and the off-white body, charcoal bezel and raised concentric Fresnel lens bring the total
+depth to only 1.375 pixels. The item uses a centred copy of the same model. The full source
+materials and texture generator live in `source-art/motion-sensor/`.
 
 ## Included door assets
 Models live under `src/main/resources/assets/ntmdoors/models/doors/`, textures under
@@ -719,6 +701,11 @@ derived from its model, and the keycard scanner uses a flat 16x16 icon while its
 | `office_door_2_double_3x3` | `DoorLeft`, `DoorRight` | 3x3 scaled red double office door; two-cell front footprint for the open leaves |
 | `office_door_3_double_3x3` | `DoorLeft`, `DoorRight` | 3x3 scaled brown double office door; two-cell front footprint for the open leaves |
 
+Skin variants recolour only the red warning paint on the secure access door; all other pixels are
+unchanged. Its base colours are green `#2b401a`, blue `#162138` and yellow `#4a3f1a` (dark muted
+industrial yellow). The plain sliding-seal skins carry no letters, numbers, trefoil or hazard
+stripes.
+
 `sounds.json` and `lang/en_us.lang` are included.
 
 ## Tuning to match the real models
@@ -732,29 +719,17 @@ and `.clipZ(...)` where the original HBM renderer used a clip plane. Moving part
 for explicit model-space bounds; `.collisionSplits(n)` tightens rotating parts by slicing their AABB.
 
 ## Not included
+
 Configs and other NTM items are not included. JEI/HEI is optional: without it the Grill console
 still opens, but filter patterns can only be cleared, not set, because setting them uses JEI/HEI
-dragging. All 27 doors have crafting recipes; the screwdriver, most non-door items and machines,
-the decorative desks and monitors, and the concrete set also have recipes. The included HL Blocks
-are creative-only.
+dragging. See [Crafting](#crafting) for which items are recipe-free or creative-only.
 
 ## Concrete and HL Blocks
 
-The 1.0.46 concrete and HL Blocks update adds the NTM concrete building set and the included HL
-Blocks to the door port:
-
-- The full NTM CE concrete set: plain, smooth, dyed, Builder's Choice, bricks, pillar, rebar,
-  asbestos, Über Concrete and its falling Moldy Debris.
-- The HL Blocks set: three simple blocks and seven metadata groups.
-- A metadata layout that replaces the old one-id-per-variant blocks: cubes and slabs are grouped
-  by Chisel family, so one block id holds a whole texture family.
-- Shift-scroll cycling, flat Chisel carving groups, `concrete` / `blockConcrete` / `blockhl` ore
-  dictionary entries, and the concrete recipes.
-- A fix for the single-slab model lookup: the blockstate variant keys are written in the order
-  Forge actually uses (`half=...,variant=...`).
-
-The concrete set has its own recipes; most non-door mod items also have recipes in `ModRecipes`,
-while the screwdriver recipe is registered in `ModContent`.
+The mod includes the NTM CE concrete building set and the included HL Blocks. Both are listed in
+the NTM Doors creative tab; the HL Blocks are creative-only, and the sections below cover the block
+layout, behaviour, UHPC and the slab model note. Concrete has its own recipes; most non-door mod
+items also have recipes in `ModRecipes`, while the screwdriver recipe is registered in `ModContent`.
 
 ### Block layout
 
@@ -837,8 +812,6 @@ committed blockstates use the sorted order.
   safely when absent.
 - Clients and servers must run the same NTM Doors version for Grill console and device packet
   changes.
-- Chisel 1.12.2-1.0.2.45 is required. JEI/HEI is optional.
-- No NTM installation is required.
 
 ## Building from source
 
