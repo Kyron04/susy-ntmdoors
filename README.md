@@ -694,7 +694,7 @@ Models live under `src/main/resources/assets/ntmdoors/models/doors/`, textures u
 and texture as the placed door. The screwdriver, keypad, cards, Keycard Holder, relay/utility keys
 and crafting components use flat 16x16 icons under `textures/items/` (`screwdriver.png`,
 `sliding_blast_door_keypad.png`, `blank_rfid_card.png`, `operator_keycard.png`,
-`rfid_card_<colour>.png`, plus the themed, biometric, UAC, key and component sprites beside them).
+`<colour>_rfid_card.png`, plus the themed, biometric, UAC, key and component sprites beside them).
 The Documents Folder uses a compact 3D item model, the keycard programmer has a flat 16x16 icon
 derived from its model, and the keycard scanner uses a flat 16x16 icon while its placed block is a
 3D model.
