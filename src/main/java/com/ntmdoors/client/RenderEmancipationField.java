@@ -33,8 +33,8 @@ import java.util.Set;
  * <p>The visual is deliberately cheap: one seamless wisp texture is drawn as three UV-scrolled
  * layers on a single plane, followed by a crisp edge texture, four thin core lines and a handful
  * of sparks. There are no shaders, framebuffer copies, per-frame texture uploads or background
- * refraction passes. The thin field cell is still owned by the tile entity for future logic; this
- * renderer only draws a plane through the middle of that cell.</p>
+ * refraction passes. The thin field cell is owned by the tile entity; this renderer only draws a
+ * plane through the middle of that cell.</p>
  *
  * <p>The field is collected once per pair during the TESR pass and drawn in the world-last pass,
  * after every door and device renderer. The plane is translucent and does not write depth, so

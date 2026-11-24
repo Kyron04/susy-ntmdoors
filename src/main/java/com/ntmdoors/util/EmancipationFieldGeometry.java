@@ -12,7 +12,7 @@ import net.minecraft.world.World;
 import javax.annotation.Nullable;
 
 /**
- * Shared geometry for the Emancipation Grill field. Both the client renderer and future server
+ * Shared geometry for the Emancipation Grill field. Both the client renderer and the server
  * logic use the same thin box and the same pairing rules.
  */
 public final class EmancipationFieldGeometry {

@@ -622,10 +622,7 @@ public class ModContent {
         screwdriver.setRegistryName(new ResourceLocation(NTMDoors.MODID, "screwdriver"));
         e.getRegistry().register(screwdriver);
 
-        // Door crafting recipes are intentionally not included: the originals depend on NTM-only materials.
-        // Add your own here (or via JSON in data/recipes), e.g. new ShapedRecipes(...) per door.
-
-        // Non-door item and machine recipes.
+        // Door, machine and item recipes are registered in ModRecipes.
         ModRecipes.register(e);
 
         // Concrete building recipes; the base blocks use half-scale crafting-table stand-ins for
