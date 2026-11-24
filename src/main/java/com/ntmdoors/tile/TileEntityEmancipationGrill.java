@@ -137,6 +137,8 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
     public static final int FILTER_SLOTS = FILTER_COLUMNS * FILTER_ROWS;
     private static final double FILTER_SCAN_RADIUS = 2.0D;
     private static final double FILTER_DROP_SCAN_RADIUS = 8.0D;
+    /** Wide enough to catch fast projectiles before they tunnel through the thin field. */
+    private static final double NON_LIVING_SCAN_RADIUS = 8.0D;
     private static final int FILTER_MAX_CONTAINER_DEPTH = 8;
     private static final int FILTER_MAX_NESTED_SLOTS = 2048;
     private static final String NBT_ITEMS = "Items";
@@ -962,6 +964,9 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
                         ModSounds.SCANNER_BUTTON8, SoundCategory.PLAYERS, 0.7F, 0.9F);
             }
         }
+        if (mode == FieldMode.SOLID || mode == FieldMode.WALL) {
+            blockNonLiving(box);
+        }
         if (mode == FieldMode.LETHAL) {
             eradicateNonLiving(box);
         }
@@ -969,21 +974,44 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
     }
 
     /**
-     * Lethal fields erase non-living entities that touch or cross the plane. The wider scan catches
-     * fast projectiles that would otherwise tunnel through a one-pixel-thick field between ticks.
+     * Solid and Wall fields stop every non-living entity and projectile at the plane. The wider
+     * scan catches fast projectiles that would otherwise tunnel through a one-pixel-thick field
+     * between ticks. Living entities are handled by the mode's normal clearance/detection pass.
      */
-    private void eradicateNonLiving(AxisAlignedBB box) {
-        AxisAlignedBB scan = box.grow(8.0D);
+    private void blockNonLiving(AxisAlignedBB box) {
+        AxisAlignedBB scan = box.grow(NON_LIVING_SCAN_RADIUS);
         for (Entity entity : world.getEntitiesWithinAABB(Entity.class, scan)) {
             if (entity == null || !entity.isEntityAlive()) continue;
             if (entity instanceof EntityLivingBase && !(entity instanceof EntityArmorStand)) {
                 continue;
             }
-            if (ignoreItems && entity instanceof EntityItem) continue;
             if (entity.getEntityBoundingBox().intersects(box) || crossesField(entity, box)) {
-                entity.setDead();
-                playDisintegrateSound(entity, true);
+                clampEntity(entity, box);
             }
+        }
+    }
+
+    /**
+     * Lethal fields erase non-living entities that touch or cross the plane. The wider scan catches
+     * fast projectiles that would otherwise tunnel through a one-pixel-thick field between ticks.
+     * Dropped items are kept and stopped at the plane while Ignore Items is enabled.
+     */
+    private void eradicateNonLiving(AxisAlignedBB box) {
+        AxisAlignedBB scan = box.grow(NON_LIVING_SCAN_RADIUS);
+        for (Entity entity : world.getEntitiesWithinAABB(Entity.class, scan)) {
+            if (entity == null || !entity.isEntityAlive()) continue;
+            if (entity instanceof EntityLivingBase && !(entity instanceof EntityArmorStand)) {
+                continue;
+            }
+            boolean contact = entity.getEntityBoundingBox().intersects(box)
+                    || crossesField(entity, box);
+            if (!contact) continue;
+            if (ignoreItems && entity instanceof EntityItem) {
+                clampEntity(entity, box);
+                continue;
+            }
+            entity.setDead();
+            playDisintegrateSound(entity, true);
         }
     }
 
@@ -1162,12 +1190,20 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
 
         if (contrabandEnabled && !contrabandVoidedThisScan) {
             playStoredSound(player);
+            sendContrabandMessage(player, "ntmdoors.msg.grill_contraband_confiscated");
         } else {
             playDisintegrateSound(player, true);
+            sendContrabandMessage(player, "ntmdoors.msg.grill_contraband_eliminated");
         }
         player.inventory.markDirty();
         if (player instanceof EntityPlayerMP) {
             ((EntityPlayerMP) player).inventoryContainer.detectAndSendChanges();
+        }
+    }
+
+    private static void sendContrabandMessage(EntityPlayer player, String key) {
+        if (player != null) {
+            player.sendStatusMessage(new TextComponentTranslation(key), true);
         }
     }
 

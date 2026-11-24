@@ -349,19 +349,19 @@ cell dismantles the whole grill and returns one core item.
 
 ### Field modes
 
-* **Solid** blocks unauthorized players and mobs. Players pass with a private key or biometric
-  identity on an RFID/Operator Keycard, or with a Creative Keycard. Ownership controls the console
-  and Breaker permissions, not passage.
+* **Solid** blocks unauthorized players and mobs, and stops non-living entities and projectiles at
+  the plane. Players pass with a private key or biometric identity on an RFID/Operator Keycard, or
+  with a Creative Keycard. Ownership controls the console and Breaker permissions, not passage.
 * **Neutral** renders the field but has no effect.
 * **Lethal** kills unauthorized players and mobs, and erases non-living entities that touch the
   plane, including dropped items, projectiles, minecarts, boats, item frames, XP orbs and armor
-  stands. `Ignore Items` leaves dropped items alone; `Ignore Inventory` leaves a killed player's
-  inventory and armor to the normal death drop instead of clearing them first. Creative players
-  are unaffected.
+  stands. `Ignore Items` stops dropped items at the plane instead of erasing them; `Ignore
+  Inventory` leaves a killed player's inventory and armor to the normal death drop instead of
+  clearing them first. Creative players are unaffected.
 * **Wall** blocks every detected player and mob with no clearance checks, no killing and no item
-  erasure.
-* **Filter** lets everyone pass and applies the page-five whitelist and blacklist to carried,
-  worn, dropped and mob-held items.
+  erasure; it also stops all non-living entities and projectiles.
+* **Filter** lets everyone and every entity pass, and applies the page-five whitelist and blacklist
+  to carried, worn, dropped and mob-held items.
 * `Detect Players`, `Detect Hostile Mobs` and `Detect Neutral Mobs` decide which living categories
   Solid, Lethal and Wall act on. Filter mode applies to all living mobs and players; those toggles
   do not gate it.
@@ -417,6 +417,9 @@ ghost patterns each; they are matching patterns, not item storage.
 * Stored items play a short click. Voided items play the same disintegration one-shot as Lethal
   mode, rate-limited by the grill and respecting the `Audio` toggle. `Ignore Items` remains
   Lethal-only and does not disable Filter mode.
+* When a player's blacklisted items are removed, that player sees `Contraband confiscated` if the
+  bound container accepted every removed stack, or `Contraband eliminated` if any part was voided
+  because no container was bound, the container was full, or part of the stack was rejected.
 * Page five warns when the field is disabled, Filter Mode is off, or the player is creative or a
   spectator. The JEI/HEI overlay is positioned beside the console on page five only.
 

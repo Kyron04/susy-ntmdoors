@@ -54,6 +54,7 @@ public final class EmancipationFieldRenderEvents {
             TileEntityEmancipationGrill.FieldMode mode = grill.getFieldMode();
             if (mode != TileEntityEmancipationGrill.FieldMode.SOLID
                     && mode != TileEntityEmancipationGrill.FieldMode.WALL) continue;
+            if (mode == TileEntityEmancipationGrill.FieldMode.SOLID && grill.hasClearance(player)) continue;
 
             AxisAlignedBB field = grill.getFieldBox();
             if (field == null || field.maxY - field.minY > 0.1D) continue;
@@ -100,12 +101,12 @@ public final class EmancipationFieldRenderEvents {
 
             AxisAlignedBB field = grill.getFieldBox();
             if (field == null) continue;
+            if (mode == TileEntityEmancipationGrill.FieldMode.SOLID && grill.hasClearance(player)) continue;
             if (field.maxY - field.minY <= 0.1D) {
                 if (blockVerticalMovement(player, field, input)) return;
                 continue;
             }
             if (!nearField(player, field)) continue;
-            if (mode == TileEntityEmancipationGrill.FieldMode.SOLID && grill.hasClearance(player)) continue;
             if (blockTowardsField(player, field, input)) return;
         }
     }
