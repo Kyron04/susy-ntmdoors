@@ -11,6 +11,42 @@
         },
         "meta=3": {
             "model": "ntmdoors:brick_concrete_broken"
+        },
+        "meta=4": {
+            "model": "ntmdoors:brick_concrete_broken"
+        },
+        "meta=5": {
+            "model": "ntmdoors:brick_concrete_broken"
+        },
+        "meta=6": {
+            "model": "ntmdoors:brick_concrete_broken"
+        },
+        "meta=7": {
+            "model": "ntmdoors:brick_concrete_broken"
+        },
+        "meta=8": {
+            "model": "ntmdoors:brick_concrete_broken"
+        },
+        "meta=9": {
+            "model": "ntmdoors:brick_concrete_broken"
+        },
+        "meta=10": {
+            "model": "ntmdoors:brick_concrete_broken"
+        },
+        "meta=11": {
+            "model": "ntmdoors:brick_concrete_broken"
+        },
+        "meta=12": {
+            "model": "ntmdoors:brick_concrete_broken"
+        },
+        "meta=13": {
+            "model": "ntmdoors:brick_concrete_broken"
+        },
+        "meta=14": {
+            "model": "ntmdoors:brick_concrete_broken"
+        },
+        "meta=15": {
+            "model": "ntmdoors:brick_concrete_broken"
         }
     }
 }

@@ -38,6 +38,15 @@
         },
         "meta=12": {
             "model": "ntmdoors:concrete_colored_ext_hazard_purple"
+        },
+        "meta=13": {
+            "model": "ntmdoors:concrete_colored_ext_hazard_purple"
+        },
+        "meta=14": {
+            "model": "ntmdoors:concrete_colored_ext_hazard_purple"
+        },
+        "meta=15": {
+            "model": "ntmdoors:concrete_colored_ext_hazard_purple"
         }
     }
 }

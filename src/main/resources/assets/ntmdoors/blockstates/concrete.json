@@ -5,6 +5,48 @@
         },
         "meta=1": {
             "model": "ntmdoors:concrete_smooth"
+        },
+        "meta=2": {
+            "model": "ntmdoors:concrete_smooth"
+        },
+        "meta=3": {
+            "model": "ntmdoors:concrete_smooth"
+        },
+        "meta=4": {
+            "model": "ntmdoors:concrete_smooth"
+        },
+        "meta=5": {
+            "model": "ntmdoors:concrete_smooth"
+        },
+        "meta=6": {
+            "model": "ntmdoors:concrete_smooth"
+        },
+        "meta=7": {
+            "model": "ntmdoors:concrete_smooth"
+        },
+        "meta=8": {
+            "model": "ntmdoors:concrete_smooth"
+        },
+        "meta=9": {
+            "model": "ntmdoors:concrete_smooth"
+        },
+        "meta=10": {
+            "model": "ntmdoors:concrete_smooth"
+        },
+        "meta=11": {
+            "model": "ntmdoors:concrete_smooth"
+        },
+        "meta=12": {
+            "model": "ntmdoors:concrete_smooth"
+        },
+        "meta=13": {
+            "model": "ntmdoors:concrete_smooth"
+        },
+        "meta=14": {
+            "model": "ntmdoors:concrete_smooth"
+        },
+        "meta=15": {
+            "model": "ntmdoors:concrete_smooth"
         }
     }
 }

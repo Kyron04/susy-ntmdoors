@@ -2,6 +2,51 @@
     "variants": {
         "meta=0": {
             "model": "ntmdoors:concrete_asbestos"
+        },
+        "meta=1": {
+            "model": "ntmdoors:concrete_asbestos"
+        },
+        "meta=2": {
+            "model": "ntmdoors:concrete_asbestos"
+        },
+        "meta=3": {
+            "model": "ntmdoors:concrete_asbestos"
+        },
+        "meta=4": {
+            "model": "ntmdoors:concrete_asbestos"
+        },
+        "meta=5": {
+            "model": "ntmdoors:concrete_asbestos"
+        },
+        "meta=6": {
+            "model": "ntmdoors:concrete_asbestos"
+        },
+        "meta=7": {
+            "model": "ntmdoors:concrete_asbestos"
+        },
+        "meta=8": {
+            "model": "ntmdoors:concrete_asbestos"
+        },
+        "meta=9": {
+            "model": "ntmdoors:concrete_asbestos"
+        },
+        "meta=10": {
+            "model": "ntmdoors:concrete_asbestos"
+        },
+        "meta=11": {
+            "model": "ntmdoors:concrete_asbestos"
+        },
+        "meta=12": {
+            "model": "ntmdoors:concrete_asbestos"
+        },
+        "meta=13": {
+            "model": "ntmdoors:concrete_asbestos"
+        },
+        "meta=14": {
+            "model": "ntmdoors:concrete_asbestos"
+        },
+        "meta=15": {
+            "model": "ntmdoors:concrete_asbestos"
         }
     }
 }

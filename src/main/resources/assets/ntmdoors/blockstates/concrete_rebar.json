@@ -2,6 +2,51 @@
     "variants": {
         "meta=0": {
             "model": "ntmdoors:concrete_rebar"
+        },
+        "meta=1": {
+            "model": "ntmdoors:concrete_rebar"
+        },
+        "meta=2": {
+            "model": "ntmdoors:concrete_rebar"
+        },
+        "meta=3": {
+            "model": "ntmdoors:concrete_rebar"
+        },
+        "meta=4": {
+            "model": "ntmdoors:concrete_rebar"
+        },
+        "meta=5": {
+            "model": "ntmdoors:concrete_rebar"
+        },
+        "meta=6": {
+            "model": "ntmdoors:concrete_rebar"
+        },
+        "meta=7": {
+            "model": "ntmdoors:concrete_rebar"
+        },
+        "meta=8": {
+            "model": "ntmdoors:concrete_rebar"
+        },
+        "meta=9": {
+            "model": "ntmdoors:concrete_rebar"
+        },
+        "meta=10": {
+            "model": "ntmdoors:concrete_rebar"
+        },
+        "meta=11": {
+            "model": "ntmdoors:concrete_rebar"
+        },
+        "meta=12": {
+            "model": "ntmdoors:concrete_rebar"
+        },
+        "meta=13": {
+            "model": "ntmdoors:concrete_rebar"
+        },
+        "meta=14": {
+            "model": "ntmdoors:concrete_rebar"
+        },
+        "meta=15": {
+            "model": "ntmdoors:concrete_rebar"
         }
     }
 }
