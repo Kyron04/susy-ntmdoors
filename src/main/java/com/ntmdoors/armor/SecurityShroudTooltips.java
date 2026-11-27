@@ -37,7 +37,7 @@ public final class SecurityShroudTooltips {
         } else if (item instanceof ItemSecurityShroudLeggings) {
             description(tooltip,
                     "item.ntmdoors.security_shroud_leggings.tooltip1",
-                    "Plus 0.50% movement speed");
+                    "1.5x movement speed");
         } else if (item instanceof ItemSecurityShroudBoots) {
             description(tooltip,
                     "item.ntmdoors.security_shroud_boots.tooltip1",

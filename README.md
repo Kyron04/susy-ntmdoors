@@ -61,7 +61,7 @@ reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
 
 ## Features
 * Security Shroud armor set: helmet, chestplate, leggings and boots rendered from custom OBJ models
-  with their own layer textures. The pieces have 1250 durability and configurable utility effects;
+  with their own layer textures. The pieces have 2500 durability and configurable utility effects;
   the full set makes Motion Sensors and Emancipation Grills ignore the wearer. Every effect and the
   list of accepted armor items are tunable in `config/ntmdoors.cfg`.
 * Multiblock doors of any footprint, placed in one click, rotate with the player, removed as one piece
@@ -347,7 +347,7 @@ reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
 
 ## Security Shroud
 
-The Security Shroud is a four-piece utility armor set. Each piece has 1250 durability by default;
+The Security Shroud is a four-piece utility armor set. Each piece has 2500 durability by default;
 protection, enchantability, toughness and every effect are controlled by `config/ntmdoors.cfg`.
 The four protection values default to 0 because the set is utility-first; raise them if you want
 conventional armor points.
@@ -356,7 +356,7 @@ conventional armor points.
   wearing a configured helmet are also concealed.
 * **Chestplate** - ignores Dead Man's Hand weapons-relay bindings when the wearer interacts with a
   bound explosive, so the trap can be disarmed without the matching Weapons Relay Key.
-* **Leggings** - add 0.50% movement speed.
+* **Leggings** - grant 1.5x normal movement speed.
 * **Boots** - prevent a lethal fall from taking the wearer below one heart.
 
 When all four configured pieces are worn, the Unity effect makes Motion Sensors and Emancipation

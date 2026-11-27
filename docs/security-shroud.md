@@ -15,7 +15,7 @@ their capitalisation. The dotted paths below name the property within those nest
 | `securityshroud.Enabled` | `true` | Master switch for all effects. Items and their stats still exist when false. |
 | `securityshroud.ShowTooltips` | `true` | Show the four built-in piece descriptions. |
 | `securityshroud.ShowUnityTooltip` | `true` | Show the full-set Unity line. |
-| `securityshroud.Durability` | `1250` | Exact maximum durability of each built-in piece. |
+| `securityshroud.Durability` | `2500` | Exact maximum durability of each built-in piece. |
 | `securityshroud.HelmetProtection` | `0` | Armor points for the helmet. |
 | `securityshroud.ChestplateProtection` | `0` | Armor points for the chestplate. |
 | `securityshroud.LeggingsProtection` | `0` | Armor points for the leggings. |
@@ -24,7 +24,7 @@ their capitalisation. The dotted paths below name the property within those nest
 | `securityshroud.Toughness` | `0.0` | Armor toughness of the built-in material. |
 | `securityshroud.helmet.HideNameTags` | `true` | Hide name tags for any living entity wearing a configured helmet. |
 | `securityshroud.chestplate.BypassWeaponsBindings` | `true` | Ignore Dead Man's Hand bindings while wearing a configured chestplate. |
-| `securityshroud.leggings.MovementSpeedBonus` | `0.005` | Movement multiplier; `0.005` is +0.50%. |
+| `securityshroud.leggings.MovementSpeedBonus` | `0.5` | Movement multiplier; `0.5` is +50%, or 1.5x normal speed. |
 | `securityshroud.boots.PreventLethalFallDamage` | `true` | Cap fall damage before it can take the player below the configured health. |
 | `securityshroud.boots.MinimumHealthAfterFall` | `2.0` | Health left after a prevented lethal fall; `2.0` is one heart. |
 | `securityshroud.unity.EnableUnity` | `true` | Enable the full-set effect. |

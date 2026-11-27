@@ -48,7 +48,7 @@ public final class SecurityShroudConfig {
     private static boolean enabled = true;
     private static boolean showTooltips = true;
     private static boolean showUnityTooltip = true;
-    private static int durability = 1250;
+    private static int durability = 2500;
     private static int helmetProtection;
     private static int chestplateProtection;
     private static int leggingsProtection;
@@ -63,7 +63,7 @@ public final class SecurityShroudConfig {
 
     private static boolean hideNameTags = true;
     private static boolean bypassWeaponsBindings = true;
-    private static float movementSpeedBonus = 0.005F;
+    private static float movementSpeedBonus = 0.5F;
     private static boolean preventLethalFallDamage = true;
     private static float minimumHealthAfterFall = 2.0F;
 
@@ -108,9 +108,9 @@ public final class SecurityShroudConfig {
             showUnityTooltip = config.getBoolean("ShowUnityTooltip", GENERAL, true,
                     "Show the full-set Unity line on the four built-in pieces.");
 
-            durability = config.getInt("Durability", GENERAL, 1250, 1, 1_000_000,
+            durability = config.getInt("Durability", GENERAL, 2500, 1, 1_000_000,
                     "Exact maximum durability of each built-in Security Shroud piece. "
-                            + "The default is 1250.");
+                            + "The default is 2500.");
             helmetProtection = config.getInt("HelmetProtection", GENERAL, 0, 0, 20,
                     "Armor points for the built-in helmet. The four protection values are stored "
                             + "on the shared material and applied to their matching armor slot.");
@@ -155,9 +155,10 @@ public final class SecurityShroudConfig {
 
             config.setCategoryComment(LEGGINGS,
                     "The leggings behavior applies a movement speed multiplier.");
-            movementSpeedBonus = config.getFloat("MovementSpeedBonus", LEGGINGS, 0.005F, -1.0F, 1.0F,
-                    "Movement speed multiplier. 0.005 = +0.5%. This is applied as a multiplier on "
-                            + "the player's total movement speed while the leggings are worn.");
+            movementSpeedBonus = config.getFloat("MovementSpeedBonus", LEGGINGS, 0.5F, -1.0F, 1.0F,
+                    "Movement speed multiplier. 0.5 = +50% (1.5x normal speed). This is applied "
+                            + "as a multiplier on the player's total movement speed while the "
+                            + "leggings are worn.");
 
             config.setCategoryComment(BOOTS,
                     "The boots behavior caps lethal fall damage.");

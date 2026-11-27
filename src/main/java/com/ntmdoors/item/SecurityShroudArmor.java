@@ -9,7 +9,7 @@ import net.minecraftforge.common.util.EnumHelper;
 
 /**
  * Shared material for the Security Shroud set. Durability is applied per item from the config so
- * the requested 1250 points are exact; the material supplies the configurable protection,
+ * the configured value is exact; the material supplies the configurable protection,
  * enchantability and toughness.
  */
 final class SecurityShroudArmor {
