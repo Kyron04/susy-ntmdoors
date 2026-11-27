@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.tile;
 
+import com.ntmdoors.armor.SecurityShroudLogic;
 import com.ntmdoors.block.BlockMotionSensor;
 import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.item.ItemMotionRelayKey;
@@ -531,6 +532,9 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
             boolean player = entity instanceof EntityPlayer;
             if (player) {
                 if (!detectPlayers || ((EntityPlayer) entity).isSpectator()) continue;
+                // A full Security Shroud set is invisible to every sensor mode, including
+                // Match User and its redstone events.
+                if (SecurityShroudLogic.ignoresMotionSensors((EntityPlayer) entity)) continue;
             } else {
                 boolean hostile = entity instanceof IMob;
                 if (hostile ? !detectHostile : !detectNeutral) continue;
@@ -592,6 +596,7 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
      */
     public boolean hasClearance(EntityPlayer player) {
         if (player == null) return false;
+        if (SecurityShroudLogic.ignoresMotionSensors(player)) return true;
 
         for (ItemStack stack : player.inventory.mainInventory) {
             if (grantsAccess(stack, player)) return true;

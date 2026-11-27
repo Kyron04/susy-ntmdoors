@@ -15,7 +15,7 @@ equipment and concrete building set.
 
 NTM Doors adds 27 multiblock doors, keycard and biometric access control, keypads, safes, monitors,
 motion sensors, speakers, the Emancipation Grill, the concrete and HL Blocks building sets and the
-cosmetic Security Shroud armor set. It is a standalone port: no NTM installation is required, and
+configurable Security Shroud armor set. It is a standalone port: no NTM installation is required, and
 every model, texture and sound is bundled.
 The implementation and the included door, concrete and HL Blocks assets are used under the
 LGPL-3.0; see [LICENSE.LESSER](LICENSE.LESSER) and [NOTICE](NOTICE) for attribution and source
@@ -45,6 +45,7 @@ reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Features](#features)
+- [Security Shroud](#security-shroud)
 - [Emancipation Grill](#emancipation-grill)
 - [Crafting](#crafting)
 - [Motion Sensor appearance](#motion-sensor-appearance)
@@ -59,9 +60,10 @@ reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
 - [AI assistance](#ai-assistance)
 
 ## Features
-* Cosmetic Security Shroud armor set: helmet, chestplate, leggings and boots rendered from custom
-  OBJ models with their own layer textures. The set grants no protection or durability and is
-  available in the creative tab.
+* Security Shroud armor set: helmet, chestplate, leggings and boots rendered from custom OBJ models
+  with their own layer textures. The pieces have 1250 durability and configurable utility effects;
+  the full set makes Motion Sensors and Emancipation Grills ignore the wearer. Every effect and the
+  list of accepted armor items are tunable in `config/ntmdoors.cfg`.
 * Multiblock doors of any footprint, placed in one click, rotate with the player, removed as one piece
 * Core tile entity with state machine CLOSED / OPENING / OPEN / CLOSING, synced to clients
 * Redstone from any cell of the door (edge triggered), right click toggle
@@ -342,6 +344,29 @@ reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
   (`ntmdoors:emancipation_relay_key`): paired field emitters with five modes, a six-page console,
   field colour, redstone event outputs, an inventory filter and optional contraband containment.
   See [Emancipation Grill](#emancipation-grill).
+
+## Security Shroud
+
+The Security Shroud is a four-piece utility armor set. Each piece has 1250 durability by default;
+protection, enchantability, toughness and every effect are controlled by `config/ntmdoors.cfg`.
+The four protection values default to 0 because the set is utility-first; raise them if you want
+conventional armor points.
+
+* **Helmet** - hides the wearer's name tag from other players. Name-tagged mobs and armor stands
+  wearing a configured helmet are also concealed.
+* **Chestplate** - ignores Dead Man's Hand weapons-relay bindings when the wearer interacts with a
+  bound explosive, so the trap can be disarmed without the matching Weapons Relay Key.
+* **Leggings** - add 0.50% movement speed.
+* **Boots** - prevent a lethal fall from taking the wearer below one heart.
+
+When all four configured pieces are worn, the Unity effect makes Motion Sensors and Emancipation
+Grills ignore the player. The sensor skips all detection and Match User events; the grill skips
+clearance, blocking, lethal damage, inventory filtering and Match User signals.
+
+Other armor sets can use the same behavior. Add their registry names to the matching item list in
+the config, for example `examplemod:kevlar_helmet`. The full-set check reads the same four lists, so
+pieces from different mods can be mixed. `modid:*` accepts every item from a mod. See
+[Security Shroud configuration](docs/security-shroud.md) for the full key list and an example.
 
 ## Emancipation Grill
 

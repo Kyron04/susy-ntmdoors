@@ -361,7 +361,7 @@ public class ModContent {
     public static final List<ItemRfidCard> O5_CARDS = Collections.unmodifiableList(Arrays.asList(
             O5_KEYCARD));
 
-    /** Cosmetic Security Shroud helmet, chestplate, leggings, and boots. */
+    /** Security Shroud helmet, chestplate, leggings, and boots. */
     public static final ItemSecurityShroudHelmet SECURITY_SHROUD_HELMET =
             new ItemSecurityShroudHelmet();
     public static final ItemSecurityShroudChestplate SECURITY_SHROUD_CHESTPLATE =
@@ -542,7 +542,7 @@ public class ModContent {
                 BlockEmancipationGrill.Mount.HORIZONTAL)
                 .setRegistryName(EMANCIPATION_GRILL_HORIZONTAL.getRegistryName())
                 .setCreativeTab(NTMDoors.TAB));
-        // Security Shroud cosmetic pieces are appended last so every existing item ID stays put.
+        // Security Shroud pieces are appended last so every existing item ID stays put.
         e.getRegistry().register(SECURITY_SHROUD_HELMET);
         e.getRegistry().register(SECURITY_SHROUD_CHESTPLATE);
         e.getRegistry().register(SECURITY_SHROUD_LEGGINGS);

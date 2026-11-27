@@ -2,6 +2,7 @@
 package com.ntmdoors.client;
 
 import com.ntmdoors.NTMDoors;
+import com.ntmdoors.armor.SecurityShroudLogic;
 import com.ntmdoors.tile.TileEntityEmancipationGrill;
 
 import net.minecraft.client.Minecraft;
@@ -54,6 +55,7 @@ public final class EmancipationFieldRenderEvents {
             TileEntityEmancipationGrill.FieldMode mode = grill.getFieldMode();
             if (mode != TileEntityEmancipationGrill.FieldMode.SOLID
                     && mode != TileEntityEmancipationGrill.FieldMode.WALL) continue;
+            if (SecurityShroudLogic.ignoresEmancipationGrills(player)) continue;
             if (mode == TileEntityEmancipationGrill.FieldMode.SOLID && grill.hasClearance(player)) continue;
 
             AxisAlignedBB field = grill.getFieldBox();
@@ -97,6 +99,7 @@ public final class EmancipationFieldRenderEvents {
             TileEntityEmancipationGrill.FieldMode mode = grill.getFieldMode();
             if (mode != TileEntityEmancipationGrill.FieldMode.SOLID
                     && mode != TileEntityEmancipationGrill.FieldMode.WALL) continue;
+            if (SecurityShroudLogic.ignoresEmancipationGrills(player)) continue;
             if (grill.getPos().distanceSq(player.posX, player.posY, player.posZ) > 1024.0D) continue;
 
             AxisAlignedBB field = grill.getFieldBox();

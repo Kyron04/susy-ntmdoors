@@ -5,6 +5,7 @@ import com.ntmdoors.block.BlockDoorGeneric;
 import com.ntmdoors.block.BlockDesk;
 import com.ntmdoors.block.BlockMonitorOnly;
 import com.ntmdoors.concrete.ConcreteSet;
+import com.ntmdoors.config.SecurityShroudConfig;
 import com.ntmdoors.hlblocks.HLBlocksContent;
 import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.proxy.CommonProxy;
@@ -102,7 +103,7 @@ public class NTMDoors {
             items.add(new ItemStack(ModContent.REDSTONE_MONOCLE));
             ConcreteSet.addCreativeStacks(items);
             HLBlocksContent.addCreativeStacks(items);
-            // New crafting components, desk-only blocks, and cosmetic armor go at the end of the tab.
+            // New crafting components, desk-only blocks, and the Security Shroud go at the end.
             items.add(new ItemStack(ModContent.ID_CHIP));
             items.add(new ItemStack(ModContent.MONITOR_SCREEN));
             items.add(new ItemStack(ModContent.UNCASED_USB));
@@ -151,6 +152,9 @@ public class NTMDoors {
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
+        // Read the armor tuning before any item is constructed, so durability/protection values
+        // and the configurable armor lists are available from the first registration.
+        SecurityShroudConfig.load(event.getSuggestedConfigurationFile());
         proxy.preInit(event);
     }
 
@@ -161,6 +165,9 @@ public class NTMDoors {
 
     @Mod.EventHandler
     public void postInit(FMLPostInitializationEvent event) {
+        // Every item is registered now, so this is the first safe point to report bad config
+        // entries for pack authors.
+        SecurityShroudConfig.logUnresolvedItems();
         proxy.postInit(event);
     }
 }

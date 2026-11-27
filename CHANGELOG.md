@@ -3,9 +3,17 @@ Minecraft 1.12.2 / Forge 14.23.5.2847
 
 UNRELEASED
 FEATURES
-- Added the cosmetic Security Shroud armor set: helmet, chestplate, leggings and boots with custom
-  OBJ armor models, layer textures, creative-tab entries and armor-stand/crouch support. The set has
-  no protection or durability.
+- Added the Security Shroud armor set: helmet, chestplate, leggings and boots with custom OBJ armor
+  models, layer textures, creative-tab entries and armor-stand/crouch support. Each piece has 1250
+  durability by default.
+- Added the per-piece Security Shroud effects: the helmet conceals name tags, the chestplate ignores
+  Dead Man's Hand weapons-relay bindings, the leggings add 0.50% movement speed and the boots prevent
+  a lethal fall from taking the player below one heart.
+- Added the full-set Unity effect: Motion Sensors and Emancipation Grills ignore a player wearing all
+  four configured pieces.
+- Added `config/ntmdoors.cfg`, which controls durability, protection, every effect value and the item
+  lists used for each armor slot. Other mods' armor pieces can be added to those lists and mixed into
+  a full set.
 
 1.0.81
 FEATURES

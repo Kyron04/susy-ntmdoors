@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.tile;
 
+import com.ntmdoors.armor.SecurityShroudLogic;
 import com.ntmdoors.item.ItemCreativeKeycard;
 import com.ntmdoors.item.ItemEmancipationRelayKey;
 import com.ntmdoors.item.ItemOperatorKeycard;
@@ -803,6 +804,7 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
      */
     public boolean hasClearance(EntityPlayer player) {
         if (player == null) return false;
+        if (SecurityShroudLogic.ignoresEmancipationGrills(player)) return true;
         TileEntityEmancipationGrill core = getSecurityCore();
         if (core != this) return core.hasClearance(player);
 
@@ -910,6 +912,9 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
             if (entity instanceof EntityPlayer) {
                 EntityPlayer player = (EntityPlayer) entity;
                 if (!detectPlayers || player.isSpectator()) continue;
+                // A full Security Shroud set is ignored by every field mode, including Match
+                // User signals, blocking and lethal damage.
+                if (SecurityShroudLogic.ignoresEmancipationGrills(player)) continue;
             } else {
                 boolean hostile = entity instanceof IMob;
                 if (hostile ? !detectHostile : !detectNeutral) continue;
@@ -1097,6 +1102,7 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
                     || player.isCreative() || player.isSpectator()) {
                 continue;
             }
+            if (SecurityShroudLogic.ignoresEmancipationGrills(player)) continue;
 
             boolean crossing = crossesField(player, box);
             boolean contact = crossing || player.getEntityBoundingBox().intersects(box);
