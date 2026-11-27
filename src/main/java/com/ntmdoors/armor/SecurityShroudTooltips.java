@@ -12,7 +12,9 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextFormatting;
 
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Locale;
 
 /** Tooltip lines for the four built-in Security Shroud pieces. */
 public final class SecurityShroudTooltips {
@@ -20,7 +22,7 @@ public final class SecurityShroudTooltips {
     /** Vanilla caps the armor bar and damage reduction at 20 points. */
     private static final int VANILLA_ARMOR_CAP = 20;
 
-    public static void add(ItemStack stack, List<String> tooltip) {
+    public static void add(@Nullable ItemStack stack, @Nullable List<String> tooltip) {
         if (stack == null || tooltip == null) return;
         if (!SecurityShroudConfig.showTooltips()) return;
 
@@ -28,30 +30,45 @@ public final class SecurityShroudTooltips {
         int protection;
         if (item instanceof ItemSecurityShroudHelmet) {
             protection = SecurityShroudConfig.helmetProtection();
-            description(tooltip,
-                    "item.ntmdoors.security_shroud_helmet.tooltip1",
-                    "Shroud your identity from the enemy.",
-                    "item.ntmdoors.security_shroud_helmet.tooltip2",
-                    "Obstructs player tags from other players");
+            if (SecurityShroudConfig.hideNameTags()
+                    && SecurityShroudLogic.isConfiguredHelmet(stack)) {
+                description(tooltip,
+                        "item.ntmdoors.security_shroud_helmet.tooltip1",
+                        "Shroud your identity from the enemy.",
+                        "item.ntmdoors.security_shroud_helmet.tooltip2",
+                        "Obstructs player tags from other players");
+            }
         } else if (item instanceof ItemSecurityShroudChestplate) {
             protection = SecurityShroudConfig.chestplateProtection();
-            description(tooltip,
-                    "item.ntmdoors.security_shroud_chestplate.tooltip1",
-                    "Nullifies weapons relay key bindings",
-                    "item.ntmdoors.security_shroud_chestplate.tooltip2",
-                    "when interacting with bound explosives");
+            if (SecurityShroudConfig.bypassWeaponsBindings()
+                    && SecurityShroudLogic.isConfiguredChestplate(stack)) {
+                description(tooltip,
+                        "item.ntmdoors.security_shroud_chestplate.tooltip1",
+                        "Nullifies weapons relay key bindings",
+                        "item.ntmdoors.security_shroud_chestplate.tooltip2",
+                        "when interacting with bound explosives");
+            }
         } else if (item instanceof ItemSecurityShroudLeggings) {
             protection = SecurityShroudConfig.leggingsProtection();
-            description(tooltip,
-                    "item.ntmdoors.security_shroud_leggings.tooltip1",
-                    "1.5x movement speed");
+            if (SecurityShroudConfig.movementSpeedBonus() != 0.0F
+                    && SecurityShroudLogic.isConfiguredLeggings(stack)) {
+                formattedDescription(tooltip,
+                        "item.ntmdoors.security_shroud_leggings.tooltip1",
+                        "%sx movement speed",
+                        formatNumber(1.0F + SecurityShroudConfig.movementSpeedBonus()));
+            }
         } else if (item instanceof ItemSecurityShroudBoots) {
             protection = SecurityShroudConfig.bootsProtection();
-            description(tooltip,
-                    "item.ntmdoors.security_shroud_boots.tooltip1",
-                    "Down but not out. Ensures that at least 1 heart",
-                    "item.ntmdoors.security_shroud_boots.tooltip2",
-                    "remains if the player falls from a lethal height");
+            if (SecurityShroudConfig.preventLethalFallDamage()
+                    && SecurityShroudLogic.isConfiguredBoots(stack)) {
+                formattedDescription(tooltip,
+                        "item.ntmdoors.security_shroud_boots.tooltip1",
+                        "Down but not out. Prevents a lethal fall from");
+                formattedDescription(tooltip,
+                        "item.ntmdoors.security_shroud_boots.tooltip2",
+                        "reducing health below %s.",
+                        formatHearts(SecurityShroudConfig.minimumHealthAfterFall()));
+            }
         } else {
             return;
         }
@@ -59,15 +76,17 @@ public final class SecurityShroudTooltips {
         int maxDamage = stack.getMaxDamage();
         int remaining = Math.max(0, maxDamage - stack.getItemDamage());
         int fullSet = Math.min(VANILLA_ARMOR_CAP, SecurityShroudConfig.totalProtection());
+        boolean completeSet = SecurityShroudConfig.hasAllItemLists();
         tooltip.add(TextFormatting.GRAY + "Durability: " + remaining + " / " + maxDamage);
         tooltip.add(TextFormatting.GRAY + "Damage resistance: " + protection
-                + " (" + fullSet + " full set)");
+                + (completeSet ? " (" + fullSet + " full set)" : ""));
 
         boolean sensors = SecurityShroudConfig.ignoreMotionSensors();
         boolean grills = SecurityShroudConfig.ignoreEmancipationGrills();
         if (SecurityShroudConfig.enabled()
                 && SecurityShroudConfig.showUnityTooltip()
                 && SecurityShroudConfig.unityEnabled()
+                && completeSet
                 && (sensors || grills)) {
             String key;
             String fallback;
@@ -92,6 +111,28 @@ public final class SecurityShroudTooltips {
             tooltip.add(TextFormatting.GRAY + Names.translationOr(
                     keyFallbackPairs[i], keyFallbackPairs[i + 1]));
         }
+    }
+
+    /** Adds one formatted description line while effects are enabled. */
+    private static void formattedDescription(List<String> tooltip, String key, String fallback,
+                                             Object... args) {
+        if (!SecurityShroudConfig.enabled()) return;
+        tooltip.add(TextFormatting.GRAY + Names.translationOrFormatted(key, fallback, args));
+    }
+
+    /** Formats a multiplier or health value without trailing zeroes. */
+    private static String formatNumber(float value) {
+        if (Math.abs(value - Math.round(value)) < 0.001F) {
+            return Integer.toString(Math.round(value));
+        }
+        String text = String.format(Locale.ROOT, "%.2f", value).replaceAll("0+$", "");
+        return text.endsWith(".") ? text.substring(0, text.length() - 1) : text;
+    }
+
+    private static String formatHearts(float health) {
+        float hearts = health / 2.0F;
+        String number = formatNumber(hearts);
+        return number + (Math.abs(hearts - 1.0F) < 0.001F ? " heart" : " hearts");
     }
 
     private SecurityShroudTooltips() {

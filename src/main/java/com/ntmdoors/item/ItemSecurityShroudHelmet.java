@@ -40,6 +40,7 @@ public class ItemSecurityShroudHelmet extends ItemArmor {
         return EnumRarity.RARE;
     }
 
+    @SideOnly(Side.CLIENT)
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip,
                                ITooltipFlag flagIn) {

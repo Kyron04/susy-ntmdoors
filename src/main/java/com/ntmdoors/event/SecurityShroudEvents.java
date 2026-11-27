@@ -9,8 +9,10 @@ import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.DamageSource;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
@@ -73,7 +75,7 @@ public final class SecurityShroudEvents {
      * {@link LivingDamageEvent} runs after armor, potion and absorption calculations, so the cap
      * is applied to the damage that would actually reach health.
      */
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onLivingDamage(LivingDamageEvent event) {
         if (event.getEntityLiving() == null || event.getEntityLiving().world == null
                 || event.getEntityLiving().world.isRemote) {
@@ -83,7 +85,7 @@ public final class SecurityShroudEvents {
 
         EntityPlayer player = (EntityPlayer) event.getEntityLiving();
         if (!SecurityShroudLogic.preventsLethalFallDamage(player)) return;
-        if (!"fall".equals(event.getSource().getDamageType())) return;
+        if (!DamageSource.FALL.getDamageType().equals(event.getSource().getDamageType())) return;
 
         float minimumHealth = SecurityShroudConfig.minimumHealthAfterFall();
         float maximumDamage = Math.max(0.0F, player.getHealth() - minimumHealth);

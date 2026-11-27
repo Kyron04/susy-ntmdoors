@@ -5,6 +5,7 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.translation.I18n;
 
 import java.util.List;
+import java.util.Locale;
 
 /** Display-name helpers. Keeps raw translation keys out of tooltips and the creative tab. */
 public final class Names {
@@ -12,6 +13,13 @@ public final class Names {
     /** The translation for {@code key}, or {@code fallback} when no language file defines it. */
     public static String translationOr(String key, String fallback) {
         return I18n.canTranslate(key) ? I18n.translateToLocal(key) : fallback;
+    }
+
+    /** A formatted translation, or the formatted fallback when no language file defines it. */
+    public static String translationOrFormatted(String key, String fallback, Object... args) {
+        return I18n.canTranslate(key)
+                ? I18n.translateToLocalFormatted(key, args)
+                : String.format(Locale.ROOT, fallback, args);
     }
 
     /** True when a language file defines {@code key}. */

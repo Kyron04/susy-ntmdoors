@@ -57,6 +57,9 @@ AI assistance was used for:
 - the Emancipation Grill console and field: field modes, colour palettes, redstone event outputs,
   the JEI/HEI filter overlay, player/mob/dropped-item inventory filtering, recursive container
   scanning, and the fizzler integration;
+- the Security Shroud armor set: Blockbench/OBJ integration, item and renderer wiring, tooltips,
+  the config-driven durability/protection and per-piece effects, the full-set Unity bypasses, and
+  the follow-up audit fixes;
 - the repository formatting standards pack and the formatting cleanup of touched files;
 - final housekeeping: duplicate asset removal, sound folder cleanup, asset reference validation,
   stale comment and documentation cleanup, BOM removal, item-icon correction and release docs;
@@ -82,9 +85,10 @@ AI assistance was used for:
 NeoRussia reviewed the AI-assisted changes, built the mod with the repository's Gradle setup, and
 tested the concrete, slab, stair, Chisel, ore dictionary, recipe, HL Block, Thermite Charge,
 office-door skin and 3x3 door, Redstone Monocle, safe and door-breach behaviour in game, including
-the slab model fix. The security equipment and Keycard Holder changes are also built and checked
+the slab model fix. The security equipment, Keycard Holder and Security Shroud changes are also built and checked
 against a dedicated-server load. The Emancipation Grill field modes and inventory filter were tested
-in game by the repository owner. The repository owner owns the code, can explain it, and is
+in game by the repository owner. The Security Shroud models and textures were supplied by the
+repository owner; the in-game visual and gameplay checks are performed by the owner. The repository owner owns the code, can explain it, and is
 responsible for supporting it.
 
 If you redistribute this mod or a pack containing it, keep this disclosure with the sources.

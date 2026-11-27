@@ -8,6 +8,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.Loader;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.util.Collections;
 import java.util.HashSet;
@@ -79,12 +80,13 @@ public final class SecurityShroudConfig {
             File directory = Loader.instance().getConfigDir();
             if (directory != null) load(new File(directory, FILE_NAME));
         } catch (RuntimeException ignored) {
-            // Loader is not ready yet. Defaults stay in place and pre-init will load the file.
+            // Loader is not ready yet. Defaults stay in place; pre-init normally loads the file
+            // before item registration, so the material is built from the configured values.
         }
     }
 
     /** Loads {@code file}, falling back to the built-in defaults when it cannot be read. */
-    public static synchronized void load(File file) {
+    public static synchronized void load(@Nullable File file) {
         if (loaded) return;
         if (file == null) {
             loaded = true;
@@ -110,9 +112,10 @@ public final class SecurityShroudConfig {
                     "Show the full-set Unity line on the four built-in pieces when ShowTooltips "
                             + "is true.");
 
-            durability = config.getInt("Durability", GENERAL, 2500, 1, 1_000_000,
+            durability = config.getInt("Durability", GENERAL, 2500, 1, 32767,
                     "Exact maximum durability of each built-in Security Shroud piece. "
-                            + "The default is 2500.");
+                            + "The default is 2500; 1.12 stores item damage as a short, so the "
+                            + "maximum safe value is 32767.");
             helmetProtection = config.getInt("HelmetProtection", GENERAL, 3, 0, 20,
                     "Armor points for the built-in helmet. The four protection values are stored "
                             + "on the shared material and applied to their matching armor slot. "
@@ -129,11 +132,12 @@ public final class SecurityShroudConfig {
                     "Armor toughness of the built-in armor material.");
 
             config.setCategoryComment(ITEMS,
-                    "Registry names of items that count for each behavior slot. Use modid:item, "
-                            + "or modid:* to accept every item from a mod. Add other mods' armor "
-                            + "here to make it part of the same security systems; a full set is one "
-                            + "configured item in each slot (or carried, if unity.RequireWorn is "
-                            + "false).");
+                    "Registry names of armor items that count for each behavior slot. Use "
+                            + "modid:item, or modid:* to accept every armor item from a mod. Add "
+                            + "other mods' armor here to make it part of the same security systems; "
+                            + "a full set is one configured item in each slot (or carried, if "
+                            + "unity.RequireWorn is false). An empty list makes a full set "
+                            + "impossible.");
 
             helmetItems = parse(config.getStringList("HelmetItems", ITEMS, DEFAULT_HELMETS,
                     "Items that conceal identity while worn in the head slot."));
@@ -154,7 +158,8 @@ public final class SecurityShroudConfig {
                     "The chestplate behavior ignores Dead Man's Hand weapons-relay bindings.");
             bypassWeaponsBindings = config.getBoolean("BypassWeaponsBindings", CHESTPLATE, true,
                     "Allow a player wearing a configured chestplate to interact with a bound "
-                            + "explosive without the matching Weapons Relay Key.");
+                            + "explosive, or a block next to one, without the matching Weapons "
+                            + "Relay Key.");
 
             config.setCategoryComment(LEGGINGS,
                     "The leggings behavior applies a movement speed multiplier.");
@@ -168,7 +173,8 @@ public final class SecurityShroudConfig {
             preventLethalFallDamage = config.getBoolean("PreventLethalFallDamage", BOOTS, true,
                     "Prevent fall damage from taking a player below the configured minimum health.");
             minimumHealthAfterFall = config.getFloat("MinimumHealthAfterFall", BOOTS, 2.0F, 0.0F, 40.0F,
-                    "Health left after a prevented lethal fall. 2.0 = one heart.");
+                    "Health left after a prevented lethal fall. 2.0 = one heart. 0 disables the "
+                            + "protection; 40 makes all falls harmless.");
 
             config.setCategoryComment(UNITY,
                     "The Unity effect requires one configured item in every armor slot (or one of "
@@ -183,14 +189,42 @@ public final class SecurityShroudConfig {
                             + "check and its redstone events.");
             ignoreEmancipationGrills = config.getBoolean("IgnoreEmancipationGrills", UNITY, true,
                     "Full-set players pass through Emancipation Grills without clearance checks, "
-                            + "Match User signals, blocking or lethal damage.");
+                            + "Match User signals, blocking, lethal damage or inventory filtering.");
 
             config.save();
         } catch (RuntimeException ex) {
             NTMDoors.LOGGER.error("Could not read Security Shroud config; using defaults", ex);
+            resetToDefaults();
         } finally {
             loaded = true;
         }
+    }
+
+    /** Restores the documented defaults after a partial or failed config read. */
+    private static void resetToDefaults() {
+        enabled = true;
+        showTooltips = true;
+        showUnityTooltip = true;
+        durability = 2500;
+        helmetProtection = 3;
+        chestplateProtection = 8;
+        leggingsProtection = 6;
+        bootsProtection = 3;
+        enchantability = 0;
+        toughness = 0.0F;
+        helmetItems = parse(DEFAULT_HELMETS);
+        chestplateItems = parse(DEFAULT_CHESTPLATES);
+        leggingsItems = parse(DEFAULT_LEGGINGS);
+        bootsItems = parse(DEFAULT_BOOTS);
+        hideNameTags = true;
+        bypassWeaponsBindings = true;
+        movementSpeedBonus = 0.5F;
+        preventLethalFallDamage = true;
+        minimumHealthAfterFall = 2.0F;
+        unityEnabled = true;
+        unityRequiresWorn = true;
+        ignoreMotionSensors = true;
+        ignoreEmancipationGrills = true;
     }
 
     /**
@@ -207,9 +241,10 @@ public final class SecurityShroudConfig {
     private static void logUnresolved(String listName, Set<String> items) {
         for (String name : items) {
             if (name.endsWith(":*")) {
-                String modid = name.substring(0, name.length() - 2);
-                if (!"minecraft".equals(modid) && !Loader.isModLoaded(modid)) {
-                    NTMDoors.LOGGER.warn("Security Shroud {} entry '{}' names a mod that is not loaded",
+                String namespace = name.substring(0, name.length() - 2);
+                if (!"minecraft".equals(namespace) && !hasItemNamespace(namespace)) {
+                    NTMDoors.LOGGER.warn("Security Shroud {} entry '{}' names an item namespace "
+                                    + "that is not registered",
                             listName, name);
                 }
                 continue;
@@ -225,6 +260,13 @@ public final class SecurityShroudConfig {
                         listName, name);
             }
         }
+    }
+
+    private static boolean hasItemNamespace(String namespace) {
+        for (ResourceLocation id : Item.REGISTRY.getKeys()) {
+            if (namespace.equals(id.getNamespace())) return true;
+        }
+        return false;
     }
 
     /** Normalizes registry names, strips metadata suffixes, and accepts modid:* wildcards. */
@@ -304,6 +346,14 @@ public final class SecurityShroudConfig {
 
     public static Set<String> bootsItems() {
         return bootsItems;
+    }
+
+    /** True when every slot has at least one configured item, so a full set is possible. */
+    public static boolean hasAllItemLists() {
+        return !helmetItems.isEmpty()
+                && !chestplateItems.isEmpty()
+                && !leggingsItems.isEmpty()
+                && !bootsItems.isEmpty();
     }
 
     public static boolean hideNameTags() {

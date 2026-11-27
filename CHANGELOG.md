@@ -17,6 +17,9 @@ FEATURES
 - Added `config/ntmdoors.cfg`, which controls durability, protection, every effect value and the item
   lists used for each armor slot. Other mods' armor pieces can be added to those lists and mixed into
   a full set.
+COMPATIBILITY
+- Existing worlds load unchanged; no registry IDs or NBT formats moved. Clients and servers should
+  share `config/ntmdoors.cfg` so name-tag, movement and Emancipation Grill behavior agree.
 
 1.0.81
 FEATURES

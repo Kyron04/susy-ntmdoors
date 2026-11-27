@@ -804,7 +804,6 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
      */
     public boolean hasClearance(EntityPlayer player) {
         if (player == null) return false;
-        if (SecurityShroudLogic.ignoresEmancipationGrills(player)) return true;
         TileEntityEmancipationGrill core = getSecurityCore();
         if (core != this) return core.hasClearance(player);
 

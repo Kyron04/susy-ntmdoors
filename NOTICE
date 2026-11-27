@@ -88,6 +88,11 @@ Supplied item and block assets:
     source-art/terminal-backup-key/ contain model, texture or audio material
     supplied for this project by the project owner. The corresponding runtime
     assets are under assets/ntmdoors/. No external license is recorded.
+  * source-art/security-shroud/ contains the Security Shroud Blockbench
+    sources and textures supplied by the project owner, with runtime items
+    and armor layers under assets/ntmdoors/models/{item,armor}/ and
+    assets/ntmdoors/textures/{items,models/armor}/. No external license is
+    recorded; they are released under this project's LGPL-3.0 license.
 
 The Java implementation in this repository is a fresh 1.12.2 implementation
 and is also released under the LGPL-3.0. See LICENSE.LESSER for the full

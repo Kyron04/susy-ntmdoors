@@ -61,9 +61,9 @@ reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
 
 ## Features
 * Security Shroud armor set: helmet, chestplate, leggings and boots rendered from custom OBJ models
-  with their own layer textures. The pieces have 2500 durability, 20 total armor points and
-  configurable utility effects; the full set makes Motion Sensors and Emancipation Grills ignore
-  the wearer. Every effect and the list of accepted armor items are tunable in `config/ntmdoors.cfg`.
+  with their own layer textures. By default the pieces have 2500 durability and 20 total armor
+  points; the full set makes Motion Sensors and Emancipation Grills ignore the wearer. Every effect
+  and the list of accepted armor items are tunable in `config/ntmdoors.cfg`.
 * Multiblock doors of any footprint, placed in one click, rotate with the player, removed as one piece
 * Core tile entity with state machine CLOSED / OPENING / OPEN / CLOSING, synced to clients
 * Redstone from any cell of the door (edge triggered), right click toggle
@@ -353,16 +353,18 @@ The default protection values are helmet 3, chestplate 8, leggings 6 and boots 3
 armor points, the vanilla armor cap. Item names use rare (aqua) rarity. The tooltips show current/max
 durability and the damage resistance values.
 
-* **Helmet** - hides the wearer's name tag from other players. Name-tagged mobs and armor stands
-  wearing a configured helmet are also concealed.
+* **Helmet** - hides the wearer's name tag on clients running the mod with name-tag concealment
+  enabled. Name-tagged mobs and armor stands wearing a configured helmet are also concealed.
 * **Chestplate** - ignores Dead Man's Hand weapons-relay bindings when the wearer interacts with a
-  bound explosive, so the trap can be disarmed without the matching Weapons Relay Key.
-* **Leggings** - grant 1.5x normal movement speed.
-* **Boots** - prevent a lethal fall from taking the wearer below one heart.
+  bound explosive or a block next to one, so the trap can be disarmed without the matching
+  Weapons Relay Key.
+* **Leggings** - grant 1.5x normal movement speed by default.
+* **Boots** - prevent a lethal fall from taking the wearer below one heart by default.
 
-When all four configured pieces are worn, the Unity effect makes Motion Sensors and Emancipation
-Grills ignore the player. The sensor skips all detection and Match User events; the grill skips
-clearance, blocking, lethal damage, inventory filtering and Match User signals.
+When all four configured pieces are worn (or carried, if `RequireWorn` is false), the Unity effect
+makes Motion Sensors and Emancipation Grills ignore the player. The sensor skips detection and
+Match User checks; the grill skips clearance, blocking, lethal damage, inventory filtering and
+Match User signals.
 
 Other armor sets can use the same behavior. Add their registry names to the matching item list in
 the config, for example `examplemod:kevlar_helmet`. The full-set check reads the same four lists, so

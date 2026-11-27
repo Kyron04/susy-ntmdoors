@@ -596,7 +596,6 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
      */
     public boolean hasClearance(EntityPlayer player) {
         if (player == null) return false;
-        if (SecurityShroudLogic.ignoresMotionSensors(player)) return true;
 
         for (ItemStack stack : player.inventory.mainInventory) {
             if (grantsAccess(stack, player)) return true;

@@ -2,7 +2,7 @@
 
 The Security Shroud and every behavior it shares with other armor sets are tuned in
 `config/ntmdoors.cfg`. Forge creates the file on the first launch. Restart the game after editing it;
-values are read once during pre-init.
+values are read once during startup before item registration.
 
 Forge writes category names in lowercase, so the generated file contains `securityshroud` with
 nested `items`, `helmet`, `chestplate`, `leggings`, `boots` and `unity` blocks. Property names keep
@@ -34,9 +34,12 @@ their capitalisation. The dotted paths below name the property within those nest
 
 The default protection values total 20 armor points, the vanilla armor cap; higher configured totals
 are still subject to that cap. Toughness defaults to `0.0`; raise it if high-damage attacks still
-hurt too much. The built-in pieces use `EnumRarity.RARE`, so their item names are aqua. Each built-in
-tooltip shows its current/max durability and that piece's armor points, plus the effective full-set
-total, capped at 20.
+hurt too much. Durability is capped at `32767` because 1.12 stores item damage as a short. The
+built-in pieces use `EnumRarity.RARE`, so their item names are aqua. Each built-in tooltip shows its
+current/max durability and that piece's armor points, plus the effective full-set total, capped at
+20. Name-tag concealment is a client-side render effect: clients without the mod, or with
+`HideNameTags` disabled, still see the name. It also does not hide names in the tab list, chat,
+death messages or command output.
 
 ## Item lists
 
@@ -85,8 +88,11 @@ securityshroud {
 
 Do not add a list entry if the item does not exist on both the client and server. Unknown entries
 are harmless but never match; they are reported in the log at post-init. An empty list disables that
-slot's behavior and full-set requirement. Use a different item in each list; the full-set check
-treats the four lists separately. To use another set only for Unity,
+slot's behavior and makes the full set impossible. Use a different item in each list; the full-set
+check treats the four lists separately and verifies the armor slot, so a helmet listed in
+`ChestplateItems` does not count. Entries must be wearable `ItemArmor` pieces for the slot. For
+metadata, include the namespace explicitly, e.g. `minecraft:stone:1`. To use another set only for
+Unity,
 add all four pieces and disable `HideNameTags`, `BypassWeaponsBindings` and
 `PreventLethalFallDamage`, and set `MovementSpeedBonus` to `0`; the four item lists still form the
 full set.
@@ -105,11 +111,12 @@ When `IgnoreMotionSensors` and `IgnoreEmancipationGrills` are enabled:
 * Emancipation Grills ignore the player in every field mode. This includes Solid/Wall clamping,
   Lethal disintegration, Filter inventory scans and Match User redstone signals.
 
+Only the player entity is skipped. Mounts, vehicles, projectiles and dropped items are still
+handled by the normal Motion Sensor and Emancipation Grill rules.
+
 ## Multiplayer note
 
 The client reads the same config for name-tag concealment, the movement speed modifier and
 client-side Emancipation Grill movement. Keep `config/ntmdoors.cfg` identical on the client and
 server, including the item lists, `RequireWorn` and the Unity toggles, or a player may see different
 name tags, speed or field resistance than the server applies.
-
-

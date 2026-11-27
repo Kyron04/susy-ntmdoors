@@ -14,13 +14,16 @@ import net.minecraftforge.common.util.EnumHelper;
  */
 final class SecurityShroudArmor {
 
+    /** Per-item max damage is set from the config; the material factor is not used directly. */
+    private static final int MATERIAL_DURABILITY = 0;
+
     static final ArmorMaterial MATERIAL = createMaterial();
 
     private static ArmorMaterial createMaterial() {
         SecurityShroudConfig.loadIfNeeded();
         // The material array is ordered boots, leggings, chestplate, helmet.
         return EnumHelper.addArmorMaterial(
-                "SECURITY_SHROUD", "security_shroud", 0,
+                "SECURITY_SHROUD", "security_shroud", MATERIAL_DURABILITY,
                 new int[]{
                         SecurityShroudConfig.bootsProtection(),
                         SecurityShroudConfig.leggingsProtection(),

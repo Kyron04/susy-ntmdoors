@@ -22,8 +22,9 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 /**
- * The Security Shroud leggings. They grant a small movement speed bonus and are the leg piece of
- * the full-set Unity effect; both behaviours are tunable through {@link SecurityShroudConfig}.
+ * The Security Shroud leggings. They grant 1.5x movement speed at the default config and are the
+ * leg piece of the full-set Unity effect; both behaviours are tunable through
+ * {@link SecurityShroudConfig}.
  */
 public class ItemSecurityShroudLeggings extends ItemArmor {
 
@@ -40,6 +41,7 @@ public class ItemSecurityShroudLeggings extends ItemArmor {
         return EnumRarity.RARE;
     }
 
+    @SideOnly(Side.CLIENT)
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip,
                                ITooltipFlag flagIn) {

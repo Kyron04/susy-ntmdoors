@@ -47,6 +47,7 @@ public final class EmancipationFieldRenderEvents {
         EntityPlayerSP player = (EntityPlayerSP) event.player;
         if (player.isSpectator() || player.capabilities.isFlying || player.motionY > 0.0D) return;
         boolean jumping = player.movementInput != null && player.movementInput.jump;
+        Boolean shroudIgnored = null;
 
         for (TileEntity te : mc.world.loadedTileEntityList) {
             if (!(te instanceof TileEntityEmancipationGrill)) continue;
@@ -55,7 +56,10 @@ public final class EmancipationFieldRenderEvents {
             TileEntityEmancipationGrill.FieldMode mode = grill.getFieldMode();
             if (mode != TileEntityEmancipationGrill.FieldMode.SOLID
                     && mode != TileEntityEmancipationGrill.FieldMode.WALL) continue;
-            if (SecurityShroudLogic.ignoresEmancipationGrills(player)) continue;
+            if (shroudIgnored == null) {
+                shroudIgnored = SecurityShroudLogic.ignoresEmancipationGrills(player);
+            }
+            if (shroudIgnored) continue;
             if (mode == TileEntityEmancipationGrill.FieldMode.SOLID && grill.hasClearance(player)) continue;
 
             AxisAlignedBB field = grill.getFieldBox();
@@ -89,6 +93,7 @@ public final class EmancipationFieldRenderEvents {
 
         MovementInput input = event.getMovementInput();
         if (input == null || (input.moveForward == 0.0F && input.moveStrafe == 0.0F)) return;
+        Boolean shroudIgnored = null;
 
         for (TileEntity te : mc.world.loadedTileEntityList) {
             if (!(te instanceof TileEntityEmancipationGrill)) continue;
@@ -99,8 +104,11 @@ public final class EmancipationFieldRenderEvents {
             TileEntityEmancipationGrill.FieldMode mode = grill.getFieldMode();
             if (mode != TileEntityEmancipationGrill.FieldMode.SOLID
                     && mode != TileEntityEmancipationGrill.FieldMode.WALL) continue;
-            if (SecurityShroudLogic.ignoresEmancipationGrills(player)) continue;
             if (grill.getPos().distanceSq(player.posX, player.posY, player.posZ) > 1024.0D) continue;
+            if (shroudIgnored == null) {
+                shroudIgnored = SecurityShroudLogic.ignoresEmancipationGrills(player);
+            }
+            if (shroudIgnored) continue;
 
             AxisAlignedBB field = grill.getFieldBox();
             if (field == null) continue;
