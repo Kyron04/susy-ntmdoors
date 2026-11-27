@@ -4,7 +4,7 @@
 
 NTM Doors is a standalone Forge 1.12.2 port of the multiblock door system, security equipment and concrete building set from HBM's Nuclear Tech Mod. No NTM installation is required. Chisel 1.12.2-1.0.2.45 is required. Every model, texture and sound is bundled.
 
-**Current version: 1.0.81**
+**Current version: 1.0.82 Pre Release**
 
 ## 27 multiblock doors
 
@@ -159,13 +159,26 @@ Screwdriver + sneak + right-click cycles door skins:
 ## Emancipation Grill
 
 - **Emancipation Grill** — a paired security field based on the Portal 2 fizzler. The vertical item places a 1x3x1 column; the horizontal item places a 3x1x1 bar. Two units pair across an opening up to 10 blocks apart. The first unit placed owns the pair and opens the console; breaking any cell dismantles the whole grill and returns one core item.
-- **Field modes** - Solid blocks unauthorized players and mobs; Neutral renders the field but does nothing; Lethal kills unauthorized players and mobs and erases non-living entities, but leaves creative players alone; Wall blocks every detected player and mob with no clearance checks; Filter lets everyone pass and applies the page-five item lists. Solid, Lethal and Wall reserve the doorway against block placement.
+- **Field modes** - Solid blocks unauthorized players and mobs and stops non-living entities and projectiles at the plane; Neutral renders the field but does nothing; Lethal kills unauthorized players and mobs and erases non-living entities, but leaves creative players alone; Wall blocks every detected player and mob with no clearance checks and also stops non-living entities and projectiles; Filter lets every entity pass and applies the page-five item lists. Solid, Lethal and Wall reserve the doorway against block placement.
 - **Console** - six pages: keys and biometric IDs, modes and toggles, field colour (red/green/blue), five redstone event outputs, the filter lists, and contraband containment. Open it by sneak + right-clicking a grill you own with the Emancipation Relay Key or an Operator Keycard; a Creative Keycard also opens it without an ownership check.
-- **Filter Mode** - two 9x6 grids (54 whitelist and 54 blacklist ghost patterns). Drag from JEI/HEI to set a pattern; right-click clears one; clicking a slot does not take the held hotbar item. Whitelist wins. With Contraband Containment enabled, blacklisted stacks are inserted into the bound container; otherwise, or when the container cannot accept them, they are voided.
+- **Filter Mode** - two 9x6 grids (54 whitelist and 54 blacklist ghost patterns). Drag from JEI/HEI to set a pattern; right-click clears one; clicking a slot does not take the held hotbar item. Whitelist wins. With Contraband Containment enabled, blacklisted stacks are inserted into the bound container; otherwise, or when the container cannot accept them, they are voided. After a scan the player sees `Contraband confiscated` when everything was stored, or `Contraband eliminated` when any part was voided.
 - **Contraband Containment** - page six binds one container to the Grill. Enable the toggle, press Begin Binding Session, sneak + right-click a compatible container within 8 chunks in the same dimension, then return and sneak + right-click the original Grill to confirm. The feature only runs in Filter Mode. It uses Forge's `IItemHandler` capability, so vanilla chests, hoppers and furnaces work; safes, locked containers and automation-blocked blocks are rejected. Player inventory, armor, offhand, nested container items and mob equipment/inventories are routed to the container. Full, missing, unloaded or out-of-range containers void the remainder; loose dropped items keep the normal Filter Mode void behavior.
 - **Filter scanning** — main inventory, armor and offhand; dropped item entities; mob equipment, villager inventories, horse/donkey/llama item handlers and standard mob inventories. Nested containers are scanned through Forge's item-handler capability and the standard `Items` NBT layout. Creative and spectator players are skipped.
 - **Sounds** — Portal 2 fizzler start, loop and shutdown, plus a disintegration one-shot for lethal and filter voids. Three-block audible radius with an Audio toggle.
-- **Optional JEI/HEI** — the filter overlay appears beside page five and only loads when JEI/HEI is present. Without it the console still opens, but patterns can only be cleared, not set.
+- **Ignore Items** - in Lethal mode, dropped items are stopped at the plane instead of being erased.
+- **Optional JEI/HEI** - the filter overlay appears beside page five and only loads when JEI/HEI is present. Without it the console still opens, but patterns can only be cleared, not set.
+
+## Security Shroud
+
+A four-piece utility armor set with custom 3D models and textures. It is creative-only and has no recipes.
+
+- **Helmet** - conceals the wearer's name tag.
+- **Chestplate** - ignores Dead Man's Hand weapons-relay bindings when interacting with bound explosives.
+- **Leggings** - grant 1.5x normal movement speed.
+- **Boots** - prevent a lethal fall from taking the wearer below one heart. The cap has a per-entity one-minute cooldown; falls during the cooldown deal full damage. The boots tooltip shows the cooldown.
+- **Full set** - Motion Sensors and Emancipation Grills ignore the armored living entity, including players and armored mobs/enemies. The sensor skips detection and Match User events; the grill skips clearance, blocking, Lethal damage, Filter inventory scans and Match User signals.
+- Each piece has 2500 durability by default. Default protection is 3/8/6/3 for 20 armor points, the vanilla cap. Item names use rare (aqua) rarity, and tooltips show durability and damage resistance.
+- `config/ntmdoors.cfg` controls durability, protection, effect values, the fall-protection cooldown and the per-slot armor item lists. Other mods' armor can be added to those lists and mixed into a full set.
 
 ## Concrete and HL Blocks
 
@@ -231,7 +244,7 @@ Screwdriver + sneak + right-click cycles door skins:
 - Minecraft **1.12.2**, Forge **14.23.5.2847+** (tested on 14.23.5.2860), Chisel **1.12.2-1.0.2.45**
 - OBJ/TESR rendering with per-group translation/rotation, clipping, and 3D inventory/hand/ground items
 - 17 door sound events
-- No configs and no NTM dependency
+- `config/ntmdoors.cfg` controls the Security Shroud and shared armor item lists; no NTM dependency
 
 ## Credits
 

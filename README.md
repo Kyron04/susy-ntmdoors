@@ -351,7 +351,7 @@ The Security Shroud is a four-piece utility armor set. Each piece has 2500 durab
 protection, enchantability, toughness and every effect are controlled by `config/ntmdoors.cfg`.
 The default protection values are helmet 3, chestplate 8, leggings 6 and boots 3, for 20 total
 armor points, the vanilla armor cap. Item names use rare (aqua) rarity. The tooltips show current/max
-durability and the damage resistance values.
+durability and the damage resistance values. The set is creative-only and has no recipes.
 
 * **Helmet** - hides the wearer's name tag on clients running the mod with name-tag concealment
   enabled. Name-tagged mobs and armor stands wearing a configured helmet are also concealed.
@@ -515,8 +515,8 @@ ID Chips; office-door variants use full shaped recipes, while industrial and lar
 are shapeless.
 The Relay, Biometric Relay, Redstone, Motion, Terminal, Weapons, Breaker and Emancipation Relay
 Keys, programmer-made RFID card colours, the Creative Keycard, Developer Keycard and Spatial
-Disrupter are recipe-free. The Emancipation Grill and its horizontal variant are also creative-only
-and have no crafting recipe.
+Disrupter are recipe-free. The Emancipation Grill and its horizontal variant are also creative-only,
+as are the four Security Shroud pieces, and have no crafting recipes.
 * Redstone Gate (`ntmdoors:redstone_gate`): a full-cube redstone component with separate off and on
   textures. It starts off, turns on while it receives redstone power or a wireless pulse, and emits
   a full-strength signal while on. Redstone dust sitting on top is refreshed when the gate switches,

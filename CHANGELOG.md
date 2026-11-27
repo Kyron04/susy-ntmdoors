@@ -1,36 +1,48 @@
-NTM DOORS: 1.0.81
+NTM DOORS: 1.0.82 Pre Release
 Minecraft 1.12.2 / Forge 14.23.5.2847
 
-UNRELEASED
+1.0.82 Pre Release
 FEATURES
 - Added the Security Shroud armor set: helmet, chestplate, leggings and boots with custom OBJ armor
   models, layer textures, creative-tab entries and armor-stand/crouch support. Each piece has 2500
-  durability by default.
+  durability by default and the set is creative-only with no recipes.
 - Added the per-piece Security Shroud effects: the helmet conceals name tags, the chestplate ignores
   Dead Man's Hand weapons-relay bindings, the leggings grant 1.5x normal movement speed and the
-  boots prevent a lethal fall from taking the player below one heart.
-- Added the full-set Unity effect: Motion Sensors and Emancipation Grills ignore a player wearing all
-  four configured pieces.
-- The armor uses rare (aqua) item names. Tooltips now show current/max durability, each piece's
-  damage resistance and the effective full-set total, capped at 20. Default protection is 3/8/6/3
-  for 20 total armor points.
+  boots prevent a lethal fall from taking the wearer below one heart.
+- The boots' lethal-fall protection has a per-entity one-minute cooldown, configurable with
+  `securityshroud.boots.FallProtectionCooldownTicks`. It starts only when a fall is actually capped;
+  falls during the cooldown deal full damage. The boots tooltip shows the cooldown.
+- Added the full-set Unity effect: Motion Sensors and Emancipation Grills ignore a full-set living
+  entity, including players and armored mobs/enemies. The sensor skips detection and Match User
+  events; the grill skips clearance, blocking, Lethal damage, Filter inventory scans and Match User
+  signals. A player may use inventory pieces when `RequireWorn` is false; non-players must wear them.
+- The armor uses rare (aqua) item names. Tooltips show current/max durability, each piece's damage
+  resistance and the effective full-set total, capped at 20. Default protection is 3/8/6/3 for 20
+  total armor points.
 - Added `config/ntmdoors.cfg`, which controls durability, protection, every effect value and the item
   lists used for each armor slot. Other mods' armor pieces can be added to those lists and mixed into
   a full set.
-- The boots' lethal-fall protection now has a per-entity one-minute cooldown, configurable with
-  `securityshroud.boots.FallProtectionCooldownTicks`. It starts only when a fall is actually capped;
-  falls during the cooldown deal full damage. The boots tooltip shows the cooldown.
+- Emancipation Grill Solid and Wall fields now stop non-living entities and projectiles at the plane.
+  Lethal with `Ignore Items` stops dropped items at the plane instead of erasing them.
+- Confiscated Filter Mode items now show `Contraband confiscated` when the bound container accepts
+  everything, or `Contraband eliminated` when any part is voided.
 FIXES
 - Corrected the Security Shroud armor-stand head pivot and reset the shared body/arm pivots so
   armor-stand renderers and 3D inventory previews such as Obscure Tooltips align correctly.
 - Draw the armor double-sided like vanilla entity layers, so armor-stand previews no longer show the
   stand through the armor.
-- Full-set Unity now applies to armored mobs and enemies as well as players, including Motion Sensor
-  detection, Emancipation Grill Match User/filter checks, blocking and lethal damage. The leggings
-  speed and boots fall protection also work for any living entity wearing them.
+- Marked item tooltip overrides as client-only to avoid dedicated-server class-loading errors.
+- Added the missing concrete metadata blockstate variants, including asbestos, brick, rebar,
+  colored/hazard and ultra-high-performance concrete blocks.
+INTERNAL
+- Removed a duplicate door security check and stale comments; no behavior change.
 COMPATIBILITY
-- Existing worlds load unchanged; no registry IDs or NBT formats moved. Clients and servers should
-  share `config/ntmdoors.cfg` so name-tag, movement and Emancipation Grill behavior agree.
+- Existing 1.0.81 worlds load unchanged; no registry IDs or NBT formats moved. The Security Shroud
+  items are appended registrations.
+- `config/ntmdoors.cfg` is generated on first launch. Keep it identical on the client and server so
+  name-tag, speed, fall-protection and Unity behavior agree.
+- Clients and servers must both update. Chisel 1.12.2-1.0.2.45 remains required; no NTM installation
+  is required.
 
 1.0.81
 FEATURES

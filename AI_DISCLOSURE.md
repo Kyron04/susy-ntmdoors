@@ -56,10 +56,12 @@ AI assistance was used for:
   desk-saved themes, the immediate client-side handoff and the physical-screen mirror;
 - the Emancipation Grill console and field: field modes, colour palettes, redstone event outputs,
   the JEI/HEI filter overlay, player/mob/dropped-item inventory filtering, recursive container
-  scanning, and the fizzler integration;
+  scanning, non-living entity barriers in Solid and Wall, the Ignore Items clamp, contraband status
+  messages, and the fizzler integration;
 - the Security Shroud armor set: Blockbench/OBJ integration, item and renderer wiring, tooltips,
-  the config-driven durability/protection and per-piece effects, the full-set Unity bypasses, and
-  the follow-up audit fixes;
+  the config-driven durability/protection and per-piece effects, the full-set Unity bypasses for
+  players and armored mobs, the per-entity fall-protection cooldown, and the follow-up audit and
+  armor-stand rendering fixes;
 - the repository formatting standards pack and the formatting cleanup of touched files;
 - final housekeeping: duplicate asset removal, sound folder cleanup, asset reference validation,
   stale comment and documentation cleanup, BOM removal, item-icon correction and release docs;
