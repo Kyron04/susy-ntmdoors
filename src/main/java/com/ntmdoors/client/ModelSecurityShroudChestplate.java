@@ -72,13 +72,15 @@ public final class ModelSecurityShroudChestplate extends ModelBiped {
             // root before the body/arm pivots. It is in blocks, not model pixels: do not scale it.
             GlStateManager.translate(0.0F, 0.2F, 0.0F);
         }
-        GlStateManager.enableCull();
+        // Entity renderers disable culling; draw both sides so custom OBJ winding cannot hide a
+        // face in armor-stand previews.
+        GlStateManager.disableCull();
         renderPart(model, "body", this.bipedBody, scale);
         // The Blockbench source names the +X arm "arm_right"; the OBJ group is renamed
         // "left_arm" because +X is the player's left arm.
         renderPart(model, "left_arm", this.bipedLeftArm, scale);
         renderPart(model, "right_arm", this.bipedRightArm, scale);
-        if (!cull) GlStateManager.disableCull();
+        if (cull) GlStateManager.enableCull();
         GlStateManager.popMatrix();
     }
 

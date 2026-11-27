@@ -20,6 +20,8 @@ FEATURES
 FIXES
 - Corrected the Security Shroud armor-stand head pivot and reset the shared body/arm pivots so
   armor-stand renderers and 3D inventory previews such as Obscure Tooltips align correctly.
+- Draw the armor double-sided like vanilla entity layers, so armor-stand previews no longer show the
+  stand through the armor.
 COMPATIBILITY
 - Existing worlds load unchanged; no registry IDs or NBT formats moved. Clients and servers should
   share `config/ntmdoors.cfg` so name-tag, movement and Emancipation Grill behavior agree.

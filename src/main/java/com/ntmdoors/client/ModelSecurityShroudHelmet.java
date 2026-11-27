@@ -76,9 +76,11 @@ public final class ModelSecurityShroudHelmet extends ModelBiped {
         bipedHead.postRender(scale);
         // The OBJ vertices are already in the head's Y-down space.
         GlStateManager.scale(scale, scale, scale);
-        GlStateManager.enableCull();
+        // Entity renderers disable culling; draw both sides so custom OBJ winding cannot hide a
+        // face in armor-stand previews.
+        GlStateManager.disableCull();
         model.draw(GROUP);
-        if (!cull) GlStateManager.disableCull();
+        if (cull) GlStateManager.enableCull();
         GlStateManager.popMatrix();
     }
 

@@ -73,10 +73,12 @@ public final class ModelSecurityShroudLeggings extends ModelBiped {
             // root before the leg pivots. It is in blocks, not model pixels: do not scale it.
             GlStateManager.translate(0.0F, 0.2F, 0.0F);
         }
-        GlStateManager.enableCull();
+        // Entity renderers disable culling; draw both sides so custom OBJ winding cannot hide a
+        // face in armor-stand previews.
+        GlStateManager.disableCull();
         renderPart(model, "left_leg", this.bipedLeftLeg, scale);
         renderPart(model, "right_leg", this.bipedRightLeg, scale);
-        if (!cull) GlStateManager.disableCull();
+        if (cull) GlStateManager.enableCull();
         GlStateManager.popMatrix();
     }
 
