@@ -54,7 +54,7 @@ public class ObjModel {
             m = parse(res.getInputStream());
         } catch (Exception ex) {
             if (WARNED.add(loc)) {
-                NTMDoors.LOGGER.warn("Could not load door model {} ({})", loc, ex.toString());
+                NTMDoors.LOGGER.warn("Could not load model {} ({})", loc, ex.toString());
             }
         }
         CACHE.put(loc, m);

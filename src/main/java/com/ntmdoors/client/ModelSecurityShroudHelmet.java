@@ -84,7 +84,9 @@ public final class ModelSecurityShroudHelmet extends ModelBiped {
 
     private void applyArmorStandPose(EntityArmorStand stand) {
         copyRotation(stand.getHeadRotation(), this.bipedHead);
-        this.bipedHead.setRotationPoint(0.0F, 1.0F, 0.0F);
+        // The shared model may still carry the sneak head offset from a player render; armor
+        // stands are never sneaking and their head pivot is the default (0, 0, 0).
+        this.bipedHead.setRotationPoint(0.0F, 0.0F, 0.0F);
     }
 
     private static void copyRotation(Rotations rotations, ModelRenderer part) {
