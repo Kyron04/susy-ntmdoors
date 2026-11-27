@@ -4,7 +4,7 @@ Minecraft 1.12.2 / Forge 14.23.5.2847+ (tested on 14.23.5.2860)
 Requires Chisel 1.12.2-1.0.2.45
 
 **File:** `ntmdoors-1.0.82.jar`
-**SHA-256:** `PENDING`
+**SHA-256:** `196989FD33162008D382ED4EAB4096C0C2C5CC6B7B12599ACDA55D7F986091D5`
 
 This pre-release adds the Security Shroud armor set and its config system, plus fixes and behavior
 changes since 1.0.81.
