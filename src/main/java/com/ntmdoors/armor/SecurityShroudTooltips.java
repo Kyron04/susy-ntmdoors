@@ -22,23 +22,28 @@ public final class SecurityShroudTooltips {
         if (!SecurityShroudConfig.enabled() || !SecurityShroudConfig.showTooltips()) return;
 
         Item item = stack.getItem();
+        int protection;
         if (item instanceof ItemSecurityShroudHelmet) {
+            protection = SecurityShroudConfig.helmetProtection();
             description(tooltip,
                     "item.ntmdoors.security_shroud_helmet.tooltip1",
                     "Shroud your identity from the enemy.",
                     "item.ntmdoors.security_shroud_helmet.tooltip2",
                     "Obstructs player tags from other players");
         } else if (item instanceof ItemSecurityShroudChestplate) {
+            protection = SecurityShroudConfig.chestplateProtection();
             description(tooltip,
                     "item.ntmdoors.security_shroud_chestplate.tooltip1",
                     "Nullifies weapons relay key bindings",
                     "item.ntmdoors.security_shroud_chestplate.tooltip2",
                     "when interacting with bound explosives");
         } else if (item instanceof ItemSecurityShroudLeggings) {
+            protection = SecurityShroudConfig.leggingsProtection();
             description(tooltip,
                     "item.ntmdoors.security_shroud_leggings.tooltip1",
                     "1.5x movement speed");
         } else if (item instanceof ItemSecurityShroudBoots) {
+            protection = SecurityShroudConfig.bootsProtection();
             description(tooltip,
                     "item.ntmdoors.security_shroud_boots.tooltip1",
                     "Down but not out. Ensures that at least 1 heart",
@@ -48,11 +53,17 @@ public final class SecurityShroudTooltips {
             return;
         }
 
+        int maxDamage = stack.getMaxDamage();
+        int remaining = Math.max(0, maxDamage - stack.getItemDamage());
+        tooltip.add(TextFormatting.GRAY + "Durability: " + remaining + " / " + maxDamage);
+        tooltip.add(TextFormatting.GRAY + "Damage resistance: " + protection
+                + " (" + SecurityShroudConfig.totalProtection() + " full set)");
+
         if (SecurityShroudConfig.showUnityTooltip()
                 && SecurityShroudConfig.unityEnabled()
                 && (SecurityShroudConfig.ignoreMotionSensors()
                 || SecurityShroudConfig.ignoreEmancipationGrills())) {
-            tooltip.add(TextFormatting.GOLD + Names.translationOr(
+            tooltip.add(TextFormatting.AQUA + Names.translationOr(
                     "item.ntmdoors.security_shroud.unity",
                     "Unity: Motion Sensors and Emancipation Grills ignore you."));
         }

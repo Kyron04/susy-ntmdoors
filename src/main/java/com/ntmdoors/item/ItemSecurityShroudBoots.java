@@ -11,6 +11,7 @@ import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.item.EnumRarity;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
@@ -33,6 +34,11 @@ public class ItemSecurityShroudBoots extends ItemArmor {
         setRegistryName(NTMDoors.MODID, "security_shroud_boots");
         setTranslationKey(NTMDoors.MODID + ".security_shroud_boots");
         setCreativeTab(NTMDoors.TAB);
+    }
+
+    @Override
+    public EnumRarity getRarity(ItemStack stack) {
+        return EnumRarity.RARE;
     }
 
     @Override

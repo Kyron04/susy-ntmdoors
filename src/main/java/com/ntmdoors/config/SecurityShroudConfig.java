@@ -49,10 +49,10 @@ public final class SecurityShroudConfig {
     private static boolean showTooltips = true;
     private static boolean showUnityTooltip = true;
     private static int durability = 2500;
-    private static int helmetProtection;
-    private static int chestplateProtection;
-    private static int leggingsProtection;
-    private static int bootsProtection;
+    private static int helmetProtection = 3;
+    private static int chestplateProtection = 8;
+    private static int leggingsProtection = 6;
+    private static int bootsProtection = 3;
     private static int enchantability;
     private static float toughness;
 
@@ -111,15 +111,16 @@ public final class SecurityShroudConfig {
             durability = config.getInt("Durability", GENERAL, 2500, 1, 1_000_000,
                     "Exact maximum durability of each built-in Security Shroud piece. "
                             + "The default is 2500.");
-            helmetProtection = config.getInt("HelmetProtection", GENERAL, 0, 0, 20,
+            helmetProtection = config.getInt("HelmetProtection", GENERAL, 3, 0, 20,
                     "Armor points for the built-in helmet. The four protection values are stored "
-                            + "on the shared material and applied to their matching armor slot.");
-            chestplateProtection = config.getInt("ChestplateProtection", GENERAL, 0, 0, 20,
-                    "Armor points for the built-in chestplate.");
-            leggingsProtection = config.getInt("LeggingsProtection", GENERAL, 0, 0, 20,
-                    "Armor points for the built-in leggings.");
-            bootsProtection = config.getInt("BootsProtection", GENERAL, 0, 0, 20,
-                    "Armor points for the built-in boots.");
+                            + "on the shared material and applied to their matching armor slot. "
+                            + "The defaults total 20, the vanilla armor cap.");
+            chestplateProtection = config.getInt("ChestplateProtection", GENERAL, 8, 0, 20,
+                    "Armor points for the built-in chestplate. Default 8.");
+            leggingsProtection = config.getInt("LeggingsProtection", GENERAL, 6, 0, 20,
+                    "Armor points for the built-in leggings. Default 6.");
+            bootsProtection = config.getInt("BootsProtection", GENERAL, 3, 0, 20,
+                    "Armor points for the built-in boots. Default 3.");
             enchantability = config.getInt("Enchantability", GENERAL, 0, 0, 100,
                     "Enchantability of the built-in armor material.");
             toughness = config.getFloat("Toughness", GENERAL, 0.0F, 0.0F, 20.0F,
@@ -273,6 +274,11 @@ public final class SecurityShroudConfig {
 
     public static int bootsProtection() {
         return bootsProtection;
+    }
+
+    /** Sum of the four configured protection values, shown on the built-in tooltips. */
+    public static int totalProtection() {
+        return helmetProtection + chestplateProtection + leggingsProtection + bootsProtection;
     }
 
     public static int enchantability() {

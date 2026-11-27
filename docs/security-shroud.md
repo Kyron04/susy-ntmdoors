@@ -16,10 +16,10 @@ their capitalisation. The dotted paths below name the property within those nest
 | `securityshroud.ShowTooltips` | `true` | Show the four built-in piece descriptions. |
 | `securityshroud.ShowUnityTooltip` | `true` | Show the full-set Unity line. |
 | `securityshroud.Durability` | `2500` | Exact maximum durability of each built-in piece. |
-| `securityshroud.HelmetProtection` | `0` | Armor points for the helmet. |
-| `securityshroud.ChestplateProtection` | `0` | Armor points for the chestplate. |
-| `securityshroud.LeggingsProtection` | `0` | Armor points for the leggings. |
-| `securityshroud.BootsProtection` | `0` | Armor points for the boots. |
+| `securityshroud.HelmetProtection` | `3` | Armor points for the helmet. |
+| `securityshroud.ChestplateProtection` | `8` | Armor points for the chestplate. |
+| `securityshroud.LeggingsProtection` | `6` | Armor points for the leggings. |
+| `securityshroud.BootsProtection` | `3` | Armor points for the boots. |
 | `securityshroud.Enchantability` | `0` | Enchantability of the built-in material. |
 | `securityshroud.Toughness` | `0.0` | Armor toughness of the built-in material. |
 | `securityshroud.helmet.HideNameTags` | `true` | Hide name tags for any living entity wearing a configured helmet. |
@@ -31,6 +31,10 @@ their capitalisation. The dotted paths below name the property within those nest
 | `securityshroud.unity.RequireWorn` | `true` | Require all four pieces to be equipped. When false, they may be carried anywhere in the inventory. |
 | `securityshroud.unity.IgnoreMotionSensors` | `true` | Full-set players are skipped by Motion Sensors, including Match User. |
 | `securityshroud.unity.IgnoreEmancipationGrills` | `true` | Full-set players are skipped by Emancipation Grills in every mode. |
+
+The default protection values total 20 armor points, the vanilla armor cap. The built-in pieces use
+`EnumRarity.RARE`, so their item names are aqua. Each built-in tooltip shows its current/max
+durability and that piece's armor points, plus the configured full-set total.
 
 ## Item lists
 

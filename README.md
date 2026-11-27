@@ -61,9 +61,9 @@ reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
 
 ## Features
 * Security Shroud armor set: helmet, chestplate, leggings and boots rendered from custom OBJ models
-  with their own layer textures. The pieces have 2500 durability and configurable utility effects;
-  the full set makes Motion Sensors and Emancipation Grills ignore the wearer. Every effect and the
-  list of accepted armor items are tunable in `config/ntmdoors.cfg`.
+  with their own layer textures. The pieces have 2500 durability, 20 total armor points and
+  configurable utility effects; the full set makes Motion Sensors and Emancipation Grills ignore
+  the wearer. Every effect and the list of accepted armor items are tunable in `config/ntmdoors.cfg`.
 * Multiblock doors of any footprint, placed in one click, rotate with the player, removed as one piece
 * Core tile entity with state machine CLOSED / OPENING / OPEN / CLOSING, synced to clients
 * Redstone from any cell of the door (edge triggered), right click toggle
@@ -349,8 +349,9 @@ reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
 
 The Security Shroud is a four-piece utility armor set. Each piece has 2500 durability by default;
 protection, enchantability, toughness and every effect are controlled by `config/ntmdoors.cfg`.
-The four protection values default to 0 because the set is utility-first; raise them if you want
-conventional armor points.
+The default protection values are helmet 3, chestplate 8, leggings 6 and boots 3, for 20 total
+armor points, the vanilla armor cap. Item names use rare (aqua) rarity. The tooltips show current/max
+durability and the damage resistance values.
 
 * **Helmet** - hides the wearer's name tag from other players. Name-tagged mobs and armor stands
   wearing a configured helmet are also concealed.
