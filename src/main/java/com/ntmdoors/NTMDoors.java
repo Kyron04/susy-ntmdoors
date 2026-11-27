@@ -102,7 +102,7 @@ public class NTMDoors {
             items.add(new ItemStack(ModContent.REDSTONE_MONOCLE));
             ConcreteSet.addCreativeStacks(items);
             HLBlocksContent.addCreativeStacks(items);
-            // New crafting components and desk-only blocks go at the end of the tab.
+            // New crafting components, desk-only blocks, and cosmetic armor go at the end of the tab.
             items.add(new ItemStack(ModContent.ID_CHIP));
             items.add(new ItemStack(ModContent.MONITOR_SCREEN));
             items.add(new ItemStack(ModContent.UNCASED_USB));
@@ -111,6 +111,10 @@ public class NTMDoors {
             items.add(new ItemStack(ModContent.RFID_CHIP));
             for (BlockDesk desk : ModContent.DESKS) items.add(new ItemStack(desk));
             for (BlockMonitorOnly monitor : ModContent.MONITORS) items.add(new ItemStack(monitor));
+            items.add(new ItemStack(ModContent.SECURITY_SHROUD_HELMET));
+            items.add(new ItemStack(ModContent.SECURITY_SHROUD_CHESTPLATE));
+            items.add(new ItemStack(ModContent.SECURITY_SHROUD_LEGGINGS));
+            items.add(new ItemStack(ModContent.SECURITY_SHROUD_BOOTS));
         }
 
         @Override

@@ -1,0 +1,3239 @@
+{
+    "meta":  {
+                 "format_version":  "5.0",
+                 "model_format":  "java_block",
+                 "box_uv":  false
+             },
+    "name":  "SEC Helmet",
+    "model_identifier":  "sec_helmet",
+    "variable_placeholders":  "",
+    "variable_placeholder_buttons":  [
+
+                                     ],
+    "resolution":  {
+                       "width":  64,
+                       "height":  64
+                   },
+    "elements":  [
+                     {
+                         "name":  "helmet",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      -5,
+                                      0,
+                                      -5
+                                  ],
+                         "to":  [
+                                    5,
+                                    10,
+                                    5
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        0,
+                                        5,
+                                        0
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                1,
+                                                                1,
+                                                                11,
+                                                                11
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               13,
+                                                               1,
+                                                               23,
+                                                               11
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                1,
+                                                                13,
+                                                                11,
+                                                                23
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               13,
+                                                               13,
+                                                               23,
+                                                               23
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             25,
+                                                             1,
+                                                             35,
+                                                             11
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               0,
+                                                               0
+                                                           ],
+                                                    "texture":  null
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "74e67a83-083c-46f0-a9ee-535fe4a52823"
+                     },
+                     {
+                         "name":  "ridge_east",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      5,
+                                      2,
+                                      -4
+                                  ],
+                         "to":  [
+                                    6,
+                                    4,
+                                    5
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        5.5,
+                                        3,
+                                        0.5
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                37,
+                                                                1,
+                                                                39,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               37,
+                                                               1,
+                                                               39,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                37,
+                                                                1,
+                                                                39,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               37,
+                                                               1,
+                                                               39,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             37,
+                                                             1,
+                                                             39,
+                                                             3
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               37,
+                                                               1,
+                                                               39,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "a02ae766-06e0-4664-bea1-d53ea4d85a4c"
+                     },
+                     {
+                         "name":  "ridge_south",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      -5,
+                                      2,
+                                      5
+                                  ],
+                         "to":  [
+                                    5,
+                                    4,
+                                    6
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        0,
+                                        3,
+                                        5.5
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                37,
+                                                                1,
+                                                                39,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               37,
+                                                               1,
+                                                               39,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                37,
+                                                                1,
+                                                                39,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               37,
+                                                               1,
+                                                               39,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             37,
+                                                             1,
+                                                             39,
+                                                             3
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               37,
+                                                               1,
+                                                               39,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "a411f951-37cb-4d0b-b52a-7c1cef83c7b3"
+                     },
+                     {
+                         "name":  "ridge_west",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      -6,
+                                      2,
+                                      -4
+                                  ],
+                         "to":  [
+                                    -5,
+                                    4,
+                                    5
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        -5.5,
+                                        3,
+                                        0.5
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                37,
+                                                                1,
+                                                                39,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               37,
+                                                               1,
+                                                               39,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                37,
+                                                                1,
+                                                                39,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               37,
+                                                               1,
+                                                               39,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             37,
+                                                             1,
+                                                             39,
+                                                             3
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               37,
+                                                               1,
+                                                               39,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "9537fa17-fe40-481c-9142-5e0c51ff847c"
+                     },
+                     {
+                         "name":  "ridge_se",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      5,
+                                      2,
+                                      5
+                                  ],
+                         "to":  [
+                                    6,
+                                    4,
+                                    6
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        5.5,
+                                        3,
+                                        5.5
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                37,
+                                                                1,
+                                                                39,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               37,
+                                                               1,
+                                                               39,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                37,
+                                                                1,
+                                                                39,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               37,
+                                                               1,
+                                                               39,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             37,
+                                                             1,
+                                                             39,
+                                                             3
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               37,
+                                                               1,
+                                                               39,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "9b526d95-49da-4113-992c-6212a500c8dd"
+                     },
+                     {
+                         "name":  "ridge_sw",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      -6,
+                                      2,
+                                      5
+                                  ],
+                         "to":  [
+                                    -5,
+                                    4,
+                                    6
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        -5.5,
+                                        3,
+                                        5.5
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                37,
+                                                                1,
+                                                                39,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               37,
+                                                               1,
+                                                               39,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                37,
+                                                                1,
+                                                                39,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               37,
+                                                               1,
+                                                               39,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             37,
+                                                             1,
+                                                             39,
+                                                             3
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               37,
+                                                               1,
+                                                               39,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "650d199b-800f-4bf3-adf7-b32a30e55036"
+                     },
+                     {
+                         "name":  "aqua_front_0",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      -5,
+                                      1,
+                                      -6
+                                  ],
+                         "to":  [
+                                    -4,
+                                    6,
+                                    -5
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        -4.5,
+                                        3.5,
+                                        -5.5
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             40,
+                                                             1,
+                                                             42,
+                                                             3
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "6f95f300-5c0a-4041-bb68-e97ffadb65f3"
+                     },
+                     {
+                         "name":  "aqua_front_1",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      4,
+                                      1,
+                                      -6
+                                  ],
+                         "to":  [
+                                    5,
+                                    6,
+                                    -5
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        4.5,
+                                        3.5,
+                                        -5.5
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             40,
+                                                             1,
+                                                             42,
+                                                             3
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "6606384e-24d7-4254-a5eb-ba10d8ee21e5"
+                     },
+                     {
+                         "name":  "aqua_front_2",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      -4,
+                                      0,
+                                      -6
+                                  ],
+                         "to":  [
+                                    -3,
+                                    3,
+                                    -5
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        -3.5,
+                                        1.5,
+                                        -5.5
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             40,
+                                                             1,
+                                                             42,
+                                                             3
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "270a955e-9366-4568-9066-f47f48c4071d"
+                     },
+                     {
+                         "name":  "aqua_front_3",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      3,
+                                      0,
+                                      -6
+                                  ],
+                         "to":  [
+                                    4,
+                                    3,
+                                    -5
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        3.5,
+                                        1.5,
+                                        -5.5
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             40,
+                                                             1,
+                                                             42,
+                                                             3
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "5b2f2bb9-2223-462b-a3e8-ea7e38c8da4d"
+                     },
+                     {
+                         "name":  "aqua_front_4",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      -3,
+                                      0,
+                                      -6
+                                  ],
+                         "to":  [
+                                    3,
+                                    1,
+                                    -5
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        0,
+                                        0.5,
+                                        -5.5
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             40,
+                                                             1,
+                                                             42,
+                                                             3
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "465ecfc4-39b7-4bcb-830b-26869a7c2262"
+                     },
+                     {
+                         "name":  "aqua_east_5",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      5,
+                                      8,
+                                      -5
+                                  ],
+                         "to":  [
+                                    6,
+                                    10,
+                                    3
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        5.5,
+                                        9,
+                                        -1
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             40,
+                                                             1,
+                                                             42,
+                                                             3
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "28fc4075-8b04-4c7a-a6f0-d9d4e79c09d1"
+                     },
+                     {
+                         "name":  "aqua_east_6",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      5,
+                                      7,
+                                      -5
+                                  ],
+                         "to":  [
+                                    6,
+                                    8,
+                                    1
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        5.5,
+                                        7.5,
+                                        -2
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             40,
+                                                             1,
+                                                             42,
+                                                             3
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "911b29f2-c1b9-43ec-bbe9-8a3aa2e65404"
+                     },
+                     {
+                         "name":  "aqua_east_7",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      5,
+                                      6,
+                                      -5
+                                  ],
+                         "to":  [
+                                    6,
+                                    7,
+                                    -1
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        5.5,
+                                        6.5,
+                                        -3
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             40,
+                                                             1,
+                                                             42,
+                                                             3
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "bf3e81f6-a4c7-403f-99af-57567496fcf7"
+                     },
+                     {
+                         "name":  "aqua_east_8",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      5,
+                                      5,
+                                      -5
+                                  ],
+                         "to":  [
+                                    6,
+                                    6,
+                                    -2
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        5.5,
+                                        5.5,
+                                        -3.5
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             40,
+                                                             1,
+                                                             42,
+                                                             3
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "722f2469-3674-4bf6-8210-7e52580ac5a5"
+                     },
+                     {
+                         "name":  "aqua_east_9",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      5,
+                                      4,
+                                      -5
+                                  ],
+                         "to":  [
+                                    6,
+                                    5,
+                                    -3
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        5.5,
+                                        4.5,
+                                        -4
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             40,
+                                                             1,
+                                                             42,
+                                                             3
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "a2ab929c-8c37-4ca0-b929-a99d18a69cc0"
+                     },
+                     {
+                         "name":  "aqua_east_10",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      5,
+                                      2,
+                                      -5
+                                  ],
+                         "to":  [
+                                    6,
+                                    4,
+                                    -4
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        5.5,
+                                        3,
+                                        -4.5
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             40,
+                                                             1,
+                                                             42,
+                                                             3
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "b7b125a4-c2db-4b88-9794-05cf797d9942"
+                     },
+                     {
+                         "name":  "aqua_west_11",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      -6,
+                                      8,
+                                      -4
+                                  ],
+                         "to":  [
+                                    -5,
+                                    10,
+                                    3
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        -5.5,
+                                        9,
+                                        -0.5
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             40,
+                                                             1,
+                                                             42,
+                                                             3
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "622c6734-2113-45df-a607-1ba862463659"
+                     },
+                     {
+                         "name":  "aqua_west_12",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      -6,
+                                      7,
+                                      -4
+                                  ],
+                         "to":  [
+                                    -5,
+                                    8,
+                                    1
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        -5.5,
+                                        7.5,
+                                        -1.5
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             40,
+                                                             1,
+                                                             42,
+                                                             3
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "d7b2fd77-3cca-4f12-a524-83d1760c434e"
+                     },
+                     {
+                         "name":  "aqua_west_13",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      -6,
+                                      6,
+                                      -4
+                                  ],
+                         "to":  [
+                                    -5,
+                                    7,
+                                    -1
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        -5.5,
+                                        6.5,
+                                        -2.5
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             40,
+                                                             1,
+                                                             42,
+                                                             3
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "786dba29-482e-4fa7-b38c-e75a6b80baf2"
+                     },
+                     {
+                         "name":  "aqua_west_14",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      -6,
+                                      5,
+                                      -5
+                                  ],
+                         "to":  [
+                                    -5,
+                                    6,
+                                    -2
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        -5.5,
+                                        5.5,
+                                        -3.5
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             40,
+                                                             1,
+                                                             42,
+                                                             3
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "8b07fd40-1f8d-4fe4-b0c5-22ac8af99487"
+                     },
+                     {
+                         "name":  "aqua_west_15",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      -6,
+                                      4,
+                                      -5
+                                  ],
+                         "to":  [
+                                    -5,
+                                    5,
+                                    -3
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        -5.5,
+                                        4.5,
+                                        -4
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             40,
+                                                             1,
+                                                             42,
+                                                             3
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "70475877-d55e-4499-b3fd-64cbd9b96e1a"
+                     },
+                     {
+                         "name":  "aqua_west_16",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      -6,
+                                      2,
+                                      -5
+                                  ],
+                         "to":  [
+                                    -5,
+                                    4,
+                                    -4
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        -5.5,
+                                        3,
+                                        -4.5
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             40,
+                                                             1,
+                                                             42,
+                                                             3
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "cb293870-9d3f-4fa6-a04e-500992b17011"
+                     },
+                     {
+                         "name":  "aqua_up_17",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      -5,
+                                      10,
+                                      -4
+                                  ],
+                         "to":  [
+                                    -2,
+                                    11,
+                                    3
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        -3.5,
+                                        10.5,
+                                        -0.5
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             40,
+                                                             1,
+                                                             42,
+                                                             3
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "cd046c71-e410-4924-8fa8-597dfdc26ad9"
+                     },
+                     {
+                         "name":  "aqua_up_18",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      2,
+                                      10,
+                                      -4
+                                  ],
+                         "to":  [
+                                    5,
+                                    11,
+                                    3
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        3.5,
+                                        10.5,
+                                        -0.5
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             40,
+                                                             1,
+                                                             42,
+                                                             3
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "8a78a725-5b51-467c-93f4-680963d0d74f"
+                     },
+                     {
+                         "name":  "aqua_up_19",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      -2,
+                                      10,
+                                      -3
+                                  ],
+                         "to":  [
+                                    2,
+                                    11,
+                                    3
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        0,
+                                        10.5,
+                                        0
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                40,
+                                                                1,
+                                                                42,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             40,
+                                                             1,
+                                                             42,
+                                                             3
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               40,
+                                                               1,
+                                                               42,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "a7742522-7d90-4aa9-a2d7-a8e52f7f2daf"
+                     },
+                     {
+                         "name":  "rim_front",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      -4.99,
+                                      0,
+                                      -4.99
+                                  ],
+                         "to":  [
+                                    4.99,
+                                    1,
+                                    -4
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        0,
+                                        0.5,
+                                        -4.5
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                46,
+                                                                1,
+                                                                48,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               46,
+                                                               1,
+                                                               48,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                46,
+                                                                1,
+                                                                48,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               46,
+                                                               1,
+                                                               48,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             46,
+                                                             1,
+                                                             48,
+                                                             3
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               46,
+                                                               1,
+                                                               48,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "782c5281-edb5-4870-8fb1-3d78a8c51adf"
+                     },
+                     {
+                         "name":  "rim_back",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      -4.99,
+                                      0,
+                                      4
+                                  ],
+                         "to":  [
+                                    4.99,
+                                    1,
+                                    4.99
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        0,
+                                        0.5,
+                                        4.5
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                46,
+                                                                1,
+                                                                48,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               46,
+                                                               1,
+                                                               48,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                46,
+                                                                1,
+                                                                48,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               46,
+                                                               1,
+                                                               48,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             46,
+                                                             1,
+                                                             48,
+                                                             3
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               46,
+                                                               1,
+                                                               48,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "fa0e4ace-7b13-46a5-8288-c1476da44bf1"
+                     },
+                     {
+                         "name":  "rim_left",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      -4.99,
+                                      0,
+                                      -4
+                                  ],
+                         "to":  [
+                                    -4,
+                                    1,
+                                    4
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        -4.5,
+                                        0.5,
+                                        0
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                46,
+                                                                1,
+                                                                48,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               46,
+                                                               1,
+                                                               48,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                46,
+                                                                1,
+                                                                48,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               46,
+                                                               1,
+                                                               48,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             46,
+                                                             1,
+                                                             48,
+                                                             3
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               46,
+                                                               1,
+                                                               48,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "43091cf4-4c36-4f48-b70a-4ddcce18f0aa"
+                     },
+                     {
+                         "name":  "rim_right",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      4,
+                                      0,
+                                      -4
+                                  ],
+                         "to":  [
+                                    4.99,
+                                    1,
+                                    4
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        4.5,
+                                        0.5,
+                                        0
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                46,
+                                                                1,
+                                                                48,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               46,
+                                                               1,
+                                                               48,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                46,
+                                                                1,
+                                                                48,
+                                                                3
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               46,
+                                                               1,
+                                                               48,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             46,
+                                                             1,
+                                                             48,
+                                                             3
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               46,
+                                                               1,
+                                                               48,
+                                                               3
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "68dbdc1d-372c-4677-9847-0da7c94c6b2a"
+                     },
+                     {
+                         "name":  "inner_top",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      -4.99,
+                                      9.7,
+                                      -4.99
+                                  ],
+                         "to":  [
+                                    4.99,
+                                    9.99,
+                                    4.99
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        0,
+                                        9.845,
+                                        0
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                1,
+                                                                25,
+                                                                11,
+                                                                35
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               1,
+                                                               25,
+                                                               11,
+                                                               35
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                1,
+                                                                25,
+                                                                11,
+                                                                35
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               1,
+                                                               25,
+                                                               11,
+                                                               35
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             1,
+                                                             25,
+                                                             11,
+                                                             35
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               1,
+                                                               25,
+                                                               11,
+                                                               35
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "10d4b11d-960e-4025-8e44-ac586c798847"
+                     },
+                     {
+                         "name":  "inner_front",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      -4.99,
+                                      1,
+                                      -4.99
+                                  ],
+                         "to":  [
+                                    4.99,
+                                    9.7,
+                                    -4.7
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        0,
+                                        5.35,
+                                        -4.845
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                1,
+                                                                25,
+                                                                11,
+                                                                35
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               1,
+                                                               25,
+                                                               11,
+                                                               35
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                1,
+                                                                25,
+                                                                11,
+                                                                35
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               1,
+                                                               25,
+                                                               11,
+                                                               35
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             1,
+                                                             25,
+                                                             11,
+                                                             35
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               1,
+                                                               25,
+                                                               11,
+                                                               35
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "fc4916b0-07cb-4629-8e77-7dbb508c5f52"
+                     },
+                     {
+                         "name":  "inner_back",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      -4.99,
+                                      1,
+                                      4.7
+                                  ],
+                         "to":  [
+                                    4.99,
+                                    9.7,
+                                    4.99
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        0,
+                                        5.35,
+                                        4.845
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                1,
+                                                                25,
+                                                                11,
+                                                                35
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               1,
+                                                               25,
+                                                               11,
+                                                               35
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                1,
+                                                                25,
+                                                                11,
+                                                                35
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               1,
+                                                               25,
+                                                               11,
+                                                               35
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             1,
+                                                             25,
+                                                             11,
+                                                             35
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               1,
+                                                               25,
+                                                               11,
+                                                               35
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "5518b3a3-9c5a-4f7a-a6a2-52d0ed9806dc"
+                     },
+                     {
+                         "name":  "inner_left",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      -4.99,
+                                      1,
+                                      -4.7
+                                  ],
+                         "to":  [
+                                    -4.7,
+                                    9.7,
+                                    4.7
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        -4.845,
+                                        5.35,
+                                        0
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                1,
+                                                                25,
+                                                                11,
+                                                                35
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               1,
+                                                               25,
+                                                               11,
+                                                               35
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                1,
+                                                                25,
+                                                                11,
+                                                                35
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               1,
+                                                               25,
+                                                               11,
+                                                               35
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             1,
+                                                             25,
+                                                             11,
+                                                             35
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               1,
+                                                               25,
+                                                               11,
+                                                               35
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "238cc5c6-636d-4098-9554-18087ec27070"
+                     },
+                     {
+                         "name":  "inner_right",
+                         "box_uv":  false,
+                         "rescale":  false,
+                         "locked":  false,
+                         "light_emission":  0,
+                         "render_order":  "default",
+                         "allow_mirror_modeling":  true,
+                         "from":  [
+                                      4.7,
+                                      1,
+                                      -4.7
+                                  ],
+                         "to":  [
+                                    4.99,
+                                    9.7,
+                                    4.7
+                                ],
+                         "autouv":  0,
+                         "color":  0,
+                         "origin":  [
+                                        4.845,
+                                        5.35,
+                                        0
+                                    ],
+                         "rotation":  [
+                                          0,
+                                          0,
+                                          0
+                                      ],
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                1,
+                                                                25,
+                                                                11,
+                                                                35
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               1,
+                                                               25,
+                                                               11,
+                                                               35
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                1,
+                                                                25,
+                                                                11,
+                                                                35
+                                                            ],
+                                                     "texture":  0
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               1,
+                                                               25,
+                                                               11,
+                                                               35
+                                                           ],
+                                                    "texture":  0
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             1,
+                                                             25,
+                                                             11,
+                                                             35
+                                                         ],
+                                                  "texture":  0
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               1,
+                                                               25,
+                                                               11,
+                                                               35
+                                                           ],
+                                                    "texture":  0
+                                                }
+                                   },
+                         "type":  "cube",
+                         "uuid":  "9373bbec-2d2d-4ffc-8e86-d121becfe5af"
+                     }
+                 ],
+    "outliner":  [
+                     {
+                         "name":  "helmet",
+                         "uuid":  "cf8016f7-6d19-4629-8b86-2a08b263919d",
+                         "isOpen":  true,
+                         "children":  [
+                                          "74e67a83-083c-46f0-a9ee-535fe4a52823"
+                                      ]
+                     },
+                     {
+                         "name":  "back_ridge",
+                         "uuid":  "d8410250-894e-4b5a-8d37-cad6a27131f0",
+                         "isOpen":  true,
+                         "children":  [
+                                          "a02ae766-06e0-4664-bea1-d53ea4d85a4c",
+                                          "a411f951-37cb-4d0b-b52a-7c1cef83c7b3",
+                                          "9537fa17-fe40-481c-9142-5e0c51ff847c",
+                                          "9b526d95-49da-4113-992c-6212a500c8dd",
+                                          "650d199b-800f-4bf3-adf7-b32a30e55036"
+                                      ]
+                     },
+                     {
+                         "name":  "aqua_trim",
+                         "uuid":  "90449638-9635-4e2b-89dd-f3f01e78a0dd",
+                         "isOpen":  true,
+                         "children":  [
+                                          "6f95f300-5c0a-4041-bb68-e97ffadb65f3",
+                                          "6606384e-24d7-4254-a5eb-ba10d8ee21e5",
+                                          "270a955e-9366-4568-9066-f47f48c4071d",
+                                          "5b2f2bb9-2223-462b-a3e8-ea7e38c8da4d",
+                                          "465ecfc4-39b7-4bcb-830b-26869a7c2262",
+                                          "28fc4075-8b04-4c7a-a6f0-d9d4e79c09d1",
+                                          "911b29f2-c1b9-43ec-bbe9-8a3aa2e65404",
+                                          "bf3e81f6-a4c7-403f-99af-57567496fcf7",
+                                          "722f2469-3674-4bf6-8210-7e52580ac5a5",
+                                          "a2ab929c-8c37-4ca0-b929-a99d18a69cc0",
+                                          "b7b125a4-c2db-4b88-9794-05cf797d9942",
+                                          "622c6734-2113-45df-a607-1ba862463659",
+                                          "d7b2fd77-3cca-4f12-a524-83d1760c434e",
+                                          "786dba29-482e-4fa7-b38c-e75a6b80baf2",
+                                          "8b07fd40-1f8d-4fe4-b0c5-22ac8af99487",
+                                          "70475877-d55e-4499-b3fd-64cbd9b96e1a",
+                                          "cb293870-9d3f-4fa6-a04e-500992b17011",
+                                          "cd046c71-e410-4924-8fa8-597dfdc26ad9",
+                                          "8a78a725-5b51-467c-93f4-680963d0d74f",
+                                          "a7742522-7d90-4aa9-a2d7-a8e52f7f2daf"
+                                      ]
+                     },
+                     {
+                         "name":  "bottom_rim",
+                         "uuid":  "0d07adbd-f897-491d-8dba-9740f33d66cd",
+                         "isOpen":  true,
+                         "children":  [
+                                          "782c5281-edb5-4870-8fb1-3d78a8c51adf",
+                                          "fa0e4ace-7b13-46a5-8288-c1476da44bf1",
+                                          "43091cf4-4c36-4f48-b70a-4ddcce18f0aa",
+                                          "68dbdc1d-372c-4677-9847-0da7c94c6b2a"
+                                      ]
+                     },
+                     {
+                         "name":  "interior",
+                         "uuid":  "934c8348-1c99-492d-80aa-7197d729ec98",
+                         "isOpen":  false,
+                         "children":  [
+                                          "10d4b11d-960e-4025-8e44-ac586c798847",
+                                          "fc4916b0-07cb-4629-8e77-7dbb508c5f52",
+                                          "5518b3a3-9c5a-4f7a-a6a2-52d0ed9806dc",
+                                          "238cc5c6-636d-4098-9554-18087ec27070",
+                                          "9373bbec-2d2d-4ffc-8e86-d121becfe5af"
+                                      ]
+                     }
+                 ],
+    "textures":  [
+                     {
+                         "path":  "",
+                         "name":  "sec_helmet_uvgrid_clean.png",
+                         "folder":  "block",
+                         "namespace":  "",
+                         "id":  "0",
+                         "group":  "",
+                         "width":  64,
+                         "height":  64,
+                         "uv_width":  64,
+                         "uv_height":  64,
+                         "particle":  false,
+                         "use_as_default":  true,
+                         "layers_enabled":  false,
+                         "sync_to_project":  "",
+                         "render_mode":  "default",
+                         "render_sides":  "auto",
+                         "frame_time":  1,
+                         "frame_order_type":  "loop",
+                         "frame_order":  "",
+                         "frame_interpolate":  false,
+                         "visible":  true,
+                         "internal":  true,
+                         "saved":  false,
+                         "uuid":  "036a5c28-1ecf-4a79-9546-3034e31af7ab",
+                         "relative_path":  "",
+                         "source":  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAUTSURBVHhe7ZnZclVFFIbzCCozGQBn38SBzDPeOgMhIAQlhITMDJqICSFRpCwHUPHGF1zW19bXNOdSrZ2qU/1XdXXv3qv36f/vtVb33qejo6Kj42jnK3Ho6Mk4cvzlOHzsVHB9rOvV1Me1/dqPTYzH6PhYnNu5HVO7d+Oz7fX4YGMx1R99s5z6ph5tZvsXD3bF8e7XoufUW+lZnT2vxwsHOuPgkRPpmnv8pvazyzeDQvvyL/eDQhtbCu2hkeGgOOY/gR+HIKQVoyROvz8MBoYGo2+gP87evxUX9r6K6e++jk++Xf2H+O7d+HBzKaZ/vJftLz3cTOJQINt98s0kwEuHusN7jNO+cQF8sCtfEi9F0X5kbDTe6z0dvf19SQgmjwisPuX8gzt50uDTrbXUN/X7Tlz440Fc/HMvzj3Zjpm/HsXZx1tpPB6UJ9Q0dH/Ilp6gMN7XHuUJAUSYfP9MDI+OxMSZyfj43koSgFU9/8NGtkccCOIl3KO++P1GFoxrSp5Q02C1DANX26IorJr2/YMDgRdAHi+g5ppCWEDu6pPdbA95QgWB8ARIEyaKxf199YDpp7uJpKsv8TIUcF3tSYKDw0Np1fECvIFQON3XmwpkZh4/s2d1IY4AJE6FMDQQDSHyhJoGky1XW9LUesKln7byBK8uzAVlbnUpJavFO+upffP2WszMX0/17NOH2d5VpoY03kAbL6CNCCTCPKGmQQhc+XUnJz1j38TIPYr2ELxyYzYuz11L5K8tLaQ2ZX59Ja6vLD5nr/uT7PAAxCBM6GP1KQiTJ9Q08ABEMAdI3mtW//Oft/MEcXNcnjAgBxAGhoNtwkR7rt06GUvIkEdo08/9/21L+zcgiUFSoghCzSoiDO23330nT5Bkx8SpEcA9GdLU7AqQ0x6CkMfe/IEdz0AI7+cJVVQ0C9yQ2B2fnEjuS0h40qN239eeIyzJjOzNIYdsTiLzRMczSpfmmsLzCQHaPJtQMAfQzhNqGpA0Lk1SEDaWTXjasy1ClixONnd7QxQEYTwiag9pRKTfQh/PNXEiTp5Q0zA5QZbVgDjXTExRSgF4q3P1Oc1RU0xokGn1AE+KnhoVAlueXQrWOFx9COOShgLFTI3Las9rLG6vF3gkdgdgPEJoTz/PQBTF4bcQ1heq0r5xOBFrCCEKZIxTCGjPqy6ujxewmu7jxrKeoz3PNJ+4ZXKtKLTLc0PjYNIeaqg90zthJloS4nyABzB5RMKVyxoBaWtvXqH2Ywpi8XuO29ccwPn9y8X5dL7nGLtwazUdaSnco4+29hyOOP5yHOZdwKOxx2LG06c94nn6s40QeBaCc12GWONgsk6cWjHo5yUH8iWhL37bS8Q5+yMQtjfWlpMthedQa49HuPISN+foDeXJsXEY59a4I5Mze7M6pUsbv+XkdXva3CuzuuPdVs0J9JkM9zUJOiFWB8KsjsnMc3/pohIut0jJIJ5jtOe5JkhqxdIbfE/IE6qoaBac7Tnc8MmadvklmGtL67i2gZ/DIVl+EKWfcuBwz3N/XLQdJI8H8BXI2q9C1F0n3mhfASAIaUiy2tT08RcWoYE3ULeOaxtIFDen5to/RBBGEVrHtQ3K/wbxANp6gfmgrT0A0qy6CU/3RxCE0BNax7UNypWGOGTL/wa83zqubcCqs9q4uSHg3l96Quu4tgFE3epouxP491jbC1BRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVHR7vgbgPJ9t5/tcGkAAAAASUVORK5CYII="
+                     }
+                 ],
+    "animations":  [
+
+                   ]
+}

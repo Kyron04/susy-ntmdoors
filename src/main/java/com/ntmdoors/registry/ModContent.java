@@ -55,6 +55,10 @@ import com.ntmdoors.item.ItemRelayKey;
 import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.item.ItemSafeBindingKey;
 import com.ntmdoors.item.ItemScrewdriver;
+import com.ntmdoors.item.ItemSecurityShroudBoots;
+import com.ntmdoors.item.ItemSecurityShroudChestplate;
+import com.ntmdoors.item.ItemSecurityShroudHelmet;
+import com.ntmdoors.item.ItemSecurityShroudLeggings;
 import com.ntmdoors.item.ItemTerminalBackupKey;
 import com.ntmdoors.item.ItemThermiteCharge;
 import com.ntmdoors.item.ItemTerminalRelayKey;
@@ -357,6 +361,16 @@ public class ModContent {
     public static final List<ItemRfidCard> O5_CARDS = Collections.unmodifiableList(Arrays.asList(
             O5_KEYCARD));
 
+    /** Cosmetic Security Shroud helmet, chestplate, leggings, and boots. */
+    public static final ItemSecurityShroudHelmet SECURITY_SHROUD_HELMET =
+            new ItemSecurityShroudHelmet();
+    public static final ItemSecurityShroudChestplate SECURITY_SHROUD_CHESTPLATE =
+            new ItemSecurityShroudChestplate();
+    public static final ItemSecurityShroudLeggings SECURITY_SHROUD_LEGGINGS =
+            new ItemSecurityShroudLeggings();
+    public static final ItemSecurityShroudBoots SECURITY_SHROUD_BOOTS =
+            new ItemSecurityShroudBoots();
+
     static {
         for (DoorDecl d : DoorDecls.ALL) NORMAL_DOORS.add(new BlockDoorGeneric(d, BlockDoorGeneric.Variant.NORMAL));
         for (DoorDecl d : DoorDecls.ALL) LOCKED_DOORS.add(new BlockDoorGeneric(d, BlockDoorGeneric.Variant.LOCKED));
@@ -528,6 +542,11 @@ public class ModContent {
                 BlockEmancipationGrill.Mount.HORIZONTAL)
                 .setRegistryName(EMANCIPATION_GRILL_HORIZONTAL.getRegistryName())
                 .setCreativeTab(NTMDoors.TAB));
+        // Security Shroud cosmetic pieces are appended last so every existing item ID stays put.
+        e.getRegistry().register(SECURITY_SHROUD_HELMET);
+        e.getRegistry().register(SECURITY_SHROUD_CHESTPLATE);
+        e.getRegistry().register(SECURITY_SHROUD_LEGGINGS);
+        e.getRegistry().register(SECURITY_SHROUD_BOOTS);
     }
 
     /** Keeps existing worlds working after registry names moved. */
