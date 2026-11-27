@@ -32,9 +32,10 @@ their capitalisation. The dotted paths below name the property within those nest
 | `securityshroud.unity.IgnoreMotionSensors` | `true` | Full-set players are skipped by Motion Sensors, including Match User. |
 | `securityshroud.unity.IgnoreEmancipationGrills` | `true` | Full-set players are skipped by Emancipation Grills in every mode. |
 
-The default protection values total 20 armor points, the vanilla armor cap. The built-in pieces use
-`EnumRarity.RARE`, so their item names are aqua. Each built-in tooltip shows its current/max
-durability and that piece's armor points, plus the configured full-set total.
+The default protection values total 20 armor points, the vanilla armor cap; higher configured totals
+are still subject to that cap. The built-in pieces use `EnumRarity.RARE`, so their item names are
+aqua. Each built-in tooltip shows its current/max durability and that piece's armor points, plus the
+configured full-set total.
 
 ## Item lists
 
