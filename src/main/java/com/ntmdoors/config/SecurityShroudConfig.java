@@ -21,8 +21,8 @@ import java.util.Set;
  *
  * <p>The item lists are registry names, not hard-coded item classes, so a pack can grant any
  * helmet the identity-concealment effect, any chestplate the weapons-relay bypass, and so on.
- * A full set is one configured item in each of the four armor slots (or one of each carried in the
- * inventory when {@code RequireWorn} is disabled).</p>
+ * A full set is one configured item in each of the four armor slots (or one of each carried in a
+ * player's inventory when {@code RequireWorn} is disabled; non-player entities must wear them).</p>
  *
  * <p>The Forge config file is {@code config/ntmdoors.cfg}. Values are read once during pre-init;
  * changing the file requires a game restart.</p>
@@ -135,9 +135,9 @@ public final class SecurityShroudConfig {
                     "Registry names of armor items that count for each behavior slot. Use "
                             + "modid:item, or modid:* to accept every armor item from a mod. Add "
                             + "other mods' armor here to make it part of the same security systems; "
-                            + "a full set is one configured item in each slot (or carried, if "
-                            + "unity.RequireWorn is false). An empty list makes a full set "
-                            + "impossible.");
+                            + "a full set is one configured item in each slot (or carried by a "
+                            + "player, if unity.RequireWorn is false; non-players must wear them). "
+                            + "An empty list makes a full set impossible.");
 
             helmetItems = parse(config.getStringList("HelmetItems", ITEMS, DEFAULT_HELMETS,
                     "Items that conceal identity while worn in the head slot."));
@@ -182,13 +182,14 @@ public final class SecurityShroudConfig {
             unityEnabled = config.getBoolean("EnableUnity", UNITY, true,
                     "Enable the full-set Unity effect.");
             unityRequiresWorn = config.getBoolean("RequireWorn", UNITY, true,
-                    "True: all four pieces must be equipped. False: the four pieces may be anywhere "
-                            + "in the player's inventory.");
+                    "True: all four pieces must be equipped. False: a player may carry the four "
+                            + "pieces anywhere in their inventory; non-player entities must still "
+                            + "wear them.");
             ignoreMotionSensors = config.getBoolean("IgnoreMotionSensors", UNITY, true,
-                    "Full-set players are not seen by Motion Sensors, including the Match User "
+                    "Full-set entities are not seen by Motion Sensors, including the Match User "
                             + "check and its redstone events.");
             ignoreEmancipationGrills = config.getBoolean("IgnoreEmancipationGrills", UNITY, true,
-                    "Full-set players pass through Emancipation Grills without clearance checks, "
+                    "Full-set entities pass through Emancipation Grills without clearance checks, "
                             + "Match User signals, blocking, lethal damage or inventory filtering.");
 
             config.save();

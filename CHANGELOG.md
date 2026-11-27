@@ -22,6 +22,9 @@ FIXES
   armor-stand renderers and 3D inventory previews such as Obscure Tooltips align correctly.
 - Draw the armor double-sided like vanilla entity layers, so armor-stand previews no longer show the
   stand through the armor.
+- Full-set Unity now applies to armored mobs and enemies as well as players, including Motion Sensor
+  detection, Emancipation Grill Match User/filter checks, blocking and lethal damage. The leggings
+  speed and boots fall protection also work for any living entity wearing them.
 COMPATIBILITY
 - Existing worlds load unchanged; no registry IDs or NBT formats moved. Clients and servers should
   share `config/ntmdoors.cfg` so name-tag, movement and Emancipation Grill behavior agree.

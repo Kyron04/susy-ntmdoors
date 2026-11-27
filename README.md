@@ -358,13 +358,14 @@ durability and the damage resistance values.
 * **Chestplate** - ignores Dead Man's Hand weapons-relay bindings when the wearer interacts with a
   bound explosive or a block next to one, so the trap can be disarmed without the matching
   Weapons Relay Key.
-* **Leggings** - grant 1.5x normal movement speed by default.
+* **Leggings** - grant 1.5x normal movement speed by default to any living entity wearing them.
 * **Boots** - prevent a lethal fall from taking the wearer below one heart by default.
 
-When all four configured pieces are worn (or carried, if `RequireWorn` is false), the Unity effect
-makes Motion Sensors and Emancipation Grills ignore the player. The sensor skips detection and
-Match User checks; the grill skips clearance, blocking, lethal damage, inventory filtering and
-Match User signals.
+When all four configured pieces are worn (or carried by a player, if `RequireWorn` is false), the
+Unity effect makes Motion Sensors and Emancipation Grills ignore the armored living entity,
+including players and mobs/enemies. Non-player entities must wear the set. The sensor skips
+detection and Match User checks; the grill skips clearance, blocking, lethal damage, inventory
+filtering and Match User signals.
 
 Other armor sets can use the same behavior. Add their registry names to the matching item list in
 the config, for example `examplemod:kevlar_helmet`. The full-set check reads the same four lists, so

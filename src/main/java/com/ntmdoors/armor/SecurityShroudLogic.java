@@ -65,20 +65,22 @@ public final class SecurityShroudLogic {
     }
 
     /**
-     * True when the player has a configured item in every armor slot. When
-     * {@code unity.RequireWorn} is false, the four pieces may instead be carried anywhere in the
-     * player's inventory.
+     * True when the entity has a configured item in every armor slot. When
+     * {@code unity.RequireWorn} is false, a player may instead carry the four pieces anywhere in
+     * their inventory; non-player entities must always wear them.
      */
-    public static boolean hasFullSet(@Nullable EntityPlayer player) {
-        if (player == null || !isEnabled() || !SecurityShroudConfig.unityEnabled()) return false;
+    public static boolean hasFullSet(@Nullable EntityLivingBase entity) {
+        if (entity == null || !isEnabled() || !SecurityShroudConfig.unityEnabled()) return false;
 
-        if (SecurityShroudConfig.unityRequiresWorn()) {
-            return wearsHelmet(player)
-                    && wearsChestplate(player)
-                    && wearsLeggings(player)
-                    && wearsBoots(player);
+        // Only players have a general inventory. Other living entities must wear the set.
+        if (SecurityShroudConfig.unityRequiresWorn() || !(entity instanceof EntityPlayer)) {
+            return wearsHelmet(entity)
+                    && wearsChestplate(entity)
+                    && wearsLeggings(entity)
+                    && wearsBoots(entity);
         }
 
+        EntityPlayer player = (EntityPlayer) entity;
         return containsInInventory(player, SecurityShroudConfig.helmetItems(),
                 EntityEquipmentSlot.HEAD)
                 && containsInInventory(player, SecurityShroudConfig.chestplateItems(),
@@ -101,26 +103,26 @@ public final class SecurityShroudLogic {
                 && wearsChestplate(player);
     }
 
-    public static boolean preventsLethalFallDamage(@Nullable EntityPlayer player) {
+    public static boolean preventsLethalFallDamage(@Nullable EntityLivingBase entity) {
         return isEnabled()
                 && SecurityShroudConfig.preventLethalFallDamage()
-                && wearsBoots(player);
+                && wearsBoots(entity);
     }
 
-    public static boolean grantsMovementSpeed(@Nullable EntityPlayer player) {
-        return isEnabled() && wearsLeggings(player);
+    public static boolean grantsMovementSpeed(@Nullable EntityLivingBase entity) {
+        return isEnabled() && wearsLeggings(entity);
     }
 
-    public static boolean ignoresMotionSensors(@Nullable EntityPlayer player) {
+    public static boolean ignoresMotionSensors(@Nullable EntityLivingBase entity) {
         return isEnabled()
                 && SecurityShroudConfig.ignoreMotionSensors()
-                && hasFullSet(player);
+                && hasFullSet(entity);
     }
 
-    public static boolean ignoresEmancipationGrills(@Nullable EntityPlayer player) {
+    public static boolean ignoresEmancipationGrills(@Nullable EntityLivingBase entity) {
         return isEnabled()
                 && SecurityShroudConfig.ignoreEmancipationGrills()
-                && hasFullSet(player);
+                && hasFullSet(entity);
     }
 
     private static boolean containsInInventory(EntityPlayer player, Set<String> items,

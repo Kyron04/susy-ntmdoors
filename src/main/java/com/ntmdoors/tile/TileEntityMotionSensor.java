@@ -529,12 +529,13 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
                 EntityLivingBase.class, getProjectionBounds())) {
             if (entity == null || !entity.isEntityAlive() || entity instanceof EntityArmorStand) continue;
 
+            // A full Security Shroud set is invisible to every sensor mode, including Match User
+            // and its redstone events, for players and armored mobs alike.
+            if (SecurityShroudLogic.ignoresMotionSensors(entity)) continue;
+
             boolean player = entity instanceof EntityPlayer;
             if (player) {
                 if (!detectPlayers || ((EntityPlayer) entity).isSpectator()) continue;
-                // A full Security Shroud set is invisible to every sensor mode, including
-                // Match User and its redstone events.
-                if (SecurityShroudLogic.ignoresMotionSensors((EntityPlayer) entity)) continue;
             } else {
                 boolean hostile = entity instanceof IMob;
                 if (hostile ? !detectHostile : !detectNeutral) continue;

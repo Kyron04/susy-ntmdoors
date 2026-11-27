@@ -25,12 +25,12 @@ their capitalisation. The dotted paths below name the property within those nest
 | `securityshroud.helmet.HideNameTags` | `true` | Hide name tags for any living entity wearing a configured helmet. |
 | `securityshroud.chestplate.BypassWeaponsBindings` | `true` | Ignore Dead Man's Hand bindings while wearing a configured chestplate. |
 | `securityshroud.leggings.MovementSpeedBonus` | `0.5` | Movement multiplier; `0.5` is +50%, or 1.5x normal speed. |
-| `securityshroud.boots.PreventLethalFallDamage` | `true` | Cap fall damage before it can take the player below the configured health. |
+| `securityshroud.boots.PreventLethalFallDamage` | `true` | Cap fall damage before it can take the entity below the configured health. |
 | `securityshroud.boots.MinimumHealthAfterFall` | `2.0` | Health left after a prevented lethal fall; `2.0` is one heart. |
 | `securityshroud.unity.EnableUnity` | `true` | Enable the full-set effect. |
-| `securityshroud.unity.RequireWorn` | `true` | Require all four pieces to be equipped. When false, they may be carried anywhere in the inventory. |
-| `securityshroud.unity.IgnoreMotionSensors` | `true` | Full-set players are skipped by Motion Sensors, including Match User. |
-| `securityshroud.unity.IgnoreEmancipationGrills` | `true` | Full-set players are skipped by Emancipation Grills in every mode. |
+| `securityshroud.unity.RequireWorn` | `true` | Require all four pieces to be equipped. When false, players may carry them in the inventory; non-players must wear them. |
+| `securityshroud.unity.IgnoreMotionSensors` | `true` | Full-set entities are skipped by Motion Sensors, including Match User. |
+| `securityshroud.unity.IgnoreEmancipationGrills` | `true` | Full-set entities are skipped by Emancipation Grills in every mode. |
 
 The default protection values total 20 armor points, the vanilla armor cap; higher configured totals
 are still subject to that cap. Toughness defaults to `0.0`; raise it if high-damage attacks still
@@ -100,23 +100,25 @@ full set.
 ## Full-set behavior
 
 Unity requires one configured item in each of the four armor slots. With `RequireWorn` set to
-`false`, the four pieces may instead be anywhere in the player's main inventory, armor slots or
-offhand. The pieces do not have to come from the same mod or set; each slot is checked against its
-own list.
+`false`, a player may instead carry the four pieces in their main inventory, armor slots or offhand;
+non-player entities must wear them. The pieces do not have to come from the same mod or set; each
+slot is checked against its own list.
 
 When `IgnoreMotionSensors` and `IgnoreEmancipationGrills` are enabled:
 
-* Motion Sensors do not see the player and do not fire authorized, unauthorized or Match User
-  events for them.
-* Emancipation Grills ignore the player in every field mode. This includes Solid/Wall clamping,
-  Lethal disintegration, Filter inventory scans and Match User redstone signals.
+* Motion Sensors do not see the armored entity and do not fire authorized, unauthorized or Match
+  User events for it.
+* Emancipation Grills ignore the armored entity in every field mode. This includes Solid/Wall
+  clamping, Lethal disintegration, Filter inventory scans and Match User redstone signals.
 
-Only the player entity is skipped. Mounts, vehicles, projectiles and dropped items are still
-handled by the normal Motion Sensor and Emancipation Grill rules.
+This applies to players and to armored mobs/enemies. Only the armored living entity is skipped;
+mounts, vehicles, projectiles and dropped items are still handled by the normal Motion Sensor and
+Emancipation Grill rules.
 
 ## Multiplayer note
 
 The client reads the same config for name-tag concealment, the movement speed modifier and
 client-side Emancipation Grill movement. Keep `config/ntmdoors.cfg` identical on the client and
 server, including the item lists, `RequireWorn` and the Unity toggles, or a player may see different
-name tags, speed or field resistance than the server applies.
+name tags, speed or field resistance than the server applies. Server-side Unity also covers armored
+mobs, so a mismatched client can predict a different result for those entities.

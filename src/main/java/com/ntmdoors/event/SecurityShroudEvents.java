@@ -5,16 +5,18 @@ import com.ntmdoors.NTMDoors;
 import com.ntmdoors.armor.SecurityShroudLogic;
 import com.ntmdoors.config.SecurityShroudConfig;
 
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.IAttributeInstance;
+import net.minecraft.entity.item.EntityArmorStand;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.DamageSource;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
+import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.util.UUID;
 
@@ -35,25 +37,25 @@ public final class SecurityShroudEvents {
 
     /**
      * Applies the leggings speed multiplier as a single attribute modifier. The fixed UUID keeps
-     * the bonus from stacking when the tick handler runs repeatedly or the config amount changes.
+     * the bonus from stacking when the handler runs repeatedly or the config amount changes.
      */
     @SubscribeEvent
-    public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || event.player == null
-                || event.player.world == null) {
+    public static void onLivingUpdate(LivingUpdateEvent event) {
+        EntityLivingBase entity = event.getEntityLiving();
+        if (entity == null || entity.world == null || entity instanceof EntityArmorStand) return;
+        // The server updates every living entity's attribute. The client only needs the local
+        // player's copy for movement prediction; world positions remain server-authoritative.
+        if (entity.world.isRemote
+                && (!(entity instanceof EntityPlayer) || !((EntityPlayer) entity).isUser())) {
             return;
         }
-        // The server updates every player's attribute. The client only needs its own copy for
-        // movement prediction; other players' positions remain server-authoritative.
-        if (event.player.world.isRemote && !event.player.isUser()) return;
 
-        EntityPlayer player = event.player;
-        IAttributeInstance speed = player.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED);
+        IAttributeInstance speed = entity.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED);
         if (speed == null) return;
 
         AttributeModifier existing = speed.getModifier(SPEED_MODIFIER_ID);
         float bonus = SecurityShroudConfig.movementSpeedBonus();
-        boolean active = SecurityShroudLogic.grantsMovementSpeed(player) && bonus != 0.0F;
+        boolean active = SecurityShroudLogic.grantsMovementSpeed(entity) && bonus != 0.0F;
 
         if (!active) {
             if (existing != null) speed.removeModifier(existing);
@@ -81,14 +83,12 @@ public final class SecurityShroudEvents {
                 || event.getEntityLiving().world.isRemote) {
             return;
         }
-        if (!(event.getEntityLiving() instanceof EntityPlayer)) return;
-
-        EntityPlayer player = (EntityPlayer) event.getEntityLiving();
-        if (!SecurityShroudLogic.preventsLethalFallDamage(player)) return;
+        EntityLivingBase entity = event.getEntityLiving();
+        if (!SecurityShroudLogic.preventsLethalFallDamage(entity)) return;
         if (!DamageSource.FALL.getDamageType().equals(event.getSource().getDamageType())) return;
 
         float minimumHealth = SecurityShroudConfig.minimumHealthAfterFall();
-        float maximumDamage = Math.max(0.0F, player.getHealth() - minimumHealth);
+        float maximumDamage = Math.max(0.0F, entity.getHealth() - minimumHealth);
         if (event.getAmount() > maximumDamage) event.setAmount(maximumDamage);
     }
 
