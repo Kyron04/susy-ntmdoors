@@ -13,8 +13,8 @@ their capitalisation. The dotted paths below name the property within those nest
 | Category / key | Default | Meaning |
 |---|---:|---|
 | `securityshroud.Enabled` | `true` | Master switch for all effects. Items and their stats still exist when false. |
-| `securityshroud.ShowTooltips` | `true` | Show the built-in tooltips, including durability and damage resistance. |
-| `securityshroud.ShowUnityTooltip` | `true` | Show the full-set Unity line. |
+| `securityshroud.ShowTooltips` | `true` | Master tooltip switch for the built-in pieces, including durability and damage resistance. |
+| `securityshroud.ShowUnityTooltip` | `true` | Show the full-set Unity line when `ShowTooltips` is true. |
 | `securityshroud.Durability` | `2500` | Exact maximum durability of each built-in piece. |
 | `securityshroud.HelmetProtection` | `3` | Armor points for the helmet. |
 | `securityshroud.ChestplateProtection` | `8` | Armor points for the chestplate. |
@@ -35,8 +35,8 @@ their capitalisation. The dotted paths below name the property within those nest
 The default protection values total 20 armor points, the vanilla armor cap; higher configured totals
 are still subject to that cap. Toughness defaults to `0.0`; raise it if high-damage attacks still
 hurt too much. The built-in pieces use `EnumRarity.RARE`, so their item names are aqua. Each built-in
-tooltip shows its current/max durability and that piece's armor points, plus the configured full-set
-total.
+tooltip shows its current/max durability and that piece's armor points, plus the effective full-set
+total, capped at 20.
 
 ## Item lists
 
@@ -84,10 +84,12 @@ securityshroud {
 ```
 
 Do not add a list entry if the item does not exist on both the client and server. Unknown entries
-are harmless but never match; they are reported in the log at post-init. Use a different item in
-each list; the full-set check treats the four lists separately. To use another set only for Unity,
-add all four pieces and disable the per-piece toggles (`HideNameTags`, `BypassWeaponsBindings`,
-`MovementSpeedBonus` and `PreventLethalFallDamage`); the four item lists still form the full set.
+are harmless but never match; they are reported in the log at post-init. An empty list disables that
+slot's behavior and full-set requirement. Use a different item in each list; the full-set check
+treats the four lists separately. To use another set only for Unity,
+add all four pieces and disable `HideNameTags`, `BypassWeaponsBindings` and
+`PreventLethalFallDamage`, and set `MovementSpeedBonus` to `0`; the four item lists still form the
+full set.
 
 ## Full-set behavior
 
@@ -96,7 +98,7 @@ Unity requires one configured item in each of the four armor slots. With `Requir
 offhand. The pieces do not have to come from the same mod or set; each slot is checked against its
 own list.
 
-When both Unity toggles are enabled:
+When `IgnoreMotionSensors` and `IgnoreEmancipationGrills` are enabled:
 
 * Motion Sensors do not see the player and do not fire authorized, unauthorized or Match User
   events for them.
@@ -105,8 +107,9 @@ When both Unity toggles are enabled:
 
 ## Multiplayer note
 
-The client reads the same config for name-tag concealment and client-side Emancipation Grill
-movement. Keep `config/ntmdoors.cfg` identical on the client and server, or a full-set player may
-see name tags or client-side field resistance that the server does not agree with.
+The client reads the same config for name-tag concealment, the movement speed modifier and
+client-side Emancipation Grill movement. Keep `config/ntmdoors.cfg` identical on the client and
+server, including the item lists, `RequireWorn` and the Unity toggles, or a player may see different
+name tags, speed or field resistance than the server applies.
 
 

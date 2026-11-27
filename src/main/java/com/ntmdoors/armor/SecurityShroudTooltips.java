@@ -63,14 +63,25 @@ public final class SecurityShroudTooltips {
         tooltip.add(TextFormatting.GRAY + "Damage resistance: " + protection
                 + " (" + fullSet + " full set)");
 
+        boolean sensors = SecurityShroudConfig.ignoreMotionSensors();
+        boolean grills = SecurityShroudConfig.ignoreEmancipationGrills();
         if (SecurityShroudConfig.enabled()
                 && SecurityShroudConfig.showUnityTooltip()
                 && SecurityShroudConfig.unityEnabled()
-                && (SecurityShroudConfig.ignoreMotionSensors()
-                || SecurityShroudConfig.ignoreEmancipationGrills())) {
-            tooltip.add(TextFormatting.AQUA + Names.translationOr(
-                    "item.ntmdoors.security_shroud.unity",
-                    "Unity: Motion Sensors and Emancipation Grills ignore you."));
+                && (sensors || grills)) {
+            String key;
+            String fallback;
+            if (sensors && grills) {
+                key = "item.ntmdoors.security_shroud.unity";
+                fallback = "Unity: Motion Sensors and Emancipation Grills ignore you.";
+            } else if (sensors) {
+                key = "item.ntmdoors.security_shroud.unity.sensors";
+                fallback = "Unity: Motion Sensors ignore you.";
+            } else {
+                key = "item.ntmdoors.security_shroud.unity.grills";
+                fallback = "Unity: Emancipation Grills ignore you.";
+            }
+            tooltip.add(TextFormatting.AQUA + Names.translationOr(key, fallback));
         }
     }
 

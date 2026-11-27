@@ -107,7 +107,8 @@ public final class SecurityShroudConfig {
                     "Show the built-in Security Shroud tooltips, including the durability and "
                             + "damage-resistance lines.");
             showUnityTooltip = config.getBoolean("ShowUnityTooltip", GENERAL, true,
-                    "Show the full-set Unity line on the four built-in pieces.");
+                    "Show the full-set Unity line on the four built-in pieces when ShowTooltips "
+                            + "is true.");
 
             durability = config.getInt("Durability", GENERAL, 2500, 1, 1_000_000,
                     "Exact maximum durability of each built-in Security Shroud piece. "
@@ -241,7 +242,6 @@ public final class SecurityShroudConfig {
                 out.add(name);
             }
         }
-        if (out.isEmpty()) out.add("minecraft:barrier");
         return Collections.unmodifiableSet(out);
     }
 

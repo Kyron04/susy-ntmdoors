@@ -12,8 +12,8 @@ FEATURES
 - Added the full-set Unity effect: Motion Sensors and Emancipation Grills ignore a player wearing all
   four configured pieces.
 - The armor uses rare (aqua) item names. Tooltips now show current/max durability, each piece's
-  damage resistance and the configured full-set total. Default protection is 3/8/6/3 for 20 total
-  armor points.
+  damage resistance and the effective full-set total, capped at 20. Default protection is 3/8/6/3
+  for 20 total armor points.
 - Added `config/ntmdoors.cfg`, which controls durability, protection, every effect value and the item
   lists used for each armor slot. Other mods' armor pieces can be added to those lists and mixed into
   a full set.
