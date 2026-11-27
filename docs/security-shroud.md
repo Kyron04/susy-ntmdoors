@@ -44,9 +44,11 @@ death messages or command output.
 
 The fall cap is per entity and starts its cooldown only when it actually reduces a fall that would
 otherwise take health below `MinimumHealthAfterFall`. While the cooldown runs, ordinary fall damage
-is applied in full, so a second lethal fall within one minute still kills. The cooldown is stored in
-the entity's ForgeData and saved with it. Set `FallProtectionCooldownTicks` to `0` for continuous
-protection. The boots tooltip shows the configured cooldown.
+is applied in full, so a second lethal fall within one minute still kills. A high enough
+`MinimumHealthAfterFall` (for example `40`) prevents all fall damage while the protection is ready;
+the cooldown still applies. The cooldown is stored in the entity's ForgeData and saved with it. Set
+`FallProtectionCooldownTicks` to `0` for continuous protection. The boots tooltip shows the
+configured cooldown.
 
 ## Item lists
 

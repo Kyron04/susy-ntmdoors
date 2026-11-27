@@ -176,7 +176,8 @@ public final class SecurityShroudConfig {
                             + "health. The cap only applies when the cooldown has expired.");
             minimumHealthAfterFall = config.getFloat("MinimumHealthAfterFall", BOOTS, 2.0F, 0.0F, 40.0F,
                     "Health left after a prevented lethal fall. 2.0 = one heart. 0 disables the "
-                            + "protection; 40 makes all falls harmless.");
+                            + "protection; 40 makes any fall harmless while the protection is "
+                            + "ready.");
             fallProtectionCooldownTicks = config.getInt("FallProtectionCooldownTicks", BOOTS,
                     1200, 0, 72000,
                     "Ticks before the boots can cap another lethal fall for the same entity. "

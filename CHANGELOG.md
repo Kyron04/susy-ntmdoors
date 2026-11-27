@@ -19,7 +19,7 @@ FEATURES
   a full set.
 - The boots' lethal-fall protection now has a per-entity one-minute cooldown, configurable with
   `securityshroud.boots.FallProtectionCooldownTicks`. It starts only when a fall is actually capped;
-  other falls during the cooldown remain fully lethal. The boots tooltip shows the cooldown.
+  falls during the cooldown deal full damage. The boots tooltip shows the cooldown.
 FIXES
 - Corrected the Security Shroud armor-stand head pivot and reset the shared body/arm pivots so
   armor-stand renderers and 3D inventory previews such as Obscure Tooltips align correctly.
