@@ -34,6 +34,8 @@ public final class SecurityShroudEvents {
     private static final String SPEED_MODIFIER_NAME = "ntmdoors:security_shroud_speed";
     /** AttributeModifier operation 2: multiply the final attribute value. */
     private static final int MULTIPLY_TOTAL = 2;
+    /** ForgeData key holding the world tick at which the next fall can be capped. */
+    private static final String FALL_PROTECTION_READY_AT = "ntmdoors:fallProtectionReadyAt";
 
     /**
      * Applies the leggings speed multiplier as a single attribute modifier. The fixed UUID keeps
@@ -73,9 +75,10 @@ public final class SecurityShroudEvents {
     }
 
     /**
-     * Caps final fall damage so a player in the boots cannot be taken below the configured health.
-     * {@link LivingDamageEvent} runs after armor, potion and absorption calculations, so the cap
-     * is applied to the damage that would actually reach health.
+     * Caps final fall damage so a wearer of the boots cannot be taken below the configured
+     * health, at most once per configured cooldown. {@link LivingDamageEvent} runs after armor,
+     * potion and absorption calculations, so the cap is applied to the damage that would
+     * actually reach health.
      */
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onLivingDamage(LivingDamageEvent event) {
@@ -87,9 +90,23 @@ public final class SecurityShroudEvents {
         if (!SecurityShroudLogic.preventsLethalFallDamage(entity)) return;
         if (!DamageSource.FALL.getDamageType().equals(event.getSource().getDamageType())) return;
 
+        int cooldown = SecurityShroudConfig.fallProtectionCooldownTicks();
+        long now = entity.world.getTotalWorldTime();
+        if (cooldown > 0
+                && entity.getEntityData().getLong(FALL_PROTECTION_READY_AT) > now) {
+            return;
+        }
+
         float minimumHealth = SecurityShroudConfig.minimumHealthAfterFall();
         float maximumDamage = Math.max(0.0F, entity.getHealth() - minimumHealth);
-        if (event.getAmount() > maximumDamage) event.setAmount(maximumDamage);
+        if (event.getAmount() <= maximumDamage) return;
+
+        event.setAmount(maximumDamage);
+        // Only a fall the boots actually softened starts the cooldown. ForgeData is saved with
+        // the entity, so the timer survives chunk unloads.
+        if (cooldown > 0) {
+            entity.getEntityData().setLong(FALL_PROTECTION_READY_AT, now + cooldown);
+        }
     }
 
     private SecurityShroudEvents() {

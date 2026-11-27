@@ -459,6 +459,7 @@ item.ntmdoors.security_shroud_chestplate.tooltip2=when interacting with bound ex
 item.ntmdoors.security_shroud_leggings.tooltip1=%sx movement speed
 item.ntmdoors.security_shroud_boots.tooltip1=Down but not out. Prevents a lethal fall from
 item.ntmdoors.security_shroud_boots.tooltip2=reducing health below %s.
+item.ntmdoors.security_shroud_boots.tooltip3=Cooldown: %s.
 item.ntmdoors.security_shroud.unity=Unity: Motion Sensors and Emancipation Grills ignore you.
 item.ntmdoors.security_shroud.unity.sensors=Unity: Motion Sensors ignore you.
 item.ntmdoors.security_shroud.unity.grills=Unity: Emancipation Grills ignore you.

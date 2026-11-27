@@ -68,6 +68,12 @@ public final class SecurityShroudTooltips {
                         "item.ntmdoors.security_shroud_boots.tooltip2",
                         "reducing health below %s.",
                         formatHearts(SecurityShroudConfig.minimumHealthAfterFall()));
+                int cooldown = SecurityShroudConfig.fallProtectionCooldownTicks();
+                if (cooldown > 0) {
+                    formattedDescription(tooltip,
+                            "item.ntmdoors.security_shroud_boots.tooltip3",
+                            "Cooldown: %s.", formatDuration(cooldown));
+                }
             }
         } else {
             return;
@@ -133,6 +139,18 @@ public final class SecurityShroudTooltips {
         float hearts = health / 2.0F;
         String number = formatNumber(hearts);
         return number + (Math.abs(hearts - 1.0F) < 0.001F ? " heart" : " hearts");
+    }
+
+    /** Formats a tick cooldown as whole seconds below a minute, otherwise as minutes. */
+    private static String formatDuration(int ticks) {
+        float seconds = ticks / 20.0F;
+        if (seconds < 60.0F) {
+            String number = formatNumber(seconds);
+            return number + (Math.abs(seconds - 1.0F) < 0.001F ? " second" : " seconds");
+        }
+        float minutes = seconds / 60.0F;
+        String number = formatNumber(minutes);
+        return number + (Math.abs(minutes - 1.0F) < 0.001F ? " minute" : " minutes");
     }
 
     private SecurityShroudTooltips() {

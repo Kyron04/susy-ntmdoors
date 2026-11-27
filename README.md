@@ -359,7 +359,8 @@ durability and the damage resistance values.
   bound explosive or a block next to one, so the trap can be disarmed without the matching
   Weapons Relay Key.
 * **Leggings** - grant 1.5x normal movement speed by default to any living entity wearing them.
-* **Boots** - prevent a lethal fall from taking the wearer below one heart by default.
+* **Boots** - prevent a lethal fall from taking the wearer below one heart by default, with a
+  per-entity one-minute cooldown before they can save the same entity again.
 
 When all four configured pieces are worn (or carried by a player, if `RequireWorn` is false), the
 Unity effect makes Motion Sensors and Emancipation Grills ignore the armored living entity,

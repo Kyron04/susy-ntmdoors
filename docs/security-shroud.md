@@ -27,6 +27,7 @@ their capitalisation. The dotted paths below name the property within those nest
 | `securityshroud.leggings.MovementSpeedBonus` | `0.5` | Movement multiplier; `0.5` is +50%, or 1.5x normal speed. |
 | `securityshroud.boots.PreventLethalFallDamage` | `true` | Cap fall damage before it can take the entity below the configured health. |
 | `securityshroud.boots.MinimumHealthAfterFall` | `2.0` | Health left after a prevented lethal fall; `2.0` is one heart. |
+| `securityshroud.boots.FallProtectionCooldownTicks` | `1200` | Ticks before the boots can cap another lethal fall for the same entity; `1200` is one minute. `0` disables the cooldown. |
 | `securityshroud.unity.EnableUnity` | `true` | Enable the full-set effect. |
 | `securityshroud.unity.RequireWorn` | `true` | Require all four pieces to be equipped. When false, players may carry them in the inventory; non-players must wear them. |
 | `securityshroud.unity.IgnoreMotionSensors` | `true` | Full-set entities are skipped by Motion Sensors, including Match User. |
@@ -40,6 +41,12 @@ current/max durability and that piece's armor points, plus the effective full-se
 20. Name-tag concealment is a client-side render effect: clients without the mod, or with
 `HideNameTags` disabled, still see the name. It also does not hide names in the tab list, chat,
 death messages or command output.
+
+The fall cap is per entity and starts its cooldown only when it actually reduces a fall that would
+otherwise take health below `MinimumHealthAfterFall`. While the cooldown runs, ordinary fall damage
+is applied in full, so a second lethal fall within one minute still kills. The cooldown is stored in
+the entity's ForgeData and saved with it. Set `FallProtectionCooldownTicks` to `0` for continuous
+protection. The boots tooltip shows the configured cooldown.
 
 ## Item lists
 

@@ -67,6 +67,7 @@ public final class SecurityShroudConfig {
     private static float movementSpeedBonus = 0.5F;
     private static boolean preventLethalFallDamage = true;
     private static float minimumHealthAfterFall = 2.0F;
+    private static int fallProtectionCooldownTicks = 1200;
 
     private static boolean unityEnabled = true;
     private static boolean unityRequiresWorn = true;
@@ -169,12 +170,19 @@ public final class SecurityShroudConfig {
                             + "leggings are worn.");
 
             config.setCategoryComment(BOOTS,
-                    "The boots behavior caps lethal fall damage.");
+                    "The boots behavior caps lethal fall damage with a per-entity cooldown.");
             preventLethalFallDamage = config.getBoolean("PreventLethalFallDamage", BOOTS, true,
-                    "Prevent fall damage from taking a player below the configured minimum health.");
+                    "Prevent fall damage from taking the wearer below the configured minimum "
+                            + "health. The cap only applies when the cooldown has expired.");
             minimumHealthAfterFall = config.getFloat("MinimumHealthAfterFall", BOOTS, 2.0F, 0.0F, 40.0F,
                     "Health left after a prevented lethal fall. 2.0 = one heart. 0 disables the "
                             + "protection; 40 makes all falls harmless.");
+            fallProtectionCooldownTicks = config.getInt("FallProtectionCooldownTicks", BOOTS,
+                    1200, 0, 72000,
+                    "Ticks before the boots can cap another lethal fall for the same entity. "
+                            + "1200 = one minute. The cooldown only starts when a fall would "
+                            + "actually take health below MinimumHealthAfterFall. 0 disables the "
+                            + "cooldown.");
 
             config.setCategoryComment(UNITY,
                     "The Unity effect requires one configured item in every armor slot (or one of "
@@ -222,6 +230,7 @@ public final class SecurityShroudConfig {
         movementSpeedBonus = 0.5F;
         preventLethalFallDamage = true;
         minimumHealthAfterFall = 2.0F;
+        fallProtectionCooldownTicks = 1200;
         unityEnabled = true;
         unityRequiresWorn = true;
         ignoreMotionSensors = true;
@@ -375,6 +384,11 @@ public final class SecurityShroudConfig {
 
     public static float minimumHealthAfterFall() {
         return minimumHealthAfterFall;
+    }
+
+    /** Per-entity delay before the boots can cap another lethal fall; 0 disables the cooldown. */
+    public static int fallProtectionCooldownTicks() {
+        return fallProtectionCooldownTicks;
     }
 
     public static boolean unityEnabled() {
