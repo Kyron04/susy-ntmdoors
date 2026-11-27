@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 # Vertices baked into biped space (Y down); winding reversed so outward faces stay front-facing.
-# Converted from SEC leggings.bbmodel for the Security Shroud leggings.
+# Converted from sec_leggings.bbmodel for the Security Shroud leggings.
 o security_shroud_leggings
 g left_leg
 v 4.5 12 2.5

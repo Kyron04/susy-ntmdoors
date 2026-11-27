@@ -1,6 +1,12 @@
 NTM DOORS: 1.0.81
 Minecraft 1.12.2 / Forge 14.23.5.2847
 
+UNRELEASED
+FEATURES
+- Added the cosmetic Security Shroud armor set: helmet, chestplate, leggings and boots with custom
+  OBJ armor models, layer textures, creative-tab entries and armor-stand/crouch support. The set has
+  no protection or durability.
+
 1.0.81
 FEATURES
 - Added Contraband Containment to Filter Mode. A valid container bound to the Grill receives the

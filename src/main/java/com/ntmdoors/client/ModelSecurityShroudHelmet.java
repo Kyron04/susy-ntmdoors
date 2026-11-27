@@ -54,6 +54,7 @@ public final class ModelSecurityShroudHelmet extends ModelBiped {
 
         ObjModel model = ObjModel.get(MODEL);
         if (model == null) return;
+        if (!this.bipedHead.showModel || this.bipedHead.isHidden) return;
 
         boolean cull = GL11.glIsEnabled(GL11.GL_CULL_FACE);
         GlStateManager.pushMatrix();
@@ -72,7 +73,6 @@ public final class ModelSecurityShroudHelmet extends ModelBiped {
             // not model pixels: do not multiply by scale, and apply it before the head pivot.
             GlStateManager.translate(0.0F, 0.2F, 0.0F);
         }
-        if (!this.bipedHead.showModel || this.bipedHead.isHidden) return;
         bipedHead.postRender(scale);
         // The OBJ vertices are already in the head's Y-down space.
         GlStateManager.scale(scale, scale, scale);

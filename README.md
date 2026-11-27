@@ -14,8 +14,9 @@ equipment and concrete building set.
 ## Overview
 
 NTM Doors adds 27 multiblock doors, keycard and biometric access control, keypads, safes, monitors,
-motion sensors, speakers, the Emancipation Grill and the concrete and HL Blocks building sets. It is
-a standalone port: no NTM installation is required, and every model, texture and sound is bundled.
+motion sensors, speakers, the Emancipation Grill, the concrete and HL Blocks building sets and the
+cosmetic Security Shroud armor set. It is a standalone port: no NTM installation is required, and
+every model, texture and sound is bundled.
 The implementation and the included door, concrete and HL Blocks assets are used under the
 LGPL-3.0; see [LICENSE.LESSER](LICENSE.LESSER) and [NOTICE](NOTICE) for attribution and source
 information.
@@ -58,6 +59,9 @@ reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
 - [AI assistance](#ai-assistance)
 
 ## Features
+* Cosmetic Security Shroud armor set: helmet, chestplate, leggings and boots rendered from custom
+  OBJ models with their own layer textures. The set grants no protection or durability and is
+  available in the creative tab.
 * Multiblock doors of any footprint, placed in one click, rotate with the player, removed as one piece
 * Core tile entity with state machine CLOSED / OPENING / OPEN / CLOSING, synced to clients
 * Redstone from any cell of the door (edge triggered), right click toggle
