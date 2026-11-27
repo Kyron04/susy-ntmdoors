@@ -62,22 +62,6 @@ public final class SecurityShroudLogic {
         return matches(stack, SecurityShroudConfig.bootsItems());
     }
 
-    /** True when the stack is configured for the requested slot. */
-    public static boolean isConfiguredForSlot(ItemStack stack, EntityEquipmentSlot slot) {
-        switch (slot) {
-            case HEAD:
-                return isConfiguredHelmet(stack);
-            case CHEST:
-                return isConfiguredChestplate(stack);
-            case LEGS:
-                return isConfiguredLeggings(stack);
-            case FEET:
-                return isConfiguredBoots(stack);
-            default:
-                return false;
-        }
-    }
-
     /**
      * True when the player has a configured item in every armor slot. When
      * {@code unity.RequireWorn} is false, the four pieces may instead be carried anywhere in the

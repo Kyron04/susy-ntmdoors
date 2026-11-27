@@ -78,7 +78,7 @@ public final class SecurityShroudConfig {
         try {
             File directory = Loader.instance().getConfigDir();
             if (directory != null) load(new File(directory, FILE_NAME));
-        } catch (Throwable ignored) {
+        } catch (RuntimeException ignored) {
             // Loader is not ready yet. Defaults stay in place and pre-init will load the file.
         }
     }
@@ -91,8 +91,8 @@ public final class SecurityShroudConfig {
             return;
         }
 
-        Configuration config = new Configuration(file);
         try {
+            Configuration config = new Configuration(file);
             config.load();
 
             config.setCategoryComment(GENERAL,
@@ -104,7 +104,8 @@ public final class SecurityShroudConfig {
                     "Master switch for all Security Shroud effects. The armor items still exist "
                             + "and keep their durability and protection values when this is false.");
             showTooltips = config.getBoolean("ShowTooltips", GENERAL, true,
-                    "Show the per-piece Security Shroud descriptions on the four built-in pieces.");
+                    "Show the built-in Security Shroud tooltips, including the durability and "
+                            + "damage-resistance lines.");
             showUnityTooltip = config.getBoolean("ShowUnityTooltip", GENERAL, true,
                     "Show the full-set Unity line on the four built-in pieces.");
 

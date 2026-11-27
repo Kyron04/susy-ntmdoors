@@ -17,9 +17,12 @@ import java.util.List;
 /** Tooltip lines for the four built-in Security Shroud pieces. */
 public final class SecurityShroudTooltips {
 
+    /** Vanilla caps the armor bar and damage reduction at 20 points. */
+    private static final int VANILLA_ARMOR_CAP = 20;
+
     public static void add(ItemStack stack, List<String> tooltip) {
         if (stack == null || tooltip == null) return;
-        if (!SecurityShroudConfig.enabled() || !SecurityShroudConfig.showTooltips()) return;
+        if (!SecurityShroudConfig.showTooltips()) return;
 
         Item item = stack.getItem();
         int protection;
@@ -55,11 +58,13 @@ public final class SecurityShroudTooltips {
 
         int maxDamage = stack.getMaxDamage();
         int remaining = Math.max(0, maxDamage - stack.getItemDamage());
+        int fullSet = Math.min(VANILLA_ARMOR_CAP, SecurityShroudConfig.totalProtection());
         tooltip.add(TextFormatting.GRAY + "Durability: " + remaining + " / " + maxDamage);
         tooltip.add(TextFormatting.GRAY + "Damage resistance: " + protection
-                + " (" + SecurityShroudConfig.totalProtection() + " full set)");
+                + " (" + fullSet + " full set)");
 
-        if (SecurityShroudConfig.showUnityTooltip()
+        if (SecurityShroudConfig.enabled()
+                && SecurityShroudConfig.showUnityTooltip()
                 && SecurityShroudConfig.unityEnabled()
                 && (SecurityShroudConfig.ignoreMotionSensors()
                 || SecurityShroudConfig.ignoreEmancipationGrills())) {
@@ -71,6 +76,7 @@ public final class SecurityShroudTooltips {
 
     /** Adds translated lines with English fallbacks, in the standard grey description style. */
     private static void description(List<String> tooltip, String... keyFallbackPairs) {
+        if (!SecurityShroudConfig.enabled()) return;
         for (int i = 0; i + 1 < keyFallbackPairs.length; i += 2) {
             tooltip.add(TextFormatting.GRAY + Names.translationOr(
                     keyFallbackPairs[i], keyFallbackPairs[i + 1]));

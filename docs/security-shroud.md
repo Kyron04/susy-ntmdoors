@@ -13,7 +13,7 @@ their capitalisation. The dotted paths below name the property within those nest
 | Category / key | Default | Meaning |
 |---|---:|---|
 | `securityshroud.Enabled` | `true` | Master switch for all effects. Items and their stats still exist when false. |
-| `securityshroud.ShowTooltips` | `true` | Show the four built-in piece descriptions. |
+| `securityshroud.ShowTooltips` | `true` | Show the built-in tooltips, including durability and damage resistance. |
 | `securityshroud.ShowUnityTooltip` | `true` | Show the full-set Unity line. |
 | `securityshroud.Durability` | `2500` | Exact maximum durability of each built-in piece. |
 | `securityshroud.HelmetProtection` | `3` | Armor points for the helmet. |
@@ -33,9 +33,10 @@ their capitalisation. The dotted paths below name the property within those nest
 | `securityshroud.unity.IgnoreEmancipationGrills` | `true` | Full-set players are skipped by Emancipation Grills in every mode. |
 
 The default protection values total 20 armor points, the vanilla armor cap; higher configured totals
-are still subject to that cap. The built-in pieces use `EnumRarity.RARE`, so their item names are
-aqua. Each built-in tooltip shows its current/max durability and that piece's armor points, plus the
-configured full-set total.
+are still subject to that cap. Toughness defaults to `0.0`; raise it if high-damage attacks still
+hurt too much. The built-in pieces use `EnumRarity.RARE`, so their item names are aqua. Each built-in
+tooltip shows its current/max durability and that piece's armor points, plus the configured full-set
+total.
 
 ## Item lists
 
@@ -83,9 +84,10 @@ securityshroud {
 ```
 
 Do not add a list entry if the item does not exist on both the client and server. Unknown entries
-are harmless but never match. To use another set only for Unity, add all four pieces and disable the
-per-piece toggles (`HideNameTags`, `BypassWeaponsBindings`, `MovementSpeedBonus` and
-`PreventLethalFallDamage`); the four item lists still form the full set.
+are harmless but never match; they are reported in the log at post-init. Use a different item in
+each list; the full-set check treats the four lists separately. To use another set only for Unity,
+add all four pieces and disable the per-piece toggles (`HideNameTags`, `BypassWeaponsBindings`,
+`MovementSpeedBonus` and `PreventLethalFallDamage`); the four item lists still form the full set.
 
 ## Full-set behavior
 

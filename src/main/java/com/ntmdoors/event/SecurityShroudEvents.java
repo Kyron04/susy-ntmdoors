@@ -28,6 +28,8 @@ public final class SecurityShroudEvents {
     private static final UUID SPEED_MODIFIER_ID =
             UUID.fromString("7c9e2a52-4d3a-4b7a-9e7c-2d3f4a5b6c7d");
     private static final String SPEED_MODIFIER_NAME = "ntmdoors:security_shroud_speed";
+    /** AttributeModifier operation 2: multiply the final attribute value. */
+    private static final int MULTIPLY_TOTAL = 2;
 
     /**
      * Applies the leggings speed multiplier as a single attribute modifier. The fixed UUID keeps
@@ -39,6 +41,9 @@ public final class SecurityShroudEvents {
                 || event.player.world == null) {
             return;
         }
+        // The server updates every player's attribute. The client only needs its own copy for
+        // movement prediction; other players' positions remain server-authoritative.
+        if (event.player.world.isRemote && !event.player.isUser()) return;
 
         EntityPlayer player = event.player;
         IAttributeInstance speed = player.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED);
@@ -55,11 +60,11 @@ public final class SecurityShroudEvents {
 
         if (existing == null) {
             speed.applyModifier(new AttributeModifier(
-                    SPEED_MODIFIER_ID, SPEED_MODIFIER_NAME, bonus, 2));
+                    SPEED_MODIFIER_ID, SPEED_MODIFIER_NAME, bonus, MULTIPLY_TOTAL));
         } else if (Double.compare(existing.getAmount(), bonus) != 0) {
             speed.removeModifier(existing);
             speed.applyModifier(new AttributeModifier(
-                    SPEED_MODIFIER_ID, SPEED_MODIFIER_NAME, bonus, 2));
+                    SPEED_MODIFIER_ID, SPEED_MODIFIER_NAME, bonus, MULTIPLY_TOTAL));
         }
     }
 
