@@ -86,6 +86,14 @@ public final class ModelSecurityShroudChestplate extends ModelBiped {
         copyRotation(stand.getBodyRotation(), this.bipedBody);
         copyRotation(stand.getLeftArmRotation(), this.bipedLeftArm);
         copyRotation(stand.getRightArmRotation(), this.bipedRightArm);
+        // ModelBiped mutates arm pivots for sneak/ride poses. The model instances are shared
+        // between player and preview renders, so restore the armor-stand pivots explicitly.
+        this.bipedBody.setRotationPoint(0.0F, 0.0F, 0.0F);
+        this.bipedLeftArm.setRotationPoint(5.0F, 2.0F, 0.0F);
+        this.bipedRightArm.setRotationPoint(-5.0F, 2.0F, 0.0F);
+        this.isChild = false;
+        this.isRiding = false;
+        this.isSneak = false;
     }
 
     private static void copyRotation(Rotations rotations, ModelRenderer part) {

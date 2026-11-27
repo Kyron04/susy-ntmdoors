@@ -85,6 +85,9 @@ public final class ModelSecurityShroudLeggings extends ModelBiped {
         this.bipedLeftLeg.setRotationPoint(1.9F, 11.0F, 0.0F);
         copyRotation(stand.getRightLegRotation(), this.bipedRightLeg);
         this.bipedRightLeg.setRotationPoint(-1.9F, 11.0F, 0.0F);
+        this.isChild = false;
+        this.isRiding = false;
+        this.isSneak = false;
     }
 
     private static void copyRotation(Rotations rotations, ModelRenderer part) {
