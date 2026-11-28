@@ -162,6 +162,7 @@ public class ItemRedstoneRelayKey extends Item {
                 "and sensors to a Redstone Gate.",
                 "Sneak + Right Click a gate to bind",
                 "other gates, doors and grills to its output.",
+                "Each successful link ends the session.",
                 "Normal Right Click a Speaker to bind it.",
                 "Sneak + Right Click a Keypad to configure it.",
                 "Sneak + Right Click a Motion Sensor to bind it.",

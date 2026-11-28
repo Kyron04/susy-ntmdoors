@@ -108,6 +108,9 @@ The Emancipation Grill is a new paired security field based on the Portal 2 fizz
   start and end on a known GL baseline, so a tile entity rendered earlier in the frame cannot leave
   a tint, disabled lighting or changed depth/cull state behind.
 - Fixed horizontal field rotation, emitter-strip alignment and player/entity movement on the field.
+- The Redstone Relay Key now ends its binding session after each successful link. The new link stays
+  active, and the next click starts a fresh session, so another device or gate can be bound without
+  first clearing the old session.
 - Marked item tooltip overrides as client-only to avoid dedicated-server class-loading errors.
 - Hardened the Emancipation Relay Key with a reach check and guarded malformed UUID NBT in keycard
   scanner and weapons key data.

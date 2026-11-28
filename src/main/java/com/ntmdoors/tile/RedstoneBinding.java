@@ -182,6 +182,7 @@ public final class RedstoneBinding {
         callbacks.onRedstoneBindingChanged();
         callbacks.syncRedstoneState();
         callbacks.sendRedstoneMessage(player, "ntmdoors.msg.redstone_gate_linked");
+        completeLinkSession();
         return true;
     }
 
@@ -229,6 +230,7 @@ public final class RedstoneBinding {
         callbacks.onRedstoneBindingChanged();
         callbacks.syncRedstoneState();
         callbacks.sendRedstoneMessage(player, "ntmdoors.msg.redstone_door_linked");
+        completeLinkSession();
         return true;
     }
 
@@ -267,7 +269,16 @@ public final class RedstoneBinding {
         callbacks.onRedstoneBindingChanged();
         callbacks.syncRedstoneState();
         callbacks.sendRedstoneMessage(player, "ntmdoors.msg.redstone_grill_linked");
+        completeLinkSession();
         return true;
+    }
+
+    /**
+     * A successful link is one action: end the session so the next click starts a fresh bind
+     * instead of being treated as part of the old one. Existing links are untouched.
+     */
+    private void completeLinkSession() {
+        stop(null);
     }
 
     /**

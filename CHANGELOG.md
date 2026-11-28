@@ -33,6 +33,9 @@ FEATURES
 - Added Aperture Laboratories, G-Man and SCP wallpapers to the monitor Display task. The Display
   grid now uses five columns, giving eight built-in images alongside the Terminal tile.
 FIXES
+- The Redstone Relay Key now ends the binding session after each successful link. The new link stays
+  in place, and the next click starts a fresh session, so another device or gate can be bound
+  without first clearing the old session.
 - Corrected the Security Shroud armor-stand head pivot and reset the shared body/arm pivots so
   armor-stand renderers and 3D inventory previews such as Obscure Tooltips align correctly.
 - Draw the armor double-sided like vanilla entity layers, so armor-stand previews no longer show the

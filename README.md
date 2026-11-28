@@ -532,17 +532,20 @@ as are the four Security Shroud pieces, and have no crafting recipes.
   +1/+5/+10/+20 second and matching subtract buttons. It has a red menu name and the tooltip
   `Bound activities from Keypads, Keycard Scanners, and Safes will emit a redstone signal` plus the
   Redstone Relay Key instructions. A gate can also be the start of a relay-key session: link other
-  gates and doors to its output, and they follow it on and off. Links are directional, work in the
-  same dimension, and a link that would close a feedback loop is refused.
+  gates and doors to its output, and they follow it on and off. Each successful link ends the
+  session; start it again at the source gate to add another target. Links are directional, work in
+  the same dimension, and a link that would close a feedback loop is refused.
 * Redstone Relay Key (`ntmdoors:redstone_relay_key`): a red-named creative key with the tooltip
   `Links keypads, scanners, safes, speakers and sensors to a Redstone Gate`. Sneak +
-  right-click a safe, scanner or motion sensor to start/finish a wireless binding session, then
-  sneak + right-click a gate to link or unlink it. On a keypad, a normal right-click starts/finishes
-  the binding session; sneak + right-click opens its configuration screen. On a speaker, a normal
-  right-click starts/finishes the binding session, and its shift-right-click screen is unavailable
-  while the key is held. Sneak + right-click a gate to start/finish a gate
-  session, then sneak + right-click other gates to relay the signal or doors to open and close them
-  with that gate. Devices and gates can be linked many-to-many in the same dimension; doors are
+  right-click a safe, scanner or motion sensor to start a wireless binding session, then sneak +
+  right-click a gate to link or unlink it. A successful link ends the session silently, so the next
+  click starts fresh. On a keypad, a normal right-click starts/finishes the binding session; sneak +
+  right-click opens its configuration screen. On a speaker, a normal right-click starts/finishes the
+  binding session, and its shift-right-click screen is unavailable while the key is held. Sneak +
+  right-click a gate to start/finish a gate session, then sneak + right-click other gates to relay
+  the signal or doors to open and close them with that gate. Each successful link ends the session;
+  sneak + right-click the source gate again to add another target. Devices and gates can be linked
+  many-to-many in the same dimension; doors are
   driven by gate sessions only, breached doors refuse the link, and security doors accept it only
   after their owner enables Redstone access with the Monocle.
 * Redstone Monocle (`ntmdoors:redstone_monocle`): a red-named diagnostic item with a
