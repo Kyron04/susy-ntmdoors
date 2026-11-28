@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 package com.ntmdoors.network;
 
+import com.ntmdoors.monitor.MonitorAccess;
 import com.ntmdoors.tile.TileEntityEmancipationGrill;
 import com.ntmdoors.tile.TileEntityEmancipationGrill.FieldColour;
 import com.ntmdoors.tile.TileEntityEmancipationGrill.FieldMode;
@@ -86,12 +87,13 @@ public class MessageGrillOption implements IMessage {
         private static void apply(EntityPlayerMP player, MessageGrillOption message) {
             if (message.pos == null) return;
             if (message.option < 0 || message.option >= OPTION_COUNT) return;
-            if (!NetworkUtil.isWithinReach(player, message.pos)) return;
+            if (!MonitorAccess.canAccess(player, message.pos)) return;
 
             TileEntity te = player.world.getTileEntity(message.pos);
             if (!(te instanceof TileEntityEmancipationGrill)) return;
             TileEntityEmancipationGrill grill = ((TileEntityEmancipationGrill) te).getSecurityCore();
-            if (grill == null || !grill.hasConsoleAccess(player)) return;
+            boolean remote = MonitorAccess.isRemoteAuthorized(player, message.pos);
+            if (grill == null || (!remote && !grill.hasConsoleAccess(player))) return;
 
             switch (message.option) {
                 case MODE_SOLID:

@@ -250,6 +250,9 @@ public class ClientProxy extends CommonProxy {
             case SPEAKER:
                 mc.displayGuiScreen(new GuiSpeaker(device.pos));
                 break;
+            case EMANCIPATION_GRILL:
+                mc.displayGuiScreen(new GuiEmancipationGrill(device.pos));
+                break;
             default:
                 break;
         }

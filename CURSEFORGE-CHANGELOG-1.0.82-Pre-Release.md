@@ -54,6 +54,10 @@ The Emancipation Grill is a new paired security field based on the Portal 2 fizz
   Drop all fields / Raise all fields actions. Gates can drive a field and receive the Grill's
   one-tick event pulses for authorized passage, blocked entities, lethal kills and Match User
   checks. Starting a Redstone Relay Key session on an owned Grill is owner-only.
+- Security terminal access: click a net-linked Grill in the Devices tab to open its full console
+  while you remain at the desk. The terminal session authorizes remote access, so no Relay Key is
+  needed to open it; assigning keys still needs an Operator Keycard in the inventory and starting a
+  contraband binding session still needs a Relay Key there. Escape returns to the same net.
 - Portal 2 fizzler start, loop and shutdown sounds, plus a disintegration one-shot for lethal and
   filter voids. Three-block audible radius with an Audio toggle.
 - The field visual uses scrolling wisp layers, edge lines and drifting sparks, with no shaders or

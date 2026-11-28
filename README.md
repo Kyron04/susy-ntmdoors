@@ -483,8 +483,9 @@ only runs while Filter Mode is active.
 ### Redstone, terminals and audio
 
 * Bind gates to the grill with the Redstone Relay Key to receive its event pulses. A Security
-  terminal can list a grill as a device, toggle its field, and run net-wide Drop all fields / Raise
-  all fields actions.
+  terminal can list a grill as a device, toggle its field, open its full console from the Devices
+  tab, and run net-wide Drop all fields / Raise all fields actions. The terminal session authorizes
+  the remote console without holding a Relay Key; Escape returns to the same net.
 * Linking a grill to an off gate drops the field once so the console can be configured. Afterwards
   gate activation can raise the field, but gate deactivation and the grill's own pulses leave the
   configured field alone.
@@ -496,7 +497,8 @@ only runs while Filter Mode is active.
 ### Ownership and placement
 
 * The first grill placed owns the pair. The second adopts that owner. The owner can open the
-  console and use Breaker keys on it; ownership alone does not grant field passage.
+  console directly or through a Security terminal, and use Breaker keys on it; ownership alone does
+  not grant field passage.
 * Solid, Lethal and Wall reserve the one-block doorway slice at the field line. Neutral and Filter
   do not, so the doorway can be built through while those modes are active.
 * The horizontal variant shares the console, ownership, Redstone, terminal device type and

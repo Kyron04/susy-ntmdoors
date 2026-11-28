@@ -26,6 +26,10 @@ FEATURES
   Lethal with `Ignore Items` stops dropped items at the plane instead of erasing them.
 - Confiscated Filter Mode items now show `Contraband confiscated` when the bound container accepts
   everything, or `Contraband eliminated` when any part is voided.
+- Security terminals can now open a net-linked Emancipation Grill's full console from the Devices
+  tab. The terminal session authorizes remote access without holding the Relay Key; key assignment
+  still uses an Operator Keycard and contraband binding still uses a Relay Key in the inventory.
+  Escape returns to the same net.
 FIXES
 - Corrected the Security Shroud armor-stand head pivot and reset the shared body/arm pivots so
   armor-stand renderers and 3D inventory previews such as Obscure Tooltips align correctly.

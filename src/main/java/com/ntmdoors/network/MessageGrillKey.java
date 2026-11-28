@@ -2,6 +2,7 @@
 package com.ntmdoors.network;
 
 import com.ntmdoors.item.ItemOperatorKeycard;
+import com.ntmdoors.monitor.MonitorAccess;
 import com.ntmdoors.tile.TileEntityEmancipationGrill;
 import com.ntmdoors.util.Biometrics;
 import com.ntmdoors.util.HeldItems;
@@ -66,12 +67,13 @@ public class MessageGrillKey implements IMessage {
 
         private static void apply(EntityPlayerMP player, MessageGrillKey message) {
             if (message.pos == null || message.value == null || message.value.isEmpty()) return;
-            if (!NetworkUtil.isWithinReach(player, message.pos)) return;
+            if (!MonitorAccess.canAccess(player, message.pos)) return;
 
             TileEntity te = player.world.getTileEntity(message.pos);
             if (!(te instanceof TileEntityEmancipationGrill)) return;
             TileEntityEmancipationGrill grill = ((TileEntityEmancipationGrill) te).getSecurityCore();
-            if (grill == null || !grill.hasConsoleAccess(player)) return;
+            boolean remote = MonitorAccess.isRemoteAuthorized(player, message.pos);
+            if (grill == null || (!remote && !grill.hasConsoleAccess(player))) return;
 
             if (!message.assign) {
                 if (message.biometric) grill.unassignId(message.value);

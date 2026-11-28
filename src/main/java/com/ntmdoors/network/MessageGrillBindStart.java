@@ -2,6 +2,7 @@
 package com.ntmdoors.network;
 
 import com.ntmdoors.item.ItemEmancipationRelayKey;
+import com.ntmdoors.monitor.MonitorAccess;
 import com.ntmdoors.tile.TileEntityEmancipationGrill;
 import com.ntmdoors.util.GrillContainmentData;
 import com.ntmdoors.util.HeldItems;
@@ -57,14 +58,15 @@ public class MessageGrillBindStart implements IMessage {
         }
 
         private static void apply(EntityPlayerMP player, MessageGrillBindStart message) {
-            if (message.pos == null || !NetworkUtil.isWithinReach(player, message.pos)) return;
+            if (message.pos == null || !MonitorAccess.canAccess(player, message.pos)) return;
 
             TileEntity te = player.world.getTileEntity(message.pos);
             if (!(te instanceof TileEntityEmancipationGrill)) return;
             TileEntityEmancipationGrill grill = ((TileEntityEmancipationGrill) te).getSecurityCore();
             if (grill == null) return;
 
-            if (!grill.hasConsoleAccess(player)) {
+            boolean remote = MonitorAccess.isRemoteAuthorized(player, message.pos);
+            if (!remote && !grill.hasConsoleAccess(player)) {
                 fail(player, "ntmdoors.msg.emancipation_owner_only");
                 return;
             }
