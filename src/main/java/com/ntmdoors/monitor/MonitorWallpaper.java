@@ -43,6 +43,7 @@ public final class MonitorWallpaper {
         builtins.add(new Builtin("goog", "GOOG..."));
         builtins.add(new Builtin("world_map", "WORLD MAP"));
         builtins.add(new Builtin("windows_error", "WINDOWS ERROR"));
+        builtins.add(new Builtin("aperture", "APERTURE"));
         BUILTINS = Collections.unmodifiableList(builtins);
         Map<String, Builtin> byId = new HashMap<>();
         for (Builtin builtin : builtins) byId.put(builtin.id, builtin);

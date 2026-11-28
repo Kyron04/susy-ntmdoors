@@ -28,6 +28,8 @@ import static com.ntmdoors.client.GuiMonitor.TEXT;
  */
 final class GuiMonitorDisplayController {
 
+    private static final int COLUMNS = 4;
+
     private final GuiMonitor gui;
 
     String wallpaper = "";
@@ -71,9 +73,8 @@ final class GuiMonitorDisplayController {
     }
 
     private int cellWidth() {
-        int columns = 3;
         return Math.max(40, (gui.contentRight - gui.contentLeft
-                - (columns - 1) * DISPLAY_TILE_GAP) / columns);
+                - (COLUMNS - 1) * DISPLAY_TILE_GAP) / COLUMNS);
     }
 
     private int cellHeight() {
@@ -84,11 +85,11 @@ final class GuiMonitorDisplayController {
     }
 
     private int tileX(int index) {
-        return gui.contentLeft + (index % 3) * (cellWidth() + DISPLAY_TILE_GAP);
+        return gui.contentLeft + (index % COLUMNS) * (cellWidth() + DISPLAY_TILE_GAP);
     }
 
     private int tileY(int index) {
-        return gridTop() + (index / 3) * (cellHeight() + DISPLAY_TILE_GAP);
+        return gridTop() + (index / COLUMNS) * (cellHeight() + DISPLAY_TILE_GAP);
     }
 
     void draw(int mouseX, int mouseY) {
