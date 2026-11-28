@@ -35,6 +35,10 @@ public class GuiSpeaker extends GuiScreen {
     private static final int VOLUME_SLIDER_TOP = 206;
     private static final int SLIDER_LEFT = 16;
     private static final int SLIDER_RIGHT = PANEL_WIDTH - 16;
+    private static final int HOLD_ROW_TOP = 44;
+    private static final int HOLD_ROW_HEIGHT = 30;
+    private static final int TAB_WIDTH = 52;
+    private static final int TIMER_PILL_WIDTH = 76;
 
     private static final int COLOUR = 0xFFE8E8E8;
     private static final int MUTED = 0xFFAFAFAF;
@@ -46,6 +50,7 @@ public class GuiSpeaker extends GuiScreen {
     private final BlockPos pos;
     private int left;
     private int top;
+    private int page;
     private boolean draggingRange;
     private boolean draggingVolume;
     private int previewRange = TileEntitySpeaker.DEFAULT_RANGE;
@@ -65,6 +70,7 @@ public class GuiSpeaker extends GuiScreen {
         super.initGui();
         left = (width - PANEL_WIDTH) / 2;
         top = (height - PANEL_HEIGHT) / 2;
+        page = 0;
     }
 
     @Override
@@ -90,6 +96,8 @@ public class GuiSpeaker extends GuiScreen {
         if (speaker == null) {
             drawCenteredString(fontRenderer, "Unavailable", left + PANEL_WIDTH / 2,
                     top + 66, MUTED);
+        } else if (page == 1) {
+            drawRedstonePage(speaker, mouseX, mouseY);
         } else {
             drawHeading();
             drawRow(0, "Enabled", "Plays while powered.",
@@ -107,9 +115,82 @@ public class GuiSpeaker extends GuiScreen {
 
     private void drawTitle() {
         drawString(fontRenderer, "SPEAKER", left + 12, top + 10, COLOUR);
-        String right = "SETTINGS";
-        drawString(fontRenderer, right,
-                left + PANEL_WIDTH - 12 - fontRenderer.getStringWidth(right), top + 10, MUTED);
+        drawTab(settingsTabX(), "SETTINGS", page == 0);
+        drawTab(redstoneTabX(), "REDSTONE", page == 1);
+    }
+
+    private void drawTab(int x, String label, boolean active) {
+        drawString(fontRenderer, label, x, top + 10, active ? COLOUR : MUTED);
+        if (active) {
+            drawRect(x, top + 19, x + fontRenderer.getStringWidth(label), top + 20, HEADING);
+        }
+    }
+
+    private int settingsTabX() {
+        return left + PANEL_WIDTH - 12 - TAB_WIDTH * 2 - 4;
+    }
+
+    private int redstoneTabX() {
+        return left + PANEL_WIDTH - 12 - TAB_WIDTH;
+    }
+
+    private boolean inTab(int mouseX, int mouseY, int x) {
+        return mouseX >= x && mouseX < x + TAB_WIDTH
+                && mouseY >= top + 5 && mouseY < top + 21;
+    }
+
+    private void drawRedstonePage(TileEntitySpeaker speaker, int mouseX, int mouseY) {
+        drawString(fontRenderer, "WIRELESS", left + 12, top + 28, HEADING);
+        drawRect(left + 12, top + 39, left + PANEL_WIDTH - 12, top + 40, RULE);
+
+        int holdY = top + HOLD_ROW_TOP;
+        if (inHoldRow(mouseX, mouseY)) {
+            drawRect(left + 8, holdY - 3, left + PANEL_WIDTH - 8,
+                    holdY + HOLD_ROW_HEIGHT - 5, HOVER);
+        }
+        drawString(fontRenderer, "Remain active after wireless", left + 16, holdY, COLOUR);
+        drawString(fontRenderer, "Stays on until switched off.", left + 16, holdY + 11, MUTED);
+        drawPill(left + PANEL_WIDTH - 12 - PILL_WIDTH, holdY + 2,
+                speaker.isRemainActive() ? "ON" : "OFF", speaker.isRemainActive());
+
+        drawString(fontRenderer, "ACTIVATION DURATION", left + 12, top + 92, HEADING);
+        drawRect(left + 12, top + 103, left + PANEL_WIDTH - 12, top + 104, RULE);
+        drawString(fontRenderer, "Timer starts when the signal ends.", left + 16, top + 112, MUTED);
+        drawString(fontRenderer, "Current: " + speaker.getActiveSeconds() + " s",
+                left + 16, top + 128, COLOUR);
+        drawTimerPill(speaker, mouseX, mouseY);
+
+        String signal = speaker.isPowered() ? "SIGNAL ON" : "SIGNAL OFF";
+        int signalColour = speaker.isPowered() ? 0xFFD6F0D6 : DIM;
+        drawRect(left + 12, top + 226, left + PANEL_WIDTH - 12, top + 227, RULE);
+        drawString(fontRenderer, signal, left + 14, top + 232, signalColour);
+        drawCenteredString(fontRenderer, "Click TIME to change it. Right-click goes back.",
+                left + PANEL_WIDTH / 2, top + 246, MUTED);
+    }
+
+    private void drawTimerPill(TileEntitySpeaker speaker, int mouseX, int mouseY) {
+        int x = left + PANEL_WIDTH - 12 - TIMER_PILL_WIDTH;
+        int y = top + 86;
+        boolean hovered = inTimerPill(mouseX, mouseY);
+        drawRect(x, y, x + TIMER_PILL_WIDTH, y + PILL_HEIGHT,
+                hovered ? HOVER : 0xFF2A0F12);
+        drawRect(x, y, x + TIMER_PILL_WIDTH, y + 1, RULE);
+        drawRect(x, y + PILL_HEIGHT - 1, x + TIMER_PILL_WIDTH, y + PILL_HEIGHT, 0xFF1A0708);
+        drawCenteredString(fontRenderer, "TIME " + speaker.getActiveSeconds() + " s",
+                x + TIMER_PILL_WIDTH / 2, y + 3, hovered ? 0xFFFFFFFF : 0xFFE6C8C8);
+    }
+
+    private boolean inHoldRow(int mouseX, int mouseY) {
+        int y = top + HOLD_ROW_TOP;
+        return mouseX >= left + 8 && mouseX < left + PANEL_WIDTH - 8
+                && mouseY >= y - 3 && mouseY < y + HOLD_ROW_HEIGHT - 5;
+    }
+
+    private boolean inTimerPill(int mouseX, int mouseY) {
+        int x = left + PANEL_WIDTH - 12 - TIMER_PILL_WIDTH;
+        int y = top + 86;
+        return mouseX >= x && mouseX < x + TIMER_PILL_WIDTH
+                && mouseY >= y && mouseY < y + PILL_HEIGHT;
     }
 
     private void drawHeading() {
@@ -261,8 +342,32 @@ public class GuiSpeaker extends GuiScreen {
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+        if (mouseButton == 0 && inTab(mouseX, mouseY, settingsTabX())) {
+            page = 0;
+            return;
+        }
+        if (mouseButton == 0 && inTab(mouseX, mouseY, redstoneTabX())) {
+            page = 1;
+            return;
+        }
+        if (page == 1 && mouseButton == 1 && inTimerPill(mouseX, mouseY)) {
+            sendOption(MessageSpeakerOption.ACTIVE_PREV, 0);
+            return;
+        }
         if (mouseButton == 0) {
             TileEntitySpeaker speaker = speaker();
+            if (page == 1) {
+                if (speaker != null && inHoldRow(mouseX, mouseY)) {
+                    sendOption(MessageSpeakerOption.REMAIN_ACTIVE,
+                            speaker.isRemainActive() ? 0 : 1);
+                    return;
+                }
+                if (speaker != null && inTimerPill(mouseX, mouseY)) {
+                    sendOption(MessageSpeakerOption.ACTIVE_NEXT, 0);
+                    return;
+                }
+                return;
+            }
             if (speaker != null && inSlider(mouseX, mouseY, top + RANGE_SLIDER_TOP)) {
                 previewRange = speaker.getRange();
                 draggingRange = true;

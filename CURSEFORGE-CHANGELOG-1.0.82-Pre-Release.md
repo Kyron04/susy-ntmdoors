@@ -114,6 +114,10 @@ The Emancipation Grill is a new paired security field based on the Portal 2 fizz
   hold the direct targets as well as linked gates.
 - Redstone Gates can now link speakers directly. A linked speaker sounds while the gate output is
   active and stops when it releases.
+- Grills and speakers now have a receiver-side `Remain active after wireless signal` latch and an
+  activation-duration timer in their redstone controls. Both start off; with the latch off, the
+  timer keeps the field raised or the alarm sounding for 1 second to 5 minutes after the wireless
+  signal ends. Turning the latch on holds it until the field or speaker is switched off.
 - The Redstone Relay Key now ends its binding session after each successful link. The new link stays
   active, and the next click starts a fresh session, so another device or gate can be bound without
   first clearing the old session.
@@ -132,6 +136,9 @@ The Emancipation Grill is a new paired security field based on the Portal 2 fizz
   are appended registrations.
 - New redstone target lists, speaker wireless power and the sensor `PULSE` setting use appended NBT
   keys. Existing sensors, speakers, gates and grills load with their current links and defaults.
+- Grills and speakers start with `Remain active` off and a 1-second post-signal timer. Existing
+  wireless links therefore release 1 second after the signal ends; enable `Remain active` on a
+  grill to keep the previous latch behavior.
 - `config/ntmdoors.cfg` is generated on first launch. Keep it identical on the client and server so
   name-tag, speed, fall-protection and Unity behavior agree.
 - Clients and servers must both update. Older jars keep the old behavior.

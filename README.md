@@ -217,7 +217,11 @@ reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
   saved with the block. A normal right-click with the Redstone Relay
   Key starts/finishes the speaker's own wireless binding session, and starting the alarm pulses
   every linked Redstone Gate. A Redstone Gate or Motion Sensor can also drive the speaker directly:
-  sneak + right-click it while that source's session is active.
+  sneak + right-click it while that source's session is active. The screen has `SETTINGS` and
+  `REDSTONE` tabs. The redstone tab has `Remain active`, which latches the alarm until `Enabled`
+  is switched off, and an `ACTIVATION DURATION` timer from 1 second to 5 minutes. The timer starts
+  when the wireless signal ends and is used while `Remain active` is off. `Remain active` starts
+  off, matching the old signal-following behavior.
 * Motion Sensor (`ntmdoors:motion_sensor`): a compact 8x8x1.375 surface-mounted PIR housing with an
   off-white body, charcoal bezel, ringed concentric Fresnel lens and one status LED with four
   colours. It can be placed on floors, walls and ceilings; the clicked face becomes the lens
@@ -423,6 +427,10 @@ the console. A Creative Keycard also opens it, without an ownership check. It ha
    blue is the original default.
 4. **Redstone events.** Five independent one-tick outputs: Solid pass (Y), Solid block (N),
    Lethal kill, Match User match (Y) and Match User mismatch (N). All default to off and persist.
+   The header also has `REMAIN` and `TIME` pills. `REMAIN` latches the field after a gate or
+   sensor signal ends; it starts off. With it off, `TIME` sets how long the field stays raised
+   after the signal, from 1 second to 5 minutes. Click a pill to step forward; right-click `TIME`
+   to step back.
 5. **Filter lists.** Two 9x6 grids of ghost patterns, one whitelist and one blacklist.
 6. **Contraband containment.** Optional storage for blacklisted Filter Mode items, with the
    container-binding session started from this page.

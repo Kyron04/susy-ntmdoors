@@ -38,6 +38,10 @@ FEATURES
   hold the direct targets as well as linked gates.
 - Redstone Gates can now link speakers directly. A linked speaker sounds while a gate or sensor
   output is active and stops when it releases.
+- Grills and speakers now have a receiver-side `Remain active after wireless signal` latch and an
+  activation-duration timer in their redstone controls. Both start off; with the latch off, the
+  timer keeps the field raised or the alarm sounding for 1 second to 5 minutes after the wireless
+  signal ends. Turning the latch on holds it until the field or speaker is switched off.
 - The Redstone Monocle now draws direct sensor links and speaker targets: amber for doors, cyan for
   grills, green for speakers and blue for device-to-gate links.
 FIXES
@@ -56,7 +60,8 @@ INTERNAL
 COMPATIBILITY
 - Existing 1.0.81 worlds load unchanged; no registry IDs or NBT formats moved. The Security Shroud
   items and the new redstone target lists, speaker wireless power and sensor `PULSE` setting are
-  appended registrations or appended NBT keys.
+  appended registrations or appended NBT keys. Grills and speakers start with `Remain active` off
+  and a 1-second post-signal timer; enable `Remain active` on a grill to keep the previous latch.
 - `config/ntmdoors.cfg` is generated on first launch. Keep it identical on the client and server so
   name-tag, speed, fall-protection and Unity behavior agree.
 - Clients and servers must both update. Chisel 1.12.2-1.0.2.45 remains required; no NTM installation

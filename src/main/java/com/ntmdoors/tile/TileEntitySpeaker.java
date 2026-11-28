@@ -44,6 +44,8 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
     private final RedstoneBinding redstoneBinding = new RedstoneBinding(this);
     /** Wireless gate/sensor sources currently driving the alarm. */
     private final TimedSources linkedPower = new TimedSources();
+    /** Receiver-side latch and post-signal timer for wireless links. */
+    private final WirelessHoldState wirelessHold = new WirelessHoldState();
 
     private boolean enabled = true;
     private int sound = SOUND_AIR_RAID;
@@ -66,7 +68,12 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
     public boolean setEnabled(boolean value) {
         if (world == null || world.isRemote || enabled == value) return false;
         enabled = value;
-        if (value && powered) redstoneBinding.fire();
+        if (!value) {
+            wirelessHold.manualOff();
+            updatePower(isRedstonePowered() || wirelessHold.isActive(world.getTotalWorldTime()));
+        } else if (powered) {
+            redstoneBinding.fire();
+        }
         sync();
         return true;
     }
@@ -117,17 +124,50 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
         return powered;
     }
 
+    public boolean isRemainActive() {
+        return wirelessHold.isRemainActive();
+    }
+
+    public int getActiveSeconds() {
+        return wirelessHold.getActiveSeconds();
+    }
+
+    /** Server side: enables the indefinite wireless latch. */
+    public boolean setRemainActive(boolean value) {
+        if (world == null || world.isRemote) return false;
+        if (!wirelessHold.setRemainActive(value, world.getTotalWorldTime())) return false;
+        updateWirelessPower();
+        sync();
+        return true;
+    }
+
+    /** Server side: steps through the post-signal timer presets. */
+    public boolean cycleActiveTicks(int direction) {
+        if (world == null || world.isRemote) return false;
+        if (!wirelessHold.cycleActiveTicks(direction, world.getTotalWorldTime())) return false;
+        sync();
+        return true;
+    }
+
     /** Server side: a linked gate or sensor reports its output. */
     public void setLinkedPower(BlockPos source, boolean value) {
         if (world == null || world.isRemote || source == null) return;
         TimedSources.Update change = linkedPower.apply(source, value, world.getTotalWorldTime(),
                 RedstoneBinding.LINK_TIMEOUT_TICKS);
         if (change == TimedSources.Update.NONE || change == TimedSources.Update.REFRESHED) return;
-        updatePower(isRedstonePowered() || isWirelessPowered());
+        updateWirelessPower();
+    }
+
+    private void updateWirelessPower() {
+        if (world == null || world.isRemote) return;
+        long now = world.getTotalWorldTime();
+        boolean changed = wirelessHold.setInput(linkedPower.isActive(now), now);
+        updatePower(isRedstonePowered() || wirelessHold.isActive(now));
+        if (changed) sync();
     }
 
     private boolean isWirelessPowered() {
-        return world != null && linkedPower.isActive(world.getTotalWorldTime());
+        return wirelessHold.isActive(world == null ? 0L : world.getTotalWorldTime());
     }
 
     public SoundEvent getSoundEvent() {
@@ -219,8 +259,11 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
             sync();
         }
 
-        linkedPower.prune(world.getTotalWorldTime());
-        updatePower(isRedstonePowered() || isWirelessPowered());
+        long now = world.getTotalWorldTime();
+        linkedPower.prune(now);
+        updateWirelessPower();
+        wirelessHold.tick(now);
+        updatePower(isRedstonePowered() || wirelessHold.isActive(now));
         redstoneBinding.update();
     }
 
@@ -305,6 +348,7 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
         tag.setBoolean("powered", powered);
         tag.setBoolean("systemAlarm", systemAlarm);
         tag.setString("linkedPower", BlockPositions.encodeList(linkedPower.keys()));
+        wirelessHold.writeToNBT(tag, "wireless");
         redstoneBinding.writeToNBT(tag);
         return tag;
     }
@@ -319,10 +363,12 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
         powered = tag.getBoolean("powered");
         systemAlarm = tag.getBoolean("systemAlarm");
         linkedPower.clear();
+        long now = world == null ? 0L : world.getTotalWorldTime();
         if (tag.hasKey("linkedPower") && world != null) {
             linkedPower.load(BlockPositions.decodeList(tag.getString("linkedPower")),
-                    world.getTotalWorldTime() + RedstoneBinding.LINK_TIMEOUT_TICKS);
+                    now + RedstoneBinding.LINK_TIMEOUT_TICKS);
         }
+        wirelessHold.readFromNBT(tag, "wireless", now);
         redstoneBinding.readFromNBT(tag);
     }
 }

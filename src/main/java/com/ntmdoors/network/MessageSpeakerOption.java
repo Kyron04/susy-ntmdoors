@@ -20,7 +20,10 @@ public class MessageSpeakerOption implements IMessage {
     public static final int SOUND = 1;
     public static final int RANGE = 2;
     public static final int VOLUME = 3;
-    public static final int OPTION_COUNT = 4;
+    public static final int REMAIN_ACTIVE = 4;
+    public static final int ACTIVE_NEXT = 5;
+    public static final int ACTIVE_PREV = 6;
+    public static final int OPTION_COUNT = 7;
 
     private BlockPos pos;
     private int option;
@@ -79,6 +82,15 @@ public class MessageSpeakerOption implements IMessage {
                     break;
                 case VOLUME:
                     speaker.setVolume(message.value);
+                    break;
+                case REMAIN_ACTIVE:
+                    speaker.setRemainActive(message.value != 0);
+                    break;
+                case ACTIVE_NEXT:
+                    speaker.cycleActiveTicks(1);
+                    break;
+                case ACTIVE_PREV:
+                    speaker.cycleActiveTicks(-1);
                     break;
                 default:
                     break;

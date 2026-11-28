@@ -66,6 +66,9 @@ public class GuiEmancipationGrill extends GuiScreen {
     private static final int OPTION_AREA = 102;
     private static final int PILL_WIDTH = 54;
     private static final int PILL_HEIGHT = 14;
+    private static final int REMAIN_PILL_WIDTH = 68;
+    private static final int TIME_PILL_WIDTH = 68;
+    private static final int HEADER_PILL_GAP = 4;
     private static final int[] TOGGLE_OPTIONS = {
             MessageGrillOption.MODE_SOLID,
             MessageGrillOption.MODE_NEUTRAL,
@@ -227,6 +230,8 @@ public class GuiEmancipationGrill extends GuiScreen {
                 return grill != null && grill.getFieldMode() == FieldMode.FILTER;
             case MessageGrillOption.CONTRABAND:
                 return grill != null && grill.isContrabandEnabled();
+            case MessageGrillOption.REMAIN_ACTIVE:
+                return grill != null && grill.isRemainActive();
             case MessageGrillOption.COLOUR_RED:
                 return grill != null && grill.getFieldColour() == FieldColour.RED;
             case MessageGrillOption.COLOUR_GREEN:
@@ -304,6 +309,11 @@ public class GuiEmancipationGrill extends GuiScreen {
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+        if (page == 3 && mouseButton == 1 && inTimePill(mouseX, mouseY)) {
+            ModNetwork.INSTANCE.sendToServer(
+                    new MessageGrillOption(pos, MessageGrillOption.TIME_PREV, false));
+            return;
+        }
         if (page == FILTER_PAGE && mouseButton == 1) {
             FilterTarget target = filterSlotAt(mouseX, mouseY);
             if (target != null) {
@@ -360,6 +370,15 @@ public class GuiEmancipationGrill extends GuiScreen {
                     return;
                 }
             } else if (page == 3) {
+                if (inRemainPill(mouseX, mouseY)) {
+                    sendOption(MessageGrillOption.REMAIN_ACTIVE);
+                    return;
+                }
+                if (inTimePill(mouseX, mouseY)) {
+                    ModNetwork.INSTANCE.sendToServer(
+                            new MessageGrillOption(pos, MessageGrillOption.TIME_NEXT, false));
+                    return;
+                }
                 int option = optionAt(mouseX, mouseY, REDSTONE_OPTIONS, scrollRedstone);
                 if (option >= 0) {
                     sendOption(option);
@@ -499,6 +518,14 @@ public class GuiEmancipationGrill extends GuiScreen {
         super.drawScreen(mouseX, mouseY, partialTicks);
         if (page == FILTER_PAGE && !hoveredFilterStack.isEmpty()) {
             renderToolTip(hoveredFilterStack, mouseX, mouseY);
+        } else if (page == 3 && inRemainPill(mouseX, mouseY)) {
+            drawHoveringText(java.util.Arrays.asList(
+                    "Remain active after wireless signal",
+                    "Latch until the field is switched off."), mouseX, mouseY);
+        } else if (page == 3 && inTimePill(mouseX, mouseY)) {
+            drawHoveringText(java.util.Arrays.asList(
+                    "Activation duration after the signal ends",
+                    "Left click: longer, right click: shorter."), mouseX, mouseY);
         }
     }
 
@@ -755,6 +782,7 @@ public class GuiEmancipationGrill extends GuiScreen {
         drawTitle("REDSTONE");
         drawString(fontRenderer, "EVENT OUTPUTS", left + 12, top + 29, 0xFFF0C0C0);
         drawRect(left + 12, top + 40, left + PANEL_WIDTH - 12, top + 41, RED_RULE);
+        drawRedstonePills(mouseX, mouseY);
 
         scrollRedstone = clampOptionsScroll(scrollRedstone, REDSTONE_OPTIONS.length);
         GuiClip.begin(left + 8, top + OPTION_TOP, PANEL_WIDTH - 16, OPTION_AREA);
@@ -768,6 +796,46 @@ public class GuiEmancipationGrill extends GuiScreen {
         GuiClip.end();
         drawScrollbar(left + PANEL_WIDTH - 8, top + OPTION_TOP, OPTION_AREA,
                 REDSTONE_OPTIONS.length, OPTION_HEIGHT, scrollRedstone);
+    }
+
+    private void drawRedstonePills(int mouseX, int mouseY) {
+        TileEntityEmancipationGrill grill = grill();
+        boolean remain = grill != null && grill.isRemainActive();
+        int seconds = grill == null ? 1 : grill.getActiveSeconds();
+        drawHeaderPill(remainPillX(), "REMAIN " + (remain ? "ON" : "OFF"), remain,
+                inRemainPill(mouseX, mouseY));
+        drawHeaderPill(timePillX(), "TIME " + seconds + " s", false, inTimePill(mouseX, mouseY));
+    }
+
+    private void drawHeaderPill(int x, String label, boolean on, boolean hovered) {
+        int y = top + 25;
+        int width = x == timePillX() ? TIME_PILL_WIDTH : REMAIN_PILL_WIDTH;
+        int fill = hovered ? RED_HOVER : on ? 0xFF344434 : 0xFF3A3030;
+        int edge = on ? 0xFF7FA87F : 0xFF8A6A6A;
+        drawRect(x, y, x + width, y + PILL_HEIGHT, fill);
+        drawRect(x, y, x + width, y + 1, edge);
+        drawRect(x, y + PILL_HEIGHT - 1, x + width, y + PILL_HEIGHT,
+                on ? 0xFF223022 : 0xFF241C1C);
+        drawCenteredString(fontRenderer, label, x + width / 2, y + 3,
+                on ? 0xFFD6F0D6 : 0xFFE6C8C8);
+    }
+
+    private int timePillX() {
+        return left + PANEL_WIDTH - 12 - TIME_PILL_WIDTH;
+    }
+
+    private int remainPillX() {
+        return timePillX() - HEADER_PILL_GAP - REMAIN_PILL_WIDTH;
+    }
+
+    private boolean inRemainPill(int mouseX, int mouseY) {
+        return mouseX >= remainPillX() && mouseX < remainPillX() + REMAIN_PILL_WIDTH
+                && mouseY >= top + 25 && mouseY < top + 25 + PILL_HEIGHT;
+    }
+
+    private boolean inTimePill(int mouseX, int mouseY) {
+        return mouseX >= timePillX() && mouseX < timePillX() + TIME_PILL_WIDTH
+                && mouseY >= top + 25 && mouseY < top + 25 + PILL_HEIGHT;
     }
 
     /** One settings row: label and hint on the left, an ON/OFF pill on the right. */

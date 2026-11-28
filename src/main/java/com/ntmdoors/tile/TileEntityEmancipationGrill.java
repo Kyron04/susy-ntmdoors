@@ -126,6 +126,10 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
     private final Map<BlockPos, Boolean> linkedGates = new HashMap<>();
     /** Direct Motion Sensor outputs; both edges apply so a sensor pulse can raise and drop. */
     private final TimedSources directSources = new TimedSources();
+    /** Receiver latch and post-signal timer for gate and sensor links. */
+    private final WirelessHoldState wirelessHold = new WirelessHoldState();
+    /** True when the current field was raised by the wireless hold rather than manually. */
+    private boolean wirelessFieldOwned;
     /** Last tick this grill pulsed its linked gates; their own output edges are ignored briefly. */
     private long lastSignalPulseTick = -1000L;
     private long lastDisintegrateSoundTick = -1000L;
@@ -323,9 +327,16 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
             return;
         }
         linkedGates.put(source.toImmutable(), powered);
-        // A real link seeds the field once, so the player can start configuring from the gate's
-        // current state. A reload only restores the link and leaves the configured field alone.
-        if (initialLink) applyLinkedGatePower(true);
+        // A real link starts from a known off state so the incoming signal owns the field. A reload
+        // only restores the link and leaves the configured field alone.
+        if (initialLink) {
+            fieldEnabled = false;
+            wirelessFieldOwned = false;
+            if (hasWirelessInput()) refreshWirelessField();
+            else forceWirelessOff();
+        } else {
+            refreshWirelessField();
+        }
     }
 
     /** Called by a gate host when the link is removed or the gate is broken. */
@@ -337,7 +348,7 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
             return;
         }
         linkedGates.remove(source);
-        // Unlinking releases control without changing a field the player has configured.
+        refreshWirelessField();
     }
 
     /** Called by a linked gate whenever its output changes. */
@@ -360,7 +371,7 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
         Boolean current = linkedGates.get(key);
         if (current != null && current == powered) return;
         linkedGates.put(key, powered);
-        applyLinkedGatePower(false);
+        refreshWirelessField();
     }
 
     /**
@@ -377,7 +388,7 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
         TimedSources.Update change = directSources.apply(source, powered,
                 world.getTotalWorldTime(), RedstoneBinding.LINK_TIMEOUT_TICKS);
         if (change == TimedSources.Update.NONE || change == TimedSources.Update.REFRESHED) return;
-        refreshDirectFieldPower();
+        refreshWirelessField();
     }
 
     /** A sensor link starts from its current hold state; an off link drops the field once. */
@@ -389,47 +400,56 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
             return;
         }
         if (powered) {
+            fieldEnabled = false;
+            wirelessFieldOwned = false;
             setDirectPower(source, true);
             return;
         }
         directSources.remove(source);
-        refreshDirectFieldPower();
-    }
-
-    private void refreshDirectFieldPower() {
-        if (world == null || world.isRemote) return;
-        boolean powered = directSources.isActive(world.getTotalWorldTime());
-        if (!powered) {
-            for (Boolean value : linkedGates.values()) {
-                if (value) {
-                    powered = true;
-                    break;
-                }
-            }
+        if (hasWirelessInput()) {
+            refreshWirelessField();
+        } else {
+            forceWirelessOff();
         }
-        if (fieldEnabled == powered) return;
-        fieldEnabled = powered;
-        deniedInside.clear();
-        sync();
     }
 
-    /**
-     * A linked gate can raise the field while it is active. Only the initial link may lower it:
-     * that first off state exists so the player can configure the grill after linking. Later gate
-     * deactivation leaves the field alone, so signal pulses cannot switch it off.
-     */
-    private void applyLinkedGatePower(boolean initialLink) {
-        if (linkedGates.isEmpty()) return;
-        boolean powered = false;
+    private boolean hasWirelessInput() {
+        if (world == null) return false;
         for (Boolean value : linkedGates.values()) {
-            if (value) {
-                powered = true;
-                break;
-            }
+            if (value) return true;
         }
-        if (!powered && !initialLink) return;
-        if (fieldEnabled != powered) {
-            fieldEnabled = powered;
+        return directSources.isActive(world.getTotalWorldTime());
+    }
+
+    private void refreshWirelessField() {
+        if (world == null || world.isRemote) return;
+        long now = world.getTotalWorldTime();
+        wirelessHold.setInput(hasWirelessInput(), now);
+        applyWirelessField(now);
+    }
+
+    private void applyWirelessField(long now) {
+        boolean active = wirelessHold.isActive(now);
+        if (active) {
+            if (!fieldEnabled) {
+                fieldEnabled = true;
+                wirelessFieldOwned = true;
+                deniedInside.clear();
+                sync();
+            }
+        } else if (wirelessFieldOwned) {
+            fieldEnabled = false;
+            wirelessFieldOwned = false;
+            deniedInside.clear();
+            sync();
+        }
+    }
+
+    private void forceWirelessOff() {
+        wirelessHold.manualOff();
+        wirelessFieldOwned = false;
+        if (fieldEnabled) {
+            fieldEnabled = false;
             deniedInside.clear();
             sync();
         }
@@ -449,8 +469,42 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
         if (core != this) return core.setFieldEnabled(value);
         if (fieldEnabled == value) return false;
         fieldEnabled = value;
+        wirelessFieldOwned = false;
+        if (value) wirelessHold.clearManualOff();
+        else wirelessHold.manualOff();
         deniedInside.clear();
         clearFilterTracking();
+        sync();
+        return true;
+    }
+
+    public boolean isRemainActive() {
+        TileEntityEmancipationGrill core = getSecurityCore();
+        return core == this ? wirelessHold.isRemainActive() : core.isRemainActive();
+    }
+
+    public int getActiveSeconds() {
+        TileEntityEmancipationGrill core = getSecurityCore();
+        return core == this ? wirelessHold.getActiveSeconds() : core.getActiveSeconds();
+    }
+
+    /** Server side: enables the indefinite wireless latch. */
+    public boolean setRemainActive(boolean value) {
+        if (world == null || world.isRemote) return false;
+        TileEntityEmancipationGrill core = getSecurityCore();
+        if (core != this) return core.setRemainActive(value);
+        if (!wirelessHold.setRemainActive(value, world.getTotalWorldTime())) return false;
+        applyWirelessField(world.getTotalWorldTime());
+        sync();
+        return true;
+    }
+
+    /** Server side: steps through the post-signal timer presets. */
+    public boolean cycleActiveTicks(int direction) {
+        if (world == null || world.isRemote) return false;
+        TileEntityEmancipationGrill core = getSecurityCore();
+        if (core != this) return core.cycleActiveTicks(direction);
+        if (!wirelessHold.cycleActiveTicks(direction, world.getTotalWorldTime())) return false;
         sync();
         return true;
     }
@@ -915,7 +969,10 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
     @Override
     public void update() {
         if (world == null || world.isRemote) return;
-        if (directSources.prune(world.getTotalWorldTime())) refreshDirectFieldPower();
+        long now = world.getTotalWorldTime();
+        directSources.prune(now);
+        wirelessHold.tick(now);
+        refreshWirelessField();
         redstoneBinding.update();
 
         // A leftover second grill becomes a standalone first grill again once its partner is gone.
@@ -1768,10 +1825,13 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
         super.readFromNBT(tag);
         redstoneBinding.readFromNBT(tag);
         directSources.clear();
+        long wirelessNow = world == null ? 0L : world.getTotalWorldTime();
         if (tag.hasKey("directSources") && world != null) {
             directSources.load(BlockPositions.decodeList(tag.getString("directSources")),
-                    world.getTotalWorldTime() + RedstoneBinding.LINK_TIMEOUT_TICKS);
+                    wirelessNow + RedstoneBinding.LINK_TIMEOUT_TICKS);
         }
+        wirelessHold.readFromNBT(tag, "wireless", wirelessNow);
+        wirelessFieldOwned = tag.getBoolean("wirelessFieldOwned");
 
         ownerId = null;
         String owner = tag.getString("owner");
@@ -1833,6 +1893,8 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
         super.writeToNBT(tag);
         redstoneBinding.writeToNBT(tag);
         tag.setString("directSources", BlockPositions.encodeList(directSources.keys()));
+        wirelessHold.writeToNBT(tag, "wireless");
+        tag.setBoolean("wirelessFieldOwned", wirelessFieldOwned);
 
         tag.setString("owner", ownerId == null ? "" : ownerId.toString());
         tag.setString("ownerName", ownerName);
