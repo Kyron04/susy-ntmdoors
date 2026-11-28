@@ -28,7 +28,7 @@ import static com.ntmdoors.client.GuiMonitor.TEXT;
  */
 final class GuiMonitorDisplayController {
 
-    private static final int COLUMNS = 4;
+    private static final int COLUMNS = 5;
 
     private final GuiMonitor gui;
 

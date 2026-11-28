@@ -96,8 +96,8 @@ The Emancipation Grill is a new paired security field based on the Portal 2 fizz
 
 ## Other fixes and changes
 
-- Added an Aperture Laboratories wallpaper to the monitor Display task. The Display grid now uses
-  four columns, so the original five wallpapers and the Terminal tile keep their height.
+- Added Aperture Laboratories, G-Man and SCP wallpapers to the monitor Display task. The Display
+  grid now uses five columns, so the eight built-in images and the Terminal tile keep their height.
 - Office Door 1 now uses the `office_door_1` registry name and assets, previously `black_mesa_door`.
   Existing 1.0.77 items and placed blocks are remapped automatically through Forge's missing
   mappings.

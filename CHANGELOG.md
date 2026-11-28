@@ -30,8 +30,8 @@ FEATURES
   tab. The terminal session authorizes remote access without holding the Relay Key; key assignment
   still uses an Operator Keycard and contraband binding still uses a Relay Key in the inventory.
   Escape returns to the same net.
-- Added an Aperture Laboratories wallpaper to the monitor Display task. The Display grid now uses
-  four columns so the sixth built-in image fits alongside the original five.
+- Added Aperture Laboratories, G-Man and SCP wallpapers to the monitor Display task. The Display
+  grid now uses five columns, giving eight built-in images alongside the Terminal tile.
 FIXES
 - Corrected the Security Shroud armor-stand head pivot and reset the shared body/arm pivots so
   armor-stand renderers and 3D inventory previews such as Obscure Tooltips align correctly.

@@ -15,6 +15,8 @@ The built-in display grid expects these file names:
 | `world_map.png` | WORLD MAP |
 | `windows_error.png` | WINDOWS ERROR |
 | `aperture.png` | APERTURE |
+| `gman.png` | G-MAN |
+| `scp.png` | SCP |
 
 The source images are included. Only packaged images are supported; the monitor does not
 download custom URLs. Keep the originals reasonably small because they are packaged directly into

@@ -291,7 +291,7 @@ reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
   angle. Three block types (bottom/middle/top) each carry three columns, so the part and facing
   fit in the four metadata bits; the bottom core carries the terminal tile entity.
 * Display (`Display` in the terminal task list): a cosmetic wallpaper chooser for each physical
-  monitor panel. It offers six packaged images plus a `Terminal` tile that restores the normal
+  monitor panel. It offers eight packaged images plus a `Terminal` tile that restores the normal
   terminal page. Selecting a tile applies it immediately to the screen that was clicked. Only
   packaged images are offered; custom URLs are not supported, so a monitor never makes an outbound
   network request. The choice is stored on the desk and survives restarts. Built-in source images
