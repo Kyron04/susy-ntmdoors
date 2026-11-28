@@ -59,6 +59,12 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
     public static final int RS_ENABLED = 3;
     public static final int RS_EVENT_COUNT = 4;
 
+    public static final int MIN_PULSE_TICKS = 20;
+    public static final int MAX_PULSE_TICKS = 20 * 60 * 5;
+    private static final int[] PULSE_PRESETS = {
+            20, 40, 100, 200, 300, 600, 1200, 1800, 3600, 6000
+    };
+
     /** One enrolled identity: the UUID stored on a card plus the cached name to display. */
     public static final class BiometricId {
 
@@ -89,6 +95,8 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
     private boolean persistWithinBounds;
     /** Hold linked gates on while the area is empty; the hold drops when something steps in. */
     private boolean persistOutOfBounds;
+    /** How long an event pulse holds linked gates and direct outputs on. */
+    private int pulseTicks = TileEntityRedstoneGate.WIRELESS_PULSE_TICKS;
 
     /** One depth 0-5 per grid cell, indexed u + v * 5. */
     private final byte[] areaDepths = new byte[GRID_SIZE * GRID_SIZE];
@@ -200,6 +208,7 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         if (value) {
             persistOutOfBounds = false;
             redstoneBinding.clearHold();
+            redstoneBinding.cancelPulse();
         } else if (!persistOutOfBounds) {
             redstoneBinding.clearHold();
         }
@@ -217,6 +226,7 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         persistOutOfBounds = value;
         if (value) {
             persistWithinBounds = false;
+            redstoneBinding.cancelPulse();
             redstoneBinding.setVacancy(enabled && areaBound && entitiesInside.isEmpty());
         } else {
             redstoneBinding.clearHold();
@@ -241,6 +251,7 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
             setStatus(areaBound ? BlockMotionSensor.Status.IDLE : BlockMotionSensor.Status.MAINTENANCE);
             if (persistOutOfBounds && areaBound) redstoneBinding.setVacancy(entitiesInside.isEmpty());
         }
+        redstoneBinding.cancelPulse();
         sync();
         fireRedstoneEvent(value ? RS_ENABLED : RS_DISABLED);
         return true;
@@ -269,9 +280,51 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         return true;
     }
 
-    /** Server side: pulses every linked gate when this event is enabled. */
+    /** Server side: pulses every linked gate and direct output when this event is enabled. */
     public void fireRedstoneEvent(int event) {
-        if (isRedstoneEvent(event)) redstoneBinding.fire();
+        if (isRedstoneEvent(event)) redstoneBinding.fire(pulseTicks);
+    }
+
+    public int getPulseTicks() {
+        return pulseTicks;
+    }
+
+    public int getPulseSeconds() {
+        return Math.max(1, pulseTicks / 20);
+    }
+
+    /** Server side: sets the event pulse duration in ticks. */
+    public boolean setPulseTicks(int value) {
+        if (world == null || world.isRemote) return false;
+        int next = Math.max(MIN_PULSE_TICKS, Math.min(MAX_PULSE_TICKS, value));
+        if (pulseTicks == next) return false;
+        pulseTicks = next;
+        sync();
+        return true;
+    }
+
+    /** Server side: steps through the preset pulse durations. Negative reverses. */
+    public boolean cyclePulseTicks(int direction) {
+        if (world == null || world.isRemote) return false;
+        int next;
+        if (direction >= 0) {
+            next = PULSE_PRESETS[0];
+            for (int preset : PULSE_PRESETS) {
+                if (preset > pulseTicks) {
+                    next = preset;
+                    break;
+                }
+            }
+        } else {
+            next = PULSE_PRESETS[PULSE_PRESETS.length - 1];
+            for (int i = PULSE_PRESETS.length - 1; i >= 0; i--) {
+                if (PULSE_PRESETS[i] < pulseTicks) {
+                    next = PULSE_PRESETS[i];
+                    break;
+                }
+            }
+        }
+        return setPulseTicks(next);
     }
 
     @Override
@@ -320,6 +373,7 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         System.arraycopy(depths, 0, areaDepths, 0, areaDepths.length);
         areaBound = true;
         redstoneBinding.clearHold();
+        redstoneBinding.cancelPulse();
         entitiesInside.clear();
         sync();
         if (enabled) setStatus(BlockMotionSensor.Status.IDLE);
@@ -333,6 +387,7 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         areaBound = false;
         entitiesInside.clear();
         redstoneBinding.clearHold();
+        redstoneBinding.cancelPulse();
         setStatus(BlockMotionSensor.Status.MAINTENANCE);
         sync();
         return true;
@@ -482,6 +537,7 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
                 systemIdle = true;
                 entitiesInside.clear();
                 redstoneBinding.clearHold();
+                redstoneBinding.cancelPulse();
                 setStatus(areaBound ? BlockMotionSensor.Status.IDLE
                         : BlockMotionSensor.Status.MAINTENANCE);
             }
@@ -664,6 +720,7 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         tag.setBoolean("detectNeutral", detectNeutral);
         tag.setBoolean("persistWithinBounds", persistWithinBounds);
         tag.setBoolean("persistOutOfBounds", persistOutOfBounds);
+        tag.setInteger("pulseTicks", pulseTicks);
     }
 
     private void readOptions(NBTTagCompound tag) {
@@ -679,6 +736,9 @@ public class TileEntityMotionSensor extends TileEntitySynced implements ITickabl
         persistWithinBounds = tag.getBoolean("persistWithinBounds");
         persistOutOfBounds = tag.getBoolean("persistOutOfBounds");
         if (persistWithinBounds) persistOutOfBounds = false;
+        pulseTicks = tag.hasKey("pulseTicks")
+                ? Math.max(MIN_PULSE_TICKS, Math.min(MAX_PULSE_TICKS, tag.getInteger("pulseTicks")))
+                : TileEntityRedstoneGate.WIRELESS_PULSE_TICKS;
     }
 
     private void writeEvents(NBTTagCompound tag) {

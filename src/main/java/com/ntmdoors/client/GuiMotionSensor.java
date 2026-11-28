@@ -53,6 +53,8 @@ public class GuiMotionSensor extends GuiScreen {
     private static final int OPTION_AREA = 102;
     private static final int PILL_WIDTH = 54;
     private static final int PILL_HEIGHT = 14;
+    private static final int PULSE_PILL_WIDTH = 76;
+    private static final int PULSE_PILL_HEIGHT = 14;
 
     private static final int ARROW_SIZE = 18;
     private static final int ARROW_Y = 159;
@@ -237,6 +239,12 @@ public class GuiMotionSensor extends GuiScreen {
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+        if (page == 3 && (mouseButton == 0 || mouseButton == 1) && inPulsePill(mouseX, mouseY)) {
+            ModNetwork.INSTANCE.sendToServer(new MessageSensorOption(pos,
+                    mouseButton == 1 ? MessageSensorOption.PULSE_PREV
+                            : MessageSensorOption.PULSE_NEXT, false));
+            return;
+        }
         if (mouseButton == 0) {
             if (inArrow(mouseX, mouseY, false)) {
                 changePage(-1);
@@ -502,10 +510,34 @@ public class GuiMotionSensor extends GuiScreen {
         drawString(fontRenderer, "EVENT OUTPUTS", left + 12, top + 29, 0xFFF0C0C0);
         drawRect(left + 12, top + 40, left + PANEL_WIDTH - 12, top + 41, RED_RULE);
 
+        drawPulsePill(mouseX, mouseY);
+
         for (int i = 0; i < REDSTONE_OPTIONS.length; i++) {
             int y = top + OPTION_TOP + i * OPTION_HEIGHT;
             drawOption(REDSTONE_OPTIONS[i], i, y, mouseX, mouseY, 0, REDSTONE_OPTIONS.length);
         }
+    }
+
+    private void drawPulsePill(int mouseX, int mouseY) {
+        TileEntityMotionSensor sensor = sensor();
+        String label = "PULSE " + (sensor == null ? 1 : sensor.getPulseSeconds()) + " s";
+        boolean hovered = inPulsePill(mouseX, mouseY);
+        int x = left + PANEL_WIDTH - 12 - PULSE_PILL_WIDTH;
+        int y = top + 25;
+        drawRect(x, y, x + PULSE_PILL_WIDTH, y + PULSE_PILL_HEIGHT,
+                hovered ? RED_HOVER : 0xFF2A0F12);
+        drawRect(x, y, x + PULSE_PILL_WIDTH, y + 1, RED_RULE);
+        drawRect(x, y + PULSE_PILL_HEIGHT - 1, x + PULSE_PILL_WIDTH,
+                y + PULSE_PILL_HEIGHT, 0xFF1A0708);
+        drawCenteredString(fontRenderer, label, x + PULSE_PILL_WIDTH / 2, y + 3,
+                hovered ? 0xFFFFFFFF : 0xFFE6C8C8);
+    }
+
+    private boolean inPulsePill(int mouseX, int mouseY) {
+        int x = left + PANEL_WIDTH - 12 - PULSE_PILL_WIDTH;
+        int y = top + 25;
+        return mouseX >= x && mouseX < x + PULSE_PILL_WIDTH
+                && mouseY >= y && mouseY < y + PULSE_PILL_HEIGHT;
     }
 
     private void drawAreaPage(int mouseX, int mouseY) {
@@ -742,7 +774,7 @@ public class GuiMotionSensor extends GuiScreen {
         if (page == 0) hint = "Click a key or ID to move it - ESC to close";
         else if (page == 1) hint = "Changes apply to this Motion Sensor";
         else if (page == 2) hint = "Left click adds depth, right click removes it";
-        else hint = "Each ON event pulses every bound Redstone Gate";
+        else hint = "Each event pulses all links - PULSE: click +/-";
         drawCenteredString(fontRenderer, hint, left + PANEL_WIDTH / 2, top + 164, MUTED);
         drawCenteredString(fontRenderer, (page + 1) + "/" + PAGE_COUNT,
                 left + PANEL_WIDTH / 2, top + 180, DIM);

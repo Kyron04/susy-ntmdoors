@@ -35,8 +35,10 @@ public final class RedstoneBinding {
     private final List<BlockPos> gates = new ArrayList<>();
     /** Doors linked from a gate host. Device hosts never fill this list. */
     private final List<BlockPos> doors = new ArrayList<>();
-    /** Emancipation Grills linked from a gate host. */
+    /** Emancipation Grills linked from a gate or sensor host. */
     private final List<BlockPos> grills = new ArrayList<>();
+    /** Speakers linked from a gate or sensor host. */
+    private final List<BlockPos> speakers = new ArrayList<>();
 
     @Nullable
     private UUID bindingPlayer;
@@ -46,6 +48,8 @@ public final class RedstoneBinding {
 
     private HoldMode holdMode = HoldMode.NONE;
     private boolean holdActive;
+    /** Absolute world time at which a direct sensor pulse ends; 0 when idle. */
+    private long directPulseEnd;
 
     public RedstoneBinding(TileEntity host) {
         if (!(host instanceof RedstoneBindingHost)) {
@@ -64,12 +68,17 @@ public final class RedstoneBinding {
         return host instanceof TileEntityRedstoneGate;
     }
 
+    /** Gates and Motion Sensors can link doors, grills and speakers directly. */
+    public boolean canDriveDevices() {
+        return host instanceof TileEntityRedstoneGate || host instanceof TileEntityMotionSensor;
+    }
+
     public boolean isHost(TileEntity tile) {
         return tile == host;
     }
 
     public boolean hasLinks() {
-        return !gates.isEmpty() || !doors.isEmpty() || !grills.isEmpty();
+        return !gates.isEmpty() || !doors.isEmpty() || !grills.isEmpty() || !speakers.isEmpty();
     }
 
     /** Read-only view of the gates this host drives, used by the Redstone Monocle client overlay. */
@@ -82,9 +91,14 @@ public final class RedstoneBinding {
         return Collections.unmodifiableList(doors);
     }
 
-    /** Read-only view of the grills this gate host drives. */
+    /** Read-only view of the grills this host drives. */
     public List<BlockPos> getGrills() {
         return Collections.unmodifiableList(grills);
+    }
+
+    /** Read-only view of the speakers this host drives. */
+    public List<BlockPos> getSpeakers() {
+        return Collections.unmodifiableList(speakers);
     }
 
     /**
@@ -186,11 +200,11 @@ public final class RedstoneBinding {
         return true;
     }
 
-    /** Links or unlinks one door for an active gate-host session. */
+    /** Links or unlinks one door for an active gate or sensor session. */
     public boolean linkDoor(EntityPlayer player, TileEntityDoorGeneric door) {
         World world = host.getWorld();
         if (world == null || world.isRemote || player == null || door == null) return false;
-        if (!isGateHost()) {
+        if (!canDriveDevices()) {
             callbacks.sendRedstoneMessage(player, "ntmdoors.msg.redstone_door_gate_only");
             return false;
         }
@@ -226,7 +240,7 @@ public final class RedstoneBinding {
 
         if (!doors.contains(doorPos)) doors.add(doorPos);
         door.onGateLinked(host.getPos());
-        door.setLinkedPower(host.getPos(), ((TileEntityRedstoneGate) host).isPoweredOn());
+        door.setLinkedPower(host.getPos(), currentOutput());
         callbacks.onRedstoneBindingChanged();
         callbacks.syncRedstoneState();
         callbacks.sendRedstoneMessage(player, "ntmdoors.msg.redstone_door_linked");
@@ -234,11 +248,11 @@ public final class RedstoneBinding {
         return true;
     }
 
-    /** Links or unlinks one Emancipation Grill for an active gate-host session. */
+    /** Links or unlinks one Emancipation Grill for an active gate or sensor session. */
     public boolean linkGrill(EntityPlayer player, TileEntityEmancipationGrill grill) {
         World world = host.getWorld();
         if (world == null || world.isRemote || player == null || grill == null) return false;
-        if (!isGateHost()) {
+        if (!canDriveDevices()) {
             callbacks.sendRedstoneMessage(player, "ntmdoors.msg.redstone_grill_gate_only");
             return false;
         }
@@ -256,8 +270,12 @@ public final class RedstoneBinding {
 
         BlockPos grillPos = core.getPos().toImmutable();
         if (grills.remove(grillPos)) {
-            core.setLinkedPower(host.getPos(), false);
-            core.onGateUnlinked(host.getPos());
+            if (isGateHost()) {
+                core.setLinkedPower(host.getPos(), false);
+                core.onGateUnlinked(host.getPos());
+            } else {
+                core.setDirectPower(host.getPos(), false);
+            }
             callbacks.onRedstoneBindingChanged();
             callbacks.syncRedstoneState();
             callbacks.sendRedstoneMessage(player, "ntmdoors.msg.redstone_grill_unlinked");
@@ -265,12 +283,52 @@ public final class RedstoneBinding {
         }
 
         if (!grills.contains(grillPos)) grills.add(grillPos);
-        core.onGateLinked(host.getPos(), ((TileEntityRedstoneGate) host).isPoweredOn());
+        if (isGateHost()) {
+            core.onGateLinked(host.getPos(), currentOutput());
+        } else {
+            core.onDirectLinked(host.getPos(), currentOutput());
+        }
         callbacks.onRedstoneBindingChanged();
         callbacks.syncRedstoneState();
         callbacks.sendRedstoneMessage(player, "ntmdoors.msg.redstone_grill_linked");
         completeLinkSession();
         return true;
+    }
+
+    /** Links or unlinks one speaker for an active gate or sensor session. */
+    public boolean linkSpeaker(EntityPlayer player, TileEntitySpeaker speaker) {
+        World world = host.getWorld();
+        if (world == null || world.isRemote || player == null || speaker == null) return false;
+        if (!canDriveDevices()) return false;
+        if (!isBindingFor(player)) {
+            callbacks.sendRedstoneMessage(player, "ntmdoors.msg.redstone_binding_required");
+            return false;
+        }
+
+        BlockPos speakerPos = speaker.getPos().toImmutable();
+        if (speakers.remove(speakerPos)) {
+            speaker.setLinkedPower(host.getPos(), false);
+            callbacks.onRedstoneBindingChanged();
+            callbacks.syncRedstoneState();
+            callbacks.sendRedstoneMessage(player, "ntmdoors.msg.redstone_speaker_unlinked");
+            return true;
+        }
+
+        if (!speakers.contains(speakerPos)) speakers.add(speakerPos);
+        speaker.setLinkedPower(host.getPos(), currentOutput());
+        callbacks.onRedstoneBindingChanged();
+        callbacks.syncRedstoneState();
+        callbacks.sendRedstoneMessage(player, "ntmdoors.msg.redstone_speaker_linked");
+        completeLinkSession();
+        return true;
+    }
+
+    /** The output the host is currently presenting to a newly linked target. */
+    private boolean currentOutput() {
+        if (isGateHost()) return ((TileEntityRedstoneGate) host).isPoweredOn();
+        World world = host.getWorld();
+        if (world != null && directPulseEnd > world.getTotalWorldTime()) return true;
+        return holdMode != HoldMode.NONE && holdActive;
     }
 
     /**
@@ -282,13 +340,13 @@ public final class RedstoneBinding {
     }
 
     /**
-     * Server side: mirrors the host gate's output onto every linked gate, door and grill. Called on
-     * each output edge and periodically while the source is on so a receiver loaded after the edge
-     * still picks the signal up.
+     * Server side: mirrors the host's output onto every linked gate, door, grill and speaker. Called
+     * on each output edge and periodically while the source is on so a receiver loaded after the
+     * edge still picks the signal up.
      */
-    public void applyGateOutput(boolean powered) {
+    public void applyOutput(boolean powered) {
         World world = host.getWorld();
-        if (world == null || world.isRemote || !isGateHost()) return;
+        if (world == null || world.isRemote) return;
 
         BlockPos source = host.getPos();
         boolean changed = false;
@@ -304,6 +362,17 @@ public final class RedstoneBinding {
                 changed = true;
             }
         }
+        if (applyDirectOutput(powered)) changed = true;
+        if (changed) callbacks.syncRedstoneState();
+    }
+
+    /** Drives every linked door, grill and speaker; reports whether a stale target was dropped. */
+    private boolean applyDirectOutput(boolean powered) {
+        World world = host.getWorld();
+        if (world == null || world.isRemote) return false;
+        BlockPos source = host.getPos();
+        boolean changed = false;
+
         Iterator<BlockPos> doorIterator = doors.iterator();
         while (doorIterator.hasNext()) {
             BlockPos doorPos = doorIterator.next();
@@ -324,19 +393,35 @@ public final class RedstoneBinding {
                 changed = true;
             }
         }
+
         Iterator<BlockPos> grillIterator = grills.iterator();
         while (grillIterator.hasNext()) {
             BlockPos grillPos = grillIterator.next();
             if (!world.isBlockLoaded(grillPos)) continue;
             TileEntity te = world.getTileEntity(grillPos);
             if (te instanceof TileEntityEmancipationGrill) {
-                ((TileEntityEmancipationGrill) te).setLinkedPower(source, powered);
+                TileEntityEmancipationGrill grill = (TileEntityEmancipationGrill) te;
+                if (isGateHost()) grill.setLinkedPower(source, powered);
+                else grill.setDirectPower(source, powered);
             } else {
                 grillIterator.remove();
                 changed = true;
             }
         }
-        if (changed) callbacks.syncRedstoneState();
+
+        Iterator<BlockPos> speakerIterator = speakers.iterator();
+        while (speakerIterator.hasNext()) {
+            BlockPos speakerPos = speakerIterator.next();
+            if (!world.isBlockLoaded(speakerPos)) continue;
+            TileEntity te = world.getTileEntity(speakerPos);
+            if (te instanceof TileEntitySpeaker) {
+                ((TileEntitySpeaker) te).setLinkedPower(source, powered);
+            } else {
+                speakerIterator.remove();
+                changed = true;
+            }
+        }
+        return changed;
     }
 
     /**
@@ -370,6 +455,13 @@ public final class RedstoneBinding {
         applyHold();
     }
 
+    /** Server side: drops an active direct pulse immediately. */
+    public void cancelPulse() {
+        if (directPulseEnd <= 0) return;
+        directPulseEnd = 0;
+        applyDirectOutput(false);
+    }
+
     private void applyHold() {
         World world = host.getWorld();
         if (world == null || world.isRemote) return;
@@ -378,6 +470,10 @@ public final class RedstoneBinding {
             if (!world.isBlockLoaded(gatePos)) continue;
             TileEntity te = world.getTileEntity(gatePos);
             if (te instanceof TileEntityRedstoneGate) applyHoldTo((TileEntityRedstoneGate) te);
+        }
+        // A routine hold clear runs on every scan; do not interrupt an active direct pulse.
+        if (directPulseEnd <= 0) {
+            applyDirectOutput(holdMode != HoldMode.NONE && holdActive);
         }
     }
 
@@ -395,13 +491,30 @@ public final class RedstoneBinding {
 
     /** Server side: pulses every loaded gate in this link. */
     public void fire() {
-        pulseGates(false);
+        pulseGates(false, 0);
+    }
+
+    /**
+     * Server side: sensor event pulse. Linked gates, doors, grills and speakers stay active for
+     * {@code ticks}, then release together.
+     */
+    public void fire(int ticks) {
+        pulseGates(false, ticks);
+        pulseDirectTargets(ticks);
     }
 
     /** Server side: pulses every loaded gate for exactly one tick. */
     public void fireOneTick() {
-        pulseGates(true);
+        pulseGates(true, 0);
         pulseFieldControllerGates();
+    }
+
+    private void pulseDirectTargets(int ticks) {
+        World world = host.getWorld();
+        if (world == null || world.isRemote) return;
+        applyDirectOutput(true);
+        long end = world.getTotalWorldTime() + Math.max(1, ticks);
+        if (end > directPulseEnd) directPulseEnd = end;
     }
 
     /**
@@ -422,7 +535,7 @@ public final class RedstoneBinding {
         }
     }
 
-    private void pulseGates(boolean oneTick) {
+    private void pulseGates(boolean oneTick, int ticks) {
         World world = host.getWorld();
         if (world == null || world.isRemote || gates.isEmpty()) return;
 
@@ -435,6 +548,7 @@ public final class RedstoneBinding {
             if (te instanceof TileEntityRedstoneGate) {
                 TileEntityRedstoneGate gate = (TileEntityRedstoneGate) te;
                 if (oneTick) gate.pulseOnce();
+                else if (ticks > 0) gate.pulseFor(ticks);
                 else gate.pulse();
             } else {
                 it.remove();
@@ -444,13 +558,14 @@ public final class RedstoneBinding {
         if (changed) callbacks.syncRedstoneState();
     }
 
-    /** Server side: removes every reciprocal gate, door and grill link. Used when this device is broken. */
+    /** Server side: removes every reciprocal gate, door, grill and speaker link. */
     public void clearGates() {
         World world = host.getWorld();
         if (world == null || world.isRemote) {
             gates.clear();
             doors.clear();
             grills.clear();
+            speakers.clear();
             return;
         }
         BlockPos source = host.getPos();
@@ -478,15 +593,25 @@ public final class RedstoneBinding {
             TileEntity te = world.getTileEntity(grillPos);
             if (te instanceof TileEntityEmancipationGrill) {
                 TileEntityEmancipationGrill grill = (TileEntityEmancipationGrill) te;
-                grill.setLinkedPower(source, false);
+                if (isGateHost()) grill.setLinkedPower(source, false);
+                else grill.setDirectPower(source, false);
                 grill.onGateUnlinked(source);
+            }
+        }
+        for (BlockPos speakerPos : new ArrayList<>(speakers)) {
+            if (!world.isBlockLoaded(speakerPos)) continue;
+            TileEntity te = world.getTileEntity(speakerPos);
+            if (te instanceof TileEntitySpeaker) {
+                ((TileEntitySpeaker) te).setLinkedPower(source, false);
             }
         }
         gates.clear();
         doors.clear();
         grills.clear();
+        speakers.clear();
         holdMode = HoldMode.NONE;
         holdActive = false;
+        directPulseEnd = 0;
         callbacks.syncRedstoneState();
     }
 
@@ -500,17 +625,31 @@ public final class RedstoneBinding {
         if (doorPos != null && doors.remove(doorPos)) callbacks.syncRedstoneState();
     }
 
-    /** Called by a broken grill: drop its link from this gate binding. */
+    /** Called by a broken grill: drop its link from this binding. */
     public void onGrillRemoved(BlockPos grillPos) {
         if (grillPos != null && grills.remove(grillPos)) callbacks.syncRedstoneState();
     }
 
-    /** Removes a broken grill from every loaded gate's sink list. */
+    /** Called by a broken speaker: drop its link from this binding. */
+    public void onSpeakerRemoved(BlockPos speakerPos) {
+        if (speakerPos != null && speakers.remove(speakerPos)) callbacks.syncRedstoneState();
+    }
+
+    /** Removes a broken grill from every loaded host's sink list. */
     public static void removeGrillLinks(World world, BlockPos grillPos) {
         if (world == null || grillPos == null || world.isRemote) return;
         for (TileEntity te : world.loadedTileEntityList) {
-            if (!(te instanceof TileEntityRedstoneGate)) continue;
-            ((TileEntityRedstoneGate) te).getRedstoneBinding().onGrillRemoved(grillPos);
+            if (!(te instanceof RedstoneBindingHost)) continue;
+            ((RedstoneBindingHost) te).getRedstoneBinding().onGrillRemoved(grillPos);
+        }
+    }
+
+    /** Removes a broken speaker from every loaded host's sink list. */
+    public static void removeSpeakerLinks(World world, BlockPos speakerPos) {
+        if (world == null || speakerPos == null || world.isRemote) return;
+        for (TileEntity te : world.loadedTileEntityList) {
+            if (!(te instanceof RedstoneBindingHost)) continue;
+            ((RedstoneBindingHost) te).getRedstoneBinding().onSpeakerRemoved(speakerPos);
         }
     }
 
@@ -530,9 +669,19 @@ public final class RedstoneBinding {
     }
 
     public void update() {
-        if (bindingPlayer == null) return;
         World world = host.getWorld();
-        EntityPlayer player = world == null ? null : world.getPlayerEntityByUUID(bindingPlayer);
+        if (world == null || world.isRemote) return;
+        if (directPulseEnd > 0) {
+            if (world.getTotalWorldTime() >= directPulseEnd) {
+                directPulseEnd = 0;
+                applyDirectOutput(false);
+            } else {
+                // Long pulses must refresh the targets' timed sources or they expire early.
+                applyDirectOutput(true);
+            }
+        }
+        if (bindingPlayer == null) return;
+        EntityPlayer player = world.getPlayerEntityByUUID(bindingPlayer);
         if (player == null || --bindingTicks <= 0) stop(null);
     }
 
@@ -540,20 +689,24 @@ public final class RedstoneBinding {
         tag.setString("redstoneGates", BlockPositions.encodeList(gates));
         tag.setString("redstoneDoors", BlockPositions.encodeList(doors));
         tag.setString("redstoneGrills", BlockPositions.encodeList(grills));
+        tag.setString("redstoneSpeakers", BlockPositions.encodeList(speakers));
     }
 
     public void writeSyncTag(NBTTagCompound tag) {
         tag.setString("redstoneGates", BlockPositions.encodeList(gates));
         tag.setString("redstoneDoors", BlockPositions.encodeList(doors));
         tag.setString("redstoneGrills", BlockPositions.encodeList(grills));
+        tag.setString("redstoneSpeakers", BlockPositions.encodeList(speakers));
     }
 
     public void readFromNBT(NBTTagCompound tag) {
         gates.clear();
         doors.clear();
         grills.clear();
+        speakers.clear();
         holdMode = HoldMode.NONE;
         holdActive = false;
+        directPulseEnd = 0;
         if (tag.hasKey("redstoneGates")) {
             gates.addAll(BlockPositions.decodeList(tag.getString("redstoneGates")));
         }
@@ -562,6 +715,9 @@ public final class RedstoneBinding {
         }
         if (tag.hasKey("redstoneGrills")) {
             grills.addAll(BlockPositions.decodeList(tag.getString("redstoneGrills")));
+        }
+        if (tag.hasKey("redstoneSpeakers")) {
+            speakers.addAll(BlockPositions.decodeList(tag.getString("redstoneSpeakers")));
         }
     }
 

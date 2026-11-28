@@ -29,7 +29,9 @@ public class MessageSensorOption implements IMessage {
     public static final int DETECT_NEUTRAL = 10;
     public static final int PERSIST_WITHIN_BOUNDS = 11;
     public static final int PERSIST_OUT_OF_BOUNDS = 12;
-    public static final int OPTION_COUNT = 13;
+    public static final int PULSE_NEXT = 13;
+    public static final int PULSE_PREV = 14;
+    public static final int OPTION_COUNT = 15;
 
     private BlockPos pos;
     private int option;
@@ -117,6 +119,12 @@ public class MessageSensorOption implements IMessage {
                     break;
                 case PERSIST_OUT_OF_BOUNDS:
                     sensor.setPersistOutOfBounds(message.value);
+                    break;
+                case PULSE_NEXT:
+                    sensor.cyclePulseTicks(1);
+                    break;
+                case PULSE_PREV:
+                    sensor.cyclePulseTicks(-1);
                     break;
                 default:
                     break;

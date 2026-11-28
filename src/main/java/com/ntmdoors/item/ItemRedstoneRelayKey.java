@@ -37,8 +37,9 @@ import java.util.List;
 
 /**
  * Redstone Relay Key. Sneak right-click a safe or scanner (or normal-click a speaker) to start or
- * finish a wireless binding session, then sneak right-click any Redstone Gate to link or unlink it.
- * A session started on a gate links other gates and doors to that gate's output.
+ * finish a wireless binding session, then sneak right-click a gate or target to link it. A session
+ * started on a gate links other gates, doors, grills and speakers to that gate's output; a session
+ * started on a Motion Sensor can drive doors, grills, speakers and gates directly.
  */
 public class ItemRedstoneRelayKey extends Item {
 
@@ -58,7 +59,8 @@ public class ItemRedstoneRelayKey extends Item {
                                       EnumFacing facing, float hitX, float hitY, float hitZ) {
         TileEntity te = world.getTileEntity(pos);
 
-        // The speaker uses a normal click for binding because shift-right-click is its GUI gesture.
+        // The speaker uses a normal click for its own binding session because shift-right-click is
+        // its GUI gesture. A gate/sensor session links it on sneak + right-click instead.
         if (!player.isSneaking()) {
             if (te instanceof TileEntitySpeaker) {
                 if (!world.isRemote) {
@@ -69,11 +71,18 @@ public class ItemRedstoneRelayKey extends Item {
             return EnumActionResult.PASS;
         }
 
+        if (world.isRemote) {
+            // Sneak-clicking a keypad opens its security-code screen, then the configuration GUI.
+            // Gate binding uses a normal click on the keypad, handled by BlockDoorKeypad.
+            if (te instanceof TileEntityDoorKeypad) NTMDoors.proxy.openKeypadSecurityCodeGui(pos);
+            return EnumActionResult.SUCCESS;
+        }
+
+        RedstoneBinding binding = RedstoneBinding.findSession(world, player);
+
         TileEntityEmancipationGrill grill = findGrill(world, pos);
         if (grill != null) {
-            if (world.isRemote) return EnumActionResult.SUCCESS;
-            RedstoneBinding binding = RedstoneBinding.findSession(world, player);
-            if (binding != null && binding.isGateHost()) {
+            if (binding != null && binding.canDriveDevices()) {
                 binding.linkGrill(player, grill);
             } else {
                 TileEntityEmancipationGrill core = grill.getSecurityCore();
@@ -87,25 +96,21 @@ public class ItemRedstoneRelayKey extends Item {
             return EnumActionResult.SUCCESS;
         }
 
-        // Vanilla skips Block.onBlockActivated for a sneaking player, so the item owns this action.
-        if (world.isRemote) {
-            // Sneak-clicking a keypad opens its security-code screen, then the configuration GUI.
-            // Gate binding uses a normal click on the keypad, handled by BlockDoorKeypad.
-            if (te instanceof TileEntityDoorKeypad) NTMDoors.proxy.openKeypadSecurityCodeGui(pos);
-            return EnumActionResult.SUCCESS;
-        }
-
         if (te instanceof TileEntitySafe) {
             ((TileEntitySafe) te).getRedstoneBinding().toggle(player);
         } else if (te instanceof TileEntityKeycardScanner) {
             ((TileEntityKeycardScanner) te).getRedstoneBinding().toggle(player);
         } else if (te instanceof TileEntitySpeaker) {
-            ((TileEntitySpeaker) te).getRedstoneBinding().toggle(player);
+            TileEntitySpeaker speaker = (TileEntitySpeaker) te;
+            if (binding != null && binding.canDriveDevices()) {
+                binding.linkSpeaker(player, speaker);
+            } else {
+                speaker.getRedstoneBinding().toggle(player);
+            }
         } else if (te instanceof TileEntityMotionSensor) {
             ((TileEntityMotionSensor) te).getRedstoneBinding().toggle(player);
         } else if (te instanceof TileEntityRedstoneGate) {
             TileEntityRedstoneGate gate = (TileEntityRedstoneGate) te;
-            RedstoneBinding binding = RedstoneBinding.findSession(world, player);
             if (binding == null) {
                 // Starting here turns the gate into a relay for other gates and doors.
                 gate.getRedstoneBinding().toggle(player);
@@ -117,11 +122,10 @@ public class ItemRedstoneRelayKey extends Item {
         } else {
             TileEntityDoorGeneric door = findDoor(world, pos);
             if (door != null) {
-                RedstoneBinding binding = RedstoneBinding.findSession(world, player);
                 if (binding == null) {
                     player.sendStatusMessage(new TextComponentTranslation(
                             "ntmdoors.msg.redstone_binding_required"), true);
-                } else if (!binding.isGateHost()) {
+                } else if (!binding.canDriveDevices()) {
                     player.sendStatusMessage(new TextComponentTranslation(
                             "ntmdoors.msg.redstone_door_gate_only"), true);
                 } else {
@@ -161,7 +165,8 @@ public class ItemRedstoneRelayKey extends Item {
                 "Links keypads, scanners, safes, speakers",
                 "and sensors to a Redstone Gate.",
                 "Sneak + Right Click a gate to bind",
-                "other gates, doors and grills to its output.",
+                "gates, doors, grills and speakers.",
+                "Sensors can bind doors, grills and speakers directly.",
                 "Each successful link ends the session.",
                 "Normal Right Click a Speaker to bind it.",
                 "Sneak + Right Click a Keypad to configure it.",

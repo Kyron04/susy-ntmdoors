@@ -108,9 +108,17 @@ The Emancipation Grill is a new paired security field based on the Portal 2 fizz
   start and end on a known GL baseline, so a tile entity rendered earlier in the frame cannot leave
   a tint, disabled lighting or changed depth/cull state behind.
 - Fixed horizontal field rotation, emitter-strip alignment and player/entity movement on the field.
+- Motion Sensors can now link directly to Redstone Gates, doors, grills and speakers with the
+  Redstone Relay Key, without an intermediate gate. A new `PULSE` control on the sensor's redstone
+  page sets the event duration from 1 second to 5 minutes; persist-within and persist-out-of-bounds
+  hold the direct targets as well as linked gates.
+- Redstone Gates can now link speakers directly. A linked speaker sounds while the gate output is
+  active and stops when it releases.
 - The Redstone Relay Key now ends its binding session after each successful link. The new link stays
   active, and the next click starts a fresh session, so another device or gate can be bound without
   first clearing the old session.
+- The Redstone Monocle now draws direct sensor links and speaker targets: amber for doors, cyan for
+  grills, green for speakers and blue for device-to-gate links.
 - Marked item tooltip overrides as client-only to avoid dedicated-server class-loading errors.
 - Hardened the Emancipation Relay Key with a reach check and guarded malformed UUID NBT in keycard
   scanner and weapons key data.
@@ -122,6 +130,8 @@ The Emancipation Grill is a new paired security field based on the Portal 2 fizz
 - Existing 1.0.77 worlds load normally. The Office Door 1 rename is remapped automatically; no
   other registry IDs or saved NBT formats moved. New Emancipation Grill and Security Shroud items
   are appended registrations.
+- New redstone target lists, speaker wireless power and the sensor `PULSE` setting use appended NBT
+  keys. Existing sensors, speakers, gates and grills load with their current links and defaults.
 - `config/ntmdoors.cfg` is generated on first launch. Keep it identical on the client and server so
   name-tag, speed, fall-protection and Unity behavior agree.
 - Clients and servers must both update. Older jars keep the old behavior.

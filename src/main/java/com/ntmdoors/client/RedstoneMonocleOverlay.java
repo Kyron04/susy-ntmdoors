@@ -29,16 +29,18 @@ import java.util.List;
 
 /**
  * Draws the Redstone Monocle's wireless-link overlay while the item is held in either hand.
- * Devices are drawn in blue, gate-to-gate links in red, and gate-to-door links in amber. The
- * overlay ignores depth so wiring is visible through walls.
+ * Device-to-gate links are blue, gate-to-gate links are red, door targets are amber, grill
+ * targets are cyan and speaker targets are green. The overlay ignores depth so wiring is visible
+ * through walls.
  */
 @SideOnly(Side.CLIENT)
 @Mod.EventBusSubscriber(modid = NTMDoors.MODID, value = Side.CLIENT)
 public final class RedstoneMonocleOverlay {
 
     private static final float[] GATE_GATE = {0.95F, 0.20F, 0.20F, 0.85F};
-    private static final float[] GATE_DOOR = {1.00F, 0.72F, 0.18F, 0.85F};
-    private static final float[] GATE_GRILL = {0.35F, 0.85F, 1.00F, 0.85F};
+    private static final float[] TARGET_DOOR = {1.00F, 0.72F, 0.18F, 0.85F};
+    private static final float[] TARGET_GRILL = {0.35F, 0.85F, 1.00F, 0.85F};
+    private static final float[] TARGET_SPEAKER = {0.55F, 0.95F, 0.45F, 0.85F};
     private static final float[] DEVICE_GATE = {0.25F, 0.62F, 1.00F, 0.80F};
 
     /** How far away a link may be drawn. This only limits the overlay, not the link itself. */
@@ -64,8 +66,9 @@ public final class RedstoneMonocleOverlay {
         if (!ItemRedstoneMonocle.isHeldBy(player)) return;
 
         List<Link> gateGate = new ArrayList<>();
-        List<Link> gateDoor = new ArrayList<>();
-        List<Link> gateGrill = new ArrayList<>();
+        List<Link> targetDoor = new ArrayList<>();
+        List<Link> targetGrill = new ArrayList<>();
+        List<Link> targetSpeaker = new ArrayList<>();
         List<Link> deviceGate = new ArrayList<>();
 
         for (TileEntity te : mc.world.loadedTileEntityList) {
@@ -73,26 +76,25 @@ public final class RedstoneMonocleOverlay {
             BlockPos hostPos = te.getPos();
             if (!inRange(player, hostPos)) continue;
 
-            if (te instanceof TileEntityRedstoneGate) {
-                RedstoneBinding binding = ((TileEntityRedstoneGate) te).getRedstoneBinding();
-                for (BlockPos target : binding.getGates()) {
-                    if (inRange(player, target)) gateGate.add(new Link(hostPos, target));
-                }
-                for (BlockPos target : binding.getDoors()) {
-                    if (inRange(player, target)) gateDoor.add(new Link(hostPos, target));
-                }
-                for (BlockPos target : binding.getGrills()) {
-                    if (inRange(player, target)) gateGrill.add(new Link(hostPos, target));
-                }
-            } else {
-                RedstoneBinding binding = ((RedstoneBindingHost) te).getRedstoneBinding();
-                for (BlockPos target : binding.getGates()) {
-                    if (inRange(player, target)) deviceGate.add(new Link(hostPos, target));
-                }
+            RedstoneBinding binding = ((RedstoneBindingHost) te).getRedstoneBinding();
+            boolean gateHost = te instanceof TileEntityRedstoneGate;
+            for (BlockPos target : binding.getGates()) {
+                if (!inRange(player, target)) continue;
+                (gateHost ? gateGate : deviceGate).add(new Link(hostPos, target));
+            }
+            for (BlockPos target : binding.getDoors()) {
+                if (inRange(player, target)) targetDoor.add(new Link(hostPos, target));
+            }
+            for (BlockPos target : binding.getGrills()) {
+                if (inRange(player, target)) targetGrill.add(new Link(hostPos, target));
+            }
+            for (BlockPos target : binding.getSpeakers()) {
+                if (inRange(player, target)) targetSpeaker.add(new Link(hostPos, target));
             }
         }
 
-        if (gateGate.isEmpty() && gateDoor.isEmpty() && gateGrill.isEmpty() && deviceGate.isEmpty()) {
+        if (gateGate.isEmpty() && targetDoor.isEmpty() && targetGrill.isEmpty()
+                && targetSpeaker.isEmpty() && deviceGate.isEmpty()) {
             return;
         }
 
@@ -116,8 +118,9 @@ public final class RedstoneMonocleOverlay {
             GL11.glLineWidth(2.0F);
 
             draw(gateGate, GATE_GATE);
-            draw(gateDoor, GATE_DOOR);
-            draw(gateGrill, GATE_GRILL);
+            draw(targetDoor, TARGET_DOOR);
+            draw(targetGrill, TARGET_GRILL);
+            draw(targetSpeaker, TARGET_SPEAKER);
             draw(deviceGate, DEVICE_GATE);
         } finally {
             // Always restore, even if a draw call throws. A leaked depth test or texture state

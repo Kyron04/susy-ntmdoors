@@ -7,11 +7,13 @@ import com.ntmdoors.item.ItemEmancipationRelayKey;
 import com.ntmdoors.item.ItemOperatorKeycard;
 import com.ntmdoors.item.ItemRfidCard;
 import com.ntmdoors.util.Biometrics;
+import com.ntmdoors.util.BlockPositions;
 import com.ntmdoors.util.ContrabandContainers;
 import com.ntmdoors.util.EmancipationFieldGeometry;
 import com.ntmdoors.util.HeldItems;
 import com.ntmdoors.util.ModSounds;
 import com.ntmdoors.util.PrivateKeys;
+import com.ntmdoors.util.TimedSources;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -122,6 +124,8 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
     private final RedstoneBinding redstoneBinding = new RedstoneBinding(this);
     /** Gate outputs currently controlling the field, including explicit off sources. */
     private final Map<BlockPos, Boolean> linkedGates = new HashMap<>();
+    /** Direct Motion Sensor outputs; both edges apply so a sensor pulse can raise and drop. */
+    private final TimedSources directSources = new TimedSources();
     /** Last tick this grill pulsed its linked gates; their own output edges are ignored briefly. */
     private long lastSignalPulseTick = -1000L;
     private long lastDisintegrateSoundTick = -1000L;
@@ -357,6 +361,56 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
         if (current != null && current == powered) return;
         linkedGates.put(key, powered);
         applyLinkedGatePower(false);
+    }
+
+    /**
+     * Called by a directly linked Motion Sensor. Unlike gate control, both edges apply, so a
+     * sensor pulse can raise the field and drop it again when the pulse ends.
+     */
+    public void setDirectPower(BlockPos source, boolean powered) {
+        if (source == null || world == null || world.isRemote) return;
+        TileEntityEmancipationGrill core = getSecurityCore();
+        if (core != this) {
+            core.setDirectPower(source, powered);
+            return;
+        }
+        TimedSources.Update change = directSources.apply(source, powered,
+                world.getTotalWorldTime(), RedstoneBinding.LINK_TIMEOUT_TICKS);
+        if (change == TimedSources.Update.NONE || change == TimedSources.Update.REFRESHED) return;
+        refreshDirectFieldPower();
+    }
+
+    /** A sensor link starts from its current hold state; an off link drops the field once. */
+    public void onDirectLinked(BlockPos source, boolean powered) {
+        if (source == null || world == null || world.isRemote) return;
+        TileEntityEmancipationGrill core = getSecurityCore();
+        if (core != this) {
+            core.onDirectLinked(source, powered);
+            return;
+        }
+        if (powered) {
+            setDirectPower(source, true);
+            return;
+        }
+        directSources.remove(source);
+        refreshDirectFieldPower();
+    }
+
+    private void refreshDirectFieldPower() {
+        if (world == null || world.isRemote) return;
+        boolean powered = directSources.isActive(world.getTotalWorldTime());
+        if (!powered) {
+            for (Boolean value : linkedGates.values()) {
+                if (value) {
+                    powered = true;
+                    break;
+                }
+            }
+        }
+        if (fieldEnabled == powered) return;
+        fieldEnabled = powered;
+        deniedInside.clear();
+        sync();
     }
 
     /**
@@ -861,6 +915,7 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
     @Override
     public void update() {
         if (world == null || world.isRemote) return;
+        if (directSources.prune(world.getTotalWorldTime())) refreshDirectFieldPower();
         redstoneBinding.update();
 
         // A leftover second grill becomes a standalone first grill again once its partner is gone.
@@ -1712,6 +1767,11 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
     public void readFromNBT(NBTTagCompound tag) {
         super.readFromNBT(tag);
         redstoneBinding.readFromNBT(tag);
+        directSources.clear();
+        if (tag.hasKey("directSources") && world != null) {
+            directSources.load(BlockPositions.decodeList(tag.getString("directSources")),
+                    world.getTotalWorldTime() + RedstoneBinding.LINK_TIMEOUT_TICKS);
+        }
 
         ownerId = null;
         String owner = tag.getString("owner");
@@ -1772,6 +1832,7 @@ public class TileEntityEmancipationGrill extends TileEntitySynced implements ITi
     public NBTTagCompound writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
         redstoneBinding.writeToNBT(tag);
+        tag.setString("directSources", BlockPositions.encodeList(directSources.keys()));
 
         tag.setString("owner", ownerId == null ? "" : ownerId.toString());
         tag.setString("ownerName", ownerName);

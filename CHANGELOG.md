@@ -32,6 +32,14 @@ FEATURES
   Escape returns to the same net.
 - Added Aperture Laboratories, G-Man and SCP wallpapers to the monitor Display task. The Display
   grid now uses five columns, giving eight built-in images alongside the Terminal tile.
+- Motion Sensors can now link directly to Redstone Gates, doors, grills and speakers with the
+  Redstone Relay Key, without an intermediate gate. A new `PULSE` control on the sensor's redstone
+  page sets the event duration from 1 second to 5 minutes; persist-within and persist-out-of-bounds
+  hold the direct targets as well as linked gates.
+- Redstone Gates can now link speakers directly. A linked speaker sounds while a gate or sensor
+  output is active and stops when it releases.
+- The Redstone Monocle now draws direct sensor links and speaker targets: amber for doors, cyan for
+  grills, green for speakers and blue for device-to-gate links.
 FIXES
 - The Redstone Relay Key now ends the binding session after each successful link. The new link stays
   in place, and the next click starts a fresh session, so another device or gate can be bound
@@ -47,7 +55,8 @@ INTERNAL
 - Removed a duplicate door security check and stale comments; no behavior change.
 COMPATIBILITY
 - Existing 1.0.81 worlds load unchanged; no registry IDs or NBT formats moved. The Security Shroud
-  items are appended registrations.
+  items and the new redstone target lists, speaker wireless power and sensor `PULSE` setting are
+  appended registrations or appended NBT keys.
 - `config/ntmdoors.cfg` is generated on first launch. Keep it identical on the client and server so
   name-tag, speed, fall-protection and Unity behavior agree.
 - Clients and servers must both update. Chisel 1.12.2-1.0.2.45 remains required; no NTM installation

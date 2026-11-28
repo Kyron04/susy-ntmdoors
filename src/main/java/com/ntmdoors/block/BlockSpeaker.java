@@ -2,6 +2,7 @@
 package com.ntmdoors.block;
 
 import com.ntmdoors.NTMDoors;
+import com.ntmdoors.tile.RedstoneBinding;
 import com.ntmdoors.tile.TileEntitySpeaker;
 
 import net.minecraft.block.Block;
@@ -107,6 +108,7 @@ public class BlockSpeaker extends Block {
         if (te instanceof TileEntitySpeaker) {
             ((TileEntitySpeaker) te).getRedstoneBinding().clearGates();
         }
+        RedstoneBinding.removeSpeakerLinks(world, pos);
         super.breakBlock(world, pos, state);
     }
 

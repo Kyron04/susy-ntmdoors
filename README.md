@@ -215,8 +215,9 @@ reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
   the listener, so looking toward or away from the speaker does not change its loudness; only
   distance inside the configured range fades it. The sound, range, volume and enabled state are
   saved with the block. A normal right-click with the Redstone Relay
-  Key starts/finishes a wireless binding session, and starting the alarm pulses every linked
-  Redstone Gate.
+  Key starts/finishes the speaker's own wireless binding session, and starting the alarm pulses
+  every linked Redstone Gate. A Redstone Gate or Motion Sensor can also drive the speaker directly:
+  sneak + right-click it while that source's session is active.
 * Motion Sensor (`ntmdoors:motion_sensor`): a compact 8x8x1.375 surface-mounted PIR housing with an
   off-white body, charcoal bezel, ringed concentric Fresnel lens and one status LED with four
   colours. It can be placed on floors, walls and ceilings; the clicked face becomes the lens
@@ -251,12 +252,15 @@ reference: https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT
     projection of the selected cells; sneak + right-click again hides it.
   - **Page four - redstone:** the red `REDSTONE` page has `Authorized entry`, `Unauthorized entry`,
     `Sensor disabled` and `Sensor enabled` switches, all off by default. With both persistence
-    modes off, each enabled entry event pulses every linked gate on the matching entry edge.
-    `Persist within bounds` holds using those entry events; `Persist out of bounds` holds while the
-    area is empty. The `Sensor disabled` and `Sensor enabled` switches fire from the sensor's own
-    `Enabled` toggle, including the terminal ON/OFF switch, not from Security net events,
-    regardless of the persistence mode. Sneak + right-click the sensor with the Redstone Relay Key
-    to start or finish a gate-binding session, then sneak + right-click gates to link them.
+    modes off, each enabled entry event pulses every linked gate and every directly linked door,
+    grill or speaker on the matching entry edge. `Persist within bounds` holds those targets using
+    the same entry events; `Persist out of bounds` holds while the area is empty. The `PULSE` pill
+    in the page header sets the event pulse from 1 second to 5 minutes; left-click steps up and
+    right-click steps down. The `Sensor disabled` and `Sensor enabled` switches fire from the
+    sensor's own `Enabled` toggle, including the terminal ON/OFF switch, not from Security net
+    events, regardless of the persistence mode. Sneak + right-click the sensor with the Redstone
+    Relay Key to start a binding session, then sneak + right-click a gate, door, grill or speaker
+    to link it. Each successful link ends the session.
   - **Status LED:** green when idle, blue when authorized players are inside, and red when any
     unauthorized player or mob is inside. Yellow normally means no area is bound or the sensor's
     own `Enabled` toggle is off. A Security net's `System Shutdown` or `Disable Sensors` stops a
@@ -532,25 +536,26 @@ as are the four Security Shroud pieces, and have no crafting recipes.
   +1/+5/+10/+20 second and matching subtract buttons. It has a red menu name and the tooltip
   `Bound activities from Keypads, Keycard Scanners, and Safes will emit a redstone signal` plus the
   Redstone Relay Key instructions. A gate can also be the start of a relay-key session: link other
-  gates and doors to its output, and they follow it on and off. Each successful link ends the
-  session; start it again at the source gate to add another target. Links are directional, work in
-  the same dimension, and a link that would close a feedback loop is refused.
+  gates, doors, grills and speakers to its output, and they follow it on and off. Each successful
+  link ends the session; start it again at the source gate to add another target. Links are
+  directional, work in the same dimension, and a gate-to-gate link that would close a feedback loop
+  is refused.
 * Redstone Relay Key (`ntmdoors:redstone_relay_key`): a red-named creative key with the tooltip
   `Links keypads, scanners, safes, speakers and sensors to a Redstone Gate`. Sneak +
   right-click a safe, scanner or motion sensor to start a wireless binding session, then sneak +
   right-click a gate to link or unlink it. A successful link ends the session silently, so the next
   click starts fresh. On a keypad, a normal right-click starts/finishes the binding session; sneak +
   right-click opens its configuration screen. On a speaker, a normal right-click starts/finishes the
-  binding session, and its shift-right-click screen is unavailable while the key is held. Sneak +
-  right-click a gate to start/finish a gate session, then sneak + right-click other gates to relay
-  the signal or doors to open and close them with that gate. Each successful link ends the session;
-  sneak + right-click the source gate again to add another target. Devices and gates can be linked
-  many-to-many in the same dimension; doors are
-  driven by gate sessions only, breached doors refuse the link, and security doors accept it only
-  after their owner enables Redstone access with the Monocle.
+  binding session, and its shift-right-click screen is unavailable while the key is held.
+  A Motion Sensor session can link a gate, door, grill or speaker directly; a gate session can link
+  another gate, door, grill or speaker. Sneak + right-click the target after starting the session.
+  Each successful link ends the session; start at the source again to add another target. Devices
+  and gates can be linked many-to-many in the same dimension. Breached doors refuse the link, and
+  security doors accept it only after their owner enables Redstone access with the Monocle.
 * Redstone Monocle (`ntmdoors:redstone_monocle`): a red-named diagnostic item with a
   16x16 red monocle sprite. While held in either hand it draws the loaded wireless links through
-  walls: red for gate-to-gate, amber for gate-to-door, and blue for device-to-gate. Only links
+  walls: red for gate-to-gate, amber for door targets, cyan for grill targets, green for speaker
+  targets, and blue for device-to-gate. Only links
   whose two endpoints are within four chunks of the player are drawn; this is a visual limit and
   does not change link behaviour or range. Sneak +
   right-click a security door as its owner to toggle whether that door accepts redstone and gate

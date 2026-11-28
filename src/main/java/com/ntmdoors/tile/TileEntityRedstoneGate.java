@@ -350,6 +350,11 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
         pulse(1);
     }
 
+    /** Server side: starts an activation window with a caller-supplied duration. */
+    public void pulseFor(int ticks) {
+        pulse(ticks);
+    }
+
     private void pulse(int ticks) {
         if (getWorld() == null || getWorld().isRemote || stayActive) return;
         if (isSystemIdle()) return;
@@ -448,7 +453,7 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
         // still adopts the signal, and a stale receiver times out only after the source is gone.
         if (redstoneBinding.hasLinks() && isPoweredOn()
                 && (world.getTotalWorldTime() & 19L) == 0L) {
-            redstoneBinding.applyGateOutput(true);
+            redstoneBinding.applyOutput(true);
         }
 
         if (inputSettleTicks > 0) {
@@ -495,7 +500,7 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
             refreshPower();
         }
         // Seed receivers from the saved output state; persisted inputs cover chunk-load order.
-        redstoneBinding.applyGateOutput(isPoweredOn());
+        redstoneBinding.applyOutput(isPoweredOn());
     }
 
     public boolean isPoweredOn() {
@@ -548,7 +553,7 @@ public class TileEntityRedstoneGate extends TileEntitySynced implements ITickabl
         // Weapons Relay Key links fire on the rising edge of the gate output.
         if (powered) WeaponsBindings.onGatePowered(world, pos);
         // Linked gates and doors follow every output edge.
-        redstoneBinding.applyGateOutput(powered);
+        redstoneBinding.applyOutput(powered);
     }
 
     @Override

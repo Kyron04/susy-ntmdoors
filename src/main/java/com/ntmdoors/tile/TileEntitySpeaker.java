@@ -3,7 +3,9 @@ package com.ntmdoors.tile;
 
 import com.ntmdoors.client.SpeakerLoopSound;
 import com.ntmdoors.monitor.SecurityEvents;
+import com.ntmdoors.util.BlockPositions;
 import com.ntmdoors.util.ModSounds;
+import com.ntmdoors.util.TimedSources;
 
 import net.minecraft.block.BlockRedstoneWire;
 import net.minecraft.block.state.IBlockState;
@@ -40,6 +42,8 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
     private static final String[] SOUND_NAMES = {"Air Raid", "Facility", "Industrial", "EAS"};
 
     private final RedstoneBinding redstoneBinding = new RedstoneBinding(this);
+    /** Wireless gate/sensor sources currently driving the alarm. */
+    private final TimedSources linkedPower = new TimedSources();
 
     private boolean enabled = true;
     private int sound = SOUND_AIR_RAID;
@@ -113,6 +117,19 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
         return powered;
     }
 
+    /** Server side: a linked gate or sensor reports its output. */
+    public void setLinkedPower(BlockPos source, boolean value) {
+        if (world == null || world.isRemote || source == null) return;
+        TimedSources.Update change = linkedPower.apply(source, value, world.getTotalWorldTime(),
+                RedstoneBinding.LINK_TIMEOUT_TICKS);
+        if (change == TimedSources.Update.NONE || change == TimedSources.Update.REFRESHED) return;
+        updatePower(isRedstonePowered() || isWirelessPowered());
+    }
+
+    private boolean isWirelessPowered() {
+        return world != null && linkedPower.isActive(world.getTotalWorldTime());
+    }
+
     public SoundEvent getSoundEvent() {
         return ModSounds.SPEAKER_SOUNDS.get(clampSound(sound));
     }
@@ -145,7 +162,7 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
     @Override
     public void onLoad() {
         if (world != null && !world.isRemote) {
-            powered = isRedstonePowered();
+            powered = isRedstonePowered() || isWirelessPowered();
         }
     }
 
@@ -153,7 +170,7 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
     public void onNeighborChanged() {
         if (world == null || world.isRemote) return;
         if (SecurityEvents.isShutdown(world, pos)) return;
-        updatePower(isRedstonePowered());
+        updatePower(isRedstonePowered() || isWirelessPowered());
     }
 
     /**
@@ -188,6 +205,7 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
                 systemIdle = true;
                 systemAlarm = false;
                 redstoneBinding.clearHold();
+                linkedPower.clear();
                 powered = false;
                 sync();
             }
@@ -201,7 +219,8 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
             sync();
         }
 
-        updatePower(isRedstonePowered());
+        linkedPower.prune(world.getTotalWorldTime());
+        updatePower(isRedstonePowered() || isWirelessPowered());
         redstoneBinding.update();
     }
 
@@ -285,6 +304,7 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
         tag.setInteger("volume", volume);
         tag.setBoolean("powered", powered);
         tag.setBoolean("systemAlarm", systemAlarm);
+        tag.setString("linkedPower", BlockPositions.encodeList(linkedPower.keys()));
         redstoneBinding.writeToNBT(tag);
         return tag;
     }
@@ -298,6 +318,11 @@ public class TileEntitySpeaker extends TileEntitySynced implements ITickable, Re
         volume = tag.hasKey("volume") ? clampVolume(tag.getInteger("volume")) : DEFAULT_VOLUME;
         powered = tag.getBoolean("powered");
         systemAlarm = tag.getBoolean("systemAlarm");
+        linkedPower.clear();
+        if (tag.hasKey("linkedPower") && world != null) {
+            linkedPower.load(BlockPositions.decodeList(tag.getString("linkedPower")),
+                    world.getTotalWorldTime() + RedstoneBinding.LINK_TIMEOUT_TICKS);
+        }
         redstoneBinding.readFromNBT(tag);
     }
 }

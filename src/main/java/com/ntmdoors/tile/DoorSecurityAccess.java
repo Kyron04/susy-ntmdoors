@@ -161,8 +161,8 @@ final class DoorSecurityAccess {
         BlockPos self = pos.toImmutable();
         linkedGates.clear();
         for (TileEntity te : new ArrayList<>(world.loadedTileEntityList)) {
-            if (te instanceof TileEntityRedstoneGate) {
-                ((TileEntityRedstoneGate) te).getRedstoneBinding().onDoorRemoved(self);
+            if (te instanceof RedstoneBindingHost) {
+                ((RedstoneBindingHost) te).getRedstoneBinding().onDoorRemoved(self);
             }
         }
     }
