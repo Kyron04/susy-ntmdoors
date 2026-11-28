@@ -4,7 +4,7 @@ Minecraft 1.12.2 / Forge 14.23.5.2847+ (tested on 14.23.5.2860)
 Requires Chisel 1.12.2-1.0.2.45
 
 **File:** `ntmdoors-1.0.82.jar`
-**SHA-256:** `7B975FE5EA3CA8F11EC3C8C4A0F0F7EE9C3030E438A77438972814EA71A08FA9`
+**SHA-256:** `63CF74200980438CC9DF6275DF7A124F3A04008D5AC4E26166B7C10A54D24494`
 
 This pre-release collects every change since the 1.0.77 CurseForge build, covering the
 1.0.78–1.0.82 development releases. It adds the Emancipation Grill, contraband containment, the
